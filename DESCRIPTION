@@ -1,0 +1,29 @@
+Package: aMSE
+Type: Package
+Title: A Framework for Abalone Management Strategy Evaluation
+Version: 0.0.0.9000
+Date: 2020-03-08
+Authors@R: person("Malcolm", "Haddon", email = "malcolm.haddon@gmail.com", role = c("aut", "cre"))
+Maintainer: Malcolm Haddon <malcolm.haddon@gmail.com>
+Description: aMSE provides a formal framework for conducting management strategy 
+    evaluation for abalone stocks (although, in principle, such analyses for any 
+    sedentary organisms could be conducted). There are functions designed
+    to facilitate the generation of input data file templates, model
+    initiation and conditioning, and a standard template for the generation
+    of new harvest control rules. The vignette Use_aMSE provides details
+    of its operation. Rcpp is included in readiness of speeding various
+    vital dynamics but currently no functions are implemented in Rcpp.
+Depends: R (>= 3.5.0)
+License: MIT
+Imports: 
+    Rcpp (>= 0.12.14),
+    rutilsMH,
+    captioner,
+    diagrams
+LinkingTo: Rcpp
+RoxygenNote: 7.0.2
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
+Encoding: UTF-8
