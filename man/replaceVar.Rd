@@ -30,9 +30,9 @@ replaceVar replaces the values of a variable in the input
 }
 \examples{
 \dontrun{
-filename <- datafileTemplate(numblock=1,filename="oneblock.csv")
+filename <- datafiletemplate(numblock=1,filename="oneblock.csv")
 replace(filename,"AvRec",15.75)
-condDat <- readdataFile(filename)
+condDat <- readdatafile(filename)
 print(round(condDat$constants,4))
 }
 }

@@ -102,9 +102,9 @@ diagnostics <- function(inzone,plot=TRUE) {   # inzone <- testzone
 }  # end of diagnostics
 
 
-#' @title datafileTemplate generates a template input datafile
+#' @title datafiletemplate generates a template input datafile
 #'
-#' @description datafileTemplate generates a standard input datafile to use
+#' @description datafiletemplate generates a standard input datafile to use
 #'     as a template. It is possible to define the number of blocks and
 #'     then, once the data file is created, go in an edit it appropriately
 #'     to suit exactly your own needs.
@@ -122,16 +122,16 @@ diagnostics <- function(inzone,plot=TRUE) {   # inzone <- testzone
 #'     included in the data file. These would be used in any stock reduction
 #'     that becomes part of the conditioning; defaults to FALSE
 #'
-#' @return a standard definition data file ready to be read by readdataFile
+#' @return a standard definition data file ready to be read by readdatafile
 #' @export
 #'
 #' @examples
 #' \dontrun{
 #'  filename <- dataTemplate()
-#'  condDat <- readdataFile(filename)
+#'  condDat <- readdatafile(filename)
 #'  str(condDat,max.level=1)
 #' }
-datafileTemplate <- function(numblock=3,Nyrs=NA,filename="tmpdat.csv",
+datafiletemplate <- function(numblock=3,Nyrs=NA,filename="tmpdat.csv",
                              FisheryData=FALSE) {
    genconst <- function(invect) {
       nlab <- length(invect)
@@ -210,107 +210,6 @@ datafileTemplate <- function(numblock=3,Nyrs=NA,filename="tmpdat.csv",
 
 # Utility functions used within parseFile, not exported
 
-#' @title getConst extracts 'nb' numbers from a line of text
-#'
-#' @description getConst parses a line of text and extracts 'nb' pieces of
-#'     text as numbers
-#'
-#' @param inline text line to be parsed, usually obtained using readLines
-#' @param nb the number of numbers to extract
-#' @param index which non-empty object to begin extracting from?
-#'
-#' @return a vector of length 'nb'
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#'   # Not exported, prefix with AbMSE:::
-#'   txtline <- "MaxDL , 32,32,32"
-#'   AbMSE:::getConst(txtline,nb=3,index=2)
-#' }
-getConst <- function(inline,nb,index=2) { # parses lines containing numbers
-  ans <- numeric(nb)
-  tmp <- unlist(strsplit(inline,","))
-  if (length(tmp) < (nb+1))
-     warning(paste("possible problem with data",tmp[1],
-                   "missing comma?",sep=" "),"\n")
-  count <- 0
-  for (j in index:(nb+index-1)) {
-    count <- count + 1
-    ans[count] <- as.numeric(tmp[j])
-  }
-  return(ans)
-}   # end getConst
-
-
-#' @title getLogical extracts nb logicals from an input line of text
-#'
-#' @description getLogical obtains nb logicals from an input line
-#'
-#' @param inline text line to be parsed, usually obtained using readLines
-#' @param nb the number of logicals to extract, if nb is longer than the
-#'     number of logicals within inline the vector will contain NAs
-#'
-#' @return a vector of length nb
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#'  # Not exported, prefix with AbMSE:::
-#'  txtline <- "Depleted, TRUE"
-#'  AbMSE:::getLogical(txtline,nb=1)
-#'  txtline2 <- "calcthis, TRUE, FALSE"
-#'  AbMSE:::getLogical(txtline2,nb=2)
-#' }
-getLogical <- function(inline,nb) {  #inline <- txtline; nb=2
-   tmp <- unlist(strsplit(inline,","))
-   tmp <- removeEmpty(tmp)
-   outtmp <- as.logical(as.character(tmp[2:(nb+1)]))
-   return(outtmp)
-}
-
-#' @title getsingleNum extracts a single number from an input line of text
-#'
-#' @description getsingleNum obtains a number from an input line
-#'
-#' @param varname the name of the variable to get from intxt
-#' @param intxt text line to be parsed, usually obtained using readLines
-#'
-#' @return a single number
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#'  # Not exported, prefix with AbMSE:::
-#'  txtline <- "replicates, 100"
-#'  AbMSE:::getsingleNum("replicates",txtline)
-#' }
-getsingleNum <- function(varname,intxt) {
-   begin <- grep(varname,intxt)
-   return(getConst(intxt[begin],1))
-}
-
-#' @title getStr obtains a string from an input text line
-#'
-#' @description  getStr obtains a string from an input text line
-#'
-#' @param inline input text line
-#' @param nb number of bits to return
-#'
-#' @return a vector of character strings
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#'   print("to be developed" )
-#' }
-getStr <- function(inline,nb) {
-  tmp <- unlist(strsplit(inline,","))
-  tmp <- removeEmpty(tmp)
-  outconst <- as.character(tmp[2:(nb+1)])
-  return(outconst)
-} # end of getStr
-
 
 #' @title makefilename Generates a filename for output files
 #'
@@ -371,11 +270,99 @@ makeLabel <- function(invect,insep="_") {
    return(ans)
 }  # end of makeLabel
 
-
-
-#' @title readctrlFile literally reads a csv file for controling the AbMSE
+#' @title readctrlfile reads a csv file for controlling aMSE
 #'
-#' @description readctrlFile complements the readdataFile. The MSE requires
+#' @description readctrlFile complements the readdatafile. The MSE requires
+#'     a data file to condition the operating model but it also needs a
+#'     control file to setup the details of the simulation test being
+#'     conducted. See ctrlfileTemplate./
+#'
+#' @param indir directory in which to find the control file
+#' @param infile filename of the control file, default="control.csv"
+#'
+#' @return a list object containing the control variables
+#' @export
+#'
+#' @examples
+#'  direct="C:/Users/Malcolm/Dropbox/rcode2/aMSE/data-raw"
+#'  infile="control.csv"
+#'  ctrl <- readctrlfile(indir=direct,infile=infile)
+#'  str(ctrl)
+readctrlfile <- function(indir,infile="control.csv") {
+   filename <- filenametopath(indir,infile)
+   indat <- readLines(filename)   # reads the whole file as character strings
+   begin <- grep("START",indat) + 1
+   runlabel <- getStr(indat[begin],1)
+   regionfile <- getStr(indat[begin+1],1)
+   datafile <- getStr(indat[begin+2],1)
+   hcrfile <- getStr(indat[begin+3],1)
+   outdir <-getStr(indat[begin+4],1)
+   reps <- getsingleNum("replicates",indat)
+   initdepl <- getsingleNum("initdepl",indat)
+   assessinterval <- getsingleNum("assessinterval",indat)
+   withsigR <- getsingleNum("withsigR",indat)
+   withsigB <- getsingleNum("withsigB",indat)
+   withsigCE <- getsingleNum("withsigCE",indat)
+   outctrl <- list(runlabel,regionfile,datafile,hcrfile,
+                   outdir,reps,initdepl,assessinterval,
+                   withsigR,withsigB,
+                   withsigCE)
+   names(outctrl) <- c("runlabel","regionfile","datafile","hcrfile",
+                       "outdir","reps","initdepl","assessinterval",
+                       "withsigR","withsigB","withsigCE")
+   return(outctrl)
+}
+
+#' @title readdatafile reads in a matrix of data defining each population
+#'
+#' @description readdatafile expects a matrix of probability density
+#'     function definitions that are used to define the populaitons
+#'     used in the simualtion. These constitute the definition of
+#'     popdefs.
+#'
+#' @param indir directory in which to find the date file
+#' @param infile character string with filename of the data file
+#' @param glb the globals variable from the region file, so obviously
+#'     the readregionfile needs to run before readdatafile
+#'
+#' @return a matrix of values defining the PDFs used to define the
+#'     properties of each population. The contents of popdefs
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' datadir <- "./../../rcode2/aMSE/data-raw/"
+#' ctrlfile <- "control.csv"
+#' ctrl <- readctrlfile(datadir,ctrlfile)
+#' reg1 <- readregionfile(datadir,ctrl$regionfile)
+#' popdefs <- readdatafile(datadir,ctrl$datafile,reg1$globals)
+#' print(popdefs)
+#' }
+readdatafile <- function(indir,infile,glb) {  # indir=datadir;infile=ctrl$datafile;glb=ctrl$globals
+   numpop <- glb$numpop
+   filename <- filenametopath(indir,infile)
+   indat <- readLines(filename)   # reads the whole file as character strings
+   begin <- grep("PDFs",indat)
+   npar <- getConst(indat[begin],1)
+   rows <- c("popnum","SMU","DLMax","sMaxDL","L50","sL50","L50inc","sL50inc","SigMax",
+             "sSigMax","LML","Wtb","sWtb","Wtbtoa","sWtbtoa","Me","sMe",
+             "AvRec","sAvRec","defsteep","sdefsteep","L50C","sL50C",
+             "deltaC","sdeltaC","MaxCEpars","sMaxCEpars","selL50p",
+             "selL95p","SaMa","L50Mat","sL50Mat")
+   ans <- matrix(0,nrow=length(rows),ncol=numpop)
+   begin <- begin + 1
+   for (i in 1:npar) {
+      ans[i,] <- getConst(indat[begin],numpop)
+      begin <- begin + 1
+   } # completed filling ans matrix
+   rownames(ans) <- rows
+   colnames(ans) <- ans["popnum",]
+   return(ans)
+} # end of readdatafile
+
+#' @title readhcrfile literally reads a csv file for controling the AbMSE
+#'
+#' @description readhcrfile complements the readdatafile. The MSE requires
 #'     a data file to condition the operating model but it also needs a
 #'     control file to setup the details of the simulation test being
 #'     conducted. See ctrlfileTemplate./
@@ -389,65 +376,148 @@ makeLabel <- function(invect,insep="_") {
 #' \dontrun{
 #'   print("Still to be developed.")
 #' }
-readctrlFile <- function(infile) {  # infile <- "C:/A_CSIRO/Rcode/AbMSERun/ctrl_west.csv"
-  indat <- readLines(infile)   # reads the whole file as character strings
-  begin <- grep("batch",indat)
-  batch <-  getLogical(indat[begin],1) # minimum size class
-  reps <- getsingleNum("replicates",indat)
-  initDepl <- getsingleNum("initDepl",indat)
-  assessInterval <- getsingleNum("assessInterval",indat)
-  recthreshold <- getsingleNum("recthreshold",indat)
-  begin <- grep("hcrLabel",indat)
-  hcrLabel <- getStr(indat[begin],1)
-  begin <- grep("ConstC",indat)
-  ConstC <- getLogical(indat[begin],1)
-  begin <- grep("mcdaHCR",indat)
-  if (length(begin) > 1) begin <- begin[2]
-  mcdaHCR <- getLogical(indat[begin],1)
-  begin <- grep("ConstH",indat)
-  ConstH <- getLogical(indat[begin],1)
-  pickSched <- getsingleNum("pickSched",indat)
-  begin <- grep("TACadj",indat)
-  TACadj <- getConst(indat[begin],11,2)
-  begin <- grep("TACadj2",indat)
-  TACadj2 <- getConst(indat[begin],11,2)
-  begin <- grep("mcdaWts",indat)
-  mcdaWts <- getConst(indat[begin],3,2)
-  runlabel <-  paste0("_",assessInterval,"_",pickSched,"_",mcdaWts[1],"_",mcdaWts[2])
-  begin <- grep("postmcdaWts",indat)
-  postmcdaWts <- getConst(indat[begin],3,2)
-  begin <- grep("withVariation",indat)
-  withVariation <- getLogical(indat[begin],1)
-  cpuePeriod <- getsingleNum("cpuePeriod",indat)
-  maxGrad4 <- getsingleNum("maxGrad4",indat)
-  maxRate1 <- getsingleNum("maxRate1",indat)
-  begin <- grep("CETarg",indat)
-  CETarg <- getConst(indat[begin],4,2)
-  begin <- grep("deltaCE",indat)
-  deltaCE <- getConst(indat[begin],4,2)
-  implementE <- getsingleNum("implementE",indat)
-  begin <- grep("LRPTAC",indat)
-  LRPTAC <- getLogical(indat[begin],1)
-  TACLower <- getsingleNum("TACLower",indat)
-  TACUpper <- getsingleNum("TACUpper",indat)
-  refyr <- getsingleNum("refyr",indat)
-  withsigR <- getsingleNum("withsigR",indat)
-  withsigB <- getsingleNum("withsigB",indat)
-  withsigCE <- getsingleNum("withsigCE",indat)
-  outctrl <- list(batch,reps,initDepl,assessInterval,runlabel,
-                  recthreshold,hcrLabel,mcdaHCR,ConstC,mcdaWts,postmcdaWts,
-                  pickSched,TACadj,TACadj2,withVariation,cpuePeriod,maxGrad4,
-                  maxRate1,CETarg,deltaCE,
-                  implementE,LRPTAC,TACLower,TACUpper,refyr,ConstH,
-                  withsigR,withsigB,withsigCE)
-  names(outctrl) <- c("batch","reps","initDepl","assessInterval","runlabel",
-                      "recthreshold","hcrLabel","mcdaHCR","ConstC","mcdaWts",
-                      "postmcdaWts","picksched","TACadj","TACadj2","withVariation","cpuePeriod",
-                      "maxGrad4","maxRate1","CETarg","deltaCE","implementE","LRPTAC",
-                      "TACLower","TACUpper","refyr","ConstH",
-                      "withsigR","withsigB","withsigCE")
-  return(outctrl)
-}
+readhcrfile <- function(infile) {  # infile <- "C:/A_CSIRO/Rcode/AbMSERun/ctrl_west.csv"
+   indat <- readLines(infile)   # reads the whole file as character strings
+   begin <- grep("batch",indat)
+   batch <-  getLogical(indat[begin],1) # minimum size class
+   reps <- getsingleNum("replicates",indat)
+   initDepl <- getsingleNum("initDepl",indat)
+   assessInterval <- getsingleNum("assessInterval",indat)
+   recthreshold <- getsingleNum("recthreshold",indat)
+   begin <- grep("hcrLabel",indat)
+   hcrLabel <- getStr(indat[begin],1)
+   begin <- grep("ConstC",indat)
+   ConstC <- getLogical(indat[begin],1)
+   begin <- grep("mcdaHCR",indat)
+   if (length(begin) > 1) begin <- begin[2]
+   mcdaHCR <- getLogical(indat[begin],1)
+   begin <- grep("ConstH",indat)
+   ConstH <- getLogical(indat[begin],1)
+   pickSched <- getsingleNum("pickSched",indat)
+   begin <- grep("TACadj",indat)
+   TACadj <- getConst(indat[begin],11,2)
+   begin <- grep("TACadj2",indat)
+   TACadj2 <- getConst(indat[begin],11,2)
+   begin <- grep("mcdaWts",indat)
+   mcdaWts <- getConst(indat[begin],3,2)
+   runlabel <-  paste0("_",assessInterval,"_",pickSched,"_",mcdaWts[1],"_",mcdaWts[2])
+   begin <- grep("postmcdaWts",indat)
+   postmcdaWts <- getConst(indat[begin],3,2)
+   begin <- grep("withVariation",indat)
+   withVariation <- getLogical(indat[begin],1)
+   cpuePeriod <- getsingleNum("cpuePeriod",indat)
+   maxGrad4 <- getsingleNum("maxGrad4",indat)
+   maxRate1 <- getsingleNum("maxRate1",indat)
+   begin <- grep("CETarg",indat)
+   CETarg <- getConst(indat[begin],4,2)
+   begin <- grep("deltaCE",indat)
+   deltaCE <- getConst(indat[begin],4,2)
+   implementE <- getsingleNum("implementE",indat)
+   begin <- grep("LRPTAC",indat)
+   LRPTAC <- getLogical(indat[begin],1)
+   TACLower <- getsingleNum("TACLower",indat)
+   TACUpper <- getsingleNum("TACUpper",indat)
+   refyr <- getsingleNum("refyr",indat)
+   withsigR <- getsingleNum("withsigR",indat)
+   withsigB <- getsingleNum("withsigB",indat)
+   withsigCE <- getsingleNum("withsigCE",indat)
+   outctrl <- list(batch,reps,initDepl,assessInterval,runlabel,
+                   recthreshold,hcrLabel,mcdaHCR,ConstC,mcdaWts,postmcdaWts,
+                   pickSched,TACadj,TACadj2,withVariation,cpuePeriod,maxGrad4,
+                   maxRate1,CETarg,deltaCE,
+                   implementE,LRPTAC,TACLower,TACUpper,refyr,ConstH,
+                   withsigR,withsigB,withsigCE)
+   names(outctrl) <- c("batch","reps","initDepl","assessInterval","runlabel",
+                       "recthreshold","hcrLabel","mcdaHCR","ConstC","mcdaWts",
+                       "postmcdaWts","picksched","TACadj","TACadj2",
+                       "withVariation","cpuePeriod","maxGrad4","maxRate1",
+                       "CETarg","deltaCE","implementE","LRPTAC","TACLower",
+                       "TACUpper","refyr","ConstH","withsigR","withsigB",
+                       "withsigCE")
+   return(outctrl)
+} # end of readhcrfile
+
+
+#' @title readregionfile reads in the constants for the region
+#'
+#' @description with the region filename from the control file the
+#'     readregionfile will read the data from a csv file arranged with
+#'     a standard layout. Once again this uses the utility functions
+#'     for reading and parsing lines of text. This is illustrated by
+#'     the function makeregionfile, which produces an example *.csv
+#'     file that can then be customized to suit your own simulations.
+#'     Each required section contains a series of constants which are
+#'     read in individually,so their labels are equally important.
+#'
+#' @param indir directory in which to find the region file
+#' @param infile character string with filename of the region file
+#'
+#' @return eight objects, four vectors, 4 numbers, and a list of five
+#'     objects
+#' \itemize{
+#'   \item SMUnames the labels given to each SMU
+#'   \item SMUpop the number of populations in each SMU, in sequence
+#'   \item minc scaler defining the mid point of the smallest size class
+#'   \item cw scaler defining the class width
+#'   \item randomseed used to ensure that each simulation run starts
+#'       in the same place. Could use getseed() to produce this.
+#'   \item outyear a vector of three, with Nyrs, fixyear, and firstyear
+#'   \item projLML the LML expected in each projection year, a vector
+#'   \item globals a list containing numpop, nSMU, midpts, Nclass, and
+#'       Nyrs
+#' }
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' datadir <- "./../../rcode2/aMSE/data-raw/"
+#' ctrlfile <- "control.csv"
+#' ctrl <- readctrlfile(datadir,ctrlfile)
+#' reg1 <- readregionfile(datadir,ctrl$regionfile)
+#' str(reg1)
+#' }
+readregionfile <- function(indir,infile) {  # infile="region1.csv"; indir=datadir
+   context <- "region file"
+   indir <- datadir
+   infile = ctrl$regionfile
+   filename <- filenametopath(indir,infile)
+   indat <- readLines(filename)   # reads the whole file as character strings
+   nSMU <-  getsingleNum("nSMU",indat) # number of spatial management units
+   begin <- grep("SMUpop",indat)
+   SMUpop <-  getConst(indat[begin],nSMU) #
+   numpop <- sum(SMUpop)
+   SMUnames <- getStr(indat[begin+1],nSMU)
+   minc <-  getsingleNum("minc",indat) # minimum size class
+   cw    <- getsingleNum("cw",indat) # class width
+   Nclass <- getsingleNum("Nclass",indat) # number of classes
+   midpts <- seq(minc,minc+((Nclass-1)*cw),2)
+   randomseed <- getsingleNum("randomseed",indat)
+   Nyrs <- getsingleNum("Nyrs",indat)
+   firstyear <- getsingleNum("firstyear",indat)
+   fixyear <- getsingleNum("fixyear",indat)
+   outyear <- c(Nyrs,fixyear,firstyear)
+   projLML <- numeric(Nyrs)
+   begin <- grep("PROJLML",indat)
+   for (i in 1:Nyrs) {
+      from <- begin + 1
+      projLML[i] <- getConst(indat[from],1)
+   }
+   label <- c("numpop","nSMU","midpts","Nclass","Nyrs")
+   globals <- vector("list",length(label))
+   names(globals) <- label
+   globals$numpop <- numpop
+   globals$nSMU <- nSMU
+   globals$midpts <- midpts
+   globals$Nclass <- Nclass   # still have Nyrs to fill in
+   globals$Nyrs <- Nyrs
+
+   totans <- list(SMUnames,SMUpop,minc,cw,randomseed,outyear,projLML,globals)
+   names(totans) <- c("SMUnames","SMUpop","minc","cw","randomseed","outyear",
+                      "projLML","globals")
+   return(totans)
+}  # end of readregionfile
+
+
 
 
 #' @title replaceVar replaces values of a variable in the input datafile
@@ -469,9 +539,9 @@ readctrlFile <- function(infile) {  # infile <- "C:/A_CSIRO/Rcode/AbMSERun/ctrl_
 #' @export
 #' @examples
 #' \dontrun{
-#' filename <- datafileTemplate(numblock=1,filename="oneblock.csv")
+#' filename <- datafiletemplate(numblock=1,filename="oneblock.csv")
 #' replace(filename,"AvRec",15.75)
-#' condDat <- readdataFile(filename)
+#' condDat <- readdatafile(filename)
 #' print(round(condDat$constants,4))
 #' }
 replaceVar <- function(infile,invar,newval) {
@@ -495,9 +565,9 @@ replaceVar <- function(infile,invar,newval) {
 }  # end of replaceVar
 
 
-#' @title readdataFile reads in the constants and matrices of data required
+#' @title readdatafile reads in the constants and matrices of data required
 #'
-#' @description given a filename readdataFile will expect a given format.
+#' @description given a filename readdatafile will expect a given format.
 #'     Each required section starts with the section names in capitals. The
 #'     required sections are: SIZECLASS, BLOCKNAMES, PDFs, CONDITIONING,
 #'     PROJLML, HISTLML, YEARS, RANDOMSEED, PRODUCTIVITY, CATCHES,
@@ -543,11 +613,11 @@ replaceVar <- function(infile,invar,newval) {
 #' @examples
 #' \dontrun{
 #' #need to have an example data file before I can run an example
-#' filename <- datafileTemplate(numblock=3,filename="block3.csv")
-#' condDat <- readdataFile(filename)
+#' filename <- datafiletemplate(numblock=3,filename="block3.csv")
+#' condDat <- readdatafile(filename)
 #' str(condDat,max.level=1)
 #' }
-readdataFile <- function(infile) {  # infile <- infile
+readdatafileold <- function(infile) {  # infile <- infile
    ## pickVar = "CATCHES"; dat = indat; nb <- numblk
    # indat <- filename
    indat <- readLines(infile)   # reads the whole file as character strings
@@ -634,7 +704,7 @@ readdataFile <- function(infile) {  # infile <- infile
                       "numpop","minc","cw","Nclass","Nyrs","midpts","outYear",
                       "prodfile","histLML","Condition","projCatch","globals")
    return(totans)
-}  # end of readdataFile
+}  # end of readdatafile
 
 # end of utility functions used in parseFile
 

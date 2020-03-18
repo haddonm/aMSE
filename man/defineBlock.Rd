@@ -17,18 +17,17 @@ defineBlock(numblk, blknum, numpop)
 a vector of length numpop, indexing which block each pop is in.
 }
 \description{
-subdivides the defined number of populations into blocks in
-   the numbers defined in the constant blkpop read into 'constants'. It
-   allocates the populations sequentially to numblk blocks; if numblk
-   does not divide into numpop exactly, any remainder is put into the
-   final block. For block one canread SMU = spatial management unit.
+subdivides the defined number of populations into blocks
+    in the numbers defined in the constant blkpop read into 'constants'.
+    It allocates the populations sequentially to numblk blocks; if
+    numblk does not divide into numpop exactly, any remainder is put
+    into the final block. For block can read SMU = spatial management
+    unit.
 }
 \examples{
-\dontrun{
   nblock <- 9
   blkpop <- c(3,4,8,2,3,4,2,5,4)
   blockI <- defineBlock(nblock,blkpop)
   print(blockI)
   cat(length(blockI),sum(blkpop),"\n")
-}
 }

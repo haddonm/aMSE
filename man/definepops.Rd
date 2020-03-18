@@ -2,7 +2,7 @@
 % Please edit documentation in R/defineZone.R
 \name{definepops}
 \alias{definepops}
-\title{definepops makes a vector of parameters for each population}
+\title{definepops makes a parameter vector, popdef, for each population}
 \usage{
 definepops(innblock, inblockI, condDat)
 }
@@ -20,30 +20,22 @@ a matrix with a row for each population  and whose columns are
     the parameters defiing the biological parameters for each population.
 }
 \description{
-definepops makes a vector of parameters for each
-   population. Each population will have slightly different biological
-   properties sampled from probability density distributions defined in
-   bConst; a matrix read in by 'parsefile'. In the non-library version of
-   the software the matrix bConst was assumed to be global.
+definepops makes a parameter vector, popdef, for each
+    population. Each population will have slightly different
+    biological properties sampled from probability density
+    distributions defined in bConst=condDat$constants. The input can
+    be either the whole of condDat or just condDat$constants, which
+    contains the definitions of the probability density functions
+    used to define each population.
 }
 \examples{
-\dontrun{
- data(bConst)
- nblock <- 5
- blkpop <- c(4,9,6,4,2)
- numpop <- 25
+ data(condDat)
+ bconst <- condDat$constants
+ glb <- condDat$globals
+ nblock <- glb$nblock
+ blkdef <- condDat$blkpop
+ numpop <- condDat$globals$numpop
  blockI <- defineBlock(nblock,blkpop,numpop)
  popdefs <- definepops(nblock,blockI,bConst)
- print(popdefs)
-
- nblock <- 3
- filename <- datafileTemplate(numblock=nblock,filename="block3.csv")
- condDat <- readdataFile(filename)
- bConst <- condDat$constants
- blkpop <- condDat$blkpop
- numpop <- condDat$numpop
- blockI <- defineBlock(nblock,blkpop,numpop)
- popdefs <- definepops(nblock,blockI,bConst)
- print(popdefs)
-}      # innblock=nblock; inblockI=blockI; condDat=condDat
+ print(popdefs)    # innblock=nblock; inblockI=blockI; condDat=condDat
 }

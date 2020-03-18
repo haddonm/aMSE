@@ -1,0 +1,227 @@
+
+
+#' @title dirExists: Checks for the existence of a directory
+#'
+#' @description dirExists: does a directory exist? It uses dir.exists
+#'     and reports existence if already present and uses dir.create
+#'     it it does not exist, but avoids the warning message is one
+#'     already exists. The option of not creating a new directory is
+#'     also present.
+#'
+#' @param indir a character string containing the name of the directory
+#'     whose existence is to be checked before it is created if it
+#'     does not already exist.
+#' @param make if the directory does NOT exist should it be created.
+#'     default = TRUE
+#'
+#' @return a message to the screen if the directory exists or is
+#'     created; if make is TRUE then it also creates the directory as
+#'     listed in 'indir'.
+#' @export
+#'
+#' @examples
+#' indirect <- getwd()
+#' dirExists(indirect)
+dirExists <- function(indir,make=TRUE) {
+  if (dir.exists(indir)) {
+    cat(indir,":  exists  \n")
+  } else {
+    if (make) {
+      dir.create(file.path(indir))
+      cat(indir,":  created  \n")
+    } else {
+      cat(indir,":  does not exist \n")
+    }
+  }
+}  # end of dirExists
+
+
+#' @title filenametopath safely add a filename to a path
+#'
+#' @description filenametopath add a filename to a path safely, using
+#'     pathtype to get the seperator and then checks the end character.
+#'     If the separator is nothing or a '/' or a '//' then it adds to
+#'     the path appropriately. Without this one can unwittingly include
+#'     extra separators or none at all.
+#'
+#' @param inpath the path to be analysed
+#' @param infile the filename to be added to the path 'inpath'
+#'
+#' @return the completed filename or extended path
+#' @export
+#'
+#' @examples
+#' indir <- "C:/Users/Malcolm/Dropbox/rcode2/aMSE/data-raw"
+#' infile <- "control.csv"
+#' filenametopath(indir,infile)
+filenametopath <- function(inpath,infile) {
+  typepath <- pathtype(inpath)
+  endpath <- pathend(inpath)
+  if (is.na(endpath)) {
+    outfile <- paste(inpath,infile,sep=typepath)
+  } else { outfile <- paste(inpath,infile,sep="")
+  }
+  return(outfile)
+} # end of filenametopath
+
+#' @title getConst extracts 'nb' numbers from a line of text
+#'
+#' @description getConst parses a line of text and extracts 'nb' pieces of
+#'     text as numbers
+#'
+#' @param inline text line to be parsed, usually obtained using readLines
+#' @param nb the number of numbers to extract
+#' @param index which non-empty object to begin extracting from?
+#'
+#' @return a vector of length 'nb'
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'   # Not exported, prefix with AbMSE:::
+#'   txtline <- "MaxDL , 32,32,32"
+#'   AbMSE:::getConst(txtline,nb=3,index=2)
+#' }
+getConst <- function(inline,nb,index=2) { # parses lines containing numbers
+  ans <- numeric(nb)
+  tmp <- unlist(strsplit(inline,","))
+  if (length(tmp) < (nb+1))
+    warning(paste("possible problem with data",tmp[1],
+                  "missing comma?",sep=" "),"\n")
+  count <- 0
+  for (j in index:(nb+index-1)) {
+    count <- count + 1
+    ans[count] <- as.numeric(tmp[j])
+  }
+  return(ans)
+}   # end getConst
+
+
+#' @title getLogical extracts nb logicals from an input line of text
+#'
+#' @description getLogical obtains nb logicals from an input line
+#'
+#' @param inline text line to be parsed, usually obtained using readLines
+#' @param nb the number of logicals to extract, if nb is longer than the
+#'     number of logicals within inline the vector will contain NAs
+#'
+#' @return a vector of length nb
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'  # Not exported, prefix with AbMSE:::
+#'  txtline <- "Depleted, TRUE"
+#'  AbMSE:::getLogical(txtline,nb=1)
+#'  txtline2 <- "calcthis, TRUE, FALSE"
+#'  AbMSE:::getLogical(txtline2,nb=2)
+#' }
+getLogical <- function(inline,nb) {  #inline <- txtline; nb=2
+  tmp <- unlist(strsplit(inline,","))
+  tmp <- removeEmpty(tmp)
+  outtmp <- as.logical(as.character(tmp[2:(nb+1)]))
+  return(outtmp)
+}
+
+#' @title getsingleNum extracts a single number from an input line of text
+#'
+#' @description getsingleNum obtains a number from an input line. The
+#'     variable context is the a variable declared in each function within
+#'     which getsingleNum is to be called. This cvan then be used in a
+#'     the stop function.
+#'
+#' @param varname the name of the variable to get from intxt
+#' @param intxt text to be parsed, usually obtained using readLines
+#'
+#' @return a single number
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'  # Not exported, prefix with aMSE:::
+#'  context = "Function Example"
+#'  txtline <- "replicates, 100"
+#'  aMSE:::getsingleNum("replicates",txtline)
+#'  aMSE:::getsingleNum("eeplicates",txtline)
+#' }
+getsingleNum <- function(varname,intxt) {
+  begin <- grep(varname,intxt)
+  if (length(begin) > 0) {
+    return(as.numeric(getConst(intxt[begin],1)))
+  } else {
+    stop(paste0("No data for ",varname," in ",context))
+  }
+}
+
+#' @title getStr obtains a string from an input text line
+#'
+#' @description  getStr obtains a string from an input text line in
+#'     which any parts are separated by ','. Then, after ignoring the
+#'     first component, assumed to be a label, it returns the first
+#'     nb parts.
+#'
+#' @param inline input text line with components separated by ','
+#' @param nb number of parts to return
+#'
+#' @return a vector of character string(s)
+#' @export
+#'
+#' @examples
+#'   txt <- "runlabel, development_run, label for this particular run"
+#'   getStr(txt,1)
+getStr <- function(inline,nb) {
+  tmp <- unlist(strsplit(inline,","))
+  tmp <- removeEmpty(tmp)
+  outconst <- as.character(tmp[2:(nb+1)])
+  return(outconst)
+} # end of getStr
+
+
+
+#' @title pathend determines what character is at the end of a path
+#'
+#' @description pathend determines what character is at the end of a
+#'     path uses pathtype to get the seperator and then checks the end
+#'     character
+#'
+#' @param inpath the path to be analysed
+#'
+#' @return the end character of the path; either NA, '/', or "\\"
+#' @export
+#'
+#' @examples
+#'   indir <- "C:/Users/Malcolm/Dropbox/rcode2/aMSE/data-raw"
+#'   pathend(indir)
+pathend <- function(inpath) {
+  lookfor <- pathtype(inpath)
+  endpath <- NA
+  if (lookfor == "/") {
+    if(length(grep("/$",inpath)) > 0) endpath <- "/"
+  } else {
+    if(length(grep("\\\\$",inpath)) > 0) endpath <- "\\"
+  }
+  return(endpath)
+} # end of pathend
+
+#' @title pathtype finds the type of separator used in a path
+#'
+#' @description pathtype finds the type of separator used in a path,
+#'     this is either a '/' or a '\\'
+#'
+#' @param inpath - the path to be analysed
+#'
+#' @return the type of path divider, either a 0 = '\\' or a
+#'    1 = '/'
+#' @export
+#'
+#' @examples
+#' indir <- "C:/Users/Malcolm/Dropbox/rcode2/aMSE/data-raw"
+#' pathtype(indir)
+pathtype <- function(inpath) {
+  typepath <- "/"
+  if (length(grep("\\\\",inpath)) > 0) typepath <- "\\"
+  return(typepath)
+} # end of pathtype
+
+
+

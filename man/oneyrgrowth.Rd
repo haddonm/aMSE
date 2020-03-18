@@ -25,8 +25,8 @@ oneyrgrowth one years' growth for a given population and
 \examples{
 \dontrun{
 nblock <- 2
-filename <- datafileTemplate(numblock=nblock,filename="block3.csv")
-condDat <- readdataFile(filename)
+filename <- datafiletemplate(numblock=nblock,filename="block3.csv")
+condDat <- readdatafile(filename)
 bConst <- condDat$constants
 blkpop <- condDat$blkpop
 numpop <- condDat$numpop

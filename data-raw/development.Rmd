@@ -1,0 +1,172 @@
+--- 
+title: "Issues Developing the new Abalone MSE"
+author: "Malcolm Haddon"
+date: "`r Sys.Date()`"
+font: Times
+fontsize: 12pt
+output: html_document
+
+
+---
+
+
+```{r setup, include=FALSE}
+# output: bookdown::gitbook
+# bookdown::epub_book: default
+# before_body: latex/before_body.tex from output.yml
+knitr::opts_chunk$set(size="scriptsize")
+knitr::opts_chunk$set(
+  cache = FALSE,
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE,
+	comment="#",
+	dpi = 300,
+	fig.align = 'center')
+
+
+options(knitr.kable.NA = "",
+        knitr.table.format = "pandoc")
+
+#wkdir <- "./../../A_Book/book/"
+
+options(show.signif.stars=FALSE,
+        stringsAsFactors=FALSE,
+        comment="#",
+        str = strOptions(strict.width = "cut"))
+
+library(rutilsMH)
+library(aMSE)
+suppressPackageStartupMessages(library(knitr))
+#library(captioner)
+library(diagrams)
+
+
+setpalette("R4")
+
+```
+
+
+## Main Issues
+
+* How best to define each population in a sequential manner reflective of their relative productivity? Need to keep the option of random allocation of properties. See section.
+
+* Running the MSE once conditioned should be simple, the difficult part is conditioning the model to represent a particular region, there is a need to include the option of having larval dispersal.
+
+* Rather than use one data-file and one ctrl file, perhaps break up the data required into a file for PDF definitions by population, a file for the variables common across the region, and a control file.
+
+* There needs to be a simpler implementation of larval dispersal this time through. This will have implications for any initial equilibrium conditions. See section.
+
+* In an attempt to speed the model runs it will be worthwhile exploring the advantages and disadvantages of splitting the region into two, the constant part, regionC, and the dynamic part, regionD. Is the constant part always separate from the global part?
+
+* Need to develop a new twoblock.csv file containing definitions for 6 populations rather then generalize by block. This would imply that the variance for eahc population would be smaller than that used for each block. 
+
+
+### function: definepops
+
+When generating the properties of each population, currently, the population properties, as defined by the PDfs describing each property, are allocated randomly. With the advent of the spatial data it should be possible to condition the sequence of populations along the coastline in a manner more reflective of the relative productivity of each small area selected to represent a model population.
+
+Random is relatively easy, but both random and specific will be driven by the conditioning. Perhaps best done in relative terms. A detailed examination of hte distribution of ctaches among and between the eastern Block 13 may be illuminating. 
+
+Currently the data-file used to condition the definepops function simply lists the mean values of the parameters for all populations per block. It will become necessary to define each populatin spearately to implement sequential definitions. Rather than conditioning entailing continual running until a combination arises that generates about the correct totals, it will be necessary to develop routines to assist searching for suitable levels of productivity for each population. Perhaps there are some simplifiying relationships between Me, G, and AvRec that can aid in this search conditioning.
+
+
+### larval dispersal
+
+To enable larval dispersal it will be necessary to alter the algorithm whereby each population is dealt with completely before movingon to the next population. Thus, it will be necessary to complete the annual dynamics, except for recruitment, for all populations and only when all are available undertake the recruitment with (or without dispersal). One detailed part will be achieving whatever initial equilibrium conditions are desired (unfished, some given depletion level, etc.). 
+
+There is no analytical solution to the initial equilibrium if there is to be larval dispersal.  
+
+The dispersal matrix could be initially defined as a matrix and that can be tested to determine whether only the diagonal is filled.
+
+
+
+
+## Highest Level Outline of Abalone MSE
+
+1) Initiate simulated region - use a ctrl file to define details of data-file, HCR function, and other initial conditions. May involve setting an initial depletion level.
+
+2) conduct assessment of region status at start of each year (option for partial year?)
+
+3) Using selected HCR set catches for subsequent year(s), and allocate among populations using model fleet dynamics.
+
+4) run the model dynamics for one year
+
+5) If simulation duration not complete return to item 2)
+
+6) If complete then summarize and store results
+
+### Requirements
+
+1) A data-file that contains details for each population
+
+* SMUname    - eg block1, block2
+* popnum - population index   1, 2, 3, etc
+* MaxDL      - maximum growth increment  eg 32
+* sMaxDL     - variation of maxDL  eg  2.5
+* L50        - Length at 50% MaxDL  eg 123
+* sL50       - variation in L50  eg  5
+* L50inc - L95 - L50 =  delta  eg 45
+* sL50inc - variation of L50inc  eg 1.25
+* SigMax - maximum variation around growth increment eg 4.6
+* sSigMax - variation in SigMax  eg 0.1
+* Wtb - weight-at-length exponent eg 3.161963
+* sWtb - variation of Wtb  eg 0.148
+* Wtbtoa - intercept power relationship betweeb Wtb and Wta 962.8098
+* sWtbtoa - exponent of power relationship betweeb Wtb and Wta -14.3526
+* Me - Natural mortality eg 0.2 maxage = 23, 0.1 maxage = 46 
+* sMe - variation in Me  eg 0.003
+* AvRec - log of unfished recruitment LnR0  eg 13
+* sAvRec -   eg 1.0
+* defsteep - Beverton-Holt Steepness  eg 0.6
+* sdefsteep         eg 0.02
+* L50C - length at 50% emergent  126.422
+* sL50C                           1.5
+* deltaC - length at increment 95% emergent 95 = 50 + deltaC eg  10
+* sdeltaC                                      0.5
+* MaxCEpar - maximum cpue tonnes/hour for defining catchability  0.37
+* sMaxCEpar                              0.02
+* selL50p - L50 of selectivity           0   (deviation from LML)
+* selL95p - L95 of selectivity           1.5
+* SaMa - maturity logistic a parameter  eg -16
+* L50Mat - L50 for maturity b = -a/L50  eg  123.384
+* sL50Mat                                   4.0
+* larvalD - larval drift                    0.02  = 2% 
+
+2) A data-file containing details relating to the whole region
+
+* numpop - number of populations
+* PDFS   - The number of parameters with probability density functions
+* minc   - minimum size class  2mm
+* cw     - class width         2mm 
+* Nclass - number of size classes 105
+* nSMU   - number of Spatial Management Units  eg  2
+* LML    - current Legal Minimum Length (LML, MLL, MLS, etc) e.g. 140
+* randomseed - for repeatability of results - use a different one for each simulation
+* Nyrs   - number of years for each simulation   eg 40
+* firstYear - first year of simulation eg 1 (hypothetical) or 2014 (conditioned on fishery)
+* fixYear - ?  eg 3  used in plotsimulation3
+* projLML - the LML to be used in the simulated dynamics
+
+3) A control-file containing details of each run
+
+* label for run
+* region file name
+* datafile name
+* HCR details file
+* replicates
+* HCRlabel
+* output directory
+
+
+
+
+
+
+
+
+
+
+
+
+

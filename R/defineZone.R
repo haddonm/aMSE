@@ -1,11 +1,12 @@
 
 #' @title defineBlock subdivides defined number of populations into blocks
 #'
-#' @description subdivides the defined number of populations into blocks in
-#'    the numbers defined in the constant blkpop read into 'constants'. It
-#'    allocates the populations sequentially to numblk blocks; if numblk
-#'    does not divide into numpop exactly, any remainder is put into the
-#'    final block. For block one canread SMU = spatial management unit.
+#' @description subdivides the defined number of populations into blocks
+#'     in the numbers defined in the constant blkpop read into 'constants'.
+#'     It allocates the populations sequentially to numblk blocks; if
+#'     numblk does not divide into numpop exactly, any remainder is put
+#'     into the final block. For block can read SMU = spatial management
+#'     unit.
 #'
 #' @param numblk number of blocks in the simulated zone, from 'constants'
 #' @param blknum number of populations in each block, from 'constants'
@@ -15,13 +16,11 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
 #'   nblock <- 9
 #'   blkpop <- c(3,4,8,2,3,4,2,5,4)
 #'   blockI <- defineBlock(nblock,blkpop)
 #'   print(blockI)
 #'   cat(length(blockI),sum(blkpop),"\n")
-#' }
 defineBlock <- function(numblk,blknum,numpop) {
   index <- numeric(numpop)
   if (sum(blknum) != numpop) warning("Wrong numpop or block definitions")
@@ -40,13 +39,15 @@ defineBlock <- function(numblk,blknum,numpop) {
   return(index)
 } # end of defineBlock
 
-#' @title definepops makes a vector of parameters for each population
+#' @title definepops makes a parameter vector, popdef, for each population
 #'
-#' @description definepops makes a vector of parameters for each
-#'    population. Each population will have slightly different biological
-#'    properties sampled from probability density distributions defined in
-#'    bConst; a matrix read in by 'parsefile'. In the non-library version of
-#'    the software the matrix bConst was assumed to be global.
+#' @description definepops makes a parameter vector, popdef, for each
+#'     population. Each population will have slightly different
+#'     biological properties sampled from probability density
+#'     distributions defined in bConst=condDat$constants. The input can
+#'     be either the whole of condDat or just condDat$constants, which
+#'     contains the definitions of the probability density functions
+#'     used to define each population.
 #'
 #' @param innblock the number of blocks defined in the zone; scalar
 #' @param inblockI a vector containng the block index for each population
@@ -59,25 +60,15 @@ defineBlock <- function(numblk,blknum,numpop) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#'  data(bConst)
-#'  nblock <- 5
-#'  blkpop <- c(4,9,6,4,2)
-#'  numpop <- 25
+#'  data(condDat)
+#'  bconst <- condDat$constants
+#'  glb <- condDat$globals
+#'  nblock <- glb$nblock
+#'  blkdef <- condDat$blkpop
+#'  numpop <- condDat$globals$numpop
 #'  blockI <- defineBlock(nblock,blkpop,numpop)
 #'  popdefs <- definepops(nblock,blockI,bConst)
-#'  print(popdefs)
-#'
-#'  nblock <- 3
-#'  filename <- datafileTemplate(numblock=nblock,filename="block3.csv")
-#'  condDat <- readdataFile(filename)
-#'  bConst <- condDat$constants
-#'  blkpop <- condDat$blkpop
-#'  numpop <- condDat$numpop
-#'  blockI <- defineBlock(nblock,blkpop,numpop)
-#'  popdefs <- definepops(nblock,blockI,bConst)
-#'  print(popdefs)
-#' }      # innblock=nblock; inblockI=blockI; condDat=condDat
+#'  print(popdefs)    # innblock=nblock; inblockI=blockI; condDat=condDat
 definepops <- function(innblock,inblockI,condDat) {
    if (class(condDat) == "matrix") {
       bConst <- condDat
@@ -375,10 +366,8 @@ logistic <- function(inL50,delta,lens,knifeedge=0) {
 #'  str(pop1,max.level=1)
 #' }
 makeabpop <- function(popparam,midpts,projLML) {  #popparam=popdef;midpts=midpts;projLML=projLML
-  #(DLMax,L50,L95,SigMax,SaMa,SaMb,Wta,Wtb,Me,spare,L50C,L95C,R0
-  #   1    2   3    4      5    6   7   8   9 10     11   12  13
-  # SelP[1],SelP[2],Nyrs,steeph,MaxCE,L50Mat
-  #   14      15     16    17    18     19
+  #(DLMax,L50,L95,SigMax,SaMa,SaMb,Wta,Wtb,Me,L50C,L95C,R0 SelP[1],SelP[2],Nyrs,steeph,MaxCE,L50Mat block
+  #   1    2   3    4      5    6   7   8   9 10   11   12  13     14      15   16     17    18     19
   numYr <- popparam["Nyrs"]
   N <- length(midpts)
   G <- STM(popparam[1:4],midpts)  # c(DLMax, L50, L95, SigMax)
@@ -386,14 +375,11 @@ makeabpop <- function(popparam,midpts,projLML) {  #popparam=popdef;midpts=midpts
   WtL <- WtatLen(popparam["Wta"],popparam["Wtb"],midpts)
   emergent <- logistic(popparam["L50C"],popparam["deltaC"],midpts)
   MatWt <- mature * WtL
-  CatchN <- matrix(0,nrow=N,ncol=numYr)
   zSelect <- matrix(0,nrow=N,ncol=numYr,dimnames=list(midpts,1:numYr))
   blk <- popparam["block"]
   selL50 <- popparam["SelP1"]
   selL95 <- popparam["SelP2"]
   verLML <- unique(projLML[,blk]) # find different LML in projections
-  Nt <- matrix(0,nrow=N,ncol=numYr)
-  #nsel <- length(verLML)          # how many LML are there
   for (LML in verLML) {
     Sel <- logistic((LML+selL50),selL95,midpts)
     Sel <- Sel * emergent # include emergence to determine availability
@@ -402,61 +388,155 @@ makeabpop <- function(popparam,midpts,projLML) {  #popparam=popdef;midpts=midpts
   }
   zSelWt <- zSelect * WtL
   zLML <- projLML[,popparam["block"]]
-  ExplB <- numeric(numYr)
-  MatB <- numeric(numYr)
-  #MatBC <- numeric(numYr)   # cryptric matrure biomass
-  Catch <- numeric(numYr)
-  Harvest <- numeric(numYr)
-  cpue <- numeric(numYr)
-  deplExB <- numeric(numYr)
-  deplSpB <- numeric(numYr)
-  Recruit <- numeric(numYr)
   Me <- popparam["Me"]
-  AvRec <- popparam["AvRec"]
-  #steeph <- popparam["steeph"]
-  # Initiation of population with no fishing
-  SurvE <- exp(-Me)
-  #SurvE2 <- exp(-Me/2)
-  recr <- rep(0,N)
-  recr[1]<-AvRec
-  UnitM <- matrix(0,nrow=N,ncol=N)
-  diag(UnitM) <- 1.0
- # Minv <- solve(UnitM - (SurvE %*% G ))            # (I - SG)-1
-  Minv <- solve(UnitM - (SurvE * G ))            # (I - SG)-1
-  Nt[,1] <- Minv %*% recr                          # [(I - SG)-1]R
-  #ExplB[1] <- sum(zSelect[,1]*WtL*SurvE2*(G %*% Nt[,1]))/1000000.0
-  ExplB[1] <- sum(zSelWt[,1]*Nt[,1])/1000000.0
-  ExB0 <- ExplB[1]
-  MatB[1] <- sum(MatWt*Nt[,1])/1000000.0
- # MatBC[1] <- sum(mature*WtL*Nt[,1]*(1-emergent)/1000000.0)
-  deplExB[1] <- ExplB[1]/ExB0
-  Recruit[1] <- AvRec
-  B0 <- MatB[1]
- # A0 <- B0/AvRec
-  deplSpB[1] <- MatB[1]/B0
+  AvRec <- popparam["AvRec"]  # R0
+  catq <- 0.0
+  B0 <- 0.0
+  ExB0 <- 0.0
   SaM <- -popparam["SaMa"]/popparam["SaMb"] # -a/b
   MSY <- 0
   MSYDepl <- 0
   bLML <- 0
   blockName <- ""
-  catq <- popparam["MaxCE"]/ExplB[1]     # CEmax / ExB0
-  cpue[1] <- 1000.0 * catq * ExB0   # precise here but not in  observations
- # ans <- list(popparam["DLMax"],popparam["L50"],popparam["L95"],
- #            popparam["SigMax"],popparam["Me"],popparam["steeph"],
-  ans <- list(Me,AvRec,B0,ExB0,MSY,MSYDepl,bLML,catq,SaM,MatB,ExplB,
-              Harvest,Catch,popparam,zLML,cpue,CatchN,deplExB,
-              deplSpB,Recruit,G,mature,WtL,emergent,zSelect,Nt,
-              zSelWt,MatWt,blockName)
- # names(ans) <- c("MaxDL","L50","L95","MaxSig","R0","A0","B0","steeph",
+  ans <- list(Me,AvRec,B0,ExB0,MSY,MSYDepl,bLML,catq,SaM,popparam,zLML,
+              G,mature,WtL,emergent,zSelect,zSelWt,MatWt,blockName)
   names(ans) <- c("Me","R0","B0","ExB0","MSY","MSYDepl","bLML","popq",
-                  "SaM","MatureB","ExploitB","HarvestR",
-                  "Catch","popdef","LML","cpue","CatchN","deplExB",
-                  "deplSpB","Recruit","G","Maturity","WtL","Emergent",
-                  "Select","Nt","SelWt","MatWt","blockName")
+                  "SaM","popdef","LML","G","Maturity","WtL","Emergent",
+                  "Select","SelWt","MatWt","blockName")
   class(ans) <- "abpop"
   return(ans)
 } # End of makeabpop
 
+#' @title makeregionC makes the constant part of the simulation
+#'
+#' @description makeregionC makes the constant part of the simulated
+#'     region. Once defined this does not change throughout the
+#'     simulation.
+#'
+#' @param condDat the matrix of biological constants read from the data file
+#' @param uplim the upper limit on the harvest rate used when estimating
+#'     the productivity of each population, defaults to 0.4; a scalar
+#'
+#' @return a list containing the simulated zone, the production matrix from
+#'     the function doproduction, and the popdefs used to create the zone.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' data(condDat)  # replaces the lines above
+#' out <- makeZone(condDat,uplim=0.38)  # Define the Zone
+#' zone <- out$zone
+#' str(zone[[1]],max.level=1)
+#' production <- out$Production
+#' popdefs <- out$popdefs
+#' print(round(t(popdefs),3))
+#' }
+makeregionC <- function(condDat) { # condDat=condDat; uplim=0.4
+  glb <- condDat$globals
+  for (i in 1:length(glb))
+    assign(names(condDat$globals)[i],condDat$globals[[i]]) #  defines:
+
+ # nblock <- glb$nblock
+  blkdef <- condDat$blkpop
+ # numpop <- condDat$globals$numpop
+  blockI <- defineBlock(nblock,blkdef,numpop)
+  blockNames <- condDat$blockNames
+ # midpts <- condDat$globals$midpts
+  #   Nyrs <- condDat$outYear[1]
+  #   glb <- condDat$globals
+  if (condDat$randomseed > 0) set.seed(condDat$randomseed)
+  projectionLML <- condDat$projLML
+  historicalLML <- condDat$histLML
+  if (condDat$Condition)
+    projLML <- historicalLML else projLML <- projectionLML
+  # imph <- seq(0.01,uplim,0.01)   # harvest rate for productivity
+  # numrow <- length(imph)
+  pops <- seq(1,numpop,1)
+  columns <- c("ExB","MatB","AnnH","Catch","Deplet","RelCE")
+#  production <- array(0,dim=c(numpop,numrow,6),
+#                      dimnames=list(pops,imph,columns))
+  popdefs <- definepops(nblock,blockI,condDat) # define all pops in one go
+  zoneC <- vector("list",numpop)
+  for (pop in 1:numpop) {      # pop <- 1
+    popdef <- popdefs[pop,]
+    zoneC[[pop]] <- makeabpop(popdef,midpts,projLML)
+    #  out <- doproduction(zone[[pop]],uplim=uplim)
+    #  zone[[pop]]$MSY <- out$MSY
+    #  zone[[pop]]$MSYDepl <- out$MSYDepl
+    #   production[pop,,] <- out$Productivity
+    tmpL <- oneyrgrowth(zoneC[[pop]],zoneC[[pop]]$SaM)
+    zoneC[[pop]]$bLML <- oneyrgrowth(zoneC[[pop]],tmpL)
+    zoneC[[pop]]$blockName <- blockNames[blockI[pop]]
+  }
+  class(zoneC) <- "zone"
+  # ans <- list(zone,production,popdefs)
+  # names(ans) <- c("zone","production","popdefs")
+  ans <- list(zoneC,popdefs)
+  names(ans) <- c("regionC","popdefs")
+  return(ans)
+}  # End of makeregionC
+
+
+#' @title makeregion generates the parts of the simulated region
+#'
+#' @description makeregion generates the dynamics components of the
+#'     simulated region and completes the constant components of the
+#'     simulated region. The term 'region' refers to the upper level
+#'     of geographical detail that is used. Thus, for example, in
+#'     Tasmania we might simulate a number of statistical blocks with
+#'     multiple populations. In combination, we refer to the total as
+#'     a region. The matrices are Nyrs x numpop and the two
+#'     arrays are N x Nyrs x numpop.
+#'
+#' @param glb the global constants defined for the current simulation.
+#'     These include numpop, nblock, midptsd, Nclass, and Nyrs
+#'
+#' @return a list of the dynamics and the constant components of the
+#'     simulation
+#' @export
+#'
+#' @examples
+#'   data(condDat)
+#'   glb <- condDat$globals
+#'   regionD <- makeregionD(glb)
+#'   str(regionD, max.level=1)
+makeregion <- function(glb,regC,uplim=0.4) { #glb=glb; regC=regionC; uplim=0.4
+  Nyrs <- glb$Nyrs
+  numpop <- glb$numpop
+  N <- glb$Nclass
+  ExplB <- matrix(0,nrow=Nyrs,ncol=numpop)
+  MatB <- matrix(0,nrow=Nyrs,ncol=numpop)
+  Catch <- matrix(0,nrow=Nyrs,ncol=numpop)
+  Harvest <- matrix(0,nrow=Nyrs,ncol=numpop)
+  cpue <- matrix(0,nrow=Nyrs,ncol=numpop)
+  deplExB <- matrix(0,nrow=Nyrs,ncol=numpop)
+  deplSpB <- matrix(0,nrow=Nyrs,ncol=numpop)
+  Recruit <- matrix(0,nrow=Nyrs,ncol=numpop)
+  CatchN <- array(data=0,dim=c(N,Nyrs,numpop))
+  Nt <- array(data=0,dim=c(N,Nyrs,numpop))
+  for (pop in 1:numpop) {  # pop=1
+     SurvE <- exp(-regC[[pop]]$Me)
+     recr <- rep(0,N)
+     recr[1] <-regC[[pop]]$R0
+     UnitM <- matrix(0,nrow=N,ncol=N)
+     diag(UnitM) <- 1.0
+     Minv <- solve(UnitM - (SurvE * regC[[pop]]$G ))  # (I - SG)-1
+     Nt[,1,pop] <- Minv %*% recr          # [(I - SG)-1]R
+     ExplB[1,pop] <- sum(regC[[pop]]$SelWt[,1]*Nt[,1,pop])/1e06
+     regC[[pop]]$ExB0 <- ExplB[1,pop]
+     deplExB[1,pop] <- 1.0  # no depletion when first generating regions
+     MatB[1,pop] <- sum(regC[[pop]]$MatWt*Nt[,1,pop])/1e06
+     regC[[pop]]$B0 <- MatB[1,pop]
+     deplSpB[1,pop] <- 1.0
+     Recruit[1,pop] <- recr[1]
+     regC[[pop]]$popq <- regC[[pop]]$popdef["MaxCE"]/ExplB[1,pop]
+     cpue[1,pop] <- 1000.0 * regC[[pop]]$popq * ExplB[1,pop]
+   }
+  ans <- list(matureB=MatB,exploitB=ExplB,catch=Catch,
+              harvestR=Harvest,cpue=cpue,recruit=Recruit,
+              deplsB=deplSpB,depleB=deplExB,Nt=Nt,catchN=CatchN)
+  return(list(regionD=ans,regionC=regC))
+} # end of makeregionD
 
 #' @title makeZone the list of numpop populations defines the abalone zone
 #'
@@ -482,50 +562,49 @@ makeabpop <- function(popparam,midpts,projLML) {  #popparam=popdef;midpts=midpts
 #' print(round(t(popdefs),3))
 #' }
 makeZone <- function(condDat,uplim=0.4) { # condDat=condDat; uplim=0.4
-   glb <- condDat$globals
-   for (i in 1:length(glb))
-     assign(names(condDat$globals)[i],condDat$globals[[i]]) #  defines:
+  glb <- condDat$globals
+  for (i in 1:length(glb))
+    assign(names(condDat$globals)[i],condDat$globals[[i]]) #  defines:
 
-   nblock <- glb$nblock
-   blkdef <- condDat$blkpop
-   numpop <- condDat$globals$numpop
-   blockI <- defineBlock(nblock,blkdef,numpop)
-   blockNames <- condDat$blockNames
-   midpts <- condDat$globals$midpts
-#   Nyrs <- condDat$outYear[1]
-#   glb <- condDat$globals
-   set.seed(condDat$randomseed)
-   projectionLML <- condDat$projLML
-   historicalLML <- condDat$histLML
-   if (condDat$Condition)
-     projLML <- historicalLML else projLML <- projectionLML
-   zone <- vector("list",(numpop))
-   imph <- seq(0.01,uplim,0.01)   # harvest rate for productivity
-   numrow <- length(imph)
-   pops <- seq(1,numpop,1)
-   columns <- c("ExB","MatB","AnnH","Catch","Deplet","RelCE")
-   production <- array(0,dim=c(numpop,numrow,6),
-                       dimnames=list(pops,imph,columns))
-   popdefs <- definepops(nblock,blockI,condDat) # define all pops in one go
-   for (pop in 1:numpop) {      # pop <- 1
-      popdef <- popdefs[pop,]
-      zone[[pop]] <- makeabpop(popdef,midpts,projLML)
+  nblock <- glb$nblock
+  blkdef <- condDat$blkpop
+  numpop <- condDat$globals$numpop
+  blockI <- defineBlock(nblock,blkdef,numpop)
+  blockNames <- condDat$blockNames
+  midpts <- condDat$globals$midpts
+  #   Nyrs <- condDat$outYear[1]
+  #   glb <- condDat$globals
+  set.seed(condDat$randomseed)
+  projectionLML <- condDat$projLML
+  historicalLML <- condDat$histLML
+  if (condDat$Condition)
+    projLML <- historicalLML else projLML <- projectionLML
+  zone <- vector("list",(numpop))
+  imph <- seq(0.01,uplim,0.01)   # harvest rate for productivity
+  numrow <- length(imph)
+  pops <- seq(1,numpop,1)
+  columns <- c("ExB","MatB","AnnH","Catch","Deplet","RelCE")
+  production <- array(0,dim=c(numpop,numrow,6),
+                      dimnames=list(pops,imph,columns))
+  popdefs <- definepops(nblock,blockI,condDat) # define all pops in one go
+  for (pop in 1:numpop) {      # pop <- 1
+    popdef <- popdefs[pop,]
+    zone[[pop]] <- makeabpop(popdef,midpts,projLML)
     #  out <- doproduction(zone[[pop]],uplim=uplim)
     #  zone[[pop]]$MSY <- out$MSY
     #  zone[[pop]]$MSYDepl <- out$MSYDepl
-   #   production[pop,,] <- out$Productivity
-      tmpL <- oneyrgrowth(zone[[pop]],zone[[pop]]$SaM)
-      zone[[pop]]$bLML <- oneyrgrowth(zone[[pop]],tmpL)
-      zone[[pop]]$blockName <- blockNames[blockI[pop]]
-   }
-   class(zone) <- "zone"
+    #   production[pop,,] <- out$Productivity
+    tmpL <- oneyrgrowth(zone[[pop]],zone[[pop]]$SaM)
+    zone[[pop]]$bLML <- oneyrgrowth(zone[[pop]],tmpL)
+    zone[[pop]]$blockName <- blockNames[blockI[pop]]
+  }
+  class(zone) <- "zone"
   # ans <- list(zone,production,popdefs)
   # names(ans) <- c("zone","production","popdefs")
-   ans <- list(zone,popdefs)
-   names(ans) <- c("zone","popdefs")
-   return(ans)
+  ans <- list(zone,popdefs)
+  names(ans) <- c("zone","popdefs")
+  return(ans)
 }  # End of makeZone
-
 
 #' @title maturity Logistic maturity curve
 #'
@@ -666,8 +745,8 @@ oneyearrec <- function(steep,R0,B0,Bsp,sigR) {
 #' @examples
 #' \dontrun{
 #' nblock <- 2
-#' filename <- datafileTemplate(numblock=nblock,filename="block3.csv")
-#' condDat <- readdataFile(filename)
+#' filename <- datafiletemplate(numblock=nblock,filename="block3.csv")
+#' condDat <- readdatafile(filename)
 #' bConst <- condDat$constants
 #' blkpop <- condDat$blkpop
 #' numpop <- condDat$numpop
