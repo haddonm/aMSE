@@ -4,10 +4,12 @@
 \alias{fillzoneDef}
 \title{fillzoneDef characterizes simulated Zone; holds zone properties}
 \usage{
-fillzoneDef(inzone = zone, prod = production)
+fillzoneDef(inzone, prod)
 }
 \arguments{
 \item{inzone}{the zone to be characterized.}
+
+\item{prod}{the production object from doproduction}
 }
 \value{
 A list of 10 objects containing the properties of the zone;
@@ -34,8 +36,6 @@ fillzoneDef Characterizes the simulated Zone; holds the
     and more details
 }
 \examples{
-\dontrun{
 # needs summaryPop and summaryZone
 txt2 <- 'always use examples rather than example'
-}
 }

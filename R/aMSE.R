@@ -3,7 +3,8 @@
 #' @importFrom graphics grid hist lines mtext par plot points title
 #' @importFrom stats dnorm pnorm rlnorm rnorm quantile sd
 #' @importFrom utils object.size
-#' @importFrom rutilsMH getmax getmin setpalette
+#' @importFrom rutilsMH getmax getmin setpalette plotprep removeEmpty
+#' @importFrom rutilsMH splitDate
 NULL
 
 #' @title aMSE functions for Conditioning and Running an Invertebrate MSE

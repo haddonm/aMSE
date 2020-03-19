@@ -132,6 +132,8 @@ getLogical <- function(inline,nb) {  #inline <- txtline; nb=2
 #'
 #' @param varname the name of the variable to get from intxt
 #' @param intxt text to be parsed, usually obtained using readLines
+#' @param context the surrounding function context in which the
+#'     funciton is being used. Only used if an error occurs
 #'
 #' @return a single number
 #' @export
@@ -141,10 +143,10 @@ getLogical <- function(inline,nb) {  #inline <- txtline; nb=2
 #'  # Not exported, prefix with aMSE:::
 #'  context = "Function Example"
 #'  txtline <- "replicates, 100"
-#'  aMSE:::getsingleNum("replicates",txtline)
-#'  aMSE:::getsingleNum("eeplicates",txtline)
+#'  aMSE:::getsingleNum("replicates",txtline,context=context)
+#'  aMSE:::getsingleNum("eeplicates",txtline,context=context)
 #' }
-getsingleNum <- function(varname,intxt) {
+getsingleNum <- function(varname,intxt,context) {
   begin <- grep(varname,intxt)
   if (length(begin) > 0) {
     return(as.numeric(getConst(intxt[begin],1)))

@@ -4,31 +4,23 @@
 \alias{makeregionC}
 \title{makeregionC makes the constant part of the simulation}
 \usage{
-makeregionC(condDat)
+makeregionC(region, const)
 }
 \arguments{
-\item{condDat}{the matrix of biological constants read from the data file}
+\item{region}{the object derived from the readregionfile function}
 
-\item{uplim}{the upper limit on the harvest rate used when estimating
-the productivity of each population, defaults to 0.4; a scalar}
+\item{const}{the object derived from teh readdatafile function}
 }
 \value{
-a list containing the simulated zone, the production matrix from
-    the function doproduction, and the popdefs used to create the zone.
+a list containing the constant part of the simulated region
 }
 \description{
 makeregionC makes the constant part of the simulated
     region. Once defined this does not change throughout the
-    simulation.
+    simulation. Once made it still requires makeregion to be run
+    to fill in the B0, ExBo, MSY, MSYDepl, and the popq values, and
+    to produce regionD, the dynamic part of the new region
 }
 \examples{
-\dontrun{
-data(condDat)  # replaces the lines above
-out <- makeZone(condDat,uplim=0.38)  # Define the Zone
-zone <- out$zone
-str(zone[[1]],max.level=1)
-production <- out$Production
-popdefs <- out$popdefs
-print(round(t(popdefs),3))
-}
+print("Wait on built in data")
 }

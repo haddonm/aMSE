@@ -4,11 +4,16 @@
 \alias{makeregion}
 \title{makeregion generates the parts of the simulated region}
 \usage{
-makeregion(glb, regC, uplim = 0.4)
+makeregion(glob, regC, uplim = 0.4)
 }
 \arguments{
-\item{glb}{the global constants defined for the current simulation.
+\item{glob}{the global constants defined for the current simulation.
 These include numpop, nblock, midptsd, Nclass, and Nyrs}
+
+\item{regC}{the regionC object from makeregionC}
+
+\item{uplim}{default=0.4, the upper bound on harvest rate used when
+estimation the production curves and statistic}
 }
 \value{
 a list of the dynamics and the constant components of the
@@ -25,8 +30,5 @@ makeregion generates the dynamics components of the
     arrays are N x Nyrs x numpop.
 }
 \examples{
-  data(condDat)
-  glb <- condDat$globals
-  regionD <- makeregionD(glb)
-  str(regionD, max.level=1)
+ print("wait on internal data sets")
 }

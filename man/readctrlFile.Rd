@@ -21,7 +21,7 @@ readctrlFile complements the readdatafile. The MSE requires
     conducted. See ctrlfileTemplate./
 }
 \examples{
- direct="C:/Users/Malcolm/Dropbox/rcode2/aMSE/data-raw"
+ direct="./../../rcode2/aMSE/data-raw"
  infile="control.csv"
  ctrl <- readctrlfile(indir=direct,infile=infile)
  str(ctrl)

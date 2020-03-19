@@ -284,7 +284,7 @@ makeLabel <- function(invect,insep="_") {
 #' @export
 #'
 #' @examples
-#'  direct="C:/Users/Malcolm/Dropbox/rcode2/aMSE/data-raw"
+#'  direct="./../../rcode2/aMSE/data-raw"
 #'  infile="control.csv"
 #'  ctrl <- readctrlfile(indir=direct,infile=infile)
 #'  str(ctrl)
@@ -478,8 +478,6 @@ readhcrfile <- function(infile) {  # infile <- "C:/A_CSIRO/Rcode/AbMSERun/ctrl_w
 #' }
 readregionfile <- function(indir,infile) {  # infile="region1.csv"; indir=datadir
    context <- "region file"
-   indir <- datadir
-   infile = ctrl$regionfile
    filename <- filenametopath(indir,infile)
    indat <- readLines(filename)   # reads the whole file as character strings
    nSMU <-  getsingleNum("nSMU",indat) # number of spatial management units
@@ -491,6 +489,7 @@ readregionfile <- function(indir,infile) {  # infile="region1.csv"; indir=datadi
    cw    <- getsingleNum("cw",indat) # class width
    Nclass <- getsingleNum("Nclass",indat) # number of classes
    midpts <- seq(minc,minc+((Nclass-1)*cw),2)
+   larvdisp <- getsingleNum("larvdisp",indat)
    randomseed <- getsingleNum("randomseed",indat)
    Nyrs <- getsingleNum("Nyrs",indat)
    firstyear <- getsingleNum("firstyear",indat)
@@ -502,7 +501,19 @@ readregionfile <- function(indir,infile) {  # infile="region1.csv"; indir=datadi
       from <- begin + 1
       projLML[i] <- getConst(indat[from],1)
    }
-   label <- c("numpop","nSMU","midpts","Nclass","Nyrs")
+   begin <- grep("CONDITION",indat)
+   condition <- getConst(indat[begin],1)
+   histLML <- NA
+   if (condition > 0) {
+      begin <- grep("HistoricalLML",indat)
+      ncond <- getConst(indat[begin],1)
+      histLML <- numeric(ncond)
+      for (i in 1:ncond) {
+         begin <- begin+1
+         histLML[i] <- getConst(indat[begin],1)
+      }
+   }
+   label <- c("numpop","nSMU","midpts","Nclass","Nyrs","larvdisp")
    globals <- vector("list",length(label))
    names(globals) <- label
    globals$numpop <- numpop
@@ -510,10 +521,12 @@ readregionfile <- function(indir,infile) {  # infile="region1.csv"; indir=datadi
    globals$midpts <- midpts
    globals$Nclass <- Nclass   # still have Nyrs to fill in
    globals$Nyrs <- Nyrs
-
-   totans <- list(SMUnames,SMUpop,minc,cw,randomseed,outyear,projLML,globals)
-   names(totans) <- c("SMUnames","SMUpop","minc","cw","randomseed","outyear",
-                      "projLML","globals")
+   globals$larvdisp <- larvdisp
+   totans <- list(SMUnames,SMUpop,minc,cw,larvdisp,randomseed,outyear,
+                  projLML,condition,histLML,globals)
+   names(totans) <- c("SMUnames","SMUpop","minc","cw","larvdisp",
+                      "randomseed","outyear","projLML","condition",
+                      "histLML","globals")
    return(totans)
 }  # end of readregionfile
 

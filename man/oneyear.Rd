@@ -4,41 +4,42 @@
 \alias{oneyear}
 \title{oneyear do one year's dynamics for one input population abpop}
 \usage{
-oneyear(inpop, incatch, yr)
+oneyear(inpopC, inNt, Nclass, inCat, yr, calcharv = TRUE)
 }
 \arguments{
-\item{inpop}{a single population from a zone; an abpop}
+\item{inpopC}{a single population from a regionC, an abpop}
 
-\item{incatch}{a literal catch in tonnes to be removed during the year;
-scalar}
+\item{inNt}{the numbers at size for the year previous to the year
+of dynamics. These are projected into the active year.}
 
-\item{yr}{the year in the dynamics being worked on. The first year is
-generated when the zone is defined or when it is initially depleted.
-All dynamics are appllied from year 2 - Nyrs; scalar}
+\item{Nclass}{the number of size classes used to describe growth.
+used to define vectors}
+
+\item{inCat}{a literal catch in tonnes to be removed during the
+year, a scalar}
+
+\item{yr}{the year in the dynamics being worked on. The first year
+is generated when the zone is defined or when it is initially
+depleted. All dynamics are appllied from year 2 - Nyrs; scalar}
+
+\item{calcharv}{should we calculate the harvest rate from inCat.
+Default=TRUE. If FALSE, implies that inCat is a harvest rate}
 }
 \value{
-a list containing ExploitB, MatureB, MatBC, Catch, Harvest, N,
-    ce, CatchN, Recruit, used tu update the given pop in yr + 1
+a list containing ExploitB, MatureB, Catch, Harvest, Nt,
+    ce, and CatchN used to update the given pop in yr + 1
 }
 \description{
 oneyear do one year's dynamics for one input population.
-   Used to step through populations of a zone applying a predetermined
-   catch, growth the population, and applying natural mortality. The
-   population that enters the function if the population at the start
-   of each year. Its dynmaics are such that it first undergoes growth,
-   then half of natural mortality is applied. This allows an estimate
-   of exploitable biomass before fishing occurs. The remaining dynamics
-   involve the removal of the catch, the application of the last half
-   of natural mortality and the addition of recruits. Which allows
-   the exploitable biomass to be estimated after fishing.
+   Used to step through populations of a region. Its dynamics are
+   such that it first undergoes growth, then half natural mortality.
+   This allows an estimate of exploitable biomass before fishing
+   occurs. The remaining dynamics involve the removal of the catch,
+   the application of the last half of natural mortality and the
+   addition of recruits. Which allows the exploitable biomass to be
+   estimated after fishing. The recruitment occurs in oneyearD so
+   that larval dispersal can be accounted for.
 }
 \examples{
-data(condDat)
-out <- makeZone(condDat) # Define the Zone and Production
-zone <- out$zone
-year <- 2
-catch <- 25.0
-zone <- oneyear(zone,catch,year)
-str(zone[[1]],max.level=1)
-getlistVar(zone1,"MatureB")
+print("need to wait on built in data sets")
 }

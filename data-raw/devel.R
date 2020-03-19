@@ -13,92 +13,24 @@ datadir <- "./../../rcode2/aMSE/data-raw/"
   ls()
 
 
-  oneyear <- function(inpopC,glob,dyn,incatch,yr,pop) {  #
-  #  inpopC=regionC[[1]]; glob=glb; dyn=regionD; incatch=0.0; yr=2; pop=1
-    MatWt <- inpopC$MatWt/1e06
-    SelectWt <- inpopC$SelWt[,yr]/1e06
-    selyr <- inpopC$Select[,yr]
-    inNt <- dyn$Nt[,yr-1,pop]
-    Nclass <- glob$Nclass
-    Ne <- numeric(Nclass)
-    Cat <- numeric(Nclass)
-    Os <- exp(-inpopC$Me/2)
-    MatureB <- sum(MatWt*inNt)
-    NumNe <- (Os * (inpop$G %*% inNt))
-    ExploitB <- sum(SelectWt * NumNe) #SelectWt=Select*WtL
-    oldExpB <- ExploitB   # ExploitB after growth and 0.5NatM
-    Ht <- incatch/ExploitB
-    if (Ht > 0.9) {
-      Ht <- 0.9
-      warning(paste0("Harvest rates > 0.9 in year ",yr," in pop ",
-                     (inpop$popdef["block"])))
-    }
-    Fish <- 1-(Ht*selyr)
-    newNt <- (Os * (Fish * NumNe)) #+ Rec # Nt - catch - 0.5M, and + Rec
-    Cat <- (Ht*selyr) * NumNe  #numbers at size in the catch
-    ExploitB <- sum(SelectWt * newNt)
-    MatureB <- sum(MatWt*newNt) #+ MatBC
-    Catch <- sum(inpopC$WtL*Cat)/1e06
-    Harvest <- (2.0 * Catch)/(oldExpB + ExploitB)  # average of the start and end
-    ce <- inpopC$popq * ((oldExpB + ExploitB)/2) * 1000.0  #ExploitB
-    ans <- list(ExploitB,MatureB,Catch,Harvest,newNt,ce,Cat)
-    names(ans) <- c("ExploitB","MatureB","Catch","Harvest","Nt","ce",
-                    "CatchN")
-    return(ans)
-  } # End of oneyear
-
-
-
-
-dooneY <- function(izone,incatch,year,sigmar,npop,deltarec) {
-#  izone=zone; incatch=0.0;  year=2; sigmar=1e-08; npop=6 ; deltarec=0.02
-  matb <- numeric(npop)
-  for (popn in 1:npop) {
-    out <- oneyear(inpop=izone[[popn]],incatch=0.0,yr=year)
-    izone[[popn]]$ExploitB[year] <- out$ExploitB
-    izone[[popn]]$MatureB[year] <- out$MatureB
-    izone[[popn]]$Catch[year] <- out$Catch
-    izone[[popn]]$HarvestR[year] <- out$Harvest
-    izone[[popn]]$Nt[,year] <- out$Nt
-    matb[popn] <- out$MatureB
-  }
-  steep <- sapply(izone,"[[","popdef")["steeph",]
-  r0 <- sapply(izone,"[[","R0")
-  b0 <- sapply(izone,"[[","B0")
-  recs <- oneyearrec(steep,r0,b0,matb,sigR=sigmar)
-  newrec <- driftrec(recs,deltarec)
-  for (popn in 1:npop) izone[[popn]]$Nt[1,year] <- newrec[popn]
-  return(izone)
-}
 
 
 
 
 
- # doproduction <- function(inpop,uplim=0.4) { #
 
-  out <- makeregionC(condDat)
-  regionC <- out$regionC
-  popdefs <- out$popdefs
 
-  out2 <- makeregion(glb=glb,regC=regionC)
-  regionC <- out2$regionC
-  regionD <- out2$regionD
-
-  glb <- glb
-  dyn <- regionD
-  inpop=regionC[[1]]
-  uplim=0.4
-  pop=1
-  year=2
-  hyr=1
+  doproduction <- function(regC,regD,glob,uplim=0.4) { #
+# regC=regionC; regD=regionD; glob=glb; uplim=0.4
+    numpop <- glb$numpop
+    Nyrs <- glb$Nyrs
 
     imph <- seq(0.01,uplim,0.01)
     numrow <- length(imph) # hyr <- 1; year <- 2
-    numpop <- glb$numpop
-    Nyrs <- glb$Nyrs
+
     columns <- c("ExB","MatB","AnnH","Catch","Deplet","RelCE")
-    results <- array(0,dim=c(numrow,6,numpop),dimnames=list(imph,columns,1:numpop))
+    results <- array(0,dim=c(numrow,length(columns),numpop),
+                     dimnames=list(imph,columns,1:numpop))
   #  for (pop in 1:numpop) {  # pop = 1; hyr=1; year=2
       for (hyr in 1:numrow) {    # do the dynamics for numrow diff H values
         for (year in 2:Nyrs) { # always leaving yr1 the same hyr=1;year=2
@@ -141,30 +73,102 @@ dooneY <- function(izone,incatch,year,sigmar,npop,deltarec) {
 
 
 # file reading ------------------------------------------------------
+
 library(rutilsMH)
 library(aMSE)
 library(microbenchmark)
-datadir <- "./../../rcode2/aMSE/data-raw/"
-
-ctrlfile <- "control.csv"
-
-ctrl <- readctrlfile(datadir,ctrlfile)
-
-reg1 <- readregionfile(datadir,ctrl$regionfile)
-
-
-
-
-
+setpalette("R4")
+# read data files ----------------------------------------------------
 datadir <- "./../../rcode2/aMSE/data-raw/"
 ctrlfile <- "control.csv"
 ctrl <- readctrlfile(datadir,ctrlfile)
 reg1 <- readregionfile(datadir,ctrl$regionfile)
-popdefs <- readdatafile(datadir,ctrl$datafile,reg1$globals)
-print(popdefs)
+glb <- reg1$globals
+constants <- readdatafile(datadir,ctrl$datafile,glb)
+
+# Define the Zone ----------------------------------------------------
+ans <- makeregionC(reg1,constants)
+regionC <- ans$regionC
+popdefs <- ans$popdefs
+ans <- makeregion(reg1$globals,regionC)
+
+regionC <- ans$regionC  # region constants
+regionD <- ans$regionD  # region dynamics
+
+
+# if larvdisp > 0.0 search for equilibrium----------------------------
+
+findunfished <- function(regC,regD,glob) {
+#  regC=regionC; regD=regionD; glob=glb
+  numpop <- glob$numpop
+  catch <- rep(0.0,numpop)
+  regD <- runthree(regC,regD,glob,catch)
+
+  for (pop in 1:numpop) {
+    regC[[pop]]$B0 <- regD$matureB[1,pop]
+    regC[[pop]]$ExB0 <- regD$exploitB[1,pop]
+  }
+
+  Nclass <- glob$Nclass
+  Nyrs <- glob$Nyrs
+  larvdisp <- glob$larvdisp
+
+
+  regD <- restart(oldregD=regD,nyrs=Nyrs,npop=numpop,N=Nclass)
+
+
+
+}
+
+
+
+if (glb$larvdisp > 0.0) findunfished(regionC,regionD,glb)
 
 
 
 
 
+for (yr in 2:Nyrs) {
+  regionD <- oneyearD(regC=regionC,regD=regionD,Ncl=Nclass,incatch=catch,
+                      year=yr,sigmar=1e-08,npop=npop,deltarec=reg1$larvdisp)
+}
+str(regionD)
 
+regionD$matureB
+
+plotprep(width=7,height=5,newdev=FALSE)
+plot(1:40,regionD$deplsB[,1],type="l",lwd=2,ylim=c(0.950,1.1),panel.first=grid())
+for (i in 2:npop) lines(1:40,regionD$deplsB[,i],lwd=2,col=i)
+
+
+
+
+finddepletion <- function(regC,regD,glob,initdepl,uplim=0.45) {
+  numpop <- glob$numpop
+  Nclass <- glob$Nclass
+  Nyrs <- glob$Nyrs
+  initH <- seq(0.05,uplim,0.01)
+  nH <- length(initH)
+
+
+} # end of findequil
+
+
+
+
+
+regionD2 <- restart(oldregD=regionD,nyrs=Nyrs,npop=npop,N=Nclass)
+
+for (yr in 2:Nyrs) {
+  regionD2 <- oneyearD(regC=regionC,regD=regionD2,Ncl=Nclass,incatch=catch,
+                      year=yr,sigmar=1e-08,npop=npop,deltarec=reg1$larvdisp)
+}
+
+plotprep(width=7,height=5,newdev=FALSE)
+plot(1:40,regionD2$deplsB[,1],type="l",lwd=2,ylim=c(0.950,1),panel.first=grid())
+for (i in 2:npop) lines(1:40,regionD2$deplsB[,i],lwd=2,col=i)
+
+regionD$matureB[1,]
+regionD$matureB[Nyrs,]
+regionD3$matureB[1,]
+regionD4$matureB[1,]

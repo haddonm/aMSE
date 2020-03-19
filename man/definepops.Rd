@@ -4,20 +4,22 @@
 \alias{definepops}
 \title{definepops makes a parameter vector, popdef, for each population}
 \usage{
-definepops(innblock, inblockI, condDat)
+definepops(inSMU, inSMUindex, bConst, glob)
 }
 \arguments{
-\item{innblock}{the number of blocks defined in the zone; scalar}
+\item{inSMU}{the number of SMUs defined in the region, a scalar}
 
-\item{inblockI}{a vector containng the block index for each population}
+\item{inSMUindex}{a vector of the block index for each population}
 
-\item{condDat}{a matrix with rows containing the PDF parameters for each
-of the biological parameters to be sampled and columns reflecting
-values for each block of populations}
+\item{bConst}{a matrix with rows containing the PDF parameters for
+each of the biological parameters. The columns of the matrix
+reflect values for each populations from readdatafile}
+
+\item{glob}{the globals object from readregionfile}
 }
 \value{
-a matrix with a row for each population  and whose columns are
-    the parameters defiing the biological parameters for each population.
+a matrix with a row for each population and whose columns
+    are parameters defining the biological parameters for each population.
 }
 \description{
 definepops makes a parameter vector, popdef, for each
@@ -29,13 +31,5 @@ definepops makes a parameter vector, popdef, for each
     used to define each population.
 }
 \examples{
- data(condDat)
- bconst <- condDat$constants
- glb <- condDat$globals
- nblock <- glb$nblock
- blkdef <- condDat$blkpop
- numpop <- condDat$globals$numpop
- blockI <- defineBlock(nblock,blkpop,numpop)
- popdefs <- definepops(nblock,blockI,bConst)
- print(popdefs)    # innblock=nblock; inblockI=blockI; condDat=condDat
+print("need to wait on built in data sets")
 }

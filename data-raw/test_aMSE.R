@@ -1,38 +1,31 @@
 
 
-
 library(rutilsMH)
 library(aMSE)
 library(microbenchmark)
+
+# read data files ----------------------------------------------------
 datadir <- "./../../rcode2/aMSE/data-raw/"
-
 ctrlfile <- "control.csv"
-
 ctrl <- readctrlfile(datadir,ctrlfile)
-
-
-
-data(condDat)
-str(condDat)
-
-glb <- condDat$globals
+reg1 <- readregionfile(datadir,ctrl$regionfile)
+constants <- readdatafile(datadir,ctrl$datafile,reg1$globals)
 
 # Define the Zone ----------------------------------------------------
+ans <- makeregionC(ctrl,reg1,constants)
+regionC <- ans$regionC
+popdefs <- ans$popdefs
+ans <- makeregion(reg1$globals,regionC)
 
-out <- makeregionC(condDat)
-str(out,max.level = 1)
-regionC <- out$regionC
-popdefs <- out$popdefs
+regionC <- ans$regionC  # region constants
+regionD <- ans$regionD  # region dynamics
 
 
 
-out2 <- makeregion(glb=glb,regC=regionC)
-regionC <- out2$regionC
-regionD <- out2$regionD
 
 sapply(regionC,"[[","bLML")
 sapply(regionC,"[[","SaM")
 str(regionD)
 
-regionD$exploitB
-
+regionD$exploitB[1,]
+round(regionD$Nt[,1,])

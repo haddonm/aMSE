@@ -25,9 +25,9 @@ subdivides the defined number of populations into blocks
     unit.
 }
 \examples{
-  nblock <- 9
-  blkpop <- c(3,4,8,2,3,4,2,5,4)
-  blockI <- defineBlock(nblock,blkpop)
+  nblock <- 4
+  blkpop <- c(3,4,8,2)
+  blockI <- defineBlock(nblock,blkpop,numpop=17)
   print(blockI)
   cat(length(blockI),sum(blkpop),"\n")
 }

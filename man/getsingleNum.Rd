@@ -4,12 +4,15 @@
 \alias{getsingleNum}
 \title{getsingleNum extracts a single number from an input line of text}
 \usage{
-getsingleNum(varname, intxt)
+getsingleNum(varname, intxt, context)
 }
 \arguments{
 \item{varname}{the name of the variable to get from intxt}
 
 \item{intxt}{text to be parsed, usually obtained using readLines}
+
+\item{context}{the surrounding function context in which the
+funciton is being used. Only used if an error occurs}
 }
 \value{
 a single number
@@ -25,7 +28,7 @@ getsingleNum obtains a number from an input line. The
  # Not exported, prefix with aMSE:::
  context = "Function Example"
  txtline <- "replicates, 100"
- aMSE:::getsingleNum("replicates",txtline)
- aMSE:::getsingleNum("eeplicates",txtline)
+ aMSE:::getsingleNum("replicates",txtline,context=context)
+ aMSE:::getsingleNum("eeplicates",txtline,context=context)
 }
 }
