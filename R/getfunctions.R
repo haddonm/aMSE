@@ -163,7 +163,7 @@ getunFished <- function(inzone,glb) {  # inzone=zone
 #' @description getzoneProps extracts the depletion level along with an
 #'     array of other statistics for a given year.
 #'
-#' @param inzone the zone being simulated
+#' @param regC the constants for the region being simulated
 #' @param glb the global constants
 #' @param year which years information is wanted
 #'
@@ -172,41 +172,32 @@ getunFished <- function(inzone,glb) {  # inzone=zone
 #'
 #' @examples
 #' \dontrun{
-#'  data(condDat)
-#'  glb <- condDat$globals
-#'  out <- makeZone(condDat,uplim=0.4)
-#'  zone <- out$zone
-#'  zprop <- getzoneProps(zone,glb,year=1)
-#'  str(zprop,max.level=1)
+#'  print("wait on internal data sets")
 #' }
 getzoneProps <- function(regC,glb,year=1) { # inzone=zone; glb=glb; year=1
   numpop <- glb$numpop
   Nclass <- glb$Nclass
-  totB0 <- sum(sapply(zone,"[[","B0"))
-  ExB0 <- sum(sapply(zone,"[[","ExB0"))
+  totB0 <- sum(sapply(regC,"[[","B0"))
+  ExB0 <- sum(sapply(regC,"[[","ExB0"))
   matB <- 0.0
   ExB <- 0.0
   legalMatB <- 0.0
-  cryptB <- 0.0
   ce <- 0.0
   for (pop in 1:numpop) {
-    ExB <- ExB + inzone[[pop]]$ExploitB[year]
-    matB <- matB + inzone[[pop]]$MatureB[year]
-    ce <- ce + log(inzone[[pop]]$cpue[year])
-    MatWt <- inzone[[pop]]$MatWt
-    #SelWt <- inzone[[pop]]$SelWt
-    lml <- inzone[[pop]]$LML[year]
+    ExB <- ExB + regC[[pop]]$ExploitB[year]
+    matB <- matB + regC[[pop]]$MatureB[year]
+    ce <- ce + log(regC[[pop]]$cpue[year])
+    MatWt <- regC[[pop]]$MatWt
+    lml <- regC[[pop]]$LML[year]
     pick <- which(glb$midpts >= lml)
     first <- pick[1]
     legalMatB <- legalMatB + (sum(MatWt[first:Nclass]*
-                              inzone[[pop]]$Nt[first:Nclass,year])/1000000.0)
-    cryptB <- cryptB +
-           sum(inzone[[pop]]$WtL*(1 - inzone[[pop]]$Emergent))/1000000.0
+                         regC[[pop]]$Nt[first:Nclass,year])/1000000.0)
   }
   deplet <- matB/totB0
   depletEx <- ExB/ExB0
   expCE <- exp(ce/numpop)
-  ans <- c(deplet,depletEx,ExB,expCE,(legalMatB/totB0),cryptB)
-  names(ans) <- c("SpBDepl","ExBDepl","ExploitB","ExpCE","LegalMatB","CrypticB")
+  ans <- c(deplet,depletEx,ExB,expCE,(legalMatB/totB0))
+  names(ans) <- c("SpBDepl","ExBDepl","ExploitB","ExpCE","LegalMatB")
   return(ans)
 }  # end of getzoneProps

@@ -8,36 +8,30 @@ makeabpop(popparam, midpts, projLML)
 }
 \arguments{
 \item{popparam}{the vector of biological parameters values that define
-the specific properties of this population. Obtained from 'popdefs'}
+the specific properties of this population. Obtained from
+popdefs, which is produced by definepops}
 
-\item{midpts}{the center values of the size classes from
-condDat{parseFile}}
+\item{midpts}{the center values of the size classes dervied from
+the region data file}
 
 \item{projLML}{the LML expected in the projection years 2 - Nyrs;
-matrix read in from datafile}
+a vector obtained from the regiondatafile}
 }
 \value{
-a list of objects as shown in the description.
+a list of numpop lists of 19 objects as detailed above.
 }
 \description{
 makeabpop generates the full population structure in an
-   unfished state. The structure is pre-determined: MaxDL L50 L95 MaxSig
-   Me Mc R0 A0 B0 steeph ExploitB MatureB MatBCypt HarvestR Catch popdef
-   MSY MSYDepl LML bLML popq SaM cpue CatchN deplExB Recruit ExB0 G
-   Maturity WtL Emergent Select Nemerg SelWt MatWt. See the AbMSE
-   documentation to see the full definition of an abpop and the structure
-   of a zone
+   unfished state. The structure is pre-determined: Me R0 B0 effB0
+   ExB0, effExB0 MSY MSYDepl bLML popq SaM popdef (vector of constants)
+   LML G Maturity WtL Emergent Select SelWt MatWt SMUname. See the
+   AbMSE documentation to see the full definition of a region, made
+   up of a regionC and a regionD. Notice the presence of effB0 and
+   effExB0, these relate to the influence of larval dispersal on each
+   populations productivity. The effective B0 relates to the unfished
+   mature biomass after larval dispersal occurs and the population
+   achieves equilibrium.
 }
 \examples{
-\dontrun{
- data(condDat)
- bConst <- condDat$constants
- blkpop <- condDat$blkpop
- numpop <- condDat$numpop
- blockI <- defineBlock(nblock,blkpop,numpop)
- popdefs <- definepops(nblock,blockI,bConst)
- pop1 <- makeabpop(popdefs[1,],condDat$midpts,
-                   condDat$ProjLML[popdefs[1,20]])
- str(pop1,max.level=1)
-}
+print("wait on internal data sets")
 }

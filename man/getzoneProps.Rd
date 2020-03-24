@@ -7,11 +7,11 @@
 getzoneProps(regC, glb, year = 1)
 }
 \arguments{
+\item{regC}{the constants for the region being simulated}
+
 \item{glb}{the global constants}
 
 \item{year}{which years information is wanted}
-
-\item{inzone}{the zone being simulated}
 }
 \value{
 a list of size objects
@@ -22,11 +22,6 @@ getzoneProps extracts the depletion level along with an
 }
 \examples{
 \dontrun{
- data(condDat)
- glb <- condDat$globals
- out <- makeZone(condDat,uplim=0.4)
- zone <- out$zone
- zprop <- getzoneProps(zone,glb,year=1)
- str(zprop,max.level=1)
+ print("wait on internal data sets")
 }
 }

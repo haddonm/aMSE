@@ -4,10 +4,12 @@
 \alias{fillzoneDef}
 \title{fillzoneDef characterizes simulated Zone; holds zone properties}
 \usage{
-fillzoneDef(inzone, prod)
+fillzoneDef(regC, regD, prod)
 }
 \arguments{
-\item{inzone}{the zone to be characterized.}
+\item{regC}{the constnats for the region to be characterized.}
+
+\item{regD}{the dynamic parts of the rgion being characterized}
 
 \item{prod}{the production object from doproduction}
 }

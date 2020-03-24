@@ -73,7 +73,9 @@ ctrlfileTemplate <- function(filename="tmpctl.csv") {
 #' @description diagnostics can generates an array of diagnostic plots,
 #'     however, currently it only plots the selectivity
 #'
-#' @param inzone the simulated zone
+#' @param regC the constants for the region simulated
+#' @param regD the dynamic aspects of the region simulated
+#' @param glob the general globals
 #' @param plot plot the output or not; default = TRUE
 #'
 #' @return invisibly returns the unique values of LML
@@ -83,18 +85,19 @@ ctrlfileTemplate <- function(filename="tmpctl.csv") {
 #' \dontrun{
 #'   print("stiull to devise an example.")
 #' }
-diagnostics <- function(inzone,plot=TRUE) {   # inzone <- testzone
-   useLML <- sapply(inzone,"[[",19)
+diagnostics <- function(regC,regD,glob,plot=TRUE) {   # inzone <- testzone
+   useLML <- sapply(regC,"[[","LML")
    colLML <- apply(useLML,2,unique)
    valLML <- unique(colLML)
    nLML <- length(valLML)
+   midpts <- glob$midpts
+   Nclass <- glob$Nclass
    plotprep(width=6,height=4)
    plot(midpts,seq(0,1,length=Nclass),type="n",xlab="",
-        ylab="",ylim=c(0,1.025),yaxs="i")
-   grid()
+        ylab="",ylim=c(0,1.025),yaxs="i",panel.first=grid())
    for (i in 1:nLML) {
       pick <- which(colLML == valLML[i])
-      lines(midpts,inzone[[pick[1]]]$Select[,1],lwd=2,col=i)
+      lines(midpts,regC[[pick[1]]]$Select[,1],lwd=2,col=i)
    }
    title(ylab=list("Selectivity", cex=1.0, font=7),
          xlab=list("Shell Length (mm)", cex=1.0, font=7))

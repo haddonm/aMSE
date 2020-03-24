@@ -68,3 +68,25 @@ makeZone <- function(condDat,uplim=0.4) { # condDat=condDat; uplim=0.4
   names(ans) <- c("zone","popdefs")
   return(ans)
 }  # End of makeZone
+
+
+
+
+
+findunfished <- function(regC,regD,glob) {
+  #  regC=regionC; regD=regionD; glob=glb
+  numpop <- glob$numpop
+  catch <- rep(0.0,numpop)
+  regD <- runthree(regC,regD,glob,catch)
+
+  Nyrs <- glob$Nyrs
+  Nclass <- glob$Nclass
+  npop <- glob$numpop
+
+  for (pop in 1:numpop) {
+    regC[[pop]]$B0 <- regD$matureB[1,pop]
+    regC[[pop]]$ExB0 <- regD$exploitB[1,pop]
+    # regC[[pop]]$R0 <- regD$recruit[1,pop]
+  }
+  return(list(regionC=regC,regionD=regD))
+} # end of findunfished

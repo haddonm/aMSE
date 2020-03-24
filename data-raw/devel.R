@@ -78,97 +78,103 @@ library(rutilsMH)
 library(aMSE)
 library(microbenchmark)
 setpalette("R4")
+
 # read data files ----------------------------------------------------
 datadir <- "./../../rcode2/aMSE/data-raw/"
 ctrlfile <- "control.csv"
+source(filenametopath(datadir,"sourcer.R"))
+
 ctrl <- readctrlfile(datadir,ctrlfile)
 reg1 <- readregionfile(datadir,ctrl$regionfile)
 glb <- reg1$globals
 constants <- readdatafile(datadir,ctrl$datafile,glb)
 
 # Define the Zone ----------------------------------------------------
+source(filenametopath(datadir,"sourcer.R"))
 ans <- makeregionC(reg1,constants)
 regionC <- ans$regionC
 popdefs <- ans$popdefs
-ans <- makeregion(reg1$globals,regionC)
+ans <- makeregion(glb,regionC)
 
 regionC <- ans$regionC  # region constants
 regionD <- ans$regionD  # region dynamics
 
-
+#str(regionC[[1]])
 # if larvdisp > 0.0 search for equilibrium----------------------------
 
-findunfished <- function(regC,regD,glob) {
-#  regC=regionC; regD=regionD; glob=glb
-  numpop <- glob$numpop
-  catch <- rep(0.0,numpop)
-  regD <- runthree(regC,regD,glob,catch)
+if (glb$larvdisp > 0.0) ans <- findunfished(regionC,regionD,glb)
 
-  for (pop in 1:numpop) {
-    regC[[pop]]$B0 <- regD$matureB[1,pop]
-    regC[[pop]]$ExB0 <- regD$exploitB[1,pop]
-  }
+inH <- rep(0.0,glb$numpop)
+regLC <- ans$regionC  # region constants
+regLD <- ans$regionD  # region dynamics
 
-  Nclass <- glob$Nclass
-  Nyrs <- glob$Nyrs
-  larvdisp <- glob$larvdisp
+# testing the equilibrium --------------------------------------------
+# regDe <- testequil(regLC,regLD,glb,inH)
+# regDe$matureB
+# regDe$exploitB
+# regLD$cpue
+#
+#
+# npop <- glb$numpop
+# Nclass <- glb$Nclass
+# Nyrs <- glb$Nyrs
+# catch <- rep(0.0,npop)
+#
+# for (yr in 2:Nyrs) {
+#   regLD <- oneyearD(regC=regLC,regD=regLD,Ncl=Nclass,incatch=catch,
+#                       year=yr,sigmar=1e-08,npop=npop,deltarec=reg1$larvdisp)
+# }
+# str(regLD)
 
 
-  regD <- restart(oldregD=regD,nyrs=Nyrs,npop=numpop,N=Nclass)
 
+regC <- regLC;  regD=regLD;  glob=glb; initdepl=0.5; uplim=0.3
 
+numpop <- glob$numpop
+Nclass <- glob$Nclass
+Nyrs <- glob$Nyrs
+larvdisp <- glob$larvdisp
+initH <- seq(0.01,uplim,0.005)
+nH <- length(initH)
+columns <- c("ExB","MatB","AnnH","Catch","Deplet","RelCE")
+results <- array(0,dim=c(nH,6,numpop),dimnames=list(initH,columns,1:numpop))
+exb <- regLD$exploitB[1,]
 
+for (aH in 1:nH) { # aH=1 ; yr=2
+# regD <- restart(oldregD=regD,nyrs=Nyrs,npop=numpop,N=Nclass,zero=TRUE)
+ regD <- runthreeH(regC=regC, regD=regD, glob=glb, inHarv=rep(initH[aH],numpop))
+  results[aH,"ExB",] <- regD$exploitB[1,]
+  results[aH,"MatB",] <- regD$matureB[1,]
+  results[aH,"AnnH",] <- regD$harvestR[1,]
+  results[aH,"Catch",] <- regD$catch[1,]
+  results[aH,"Deplet",] <- regD$deplsB[1,]
+  results[aH,"RelCE",] <- regD$cpue[1,]
+} # end of yr loop
+
+plotprep(width=7,height=6,newdev=FALSE)
+parset(plots=c(2,1))
+plot(results[,"AnnH",1],results[,"Catch",1],type="l",lwd=2,col=1,ylim=c(0,160))
+for (i in 2:numpop) lines(results[,"AnnH",i],results[,"Catch",i],lwd=2,col=i)
+for (i in 1:numpop) {
+  catch <- results[,"Catch",i]
+  pick <- findF1(i,results)
+  abline(v=results[pick,"AnnH",i],lwd=2,col=i)
+  print(c(catch[which.max(catch)],catch[pick]))
+}
+plot(results[,"AnnH",1],results[,"Catch",1],type="l",lwd=2,col=1,ylim=c(0,160))
+for (i in 2:numpop) lines(results[,"AnnH",i],results[,"Catch",i],lwd=2,col=i)
+for (i in 1:numpop) {
+  catch <- results[,"Catch",i]
+  pick <- findF1(i,results)
+  abline(v=results[which.max(catch),"AnnH",i],lwd=2,col=i)
 }
 
-
-
-if (glb$larvdisp > 0.0) findunfished(regionC,regionD,glb)
-
-
-
-
-
-for (yr in 2:Nyrs) {
-  regionD <- oneyearD(regC=regionC,regD=regionD,Ncl=Nclass,incatch=catch,
-                      year=yr,sigmar=1e-08,npop=npop,deltarec=reg1$larvdisp)
-}
-str(regionD)
-
-regionD$matureB
-
-plotprep(width=7,height=5,newdev=FALSE)
-plot(1:40,regionD$deplsB[,1],type="l",lwd=2,ylim=c(0.950,1.1),panel.first=grid())
-for (i in 2:npop) lines(1:40,regionD$deplsB[,i],lwd=2,col=i)
-
-
-
-
-finddepletion <- function(regC,regD,glob,initdepl,uplim=0.45) {
-  numpop <- glob$numpop
-  Nclass <- glob$Nclass
-  Nyrs <- glob$Nyrs
-  initH <- seq(0.05,uplim,0.01)
-  nH <- length(initH)
-
-
-} # end of findequil
+findF1(1,results,location=FALSE)
 
 
 
 
 
-regionD2 <- restart(oldregD=regionD,nyrs=Nyrs,npop=npop,N=Nclass)
 
-for (yr in 2:Nyrs) {
-  regionD2 <- oneyearD(regC=regionC,regD=regionD2,Ncl=Nclass,incatch=catch,
-                      year=yr,sigmar=1e-08,npop=npop,deltarec=reg1$larvdisp)
-}
 
-plotprep(width=7,height=5,newdev=FALSE)
-plot(1:40,regionD2$deplsB[,1],type="l",lwd=2,ylim=c(0.950,1),panel.first=grid())
-for (i in 2:npop) lines(1:40,regionD2$deplsB[,i],lwd=2,col=i)
 
-regionD$matureB[1,]
-regionD$matureB[Nyrs,]
-regionD3$matureB[1,]
-regionD4$matureB[1,]

@@ -4,10 +4,14 @@
 \alias{diagnostics}
 \title{diagnostics generates an array of diagnostic plots}
 \usage{
-diagnostics(inzone, plot = TRUE)
+diagnostics(regC, regD, glob, plot = TRUE)
 }
 \arguments{
-\item{inzone}{the simulated zone}
+\item{regC}{the constants for the region simulated}
+
+\item{regD}{the dynamic aspects of the region simulated}
+
+\item{glob}{the general globals}
 
 \item{plot}{plot the output or not; default = TRUE}
 }

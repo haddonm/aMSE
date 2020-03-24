@@ -4,7 +4,7 @@
 \alias{oneyear}
 \title{oneyear do one year's dynamics for one input population abpop}
 \usage{
-oneyear(inpopC, inNt, Nclass, inCat, yr, calcharv = TRUE)
+oneyear(inpopC, inNt, Nclass, inH, yr)
 }
 \arguments{
 \item{inpopC}{a single population from a regionC, an abpop}
@@ -15,15 +15,12 @@ of dynamics. These are projected into the active year.}
 \item{Nclass}{the number of size classes used to describe growth.
 used to define vectors}
 
-\item{inCat}{a literal catch in tonnes to be removed during the
-year, a scalar}
+\item{inH}{a literal annual harvest rate as a proportion to be
+removed as catch during the year, a scalar}
 
 \item{yr}{the year in the dynamics being worked on. The first year
 is generated when the zone is defined or when it is initially
 depleted. All dynamics are appllied from year 2 - Nyrs; scalar}
-
-\item{calcharv}{should we calculate the harvest rate from inCat.
-Default=TRUE. If FALSE, implies that inCat is a harvest rate}
 }
 \value{
 a list containing ExploitB, MatureB, Catch, Harvest, Nt,

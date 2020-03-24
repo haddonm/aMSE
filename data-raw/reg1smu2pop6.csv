@@ -17,11 +17,11 @@ Wtb ,3.161963,3.161963,3.161963,3.161963,3.161963,3.161963,weight-at-length expo
 sWtb ,0.148,0.148,0.148,0.148,0.148,0.148,var of Wtb
 Wtbtoa ,962.8098,962.8098,962.8098,962.8098,962.8098,962.8098,intercept power relationship betweeb Wtb and Wta
 sWtbtoa ,-14.3526,-14.3526,-14.3526,-14.3526,-14.3526,-14.3526,exponent of power relationship betweeb Wtb and Wta
-Me ,0.2,0.2,0.2,0.2,0.2,0.2,"Natural mortality 0.2 maxage=23, 0.1 maxa=46"
+Me ,0.175,0.175,0.175,0.175,0.175,0.175,"Natural mortality 0.2 maxage=23, 0.1 maxa=46"
 sMe ,0.003,0.003,0.003,0.003,0.003,0.003,var of Me
 AvRec ,13,13,13,13,13,13,log of unfished recruitment LnR0
 sAvRec ,1,1,1,1,1,1,
-defsteep ,0.6,0.6,0.6,0.6,0.6,0.6,Beverton-Holt Steepness
+defsteep ,0.7,0.7,0.7,0.7,0.7,0.7,Beverton-Holt Steepness
 sdefsteep ,0.02,0.02,0.02,0.02,0.02,0.02,
 L50C ,126.4222,126.4222,126.4222,126.4222,126.4222,126.4222,length at 50% emergent
 sL50C ,1.5,1.5,1.5,1.5,1.5,1.5,

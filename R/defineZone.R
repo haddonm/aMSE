@@ -226,7 +226,8 @@ driftrec <- function(recs,recp) {
 #'     and basic biological properties: MSY, B0, Average bLML, Average SaM,
 #'     and more details
 #'
-#' @param inzone the zone to be characterized.
+#' @param regC the constnats for the region to be characterized.
+#' @param regD the dynamic parts of the rgion being characterized
 #' @param prod the production object from doproduction
 #'
 #' @return A list of 10 objects containing the properties of the zone;
@@ -250,32 +251,32 @@ driftrec <- function(recs,recp) {
 #' @examples
 #' # needs summaryPop and summaryZone
 #' txt2 <- 'always use examples rather than example'
-fillzoneDef <- function(inzone,prod) {  # inzone=zone; prod=production
+fillzoneDef <- function(regC,regD,prod) {  # inzone=zone; prod=production
    defNames <- c("production","defpop","struct","nBlock","numpop",
                  "summaryPop","summaryZone","blockProp","date")
    zDef <- vector("list",length(defNames))
    names(zDef) <- defNames
-   numpop <- length(inzone)
+   numpop <- length(regC)
    pops <- seq(1,numpop,1)
-   popdefs <- t(sapply(inzone,"[[","popdef"))
-   blockI <- popdefs[,"block"]
+   popdefs <- t(sapply(regC,"[[","popdef"))
+   blockI <- popdefs[,"SMU"]
    nblock <- length(unique(blockI))
    struct <- matrix(0,nrow=numpop,ncol=3,
                     dimnames=list(pops,c("Blocks","Population","Hexagon")))
    struct[,1] <- blockI
    struct[,2] <- pops
-   ans <- zoneProperty(inzone)
+   ans <- 5 #zoneProperty(inzone)
    #ndef <- length(zone[[1]]$popdef)
    #defname <- names(zone[[1]]$popdef)
 
-   zDef[["production"]] <- production
+   zDef[["production"]] <- prod
    zDef[["defpop"]] <- popdefs  # already defined
    zDef[["struct"]] <- struct
    zDef[["nBlock"]] <- nblock
    zDef[["numpop"]] <- numpop
-   zDef[["summaryPop"]] <- ans$summaryMatrix
-   zDef[["summaryZone"]] <- ans$ZoneSummary
-   zDef[["blockProp"]] <- summaryBlock(inzone)
+   zDef[["summaryPop"]] <- 5 #ans$summaryMatrix
+   zDef[["summaryZone"]] <- 5 #ans$ZoneSummary
+   zDef[["blockProp"]] <- 5 #summaryBlock(inzone)
    zDef[["date"]] <- date()
    class(zDef) <- "zoneDefinition"
    return(zDef)
@@ -323,35 +324,29 @@ logistic <- function(inL50,delta,lens,knifeedge=0) {
 #' @title makeabpop generates full population structure in an unfished state
 #'
 #' @description makeabpop generates the full population structure in an
-#'    unfished state. The structure is pre-determined: MaxDL L50 L95 MaxSig
-#'    Me Mc R0 A0 B0 steeph ExploitB MatureB MatBCypt HarvestR Catch popdef
-#'    MSY MSYDepl LML bLML popq SaM cpue CatchN deplExB Recruit ExB0 G
-#'    Maturity WtL Emergent Select Nemerg SelWt MatWt. See the AbMSE
-#'    documentation to see the full definition of an abpop and the structure
-#'    of a zone
+#'    unfished state. The structure is pre-determined: Me R0 B0 effB0
+#'    ExB0, effExB0 MSY MSYDepl bLML popq SaM popdef (vector of constants)
+#'    LML G Maturity WtL Emergent Select SelWt MatWt SMUname. See the
+#'    AbMSE documentation to see the full definition of a region, made
+#'    up of a regionC and a regionD. Notice the presence of effB0 and
+#'    effExB0, these relate to the influence of larval dispersal on each
+#'    populations productivity. The effective B0 relates to the unfished
+#'    mature biomass after larval dispersal occurs and the population
+#'    achieves equilibrium.
 #'
 #' @param popparam the vector of biological parameters values that define
-#'     the specific properties of this population. Obtained from 'popdefs'
-#' @param midpts the center values of the size classes from
-#'     condDat{parseFile}
+#'     the specific properties of this population. Obtained from
+#'     popdefs, which is produced by definepops
+#' @param midpts the center values of the size classes dervied from
+#'     the region data file
 #' @param projLML the LML expected in the projection years 2 - Nyrs;
-#'     matrix read in from datafile
+#'     a vector obtained from the regiondatafile
 #'
-#' @return a list of objects as shown in the description.
+#' @return a list of numpop lists of 19 objects as detailed above.
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#'  data(condDat)
-#'  bConst <- condDat$constants
-#'  blkpop <- condDat$blkpop
-#'  numpop <- condDat$numpop
-#'  blockI <- defineBlock(nblock,blkpop,numpop)
-#'  popdefs <- definepops(nblock,blockI,bConst)
-#'  pop1 <- makeabpop(popdefs[1,],condDat$midpts,
-#'                    condDat$ProjLML[popdefs[1,20]])
-#'  str(pop1,max.level=1)
-#' }
+#' print("wait on internal data sets")
 makeabpop <- function(popparam,midpts,projLML) {  #popparam=popdef;midpts=midpts;projLML=projLML
   #(DLMax,L50,L95,SigMax,SaMa,SaMb,Wta,Wtb,Me,L50C,L95C,R0 SelP[1],SelP[2],Nyrs,steeph,MaxCE,L50Mat block
   #   1    2   3    4      5    6   7   8   9 10   11   12  13     14      15   16     17    18     19
@@ -385,9 +380,10 @@ makeabpop <- function(popparam,midpts,projLML) {  #popparam=popdef;midpts=midpts
   MSYDepl <- 0
   bLML <- 0
   SMUname <- ""
-  ans <- list(Me,AvRec,B0,ExB0,MSY,MSYDepl,bLML,catq,SaM,popparam,zLML,
-              G,mature,WtL,emergent,zSelect,zSelWt,MatWt,SMUname)
-  names(ans) <- c("Me","R0","B0","ExB0","MSY","MSYDepl","bLML","popq",
+  ans <- list(Me,AvRec,B0,B0,ExB0,ExB0,MSY,MSYDepl,bLML,catq,SaM,
+              popparam,zLML,G,mature,WtL,emergent,zSelect,zSelWt,MatWt,
+              SMUname)
+  names(ans) <- c("Me","R0","B0","effB0","ExB0","effExB0","MSY","MSYDepl","bLML","popq",
                   "SaM","popdef","LML","G","Maturity","WtL","Emergent",
                   "Select","SelWt","MatWt","SMUname")
   class(ans) <- "abpop"
@@ -495,9 +491,11 @@ makeregion <- function(glob,regC,uplim=0.4) {
     Nt[,1,pop] <- Minv %*% recr          # [(I - SG)-1]R
     ExplB[1,pop] <- sum(regC[[pop]]$SelWt[,1]*Nt[,1,pop])/1e06
     regC[[pop]]$ExB0 <- ExplB[1,pop]
+    regC[[pop]]$effExB0 <- ExplB[1,pop]
     deplExB[1,pop] <- 1.0  # no depletion when first generating regions
     MatB[1,pop] <- sum(regC[[pop]]$MatWt*Nt[,1,pop])/1e06
     regC[[pop]]$B0 <- MatB[1,pop]
+    regC[[pop]]$effB0 <- MatB[1,pop]
     deplSpB[1,pop] <- 1.0
     Recruit[1,pop] <- recr[1]
     regC[[pop]]$popq <- regC[[pop]]$popdef["MaxCE"]/ExplB[1,pop]
@@ -553,13 +551,11 @@ maturity <- function(ina,inb,lens) {
 #'     of dynamics. These are projected into the active year.
 #' @param Nclass the number of size classes used to describe growth.
 #'     used to define vectors
-#' @param inCat a literal catch in tonnes to be removed during the
-#'     year, a scalar
+#' @param inH a literal annual harvest rate as a proportion to be
+#'     removed as catch during the year, a scalar
 #' @param yr the year in the dynamics being worked on. The first year
 #'     is generated when the zone is defined or when it is initially
 #'     depleted. All dynamics are appllied from year 2 - Nyrs; scalar
-#' @param calcharv should we calculate the harvest rate from inCat.
-#'     Default=TRUE. If FALSE, implies that inCat is a harvest rate
 #'
 #' @return a list containing ExploitB, MatureB, Catch, Harvest, Nt,
 #'     ce, and CatchN used to update the given pop in yr + 1
@@ -567,8 +563,9 @@ maturity <- function(ina,inb,lens) {
 #'
 #' @examples
 #' print("need to wait on built in data sets")
-oneyear <- function(inpopC,inNt,Nclass,inCat,yr,calcharv=TRUE) {  #
-  #  yr=2; pop=1; inpopC=regionC[[pop]]; inNt=regionD$Nt[,yr-1,pop]; Nclass=glb$Nclass; inCat=0.0;
+oneyear <- function(inpopC,inNt,Nclass,inH,yr) {  #
+  # yr=2; pop=2; inpopC=regC[[pop]]; inNt=regD$Nt[,yr-1,pop];
+  # Nclass=glb$Nclass; inH=0.05;
   MatWt <- inpopC$MatWt/1e06
   SelectWt <- inpopC$SelWt[,yr]/1e06
   selyr <- inpopC$Select[,yr]
@@ -579,19 +576,9 @@ oneyear <- function(inpopC,inNt,Nclass,inCat,yr,calcharv=TRUE) {  #
   NumNe <- (Os * (inpopC$G %*% inNt))
   ExploitB <- sum(SelectWt * NumNe) #SelectWt=Select*WtL
   oldExpB <- ExploitB   # ExploitB after growth and 0.5NatM
-  if (calcharv) {
-    Ht <- inCat/ExploitB
-    if (Ht > 0.9) {  # can I eliminate this step? Perhaps use logits.
-      Ht <- 0.9
-      warning(paste0("Harvest rates > 0.9 in year ",yr," in pop ",
-                    (inpopC$popdef["block"])))
-    }
-  } else {
-    Ht = inCat
-  }
-  Fish <- 1-(Ht*selyr)
+  Fish <- 1-(inH*selyr)
   newNt <- (Os * (Fish * NumNe)) #+ Rec # Nt - catch - 0.5M, and + Rec
-  Cat <- (Ht*selyr) * NumNe  #numbers at size in the catch
+  Cat <- (inH*selyr) * NumNe  #numbers at size in the catch
   ExploitB <- sum(SelectWt * newNt)
   MatureB <- sum(MatWt*newNt) #+ MatBC
   Catch <- sum(inpopC$WtL*Cat)/1e06
@@ -616,7 +603,7 @@ oneyear <- function(inpopC,inNt,Nclass,inCat,yr,calcharv=TRUE) {  #
 #'     arrays for the dynamic variables of the dynamics of the
 #'     operating model
 #' @param Ncl the number of size classes used to describe size
-#' @param incatch a vector of catches taken in the year from each
+#' @param inHt a vector of harvest rates taken in the year from each
 #'     population
 #' @param year the year of the dynamics, would start in year 2 as year
 #'     1 is the year of initiation.
@@ -624,28 +611,26 @@ oneyear <- function(inpopC,inNt,Nclass,inCat,yr,calcharv=TRUE) {  #
 #'     when searching for equilibria.
 #' @param npop the number of populations, the global numpop
 #' @param deltarec the rate of larval dispersal
-#' @param calcharv should we calculate the harvest rate from inCat.
-#'     Default=TRUE. If FALSE, implies that inCat is a harvest rate
 #'
 #' @return a list containing a revised dynamics list
 #' @export
 #'
 #' @examples
 #' print("wait for built in data sets")
-oneyearD <- function(regC,regD,Ncl,incatch,year,sigmar,npop,deltarec,
-                     calcharv=TRUE) {
-  # npop=6; regC=regionC; regD=regionD; Ncl=glb$Nclass; incatch=rep(0.0,npop); year=2; sigmar=1e-08; deltarec=reg1$larvdisp
+oneyearD <- function(regC,regD,Ncl,inHt,year,sigmar,npop,deltarec) {
+  # npop=6; regC=regC; regD=regLD; Ncl=glb$Nclass; inHt=rep(0.05,npop);
+  # year=2; sigmar=1e-08; deltarec=glb$larvdisp
   matb <- numeric(npop)
-  for (popn in 1:npop) {  #  popn=1
+  for (popn in 1:npop) {  # year=2
     out <- oneyear(inpopC=regC[[popn]],inNt=regD$Nt[,year-1,popn],
-                   Nclass=Ncl,inCat=incatch[popn],yr=year,
-                   calcharv=calcharv)
+                   Nclass=Ncl,inH=inHt[popn],yr=year)
     regD$exploitB[year,popn] <- out$ExploitB
     regD$matureB[year,popn] <- out$MatureB
     regD$catch[year,popn] <- out$Catch
     regD$harvestR[year,popn] <- out$Harvest
     regD$cpue[year,popn] <- out$ce
     regD$Nt[,year,popn] <- out$Nt
+    regD$catchN[,year,popn] <- out$CatchN
     matb[popn] <- out$MatureB
   }
   steep <- sapply(regC,"[[","popdef")["steeph",]
@@ -655,10 +640,11 @@ oneyearD <- function(regC,regD,Ncl,incatch,year,sigmar,npop,deltarec,
   newrec <- driftrec(recs,deltarec)
   regD$recruit[year,] <- newrec
   regD$Nt[1,year,] <- newrec
-  regD$deplsB[year,] <- regD$matureB[year,]/b0
-  regD$depleB[year,] <- regD$exploitB[year,]/sapply(regC,"[[","ExB0")
+  regD$deplsB[year,] <- regD$matureB[year,]/sapply(regC,"[[","effB0")
+  regD$depleB[year,] <- regD$exploitB[year,]/sapply(regC,"[[","effExB0")
   return(regD)
-} # end of oneyearD
+} # end of oneyearD   round(regD$Nt[,year,])
+
 
 #' @title oneyearrec calculates the Beverton-Holt recruitment
 #'
@@ -890,7 +876,7 @@ restart <- function(oldregD,nyrs,npop,N,zero=TRUE) { # oldregD=regionD; nyrs=Nyr
 #'     arrays for the dynamic variables of the dynamics of the
 #'     operating model
 #' @param glob the globals variable from readregionfile
-#' @param catch a vector of numpop catches to be held constant
+#' @param inHarv a vector of annual harvest rates to be held constant
 #'     across all years.
 #'
 #' @return a list containing a revised dynamics list, regionD
@@ -898,7 +884,7 @@ restart <- function(oldregD,nyrs,npop,N,zero=TRUE) { # oldregD=regionD; nyrs=Nyr
 #'
 #' @examples
 #' print("wait on built in data sets")
-runthree <- function(regC,regD,glob,catch) {
+runthreeH <- function(regC,regD,glob,inHarv) {
   npop <- glob$numpop
   Nclass <- glob$Nclass
   Nyrs <- glob$Nyrs
@@ -906,7 +892,7 @@ runthree <- function(regC,regD,glob,catch) {
   for (iter in 1:3) {
     for (yr in 2:Nyrs)
       regD <- oneyearD(regC=regC,regD=regD,Ncl=Nclass,
-                       incatch=catch,year=yr,sigmar=1e-08,npop=npop,
+                       inHt=inHarv,year=yr,sigmar=1e-08,npop=npop,
                        deltarec=larvdisp)
     regD <- restart(oldregD=regD,nyrs=Nyrs,npop=npop,N=Nclass,zero=TRUE)
   }

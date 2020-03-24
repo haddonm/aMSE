@@ -4,17 +4,7 @@
 \alias{oneyearD}
 \title{oneyearD conducts one year's dynamics in the simulation}
 \usage{
-oneyearD(
-  regC,
-  regD,
-  Ncl,
-  incatch,
-  year,
-  sigmar,
-  npop,
-  deltarec,
-  calcharv = TRUE
-)
+oneyearD(regC, regD, Ncl, inHt, year, sigmar, npop, deltarec)
 }
 \arguments{
 \item{regC}{the constant portion of the region with a list of
@@ -26,7 +16,7 @@ operating model}
 
 \item{Ncl}{the number of size classes used to describe size}
 
-\item{incatch}{a vector of catches taken in the year from each
+\item{inHt}{a vector of harvest rates taken in the year from each
 population}
 
 \item{year}{the year of the dynamics, would start in year 2 as year
@@ -38,9 +28,6 @@ when searching for equilibria.}
 \item{npop}{the number of populations, the global numpop}
 
 \item{deltarec}{the rate of larval dispersal}
-
-\item{calcharv}{should we calculate the harvest rate from inCat.
-Default=TRUE. If FALSE, implies that inCat is a harvest rate}
 }
 \value{
 a list containing a revised dynamics list
