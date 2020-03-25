@@ -2,31 +2,44 @@
 % Please edit documentation in R/defineZone.R
 \name{doproduction}
 \alias{doproduction}
-\title{doproduction - estimates production curve for all populations}
+\title{doproduction estimates a production curve for each population}
 \usage{
-doproduction(inpop, uplim = 0.4)
+doproduction(regC, regD, glob, lowlim = 0.005, uplim = 0.35, inc = 0.005)
 }
 \arguments{
-\item{inpop}{the population to be assessed; an 'abpop'}
+\item{regC}{the constants components of the simulated region}
 
-\item{uplim}{the upper limit on teh harvest rate to test, defaults to
-0.4; a scalar}
+\item{regD}{the dynamic components of the simulated region}
+
+\item{glob}{the general global variables}
+
+\item{lowlim}{the lower limit of harvest rate applied, default=0.005}
+
+\item{uplim}{the upper limit of harvest rate applied, default=0.35}
+
+\item{inc}{the harvest rate increment at each step, default=0.005}
 }
 \value{
-a list made up of the MSY, the depletion level at MSY, and a
-   matrix with six columns: ExB, MatB, AnnH, Catch, Deplet, and RelCE.
+an array of the six productivity variables by numpop by
+    the number of harvest rates applied
 }
 \description{
-doproduction estimates a surplus production curve for all
-   populations. This estimates a zone's production by estimate MSY for
-   each population separately and then combining. do.zoneProd is more
-   accurate for a zone being fished as a whole. 'doproduction' is
-   usually applied sequentially to all populations in a zone when using
-   the makeZone function.
+doproduction estimates a production curve for each
+    population in the simulated region. It does this by sequentially
+    applying a series of increasing harvest rates and running the
+    populations to equilibrium to discover, empirically, the yield
+    and other details, such as exploitable biomass, mature biomass,
+    the actual harvest rate, the catch or yield, the mature
+    depletion, and the relative cpue. Keep in mind that the time
+    taken to run this function depends on the number of populations
+    but mainly on the length of the harvest rate sequence, which is
+    determined by lowlim, uplim, and inc. The lonjger the sequence
+    the slower the run. However, the estimates of MSY and related
+    statistics are expected to have better accuracy (resolution)
+    the finer the harvest rate increments. So when initiating the
+    region it is best to have a long sequence of finely incremented
+    harvest rates that take a long time.
 }
 \examples{
-\dontrun{
-txt1 <- 'generate a zone and apply do.zoneProd and print the results'
-str(txt1)
-}
+print("wait")
 }

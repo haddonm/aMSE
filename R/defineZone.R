@@ -110,59 +110,56 @@ definepops <- function(inSMU,inSMUindex,bConst,glob) {
   return(popdefs)
 } # end of definepops
 
-
-#' @title doproduction - estimates production curve for all populations
+#' @title doproduction estimates a production curve for each population
 #'
-#' @description doproduction estimates a surplus production curve for all
-#'    populations. This estimates a zone's production by estimate MSY for
-#'    each population separately and then combining. do.zoneProd is more
-#'    accurate for a zone being fished as a whole. 'doproduction' is
-#'    usually applied sequentially to all populations in a zone when using
-#'    the makeZone function.
+#' @description doproduction estimates a production curve for each
+#'     population in the simulated region. It does this by sequentially
+#'     applying a series of increasing harvest rates and running the
+#'     populations to equilibrium to discover, empirically, the yield
+#'     and other details, such as exploitable biomass, mature biomass,
+#'     the actual harvest rate, the catch or yield, the mature
+#'     depletion, and the relative cpue. Keep in mind that the time
+#'     taken to run this function depends on the number of populations
+#'     but mainly on the length of the harvest rate sequence, which is
+#'     determined by lowlim, uplim, and inc. The lonjger the sequence
+#'     the slower the run. However, the estimates of MSY and related
+#'     statistics are expected to have better accuracy (resolution)
+#'     the finer the harvest rate increments. So when initiating the
+#'     region it is best to have a long sequence of finely incremented
+#'     harvest rates that take a long time.
 #'
-#' @param inpop the population to be assessed; an 'abpop'
-#' @param uplim the upper limit on teh harvest rate to test, defaults to
-#'    0.4; a scalar
-#' @return a list made up of the MSY, the depletion level at MSY, and a
-#'    matrix with six columns: ExB, MatB, AnnH, Catch, Deplet, and RelCE.
+#' @param regC the constants components of the simulated region
+#' @param regD the dynamic components of the simulated region
+#' @param glob the general global variables
+#' @param lowlim the lower limit of harvest rate applied, default=0.005
+#' @param uplim the upper limit of harvest rate applied, default=0.35
+#' @param inc the harvest rate increment at each step, default=0.005
+#'
+#' @return an array of the six productivity variables by numpop by
+#'     the number of harvest rates applied
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' txt1 <- 'generate a zone and apply do.zoneProd and print the results'
-#' str(txt1)
-#' }
-doproduction <- function(inpop,uplim=0.4) { # inpop=zone[[1]]; uplim=0.35
-   imph <- seq(0.01,uplim,0.01)
-   numrow <- length(imph)              # hyr <- 1; year <- 2
-   Nyrs <- length(inpop$MatureB)
-   columns <- c("ExB","MatB","AnnH","Catch","Deplet","RelCE")
-   results <- matrix(0,nrow=numrow,ncol=6,dimnames=list(imph,columns))
-   for (hyr in 1:numrow) {    # do the dynamics for numrow diff H values
-      for (year in 2:Nyrs) { # always leaving yr1 the same hyr=1;year=2
-         ExpB <- inpop$ExploitB[year-1]
-         catch <- imph[hyr] * ExpB
-         out <- oneyear(inpop,catch,year)
-         inpop$ExploitB[year] <- out$ExploitB
-         inpop$MatureB[year] <- out$MatureB
-         inpop$Catch[year] <- out$Catch
-         inpop$HarvestR[year] <- out$Harvest
-         inpop$Nt[,year] <- out$Nt
-      }
-
-      results[hyr,"ExB"] <- inpop$ExploitB[Nyrs]
-      results[hyr,"MatB"] <- inpop$MatureB[Nyrs]
-      results[hyr,"AnnH"] <- inpop$HarvestR[Nyrs]
-      results[hyr,"Catch"] <- inpop$Catch[Nyrs]
-      results[hyr,"Deplet"] <- results[hyr,"MatB"]/inpop$B0
-      results[hyr,"RelCE"] <- inpop$popq * results[hyr,"ExB"]
-   }
-   msy <- max(results[,"Catch"])
-   pick <- which(results[,"Catch"] == msy)
-   msyDepl <- results[pick,"Deplet"]
-   ans <- list(msy,msyDepl,results)
-   names(ans) <- c("MSY","MSYDepl","Productivity")
-   return(ans)
+#' print("wait")
+doproduction <- function(regC,regD,glob,lowlim=0.005,uplim=0.35,inc=0.005) {
+  numpop <- glob$numpop
+  Nclass <- glob$Nclass
+  Nyrs <- glob$Nyrs
+  larvdisp <- glob$larvdisp
+  initH <- seq(lowlim,uplim,inc)
+  nH <- length(initH)
+  columns <- c("ExB","MatB","AnnH","Catch","Deplet","RelCE")
+  results <- array(0,dim=c(nH,6,numpop),dimnames=list(initH,columns,1:numpop))
+  for (aH in 1:nH) { # aH=1 ; yr=2
+    regD <- runthreeH(regC=regC, regD=regD, glob=glob, inHarv=rep(initH[aH],numpop))
+    results[aH,"ExB",] <- regD$exploitB[1,]
+    results[aH,"MatB",] <- regD$matureB[1,]
+    results[aH,"AnnH",] <- regD$harvestR[1,]
+    results[aH,"Catch",] <- regD$catch[1,]
+    results[aH,"Deplet",] <- regD$deplsB[1,]
+    results[aH,"RelCE",] <- regD$cpue[1,]
+  } # end of yr loop
+  return(results)
 } # end of doproduction
 
 
@@ -281,6 +278,79 @@ fillzoneDef <- function(regC,regD,prod) {  # inzone=zone; prod=production
    class(zDef) <- "zoneDefinition"
    return(zDef)
 }  # end of fillzoneDef
+
+#' @title findmsy identifies the closest productivity value to MSY
+#'
+#' @description findmsy for each population in the region, identifies
+#'     the closest productivity value to MSY and returns the vector
+#'     of productivity values for the selected harvest rate. The Catch
+#'     in each populaiton = MSY and the other variables relate to the
+#'     value at MSY
+#'
+#' @param product array of productivity values output from doproduction
+#'
+#' @return a matrix of numpop rows containing the approximate MSY
+#'     related productivity values
+#' @export
+#'
+#' @examples
+#' print("wait on data sets")
+findmsy <- function(product) {
+  catch <- product[,"Catch",]
+  numpop <- ncol(catch)
+  xval <- matrix(0,nrow=numpop,ncol=ncol(product),
+                 dimnames=list(1:numpop,colnames(product)))
+  for (pop in 1:numpop) {
+    pick <- which.max(catch[,pop])
+    xval[pop,] <- product[pick,,pop]
+  }
+  return(xval)
+} # end of findmsy
+
+#' @title findunfished runs the region 3 x Nyrs to equilibrium
+#'
+#' @description findunfished runs the region 3 x Nyrs so as to find
+#'     the equilibrium. This is necessary if there is any larval
+#'     dispersal set in the region data. It populated the values of
+#'     effB0 and effExB0, the popq, the initial cpue is set to NA,
+#'     and the initial depletions are set to 1.0
+#'
+#' @param regC the constants components of the simulated region
+#' @param regD the dynamic components of the simulated region
+#' @param glob the general global variables
+#' @param lowlim the lower limit of harvest rate applied, default=0.005
+#' @param uplim the upper limit of harvest rate applied, default=0.35
+#' @param inc the harvest rate increment at each step, default=0.005
+#'
+#' @return a list containing the updated regionC and regionD
+#' @export
+#'
+#' @examples
+#' print("wait on internal data sets")
+findunfished <- function(regC,regD,glob,lowlim=0.005,uplim=0.35,inc=0.005) {
+  #  regC=regionC; regD=regionD;  glob=glb;lowlim=0.005;uplim=0.35;inc=0.005
+  numpop <- glob$numpop
+  inH <- rep(0.0,numpop)
+  regD <- runthreeH(regC,regD,glob,inH)
+  for (pop in 1:numpop) {
+    regC[[pop]]$effB0 <- regD$matureB[1,pop]
+    regC[[pop]]$effExB0 <- regD$exploitB[1,pop]
+    regC[[pop]]$popq <- regC[[pop]]$popdef["MaxCE"]/regD$exploitB[1,pop]
+    regD$cpue[1,pop] <- NA
+    regD$deplsB[1,pop] <- 1.0
+    regD$depleB[1,pop] <- 1.0
+  }
+  production <- doproduction(regC=regC,regD=regD,glob=glob,
+                             lowlim=lowlim,uplim=uplim,inc=inc)
+  xval <- findmsy(production)
+  for (pop in 1:numpop) {
+    regC[[pop]]$MSY <- xval[pop,"Catch"]
+    regC[[pop]]$MSYDepl <- xval[pop,"Deplet"]
+  }
+  return(list(regionC=regC,regionD=regD,product=production))
+} # end of findunfished
+
+
 
 #' @title logistic a Logistic selectivity function
 #'
@@ -950,6 +1020,60 @@ STM <- function(p,mids) { #    # p <- popparam[1:4]; mids <- midpts
    class(G) <- "STM"
    return(G)
 } # end of STM
+
+#' @title testequil runs a region Nyrs and determines stability
+#'
+#' @description testequil runs a given region for Nyrs at the given
+#'     harvest rate, and then tests that the last values of matureB,
+#'     exploitB, recruitment, and spawning biomass depletion are the
+#'     same as the first (to three decimal places). It reports this
+#'     to the console if verbose=TRUE
+#'
+#' @param regC the constants components of the simulated region
+#' @param regD the dynamic components of the simulated region
+#' @param glob the general global variables
+#' @param inH a vector of numpop harvest rates
+#' @param verbose should results go to the console, default=TRUE
+#'
+#' @return the dynamics component with Nyrs of dynamics
+#' @export
+#'
+#' @examples
+#' print("wait on built in data sets")
+testequil <- function(regC,regD,glob,inH,verbose=TRUE) {
+  Nyrs <- glob$Nyrs
+  Nclass <- glob$Nclass
+  npop <- glob$numpop
+  larvdisp <- glob$larvdisp
+  for (yr in 2:Nyrs)
+    regD <- oneyearD(regC=regC,regD=regD,Ncl=Nclass,
+                     inHt=inH,year=yr,sigmar=1e-08,npop=npop,
+                     deltarec=larvdisp)
+  if (verbose) {
+    if (all(trunc(regD$matureB[1,],3) == trunc(regD$matureB[Nyrs,],3))) {
+      print("matureB OK",quote=FALSE)
+    } else {
+      print("matureB varies",quote=FALSE)
+    }
+    if (all(trunc(regD$exploitB[1,],3) == trunc(regD$exploitB[Nyrs,],3))) {
+      print("exploitB OK",quote=FALSE)
+    } else {
+      print("exploitB varies",quote=FALSE)
+    }
+    if (all(trunc(regD$recruit[1,],3) == trunc(regD$recruit[Nyrs,],3))) {
+      print("recruitment OK",quote=FALSE)
+    } else {
+      print("recruitment varies",quote=FALSE)
+    }
+    if (all(round(regD$deplsB[1,],3) == round(regD$deplsB[Nyrs,],3))) {
+      print("spawning depletion OK",quote=FALSE)
+    } else {
+      print("spawning depletion varies",quote=FALSE)
+    }
+  }
+  return(regD)
+} # end of testequil
+
 
 #' @title WtatLen Power function to describe weight at length relationship
 #'
