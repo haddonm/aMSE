@@ -30,5 +30,11 @@ makeregion generates the dynamics components of the
     arrays are N x Nyrs x numpop.
 }
 \examples{
- print("wait on internal data sets")
+  data(region1)
+  glb <- region1$globals
+  data(constants)
+  ans <- makeregionC(region1,constants)
+  regionC <- ans$regionC
+  ans2 <- makeregion(glb,regionC)
+  str(ans2,max.level=2)
 }

@@ -22,5 +22,12 @@ makeregionC makes the constant part of the simulated
     to produce regionD, the dynamic part of the new region
 }
 \examples{
-print("Wait on built in data")
+data(region1)
+data(constants)
+ans <- makeregionC(region=region1,const=constants)
+regionC <- ans$regionC
+popdefs <- ans$popdefs
+str(regionC,max.level=1)
+str(regionC[[1]])  # not complete at this stage
+print(popdefs)
 }

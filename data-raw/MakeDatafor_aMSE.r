@@ -19,13 +19,19 @@ options("show.signif.stars"=FALSE,"stringsAsFactors"=FALSE,
 
 datadir <- "./../../rcode2/aMSE/data-raw/"
 
-infile <- paste0(datadir,"twoblock.csv")
+ctrlfile <- "control.csv"
+#source(filenametopath(datadir,"sourcer.R"))
 
-#datafile <- datafiletemplate(numblock=3,filename=outfile)
-condDat <- readdatafile(infile)
-str(condDat,max.level = 2)
+ctrl <- readctrlfile(datadir,ctrlfile)
+region1 <- readregionfile(datadir,ctrl$regionfile)
+glb <- reg1$globals
+constants <- readdatafile(datadir,ctrl$datafile,glb)
 
-save(condDat,file=paste0(datadir,"condDat.RData"))
+
+
+save(ctrl,file=paste0(datadir,"ctrl.RData"))
+save(region1,file=paste0(datadir,"region1.RData"))
+save(constants,file=paste0(datadir,"constants.RData"))
 
 
 # check and transfer -------------------------------------------------------

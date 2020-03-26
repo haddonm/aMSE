@@ -1,34 +1,66 @@
 
-
-#' @title condDat is an abalone data-set for conditioning the MSE
+#' @title constants is conditioning data for 6 populations
 #'
-#' @description condDat is an abalone data-set for blacklip abalone
-#'     (\emph{Haliotis rubra}) that can be used to condition the
+#' @description constants is a data.frame of parameters for blacklip
+#'     abalone (\emph{Haliotis rubra}) used to condition the
 #'     operating model as an example when running the aMSE function
 #'     examples. It describes a region containing two hypothetical
 #'     Tasmanian blocks (the level of SMU) with a total of six
-#'     populations. If this were a data-set in a file it would require
-#'     the readdatafile function to read the file. The function
+#'     populations. If this were a data-set in a CSV file it would
+#'     require the readdatafile function to read the file. The function
 #'     datafiletemplate will generate a template of the required
 #'     format to be read by readdatafile, which can be edited
-#'     to suit a given fishery.
+#'     to suit a given fishery. once transposed this data becomes the
+#'     contents of popdefs
 #'
-#' @name condDat
+#' @name constants
 #'
 #' @docType data
 #'
-#' @format A list of hypothetical conditioning data for the MSE
-#' \describe{
-#'   \item{constants}{the PDFs used to describe the biological parameters}
-#'   \item{Lt}{the length at tagging}
-#'   \item{Dt}{The time interval between tagging and recapture, in this
-#'       instance they are all listed as 1 year}
-#'   \item{DL}{the growth increment in mm}
+#' @section contents:
+#' \itemize{
+#'   \item popnum the index to the population
+#'   \item SMU the spatial management unit number = blocks in Tasmania
+#'   \item DLMax maximum growth increment used in the inverse logistic
+#'   \item sMAxDL the sd variability of DLMax, Normal variation
+#'   \item L50  the shell length at 50% of maximum growth increment
+#'   \item sL50 the sd variability of L50, Normal variation
 #' }
 #'
 #' @examples
-#'  data(condDat)
-#'  str(condDat)
+#'  data(constants)
+#'  print(constants)
+NULL
+
+
+#' @title ctrl the control file for a particular MSE run
+#'
+#' @description crtl contains the information required to conduct a
+#'     particular MSE run. It identifies directories, filenames, the
+#'     number of replicates,m and other variables
+#'
+#' @name ctrl
+#'
+#' @docType data
+#'
+#' @section contents:
+#' \itemize{
+#'   \item runlabel  the identifying name for the run
+#'   \item regionfile  filename containing the region data, see region1
+#'   \item datafile  filename containing the population defintions, see constants
+#'   \item hcrfile  filename continaing the details of the HCR used
+#'   \item outdir  the output directory, containing a plots subdir
+#'   \item reps  how many replicates in this instance, usually 1000
+#'   \item initdepl  the initial depletion level for the region
+#'   \item assessinterval  how often should the region be assessed
+#'   \item withsigR  the level of recruitment variability
+#'   \item withsigB  the level of noise on biomass estimates
+#'   \item withsigce  the level of noise on cpue estimates
+#' }
+#'
+#' @examples
+#'  data(ctrl)
+#'  print(ctrl)
 NULL
 
 #' @title midg is an abalone tagging data-set from the Actaeons
@@ -71,6 +103,37 @@ NULL
 #'  plot(midg$Lt,midg$DL,type="p",pch=16,cex=1.0,xlim=c(5,180))
 #'  abline(h=0,col=1)
 #'  par(oldpar)
+NULL
+
+#' @title region1 the constants within a region
+#'
+#' @description region1 contains the constants relating to the whole
+#'     region rather than th epopulations. See th elisting below.
+#'
+#' @name region1
+#'
+#' @docType data
+#'
+#' @format A list of constants that are uniform across all populations
+#'     in a region
+#' \describe{
+#'   \item{SMUnames}{the names of each SMU}
+#'   \item{SMUpop}{a vector of how many populations in each SMU}
+#'   \item{minc}{the mid-point of the minimum size class}
+#'   \item{cw}{the size-class width in mm}
+#'   \item{larvdisp}{the rate of larval dispersal as a proportion}
+#'   \item{randomseed}{used if results need repeating}
+#'   \item{outyear}{a vector on Nyrs, fix year, and start year}
+#'   \item{projLML}{the time series of LML used in the MSE projections}
+#'   \item{histLML}{time series of LML if conditioning the model prior
+#'       to projections}
+#'   \item{globals}{a list of global constants, containing numpop,
+#'       nSMU, midpts, Nclass, Nyrs, and larvdisp}
+#' }
+#'
+#' @examples
+#'  data(region1)
+#'  print(region1)
 NULL
 
 #' @title tasab is a matrix of abalone maturity-at-length data

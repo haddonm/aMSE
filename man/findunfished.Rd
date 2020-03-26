@@ -4,7 +4,7 @@
 \alias{findunfished}
 \title{findunfished runs the region 3 x Nyrs to equilibrium}
 \usage{
-findunfished(regC, regD, glob, lowlim = 0.005, uplim = 0.35, inc = 0.005)
+findunfished(regC, regD, glob, lowlim = 0, uplim = 0.35, inc = 0.005)
 }
 \arguments{
 \item{regC}{the constants components of the simulated region}
@@ -13,7 +13,7 @@ findunfished(regC, regD, glob, lowlim = 0.005, uplim = 0.35, inc = 0.005)
 
 \item{glob}{the general global variables}
 
-\item{lowlim}{the lower limit of harvest rate applied, default=0.005}
+\item{lowlim}{the lower limit of harvest rate applied, default=0.0}
 
 \item{uplim}{the upper limit of harvest rate applied, default=0.35}
 
@@ -30,5 +30,16 @@ findunfished runs the region 3 x Nyrs so as to find
     and the initial depletions are set to 1.0
 }
 \examples{
-print("wait on internal data sets")
+\dontrun{  # takes too long to run
+  data(region1)
+  glb <- region1$globals
+  data(constants)
+  ans <- makeregionC(region1,constants)
+  regionC <- ans$regionC
+  ans <- makeregion(glb,regionC)
+  regionC <- ans$regionC
+  regionD <- ans$regionD
+  ans2 <- findunfished(regionC,regionD,glb)
+  str(ans2,max.level=2)
+}
 }

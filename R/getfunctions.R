@@ -29,58 +29,57 @@ getregionLF <- function(regD,glb) { # need to define years
   return(storeLF)
 } # end of getregionLF
 
-#' @title getlistVar Extracts a vector or maxtrix of vectors from zone
+#' @title getlistvar extracts a vector or matrix from regionC
 #'
-#' @description getlistVar Extracts a vector or maxtrix of vectors from
-#'    zone if a vector the names relate to populations, if a matrix the
-#'    columns relate to populations the rows to the years of simulation.
-#'    Only Me, R0, B0, steeph, ExploitB, MatureB, HarvestR, Catch,
-#'    popdef, MSY, LML, bLML, SaM, cpue, Recruit, and ExB0, are
-#'    currently valid choices. The indexVar = popdef would generate a
-#'    listing of all the constants which would obviate the need for Me,
-#'    R0, and steeph.
-#' @param inzone the zone being explored; a 'zone'
-#' @param indexVar the name of the variable to be extracted; character
-#' @return either a vector or matrix of values depending on the variable
+#' @description getlistvar extracts a vector or matrix from regionC.
+#'    If a vector of scalars, the names relate to populations, if a
+#'    matrix the columns relate to populations. Only Me, R0, B0, effB0,
+#'    ExB0, effExB0, MSY, MSYDepl, bLML, popq, SaM, SMUname, popdef,
+#'    LML, Maturity, WtL, Emergent, and MatWt are currently valid
+#'    choices. The indexvar = popdef would generate a listing of all
+#'    the constants. If you only want a single constant from popdefs
+#'    then use indexvar2.
+#'
+#' @param regC the constants components of the simulated region
+#' @param indexvar the name of the variable to be extracted; character
+#' @param indexvar2 the name of the variable within popdef to extract
+#'
+#' @return either a vector or matrix of values depending on variable
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#'  data(condDat)
-#'  out <- makeZone(condDat)
-#'  zone <- out$zone
-#'  getlistVar(zone,"MSY")
-#'  getlistVar(zone,"B0")
-#' }
-getlistVar <- function(inzone,indexVar) { # inzone=zone
-  if (is.character(indexVar)) {
-    fields <- c("Me","R0","B0","steeph","ExploitB","MatureB","HarvestR",
-                "Catch","popdef","MSY","MSYDepl","LML",
-                "bLML","SaM","cpue","Recruit","ExB0","Maturity",
-                "WtL","Emergent","MatWt")
-  #index <- c(9,11,12,14,15,17,19,20,22,23,27,28) # same order as fields
-    pick <- match(indexVar,fields)
+#'  data(region1)
+#'  data(constants)
+#'  ans <- makeregionC(region=region1,const=constants)
+#'  regionC <- ans$regionC
+#'  getlistvar(regionC,"MSY")
+#'  getlistvar(regionC,"B0")
+#'  getlistvar(regionC,"popdef","AvRec")
+getlistvar <- function(regC,indexvar,indexvar2="") {
+  if (is.character(indexvar)) {
+    fields <- c("Me","R0","B0","effB0","ExB0","effExB0","MSY",
+                "MSYDepl","bLML","popq","SaM","SMUname",
+                "popdef","LML","Maturity","WtL","Emergent","MatWt")
+    vects<- c("popdef","LML","Maturity","WtL","Emergent","MatWt")
+    pick <- match(indexvar,fields)
+    numpop <- length(regC)
     if (is.na(pick)) {
       warning(paste0(fields,"  "))
       stop("Invalid variable name attempted in getlistVar")
-    } else {
-      x <- sapply(inzone,"[[",indexVar)
     }
-  }
-  numpop <- length(inzone)
-  Nvals <- length(inzone[[1]][[indexVar]])
-  if (Nvals == 1) {
-    names(x) <- paste0("p",1:numpop)
-  }  else {
-    colnames(x) <- paste0("p",1:numpop)
-    numrow <- nrow(x)
-    if (numrow == nrow(inzone[[1]]$G)) {
-        rownames(x) <- rownames(inzone[[1]]$G)
+    x <- sapply(regC,"[[",indexvar)
+    if (fields[pick] %in% vects) {
+      colnames(x) <- paste0("p",1:numpop)
     } else {
-        rownames(x) <- paste0("y",1:numrow)
+      names(x) <- paste0("p",1:numpop)
     }
+    if ((indexvar == "popdef") & (nchar(indexvar2) > 0)) {
+      x <- sapply(regC,"[[",indexvar)[indexvar2,]
+      names(x) <- paste0("p",1:numpop)
+    }
+  } else {
+    stop("Non-character variable in indexvar within getlistvar")
   }
-  if (indexVar == "popdef") rownames(x) <-names(inzone[[1]][[indexVar]])
   return(x)
 } # End of getlistVar
 

@@ -4,14 +4,14 @@
 \alias{definepops}
 \title{definepops makes a parameter vector, popdef, for each population}
 \usage{
-definepops(inSMU, inSMUindex, bConst, glob)
+definepops(inSMU, inSMUindex, const, glob)
 }
 \arguments{
 \item{inSMU}{the number of SMUs defined in the region, a scalar}
 
 \item{inSMUindex}{a vector of the block index for each population}
 
-\item{bConst}{a matrix with rows containing the PDF parameters for
+\item{const}{a matrix with rows containing the PDF parameters for
 each of the biological parameters. The columns of the matrix
 reflect values for each populations from readdatafile}
 
@@ -25,11 +25,17 @@ a matrix with a row for each population and whose columns
 definepops makes a parameter vector, popdef, for each
     population. Each population will have slightly different
     biological properties sampled from probability density
-    distributions defined in bConst=condDat$constants. The input can
+    distributions defined in const=condDat$constants. The input can
     be either the whole of condDat or just condDat$constants, which
     contains the definitions of the probability density functions
     used to define each population.
 }
 \examples{
-print("need to wait on built in data sets")
+  data(region1)
+  glb <- region1$globals
+  data(constants)
+  ans <- makeregionC(region1,constants)
+  regionC <- ans$regionC
+  popdefs <- ans$popdefs
+  print(popdefs)
 }

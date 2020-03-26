@@ -33,5 +33,5 @@ makeabpop generates the full population structure in an
    achieves equilibrium.
 }
 \examples{
-print("wait on internal data sets")
+print("See the code for makeregionC to see usage of makeabpop")
 }

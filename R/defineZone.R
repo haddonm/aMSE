@@ -44,14 +44,14 @@ defineBlock <- function(numblk,blknum,numpop) {
 #' @description definepops makes a parameter vector, popdef, for each
 #'     population. Each population will have slightly different
 #'     biological properties sampled from probability density
-#'     distributions defined in bConst=condDat$constants. The input can
+#'     distributions defined in const=condDat$constants. The input can
 #'     be either the whole of condDat or just condDat$constants, which
 #'     contains the definitions of the probability density functions
 #'     used to define each population.
 #'
 #' @param inSMU the number of SMUs defined in the region, a scalar
 #' @param inSMUindex a vector of the block index for each population
-#' @param bConst a matrix with rows containing the PDF parameters for
+#' @param const a matrix with rows containing the PDF parameters for
 #'     each of the biological parameters. The columns of the matrix
 #'     reflect values for each populations from readdatafile
 #' @param glob the globals object from readregionfile
@@ -61,9 +61,15 @@ defineBlock <- function(numblk,blknum,numpop) {
 #' @export
 #'
 #' @examples
-#' print("need to wait on built in data sets")
-definepops <- function(inSMU,inSMUindex,bConst,glob) {
-  #  inSMU=nSMU; inSMUindex=SMUindex; bConst=const; glob=glb
+#'   data(region1)
+#'   glb <- region1$globals
+#'   data(constants)
+#'   ans <- makeregionC(region1,constants)
+#'   regionC <- ans$regionC
+#'   popdefs <- ans$popdefs
+#'   print(popdefs)
+definepops <- function(inSMU,inSMUindex,const,glob) {
+  #  inSMU=nSMU; inSMUindex=SMUindex; const=constants; glob=glb
   numpop <- glob$numpop
   Nyrs <- glob$Nyrs
   columns <- c("DLMax","L50","L95","SigMax","SaMa","SaMb","Wta","Wtb","Me",
@@ -73,42 +79,108 @@ definepops <- function(inSMU,inSMUindex,bConst,glob) {
                     dimnames=list(1:numpop,columns))
   popdefs[,"Nyrs"] <- rep(Nyrs,numpop) # Num Years - why is this here?
   for (pop in 1:numpop) {  # blk=2
-    popdefs[pop,"Me"] <- rnorm(1,mean=bConst["Me",pop],
-                               sd=bConst["sMe",pop])
-    popdefs[pop,"DLMax"] <- rnorm(1,mean=bConst["DLMax",pop],
-                                  sd=bConst["sMaxDL",pop])   # DLMax
-    popdefs[pop,"L50"] <- rnorm(1,mean=bConst["L50",pop],
-                                bConst["sL50",pop])
+    popdefs[pop,"Me"] <- rnorm(1,mean=const["Me",pop],
+                               sd=const["sMe",pop])
+    popdefs[pop,"DLMax"] <- rnorm(1,mean=const["DLMax",pop],
+                                  sd=const["sMaxDL",pop])   # DLMax
+    popdefs[pop,"L50"] <- rnorm(1,mean=const["L50",pop],
+                                const["sL50",pop])
     popdefs[pop,"L95"] <- popdefs[pop,"L50"] +
-      rnorm(1,mean=bConst["L50inc",pop],bConst["sL50inc",pop]) #L95
-    popdefs[pop,"SigMax"] <- rnorm(1,mean=bConst["SigMax",pop],
-                                   sd=bConst["sSigMax",pop])   # SigMax
-    popdefs[pop,"L50mat"] <- rnorm(1,mean=bConst["L50Mat",pop],
-                                   bConst["sL50Mat",pop])   # L50Mat
-    popdefs[pop,"SaMa"] <- bConst["SaMa",pop]
+      rnorm(1,mean=const["L50inc",pop],const["sL50inc",pop]) #L95
+    popdefs[pop,"SigMax"] <- rnorm(1,mean=const["SigMax",pop],
+                                   sd=const["sSigMax",pop])   # SigMax
+    popdefs[pop,"L50mat"] <- rnorm(1,mean=const["L50Mat",pop],
+                                   const["sL50Mat",pop])   # L50Mat
+    popdefs[pop,"SaMa"] <- const["SaMa",pop]
     popdefs[pop,"SaMb"] <- -popdefs[pop,"SaMa"]/popdefs[pop,"L50mat"]
-    popdefs[pop,"SelP1"] <- bConst["selL50p",pop]
-    popdefs[pop,"SelP2"] <-  bConst["selL95p",pop]
-    popdefs[pop,"L50C"] <- rnorm(1,mean=bConst["L50C",pop],
-                                 bConst["sL50C",pop])
-    popdefs[pop,"deltaC"] <-rnorm(1,mean=bConst["deltaC",pop],
-                                  bConst["sdeltaC",pop])
-    popdefs[pop,"Wtb"] <- rnorm(1,mean=bConst["Wtb",pop],
-                                bConst["sWtb",pop])  # wt parameters
-    popdefs[pop,"Wta"] <- bConst["Wtbtoa",pop] *
-      popdefs[pop,"Wtb"]^bConst["sWtbtoa",pop]
-    popdefs[pop,"steeph"] <- rnorm(1,mean=bConst["defsteep",pop],
-                                   bConst["sdefsteep",pop])
-    popdefs[pop,"AvRec"] <- rlnorm(1,meanlog=bConst["AvRec",pop],
-                                   bConst["sAvRec",pop])
-    popdefs[pop,"MaxCE"] <- rnorm(1,mean=bConst["MaxCEpars",pop],
-                                  bConst["sMaxCEpars",pop])
-    popdefs[pop,"SMU"] <- bConst["SMU",pop]
+    popdefs[pop,"SelP1"] <- const["selL50p",pop]
+    popdefs[pop,"SelP2"] <-  const["selL95p",pop]
+    popdefs[pop,"L50C"] <- rnorm(1,mean=const["L50C",pop],
+                                 const["sL50C",pop])
+    popdefs[pop,"deltaC"] <-rnorm(1,mean=const["deltaC",pop],
+                                  const["sdeltaC",pop])
+    popdefs[pop,"Wtb"] <- rnorm(1,mean=const["Wtb",pop],
+                                const["sWtb",pop])  # wt parameters
+    popdefs[pop,"Wta"] <- const["Wtbtoa",pop] *
+      popdefs[pop,"Wtb"]^const["sWtbtoa",pop]
+    popdefs[pop,"steeph"] <- rnorm(1,mean=const["defsteep",pop],
+                                   const["sdefsteep",pop])
+    popdefs[pop,"AvRec"] <- rlnorm(1,meanlog=const["AvRec",pop],
+                                   const["sAvRec",pop])
+    popdefs[pop,"MaxCE"] <- rnorm(1,mean=const["MaxCEpars",pop],
+                                  const["sMaxCEpars",pop])
+    popdefs[pop,"SMU"] <- const["SMU",pop]
   }
   test <- popdefs[,"L95"] - popdefs[,"L50"]
   if (any(test < 0)) stop("L95 < L50 - adjust the input data file  \n")
   return(popdefs)
 } # end of definepops
+
+#' @title dodepletion resets regionD to an input depletion level
+#'
+#' @description dodepletion resets the depletion level of the whole
+#'     regionand does this by searching for the harvest rate that
+#'     leads to the sum of the mature biomass, across populations,
+#'     divided by the sum of the effective B0 across populations is
+#'     as close as possible to the desired depletion level. This means
+#'     the individual populations will likely vary around the target
+#'     depletion, but across the region it will be correct. The
+#'     depletion is measured relative to the effective B0 as that
+#'     takes account of any larval dispersal. This function uses the
+#'     production curve matrix to search for harvest rates that bound
+#'     the target depletion and then re-searches across those bounds
+#'     using len intervals.
+#'
+#' @param regC the constants components of the simulated region
+#' @param regD the dynamic components of the simulated region
+#' @param glob the general global variables
+#' @param depl the target depletion proportion for the whole region
+#' @param product the production curve matrix from doproduction
+#' @param len the number of intervals in the trial harvest rates
+#'
+#' @return a revised regionD object
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'   data(region1)
+#'   glb <- region1$globals
+#'   data(constants)
+#'   ans <- makeregionC(region1,constants)
+#'   regionC <- ans$regionC
+#'   ans <- makeregion(glb,regionC)
+#'   regionC <- ans$regionC
+#'   regionD <- ans$regionD
+#'   ans2 <- findunfished(regionC,regionD,glb)
+#'   regionC <- ans2$regionC  # region constants
+#'   regionD <- ans2$regionD  # region dynamics
+#'   product <- ans2$product
+#'   regDD <- dodepletion(regionC,regionD,glb,depl=0.3,product)
+#'   sum(regDD$matureB)/sum(getlistvar(regionC,"effB0"))
+#'   mean(regDD$deplsB[1,])
+#' }
+dodepletion <- function(regC,regD,glob,depl,product,len=15) {
+  #regC=regionC; regD=regionD; glob=glb;  product=product; depl=0.3;len=15
+  regB0 <- sum(sapply(regionC,"[[","effB0"))
+  matb <- rowSums(product[,"MatB",])
+  regdepl <- matb/regB0
+  initH <- as.numeric(names(regdepl))
+  pick <- which.closest(depl,regdepl)
+  if (abs(regdepl[pick] - depl) > 0.05)
+    warning("Resolution of production curves may be insufficient.")
+  lowl <- initH[pick-1]
+  upl <- initH[pick+1]
+  dinitH <- seq(lowl,upl,length=len)
+  inc <- dinitH[2] - dinitH[1]
+  regprod <- doproduction(regC,regD,glob,lowlim=lowl,uplim=upl,inc=inc)
+  finedepl <- rowSums(regprod[,"MatB",])/regB0
+  harv <- seq(lowl,upl,inc)
+  pick <- which.closest(depl,finedepl)
+  pickharv <- rep(harv[pick],glob$numpop)
+  regDD <- runthreeH(regC,regD,glob,inHarv=pickharv)
+  return(regDD)
+} # end of dodepletion
+
 
 #' @title doproduction estimates a production curve for each population
 #'
@@ -131,7 +203,7 @@ definepops <- function(inSMU,inSMUindex,bConst,glob) {
 #' @param regC the constants components of the simulated region
 #' @param regD the dynamic components of the simulated region
 #' @param glob the general global variables
-#' @param lowlim the lower limit of harvest rate applied, default=0.005
+#' @param lowlim the lower limit of harvest rate applied, default=0.0
 #' @param uplim the upper limit of harvest rate applied, default=0.35
 #' @param inc the harvest rate increment at each step, default=0.005
 #'
@@ -141,7 +213,7 @@ definepops <- function(inSMU,inSMUindex,bConst,glob) {
 #'
 #' @examples
 #' print("wait")
-doproduction <- function(regC,regD,glob,lowlim=0.005,uplim=0.35,inc=0.005) {
+doproduction <- function(regC,regD,glob,lowlim=0.0,uplim=0.35,inc=0.005) {
   numpop <- glob$numpop
   Nclass <- glob$Nclass
   Nyrs <- glob$Nyrs
@@ -151,7 +223,7 @@ doproduction <- function(regC,regD,glob,lowlim=0.005,uplim=0.35,inc=0.005) {
   columns <- c("ExB","MatB","AnnH","Catch","Deplet","RelCE")
   results <- array(0,dim=c(nH,6,numpop),dimnames=list(initH,columns,1:numpop))
   for (aH in 1:nH) { # aH=1 ; yr=2
-    regD <- runthreeH(regC=regC, regD=regD, glob=glob, inHarv=rep(initH[aH],numpop))
+    regD <- runthreeH(regC,regD,glob,inHarv=rep(initH[aH],numpop))
     results[aH,"ExB",] <- regD$exploitB[1,]
     results[aH,"MatB",] <- regD$matureB[1,]
     results[aH,"AnnH",] <- regD$harvestR[1,]
@@ -290,19 +362,35 @@ fillzoneDef <- function(regC,regD,prod) {  # inzone=zone; prod=production
 #' @param product array of productivity values output from doproduction
 #'
 #' @return a matrix of numpop rows containing the approximate MSY
-#'     related productivity values
+#'     related productivity values and the index of the approx MSY
 #' @export
 #'
 #' @examples
-#' print("wait on data sets")
-findmsy <- function(product) {
+#' \dontrun{  # takes far too long
+#'   data(region1)
+#'   glb <- region1$globals
+#'   data(constants)
+#'   ans <- makeregionC(region1,constants)
+#'   regionC <- ans$regionC
+#'   ans <- makeregion(glb,regionC)
+#'   regionC <- ans$regionC
+#'   regionD <- ans$regionD
+#'   ans2 <- findunfished(regionC,regionD,glb)
+#'   regionC <- ans2$regionC  # region constants
+#'   regionD <- ans2$regionD  # region dynamics
+#'   product <- ans2$product
+#'   approxMSY <- findmsy(product)
+#'   print(approxMSY)
+#' }
+findmsy <- function(product) {  # product=product
   catch <- product[,"Catch",]
   numpop <- ncol(catch)
-  xval <- matrix(0,nrow=numpop,ncol=ncol(product),
-                 dimnames=list(1:numpop,colnames(product)))
+  label <- c(colnames(product),"index")
+  xval <- matrix(0,nrow=numpop,ncol=length(label),
+                 dimnames=list(1:numpop,label))
   for (pop in 1:numpop) {
     pick <- which.max(catch[,pop])
-    xval[pop,] <- product[pick,,pop]
+    xval[pop,] <- c(product[pick,,pop],pick)
   }
   return(xval)
 } # end of findmsy
@@ -318,7 +406,7 @@ findmsy <- function(product) {
 #' @param regC the constants components of the simulated region
 #' @param regD the dynamic components of the simulated region
 #' @param glob the general global variables
-#' @param lowlim the lower limit of harvest rate applied, default=0.005
+#' @param lowlim the lower limit of harvest rate applied, default=0.0
 #' @param uplim the upper limit of harvest rate applied, default=0.35
 #' @param inc the harvest rate increment at each step, default=0.005
 #'
@@ -326,8 +414,19 @@ findmsy <- function(product) {
 #' @export
 #'
 #' @examples
-#' print("wait on internal data sets")
-findunfished <- function(regC,regD,glob,lowlim=0.005,uplim=0.35,inc=0.005) {
+#' \dontrun{  # takes too long to run
+#'   data(region1)
+#'   glb <- region1$globals
+#'   data(constants)
+#'   ans <- makeregionC(region1,constants)
+#'   regionC <- ans$regionC
+#'   ans <- makeregion(glb,regionC)
+#'   regionC <- ans$regionC
+#'   regionD <- ans$regionD
+#'   ans2 <- findunfished(regionC,regionD,glb)
+#'   str(ans2,max.level=2)
+#' }
+findunfished <- function(regC,regD,glob,lowlim=0.0,uplim=0.35,inc=0.005) {
   #  regC=regionC; regD=regionD;  glob=glb;lowlim=0.005;uplim=0.35;inc=0.005
   numpop <- glob$numpop
   inH <- rep(0.0,numpop)
@@ -413,10 +512,9 @@ logistic <- function(inL50,delta,lens,knifeedge=0) {
 #'     a vector obtained from the regiondatafile
 #'
 #' @return a list of numpop lists of 19 objects as detailed above.
-#' @export
 #'
 #' @examples
-#' print("wait on internal data sets")
+#' print("See the code for makeregionC to see usage of makeabpop")
 makeabpop <- function(popparam,midpts,projLML) {  #popparam=popdef;midpts=midpts;projLML=projLML
   #(DLMax,L50,L95,SigMax,SaMa,SaMb,Wta,Wtb,Me,L50C,L95C,R0 SelP[1],SelP[2],Nyrs,steeph,MaxCE,L50Mat block
   #   1    2   3    4      5    6   7   8   9 10   11   12  13     14      15   16     17    18     19
@@ -475,8 +573,15 @@ makeabpop <- function(popparam,midpts,projLML) {  #popparam=popdef;midpts=midpts
 #' @export
 #'
 #' @examples
-#' print("Wait on built in data")
-makeregionC <- function(region,const) { #  region=reg1; const=constants
+#' data(region1)
+#' data(constants)
+#' ans <- makeregionC(region=region1,const=constants)
+#' regionC <- ans$regionC
+#' popdefs <- ans$popdefs
+#' str(regionC,max.level=1)
+#' str(regionC[[1]])  # not complete at this stage
+#' print(popdefs)
+makeregionC <- function(region,const) { # region=reg1; const=constants
   glb <- region$globals
   nSMU <- glb$nSMU
   numpop <- glb$numpop
@@ -489,21 +594,12 @@ makeregionC <- function(region,const) { #  region=reg1; const=constants
   historicalLML <- region$histLML
   if (region$condition)
     projLML <- historicalLML else projLML <- projectionLML
-  # imph <- seq(0.01,uplim,0.01)   # harvest rate for productivity
-  # numrow <- length(imph)
-  pops <- trunc(const["popnum",])
-  # columns <- c("ExB","MatB","AnnH","Catch","Deplet","RelCE")
-  #  production <- array(0,dim=c(numpop,numrow,6),
-  #                      dimnames=list(pops,imph,columns))
-  popdefs <- definepops(nSMU,SMUindex,const,glob=glb) # define all pops in one go
+  #pops <- trunc(const["popnum",])
+  popdefs <- definepops(nSMU,SMUindex,const,glob=glb) # define pops
   regionC <- vector("list",numpop)
   for (pop in 1:numpop) {      # pop <- 1
     popdef <- popdefs[pop,]
     regionC[[pop]] <- makeabpop(popdef,midpts,projLML)
-    #  out <- doproduction(zone[[pop]],uplim=uplim)
-    #  zone[[pop]]$MSY <- out$MSY
-    #  zone[[pop]]$MSYDepl <- out$MSYDepl
-    #   production[pop,,] <- out$Productivity
     tmpL <- oneyrgrowth(regionC[[pop]],regionC[[pop]]$SaM)
     regionC[[pop]]$bLML <- oneyrgrowth(regionC[[pop]],tmpL)
     regionC[[pop]]$SMUname <- SMUnames[SMUindex[pop]]
@@ -536,7 +632,13 @@ makeregionC <- function(region,const) { #  region=reg1; const=constants
 #' @export
 #'
 #' @examples
-#'  print("wait on internal data sets")
+#'   data(region1)
+#'   glb <- region1$globals
+#'   data(constants)
+#'   ans <- makeregionC(region1,constants)
+#'   regionC <- ans$regionC
+#'   ans2 <- makeregion(glb,regionC)
+#'   str(ans2,max.level=2)
 makeregion <- function(glob,regC,uplim=0.4) {
   Nyrs <- glob$Nyrs
   numpop <- glob$numpop
@@ -765,11 +867,11 @@ oneyearrec <- function(steep,R0,B0,Bsp,sigR) {
 #' nblock <- 2
 #' filename <- datafiletemplate(numblock=nblock,filename="block3.csv")
 #' condDat <- readdatafile(filename)
-#' bConst <- condDat$constants
+#' const <- condDat$constants
 #' blkpop <- condDat$blkpop
 #' numpop <- condDat$numpop
 #' blockI <- defineBlock(nblock,blkpop,numpop)
-#' popdefs <- definepops(nblock,blockI,bConst)
+#' popdefs <- definepops(nblock,blockI,const)
 #' pop1 <- makeabpop(popdefs[1,],condDat$midpts,
 #'                   condDat$ProjLML[popdefs[1,20]])
 #' oneyrgrowth(pop1,startsize=70)
@@ -1039,7 +1141,7 @@ STM <- function(p,mids) { #    # p <- popparam[1:4]; mids <- midpts
 #' @export
 #'
 #' @examples
-#' print("wait on built in data sets")
+#' print("wait on built in data sets")  #regC=regionC; regD=regionD; glob=glb; inH=
 testequil <- function(regC,regD,glob,inH,verbose=TRUE) {
   Nyrs <- glob$Nyrs
   Nclass <- glob$Nclass

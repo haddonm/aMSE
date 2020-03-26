@@ -37,4 +37,3 @@ findF1 <- function(pop,res,location=TRUE) {
 
 
 
-

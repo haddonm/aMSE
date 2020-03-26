@@ -28,5 +28,5 @@ testequil runs a given region for Nyrs at the given
     to the console if verbose=TRUE
 }
 \examples{
-print("wait on built in data sets")
+print("wait on built in data sets")  #regC=regionC; regD=regionD; glob=glb; inH=
 }

@@ -4,7 +4,7 @@
 \alias{doproduction}
 \title{doproduction estimates a production curve for each population}
 \usage{
-doproduction(regC, regD, glob, lowlim = 0.005, uplim = 0.35, inc = 0.005)
+doproduction(regC, regD, glob, lowlim = 0, uplim = 0.35, inc = 0.005)
 }
 \arguments{
 \item{regC}{the constants components of the simulated region}
@@ -13,7 +13,7 @@ doproduction(regC, regD, glob, lowlim = 0.005, uplim = 0.35, inc = 0.005)
 
 \item{glob}{the general global variables}
 
-\item{lowlim}{the lower limit of harvest rate applied, default=0.005}
+\item{lowlim}{the lower limit of harvest rate applied, default=0.0}
 
 \item{uplim}{the upper limit of harvest rate applied, default=0.35}
 

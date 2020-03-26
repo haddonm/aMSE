@@ -27,11 +27,11 @@ oneyrgrowth one years' growth for a given population and
 nblock <- 2
 filename <- datafiletemplate(numblock=nblock,filename="block3.csv")
 condDat <- readdatafile(filename)
-bConst <- condDat$constants
+const <- condDat$constants
 blkpop <- condDat$blkpop
 numpop <- condDat$numpop
 blockI <- defineBlock(nblock,blkpop,numpop)
-popdefs <- definepops(nblock,blockI,bConst)
+popdefs <- definepops(nblock,blockI,const)
 pop1 <- makeabpop(popdefs[1,],condDat$midpts,
                   condDat$ProjLML[popdefs[1,20]])
 oneyrgrowth(pop1,startsize=70)

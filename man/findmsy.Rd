@@ -11,7 +11,7 @@ findmsy(product)
 }
 \value{
 a matrix of numpop rows containing the approximate MSY
-    related productivity values
+    related productivity values and the index of the approx MSY
 }
 \description{
 findmsy for each population in the region, identifies
@@ -21,5 +21,20 @@ findmsy for each population in the region, identifies
     value at MSY
 }
 \examples{
-print("wait on data sets")
+\dontrun{  # takes far too long
+  data(region1)
+  glb <- region1$globals
+  data(constants)
+  ans <- makeregionC(region1,constants)
+  regionC <- ans$regionC
+  ans <- makeregion(glb,regionC)
+  regionC <- ans$regionC
+  regionD <- ans$regionD
+  ans2 <- findunfished(regionC,regionD,glb)
+  regionC <- ans2$regionC  # region constants
+  regionD <- ans2$regionD  # region dynamics
+  product <- ans2$product
+  approxMSY <- findmsy(product)
+  print(approxMSY)
+}
 }

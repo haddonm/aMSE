@@ -25,12 +25,14 @@ readdatafile expects a matrix of probability density
     popdefs.
 }
 \examples{
-\dontrun{
-datadir <- "./../../rcode2/aMSE/data-raw/"
+data(region1)
+glb <- region1$globals
+glb
+data(constants)
+constants
 ctrlfile <- "control.csv"
 ctrl <- readctrlfile(datadir,ctrlfile)
 reg1 <- readregionfile(datadir,ctrl$regionfile)
 popdefs <- readdatafile(datadir,ctrl$datafile,reg1$globals)
 print(popdefs)
-}
 }
