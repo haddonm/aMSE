@@ -994,7 +994,7 @@ resetLML <- function(inzone,inLML,inyear,glob) {
 #'     option of setting every other cell to zero, which is the
 #'     default.
 #'
-#' @param oldregD the old regionD contianing the dynamics as run for
+#' @param oldregD the old regionD containing the dynamics as run for
 #'     Nyrs.
 #' @param nyrs The number of years of dynamics, the global Nyrs
 #' @param npop The number of populations, the global numpop

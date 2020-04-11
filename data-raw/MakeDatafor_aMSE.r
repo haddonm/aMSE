@@ -34,6 +34,33 @@ save(region1,file=paste0(datadir,"region1.RData"))
 save(constants,file=paste0(datadir,"constants.RData"))
 
 
+# Complete region objects---------------------------------------------
+
+library(rutilsMH)
+library(aMSE)
+library(microbenchmark)
+
+data(ctrl)
+data(region1)
+glb <- region1$globals
+data(constants)
+# Define the region
+ans <- makeregionC(region1,constants)
+regionC <- ans$regionC
+popdefs <- ans$popdefs
+ans <- makeregion(glb,regionC)
+regionC <- ans$regionC  # region constants
+regionD <- ans$regionD  # region dynamics
+# adjust for larval dispersal
+ans <- findunfished(regionC,regionD,glb)
+testregC <- ans$regionC  # region constants
+testregD <- ans$regionD  # region dynamics
+product <- ans$product
+
+save(testregC,file=paste0(datadir,"testregC.RData"))
+save(testregD,file=paste0(datadir,"testregD.RData"))
+save(product,file=paste0(datadir,"product.RData"))
+
 # check and transfer -------------------------------------------------------
 
 
@@ -42,17 +69,6 @@ tools::checkRdaFiles(paths=datadir)
 tools::resaveRdaFiles(paths=datadir,compress="auto")
 tools::checkRdaFiles(paths=datadir)
 
-devtools::use_data(condDat,
-                   pkg="C:/A_mal/Rcode/Abalone/AbMSE",
-                   internal=FALSE, overwrite=TRUE)
-
-devtools::use_data(condDat3,
-                   pkg="C:/A_mal/Rcode/Abalone/AbMSE",
-                   internal=FALSE, overwrite=TRUE)
-
-devtools::use_data(abdat,
-                   pkg="C:/A_mal/Rcode/Abalone/abspatial",
-                   internal=FALSE, overwrite=TRUE)
 
 
 

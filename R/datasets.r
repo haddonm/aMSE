@@ -105,6 +105,35 @@ NULL
 #'  par(oldpar)
 NULL
 
+#' @title product is the productivity curve matrix from doproduction
+#'
+#' @description product is the productivity curve matrix from
+#'     doproduction when the example region is generated using the
+#'     inbuilt datasets ctrl, region1, and constants. The slowest
+#'     part of building the whole is to use the findunfished function
+#'     to adjust the regionC and regionD values to account for any
+#'     larval dispersal. To save that time in the examples (to avoid
+#'     time limits of examples should this package ewver go to CRAN),
+#'     then this dataset can be used instead. This is a three
+#'     dimensional array of productivity variables. Catch is the explected
+#'
+#' @name product
+#'
+#' @docType data
+#'
+#' @section contents:
+#' \itemize{
+#'   \item harvestrate the initial harvest rates applied
+#'   \item productivity variables ExB, MatB, AnnH, Catch, Deplet, RelCE
+#'   \item population the index of each population
+#' }
+#'
+#' @examples
+#'  data(product)
+#'  product[1:20,,1]
+NULL
+
+
 #' @title region1 the constants within a region
 #'
 #' @description region1 contains the constants relating to the whole
