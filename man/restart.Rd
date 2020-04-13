@@ -7,7 +7,7 @@
 restart(oldregD, nyrs, npop, N, zero = TRUE)
 }
 \arguments{
-\item{oldregD}{the old regionD contianing the dynamics as run for
+\item{oldregD}{the old regionD containing the dynamics as run for
 Nyrs.}
 
 \item{nyrs}{The number of years of dynamics, the global Nyrs}

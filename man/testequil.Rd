@@ -4,7 +4,7 @@
 \alias{testequil}
 \title{testequil runs a region Nyrs and determines stability}
 \usage{
-testequil(regC, regD, glob, inH, verbose = TRUE)
+testequil(regC, regD, glob, inH = 0, verbose = TRUE)
 }
 \arguments{
 \item{regC}{the constants components of the simulated region}
@@ -28,5 +28,19 @@ testequil runs a given region for Nyrs at the given
     to the console if verbose=TRUE
 }
 \examples{
-print("wait on built in data sets")  #regC=regionC; regD=regionD; glob=glb; inH=
+\dontrun{  # findunfished takes too long to run
+ data(ctrl)
+ data(region1)
+ glb <- region1$globals
+ data(constants)
+ ans <- makeregionC(region1,constants)
+ regionC <- ans$regionC
+ ans <- makeregion(glb,regionC)
+ regionC <- ans$regionC  # region constants
+ regionD <- ans$regionD
+ ans <- findunfished(regionC,regionD,glb)
+ regionC <- ans$regionC  # region constants
+ regionD <- ans$regionD  # region dynamics
+ regDe <- testequil(regC=regionC,regD=regionD,glob=glb)
+}
 }

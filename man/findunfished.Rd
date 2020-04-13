@@ -23,11 +23,19 @@ findunfished(regC, regD, glob, lowlim = 0, uplim = 0.35, inc = 0.005)
 a list containing the updated regionC and regionD
 }
 \description{
-findunfished runs the region 3 x Nyrs so as to find
-    the equilibrium. This is necessary if there is any larval
-    dispersal set in the region data. It populated the values of
-    effB0 and effExB0, the popq, the initial cpue is set to NA,
-    and the initial depletions are set to 1.0
+findunfished runs the region 3 x Nyrs so as to force
+    the different populations to an equilibrium with respect to
+    larval dispersal. If larval dispersal is greater than 0.0, then
+    the standard methods for calculating the initial equilibrium
+    conditions fail because the larval dispersal is proportional to
+    each populations initial size. By running the dynamics 3x,
+    findunfished can then adjust the values of effB0 and effExB0,
+    it then sets the popq, the initial cpue is set to NA, and the
+    initial depletions are reset to 1.0. Then it fills each
+    population's MSY and MSYDepl values. If larval dispersal = 0.0,
+    then the effeBO and effExB0 are = B0 and ExB0. If positive
+    larval dispersal then the applicaiton of this function ensures
+    the region starts at equilibrium. Beware, this is slow.
 }
 \examples{
 \dontrun{  # takes too long to run

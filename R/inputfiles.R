@@ -292,7 +292,7 @@ makeLabel <- function(invect,insep="_") {
 #'  ctrl <- readctrlfile(indir=direct,infile=infile)
 #'  str(ctrl)
 readctrlfile <- function(indir,infile="control.csv") {
-   filename <- filenametopath(indir,infile)
+   filename <- file.path(indir,infile)
    indat <- readLines(filename)   # reads the whole file as character strings
    begin <- grep("START",indat) + 1
    runlabel <- getStr(indat[begin],1)
@@ -345,7 +345,7 @@ readctrlfile <- function(indir,infile="control.csv") {
 #' print(popdefs)
 readdatafile <- function(indir,infile,glb) {  # indir=datadir;infile=ctrl$datafile;glb=ctrl$globals
    numpop <- glb$numpop
-   filename <- filenametopath(indir,infile)
+   filename <- file.path(indir,infile)
    indat <- readLines(filename)   # reads the whole file as character strings
    begin <- grep("PDFs",indat)
    npar <- getConst(indat[begin],1)
@@ -483,7 +483,7 @@ readhcrfile <- function(infile) {  # infile <- "C:/A_CSIRO/Rcode/AbMSERun/ctrl_w
 #' }
 readregionfile <- function(indir,infile) {  # infile="region1.csv"; indir=datadir
    context <- "region file"
-   filename <- filenametopath(indir,infile)
+   filename <- file.path(indir,infile)
    indat <- readLines(filename)   # reads the whole file as character strings
    nSMU <-  getsingleNum("nSMU",indat) # number of spatial management units
    begin <- grep("SMUpop",indat)

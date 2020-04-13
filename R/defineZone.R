@@ -397,11 +397,19 @@ findmsy <- function(product) {  # product=product
 
 #' @title findunfished runs the region 3 x Nyrs to equilibrium
 #'
-#' @description findunfished runs the region 3 x Nyrs so as to find
-#'     the equilibrium. This is necessary if there is any larval
-#'     dispersal set in the region data. It populated the values of
-#'     effB0 and effExB0, the popq, the initial cpue is set to NA,
-#'     and the initial depletions are set to 1.0
+#' @description findunfished runs the region 3 x Nyrs so as to force
+#'     the different populations to an equilibrium with respect to
+#'     larval dispersal. If larval dispersal is greater than 0.0, then
+#'     the standard methods for calculating the initial equilibrium
+#'     conditions fail because the larval dispersal is proportional to
+#'     each populations initial size. By running the dynamics 3x,
+#'     findunfished can then adjust the values of effB0 and effExB0,
+#'     it then sets the popq, the initial cpue is set to NA, and the
+#'     initial depletions are reset to 1.0. Then it fills each
+#'     population's MSY and MSYDepl values. If larval dispersal = 0.0,
+#'     then the effeBO and effExB0 are = B0 and ExB0. If positive
+#'     larval dispersal then the applicaiton of this function ensures
+#'     the region starts at equilibrium. Beware, this is slow.
 #'
 #' @param regC the constants components of the simulated region
 #' @param regD the dynamic components of the simulated region
@@ -1141,15 +1149,30 @@ STM <- function(p,mids) { #    # p <- popparam[1:4]; mids <- midpts
 #' @export
 #'
 #' @examples
-#' print("wait on built in data sets")  #regC=regionC; regD=regionD; glob=glb; inH=
-testequil <- function(regC,regD,glob,inH,verbose=TRUE) {
+#' \dontrun{  # findunfished takes too long to run
+#'  data(ctrl)
+#'  data(region1)
+#'  glb <- region1$globals
+#'  data(constants)
+#'  ans <- makeregionC(region1,constants)
+#'  regionC <- ans$regionC
+#'  ans <- makeregion(glb,regionC)
+#'  regionC <- ans$regionC  # region constants
+#'  regionD <- ans$regionD
+#'  ans <- findunfished(regionC,regionD,glb)
+#'  regionC <- ans$regionC  # region constants
+#'  regionD <- ans$regionD  # region dynamics
+#'  regDe <- testequil(regC=regionC,regD=regionD,glob=glb)
+#' }
+testequil <- function(regC,regD,glob,inH=0.0,verbose=TRUE) {
   Nyrs <- glob$Nyrs
   Nclass <- glob$Nclass
   npop <- glob$numpop
   larvdisp <- glob$larvdisp
+  inHarv <- rep(inH,npop)
   for (yr in 2:Nyrs)
     regD <- oneyearD(regC=regC,regD=regD,Ncl=Nclass,
-                     inHt=inH,year=yr,sigmar=1e-08,npop=npop,
+                     inHt=inHarv,year=yr,sigmar=1e-08,npop=npop,
                      deltarec=larvdisp)
   if (verbose) {
     if (all(trunc(regD$matureB[1,],3) == trunc(regD$matureB[Nyrs,],3))) {

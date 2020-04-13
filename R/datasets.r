@@ -203,3 +203,61 @@ NULL
 #'  table(tasab$site,tasab$sex)
 NULL
 
+
+#' @title testregC is a region list made up of 6 equilibrium populations
+#'
+#' @description testregC is a region list made up of 6 equilibrium
+#'     populations. These have been run with a laral dispersal rate of
+#'     0.03 so the change from B0 to effB0 is not great, but still
+#'     required for an initial equilibrium. This is here to simplify
+#'     the internal testing of funcitons that require a completed
+#'     region starting at equilibrium. Its name is to avoid conflict
+#'     with any actual use of regionC. use str(testregC, max.level=1)
+#'     to see its format. It can be expected to be used with testregD
+#'
+#' @name testregC
+#'
+#' @docType data
+#'
+#' @section Subjects:
+#'  \itemize{
+#'    \item testing of functions that require a full region
+#'    \item initial equilibrium
+#'  }
+#'
+#' @examples
+#'  data(testregC)
+#'  data(testregD)
+#'  data(region1)
+#'  glb <- region1$globals
+#'  ans <- testequil(testregC, testregD, glb)
+NULL
+
+#' @title testregC is a list of 8 matrices and 2 arrays defining the dynamics of a region
+#'
+#' @description testregC is a list of 8 matrices and 2 arrays defining
+#'     the dynamics of a region. These have been run with a larval
+#'     dispersal rate of 0.03 to achieve an initial equilibrium. This
+#'     is here to simplify the internal testing of functions that
+#'     require a completed region starting at equilibrium. Its name is
+#'     to avoid conflict with any actual use of regionD. use
+#'     str(testregD, max.level=1) to see its format. It can be
+#'     expected to be used with testregC.
+#'
+#' @name testregD
+#'
+#' @docType data
+#'
+#' @section Subjects:
+#'  \itemize{
+#'    \item testing of functions that require a full region
+#'    \item initial equilibrium
+#'  }
+#'
+#' @examples
+#'  data(testregC)
+#'  data(testregD)
+#'  data(region1)
+#'  glb <- region1$globals
+#'  ans <- testequil(testregC, testregD, glb)
+NULL
