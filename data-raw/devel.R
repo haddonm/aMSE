@@ -1,5 +1,5 @@
 # file reading ------------------------------------------------------
-
+starttime <- as.character(Sys.time())
 library(rutilsMH)
 library(aMSE)
 library(microbenchmark)
@@ -165,7 +165,7 @@ graphics.off()
  plotprep(width=7,height=4,newdev=FALSE,filename=filename,verbose=FALSE)
  xval <- findmsy(product)
  numpop <- glb$numpop
- plotprod(limprod,xname="Deplet",xlab="Population Depletion Level",
+ plotprod(product,xname="Deplet",xlab="Population Depletion Level",
           xlimit=c(0.2,0.35))
  for (pop in 1:numpop) abline(v=xval[pop,"Deplet"],lwd=2,col=pop)
  legend("topright",paste0("P",1:numpop),lwd=3,col=c(1:numpop),bty="n",
@@ -178,4 +178,39 @@ graphics.off()
 
 
 # end characterize productivity --------------------------------------
+
+ tablefile <- read.csv(plottabfile,colClasses = "character")
+ class(tablefile)
+
+ endtime <- as.character(Sys.time())
+
+
+ reportlist <- list(
+         runname=runname,
+         starttime=starttime,
+         endtime=endtime,
+         regionC=regionC,
+         regionD=regionD,
+         product=product,
+         glb=glb,
+         constants=constants
+ )
+ str(reportlist,max.level = 1)
+
+
+ make_html(replist=reportlist,rundir=rundir,width=500,
+           openfile=TRUE,runnotes=NULL,verbose=TRUE)
+
+
+
+
+
+
+
+
+
+
+
+
+
 

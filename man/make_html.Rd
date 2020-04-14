@@ -6,8 +6,7 @@
 \usage{
 make_html(
   replist = NULL,
-  resdir = NULL,
-  plotFileTable = "plotFileTable",
+  rundir = NULL,
   width = 500,
   openfile = TRUE,
   runnotes = NULL,
@@ -17,14 +16,10 @@ make_html(
 \arguments{
 \item{replist}{Object created by an aMSE run}
 
-\item{resdir}{Directory where a particular run's resulst are all held.
-It must contain a sub-directory called plots where *.png files
-are saved}
-
-\item{plotFileTable}{CSV file with info on PNG files. The resdir/plot
-directory will be sequentially searched for filenames included
-in this csv file, which includes a figure legend and a category=tab,
-which identifies in which tab the plot or table will be placed.}
+\item{rundir}{Directory where a particular run's files,
+including the region files, the results, as tables and plots,
+and any other files, are all held. It will always contain at
+least 'data', plots', and 'tables' sub-directories.}
 
 \item{width}{Width of plots (in pixels).}
 

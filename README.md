@@ -55,6 +55,16 @@ devtools::install_github("haddonm/aMSE")
 devtools::install_github(haddonm/rutilsMH) # also useful for plotting, etc
 ```
 
+Alternatively, you can generate a branch that you can work on by cloning
+the repository, which, again, can be done very simply within RStudio.
+Open the New Project option in the project dialog at the top right of
+the RStudio screen and selection Version Control, then use
+‘<https://github.com/haddonm/aMSE>’ in the top box, identify where you
+want the new directory put, and press return.
+
+It would be a good idea to read Hadley Wickham’s draft chpater on Git
+and GitHub at <https://r-pkgs.org/index.html>.
+
 ## Example
 
 This is a basic example which illustrates the generation of an initial
