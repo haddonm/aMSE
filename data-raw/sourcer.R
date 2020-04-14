@@ -2,36 +2,23 @@
 
 
 
-
 #' Title
 #'
-#' @param pop
-#' @param res
-#' @param location
+#' @param plotdir
+#' @param tabledir
+#' @param runname
 #'
 #' @return
 #' @export
 #'
 #' @examples
-findF1 <- function(pop,res,location=TRUE) {
-  harv <- results[,"AnnH",pop]
-  catch <- results[,"Catch",pop]
-  grad <- numeric(nH-1)
-  for (i in 1:(nH-1)) {
-    divisor <- harv[i+1] - harv[i]
-    numerator <- catch[i+1] - catch[i]
-    grad[i] <- numerator/divisor
-  }
-  pickF1 <-  which.closest(0.1,grad/grad[1])
-  if (location) {
-    return(pickF1)
-  } else {
-    return(grad)
-  }
-}
-
-
-
+setuphtml <- function(pldir, tabdir,rname) {
+  plottabfile <<- filenametopath(pldir,paste0("plotFileTable_",rname,".csv"))
+  tabletabfile <<- filenametopath(tabdir,paste0("TableFileTable_",rname,".csv"))
+  label <- c("file","caption","category","TimeMade")
+  cat(label,"\n",file = plottabfile,sep=",")
+  cat(label,"\n",file = tabletabfile,sep=",")
+} # end of setuphtml
 
 
 

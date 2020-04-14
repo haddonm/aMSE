@@ -30,7 +30,6 @@ ctrlfileTemplate <- function(filename="tmpctl.csv") {
    cat("batch,  FALSE","\n",file=filename, append=TRUE)
    cat("replicates,  4  \n",file=filename, append=TRUE)
    cat("initDepl,  1.0 \n",file=filename, append=TRUE)
-   cat("assessInterval,    1  \n",file=filename, append=TRUE)
    cat("recthreshold, 0.0000001  \n",file=filename, append=TRUE)
    cat("hcrLabel,  mcdaHCR  \n",file=filename, append=TRUE)
    cat("mcdaHCR,  TRUE   \n",file=filename, append=TRUE)
@@ -292,26 +291,22 @@ makeLabel <- function(invect,insep="_") {
 #'  ctrl <- readctrlfile(indir=direct,infile=infile)
 #'  str(ctrl)
 readctrlfile <- function(indir,infile="control.csv") {
-   filename <- file.path(indir,infile)
+   filename <- filenametopath(indir,infile)
    indat <- readLines(filename)   # reads the whole file as character strings
    begin <- grep("START",indat) + 1
    runlabel <- getStr(indat[begin],1)
    regionfile <- getStr(indat[begin+1],1)
    datafile <- getStr(indat[begin+2],1)
    hcrfile <- getStr(indat[begin+3],1)
-   outdir <-getStr(indat[begin+4],1)
    reps <- getsingleNum("replicates",indat)
    initdepl <- getsingleNum("initdepl",indat)
-   assessinterval <- getsingleNum("assessinterval",indat)
    withsigR <- getsingleNum("withsigR",indat)
    withsigB <- getsingleNum("withsigB",indat)
    withsigCE <- getsingleNum("withsigCE",indat)
    outctrl <- list(runlabel,regionfile,datafile,hcrfile,
-                   outdir,reps,initdepl,assessinterval,
-                   withsigR,withsigB,
-                   withsigCE)
+                   reps,initdepl,withsigR,withsigB,withsigCE)
    names(outctrl) <- c("runlabel","regionfile","datafile","hcrfile",
-                       "outdir","reps","initdepl","assessinterval",
+                       "reps","initdepl",
                        "withsigR","withsigB","withsigCE")
    return(outctrl)
 }
@@ -345,7 +340,7 @@ readctrlfile <- function(indir,infile="control.csv") {
 #' print(popdefs)
 readdatafile <- function(indir,infile,glb) {  # indir=datadir;infile=ctrl$datafile;glb=ctrl$globals
    numpop <- glb$numpop
-   filename <- file.path(indir,infile)
+   filename <- filenametopath(indir,infile)
    indat <- readLines(filename)   # reads the whole file as character strings
    begin <- grep("PDFs",indat)
    npar <- getConst(indat[begin],1)
@@ -483,7 +478,7 @@ readhcrfile <- function(infile) {  # infile <- "C:/A_CSIRO/Rcode/AbMSERun/ctrl_w
 #' }
 readregionfile <- function(indir,infile) {  # infile="region1.csv"; indir=datadir
    context <- "region file"
-   filename <- file.path(indir,infile)
+   filename <- filenametopath(indir,infile)
    indat <- readLines(filename)   # reads the whole file as character strings
    nSMU <-  getsingleNum("nSMU",indat) # number of spatial management units
    begin <- grep("SMUpop",indat)

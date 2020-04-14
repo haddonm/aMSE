@@ -27,5 +27,5 @@ testregC is a region list made up of 6 equilibrium
  data(testregD)
  data(region1)
  glb <- region1$globals
- testequil(testregC, testregD, glb)
+ ans <- testequil(testregC, testregD, glb)
 }

@@ -27,5 +27,5 @@ testregC is a list of 8 matrices and 2 arrays defining
  data(testregD)
  data(region1)
  glb <- region1$globals
- testequil(testregC, testregD, glb)
+ ans <- testequil(testregC, testregD, glb)
 }

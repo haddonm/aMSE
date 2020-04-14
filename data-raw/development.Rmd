@@ -51,15 +51,27 @@ setpalette("R4")
 
 * How best to define each population in a sequential manner reflective of their relative productivity? Need to keep the option of random allocation of properties. See section.
 
+* The region is simply to container for all the SMU (there may only be one). The notion is that the variation of population properties within an SMU can differ, but conditioning the populations is a whole subject for discussion in itself.
+
 * Running the MSE once conditioned should be simple, the difficult part is conditioning the model to represent a particular region, there is a need to include the option of having larval dispersal.
 
-* Rather than use one data-file and one ctrl file, perhaps break up the data required into a file for PDF definitions by population, a file for the variables common across the region, and a control file.
+* Currently using a control.csv file to identify conditioning files, HCR files, and related. There is a region file containnig the strucutre of the simulated region, and a datafile containing the conditioning data. 
 
-* There needs to be a simpler implementation of larval dispersal this time through. This will have implications for any initial equilibrium conditions. See section.
+* When constructing a region the constant parts are kept in regionC and the dynamic parts in regionD. Is the constant part always separate from the global part? Certainly not having to move such large objects around all the time should speed things along.
 
-* In an attempt to speed the model runs it will be worthwhile exploring the advantages and disadvantages of splitting the region into two, the constant part, regionC, and the dynamic part, regionD. Is the constant part always separate from the global part?
+## Design Principles
 
-* Need to develop a new twoblock.csv file containing definitions for 6 populations rather then generalize by block. This would imply that the variance for eahc population would be smaller than that used for each block. 
+* Each run will be conducted in a specified directory, which will always contain at least subdirectories named 'data', 'plots', and 'tables'. 
+
+* Each run will be able to generate an html review of all output (see makehtml_utils.R)
+
+* Currently using a spatial hierarchy region/SMU/population instead of zone/block/population, so this is now more general than only Tasmanian terminology. Stick to this hierarchy throughout the code. Consistency.
+
+* Naming things is always a complex issue, the LML term is still being used, the other States each appear to use different terms: eg. MLL and other three letter acronyms, so stick with LML.
+
+* Once a particular run is constructed, but before the run proceeds, generate a series of plots and tables to characterize the simulated region.
+
+* All plots should be generated as .png files and stored in the 'plots' directory of each runs directory. In addition, any tables should be saved in the same place as csv files (for matrices) or RData files (for more complex objects) ready to be read in for printing in the html output. Each plot and table will have a unique name that will include the run's name. This will nbe necessary to automate the html output and later for any .Rmd output.
 
 
 ### function: definepops

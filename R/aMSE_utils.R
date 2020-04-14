@@ -12,7 +12,11 @@
 #'     whose existence is to be checked before it is created if it
 #'     does not already exist.
 #' @param make if the directory does NOT exist should it be created.
-#'     default = TRUE
+#'     default = TRUE; if make=FALSE and a directory does not exist
+#'     a warning will be given to the console.
+#' @param verbose default=TRUE, prints directory status to the console,
+#'     If make is set to FALSE and a directory does not exist a
+#'     warning will always be given.
 #'
 #' @return a message to the screen if the directory exists or is
 #'     created; if make is TRUE then it also creates the directory as
@@ -22,15 +26,15 @@
 #' @examples
 #' indirect <- getwd()
 #' dirExists(indirect)
-dirExists <- function(indir,make=TRUE) {
+dirExists <- function(indir,make=TRUE,verbose=TRUE) {
   if (dir.exists(indir)) {
-    cat(indir,":  exists  \n")
+    if (verbose) cat(indir,":  exists  \n")
   } else {
     if (make) {
-      dir.create(file.path(indir))
-      cat(indir,":  created  \n")
+      dir.create(indir)
+      if (verbose) cat(indir,":  created  \n")
     } else {
-      cat(indir,":  does not exist \n")
+      warning(cat(indir,":  does not exist \n"))
     }
   }
 }  # end of dirExists
@@ -51,7 +55,7 @@ dirExists <- function(indir,make=TRUE) {
 #' @export
 #'
 #' @examples
-#' indir <- "C:/Users/Malcolm/Dropbox/rcode2/aMSE/data-raw"
+#' indir <- tempdir()
 #' infile <- "control.csv"
 #' filenametopath(indir,infile)
 filenametopath <- function(inpath,infile) {
@@ -178,8 +182,6 @@ getStr <- function(inline,nb) {
   return(outconst)
 } # end of getStr
 
-
-
 #' @title pathend determines what character is at the end of a path
 #'
 #' @description pathend determines what character is at the end of a
@@ -225,5 +227,33 @@ pathtype <- function(inpath) {
   return(typepath)
 } # end of pathtype
 
+#' @title setupdirs sets up and checks the directories used in a run
+#'
+#' @description setupdirs sets up and checks the directories used in
+#'     a run, if they do not exist to start with they will be created.
+#'     Note the use of the <<- funciton, which assigns the directory
+#'     names in teh global environment rather than only within the
+#'     function environment. This saves returning them and extracting
+#'     them.
+#'
+#' @param rundir the principle directory in which all all files
+#'     relating to a particular run are to be held
+#' @param verbose default=TRUE, prints directory status to the console
+#'     if FALSE no status reports will be made to the console
+#'
+#' @return nothing, it allocates directly to the global environment
+#' @export
+#'
+#' @examples
+#' rund <- tempdir()
+#' setupdirs(rund)
+setupdirs <- function(rundir, verbose=TRUE) {
+  datadir <<- filenametopath(rundir,"data")
+  plotdir <<- filenametopath(rundir,"plots")
+  tabledir <<- filenametopath(rundir,"tables")
+  dirExists(datadir,verbose=verbose)
+  dirExists(plotdir,verbose=verbose)
+  dirExists(tabledir,verbose=verbose)
+} # end of setupdirs
 
 

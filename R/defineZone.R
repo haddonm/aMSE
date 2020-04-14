@@ -351,6 +351,47 @@ fillzoneDef <- function(regC,regD,prod) {  # inzone=zone; prod=production
    return(zDef)
 }  # end of fillzoneDef
 
+#' @title findF1 approximates the F0.1 harvest rate for each population
+#'
+#' @description findF1 generates estimates of the annual harvest rate
+#'     that would be equivalent to the F0.1 for each population. It
+#'     does this by calculating the gradient of the production curve
+#'     for the selected pop number and selecting the best approximation
+#'     by searching for the gradient that is cloest to 0.1.
+#'
+#' @param produyct the 3D array from doproduction
+#' @param location return the index (default=TRUE) or the gradient
+#'     vector if location=FALSE
+#'
+#' @return either the index within the production array or the vector
+#'     of gradients
+#' @export
+#'
+#' @examples
+#' data(product) #for pop=1, a 28percent drop from Hmsy leads to a
+#' findF1(product=product) # loss of 3 tonnes, 4 percent of MSY
+#' findmsy(product)  # compare the AnnH, Deplet, and RelCE levels.
+findF1 <- function(product) {
+  npop <- dim(product)[3]
+  label <- c(colnames(product),"index")
+  xval <- matrix(0,nrow=npop,ncol=length(label),
+                 dimnames=list(1:npop,label))
+  for (pop in 1:npop) {
+    harv <- product[,"AnnH",pop]
+    nH <- length(harv)
+    catch <- product[,"Catch",pop]
+    grad <- numeric(nH-1)
+    for (i in 1:(nH-1)) {
+      divisor <- harv[i+1] - harv[i]
+      numerator <- catch[i+1] - catch[i]
+      grad[i] <- numerator/divisor
+    }
+    pickF1 <-  which.closest(0.1,grad/grad[1])
+    xval[pop,] <- c(product[pickF1,,pop],pickF1)
+  }
+  return(xval)
+} # end of findF1
+
 #' @title findmsy identifies the closest productivity value to MSY
 #'
 #' @description findmsy for each population in the region, identifies

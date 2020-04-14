@@ -8,8 +8,9 @@ plotprod(
   product,
   xname = "MatB",
   yname = "Catch",
-  xlab = "",
-  ylab = "Production"
+  xlimit = NA,
+  xlab = "Mature Biomass t",
+  ylab = "Production t"
 )
 }
 \arguments{
@@ -19,6 +20,9 @@ plotprod(
 defaults to MatB}
 
 \item{yname}{the name of the y-xis variable, default=Catch=Yield}
+
+\item{xlimit}{default=NA, enables the range of the x-axis to be
+constrained, for example using xlimit=c(0.15,0.4)}
 
 \item{xlab}{the x-axis label, default=""}
 
@@ -35,5 +39,11 @@ plotprod graphs a selected productivity variable from
     depletion level, and RelCE the relative cpue at MSY
 }
 \examples{
-print("wait for a data set")
+data(product)
+plotprep(width=7, height=5)
+plotprod(product)
+msy <- getlistvar(regionC,"MSY")
+effB0 <- getlistvar(regionC,"effB0")
+abline(h=msy,col=1:6,lwd=2)
+abline(v=effB0,col=1:6,lwd=2)
 }

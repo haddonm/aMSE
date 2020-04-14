@@ -4,7 +4,7 @@
 \alias{dirExists}
 \title{dirExists: Checks for the existence of a directory}
 \usage{
-dirExists(indir, make = TRUE)
+dirExists(indir, make = TRUE, verbose = TRUE)
 }
 \arguments{
 \item{indir}{a character string containing the name of the directory
@@ -12,7 +12,12 @@ whose existence is to be checked before it is created if it
 does not already exist.}
 
 \item{make}{if the directory does NOT exist should it be created.
-default = TRUE}
+default = TRUE; if make=FALSE and a directory does not exist
+a warning will be given to the console.}
+
+\item{verbose}{default=TRUE, prints directory status to the console,
+If make is set to FALSE and a directory does not exist a
+warning will always be given.}
 }
 \value{
 a message to the screen if the directory exists or is

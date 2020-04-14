@@ -22,7 +22,7 @@ filenametopath add a filename to a path safely, using
     extra separators or none at all.
 }
 \examples{
-indir <- "C:/Users/Malcolm/Dropbox/rcode2/aMSE/data-raw"
+indir <- tempdir()
 infile <- "control.csv"
 filenametopath(indir,infile)
 }

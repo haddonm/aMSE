@@ -12,6 +12,8 @@
 #' @param xname the name of the productivity variable for the x-axis,
 #'     defaults to MatB
 #' @param yname the name of the y-xis variable, default=Catch=Yield
+#' @param xlimit default=NA, enables the range of the x-axis to be
+#'     constrained, for example using xlimit=c(0.15,0.4)
 #' @param xlab the x-axis label, default=""
 #' @param ylab the y-axis label, default=""
 #'
@@ -19,15 +21,23 @@
 #' @export
 #'
 #' @examples
-#' print("wait for a data set")
-plotprod <- function(product,xname="MatB",yname="Catch",xlab="",
-                     ylab="Production") {
+#' data(product)
+#' plotprep(width=7, height=5)
+#' plotprod(product)
+#' msy <- getlistvar(regionC,"MSY")
+#' effB0 <- getlistvar(regionC,"effB0")
+#' abline(h=msy,col=1:6,lwd=2)
+#' abline(v=effB0,col=1:6,lwd=2)
+plotprod <- function(product,xname="MatB",yname="Catch",xlimit=NA,
+                     xlab="Mature Biomass t",ylab="Production t") {
   x <- product[,xname,]
   y <- product[,yname,]
   numpop <- ncol(x)
   maxy <- getmax(y)
-  maxx <- getmax(x)
-  plot(x[,1],y[,1],type="l",lwd=2,col=1,ylim=c(0,maxy),xlim=c(0,maxx),
+  if (length(xlimit) ==1 ) {
+    xlimit <- c(0,getmax(x))
+  }
+  plot(x[,1],y[,1],type="l",lwd=2,col=1,ylim=c(0,maxy),xlim=xlimit,
        xlab=xlab,ylab=ylab,panel.first=grid(),yaxs="i")
   for (i in 2:numpop) lines(x[,i],y[,i],lwd=2,col=i)
   return(invisible(list(xname=x,yname=y)))
