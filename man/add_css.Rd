@@ -12,7 +12,7 @@ the homepage or one of the tab html files reflecting the
 different categories of output}
 }
 \value{
-nothing but it does add text to different html files
+nothing but it does add the head and css to the home files
 }
 \description{
 add_css write the css commands into the htmlfile being

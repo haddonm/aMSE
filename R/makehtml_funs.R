@@ -14,9 +14,11 @@
 #'     the homepage or one of the tab html files reflecting the
 #'     different categories of output
 #'
-#' @return nothing but it does add text to different html files
+#' @return nothing but it does add the head and css to the home files
 add_css <- function(htmlfile) {
-    cat('<html><head><title>', 'aMSEout', '</title>\n',
+    cat('<html> \n',
+      '  <head>',
+      '    <title>', 'aMSEout', '</title>\n',
       '    <!-- source for text below is http://unraveled.com/publications/css_tabs/ -->\n',
       '    <!-- CSS Tabs is licensed under Creative Commons Attribution 3.0 - http://creativecommons.org/licenses/by/3.0/ -->\n',
       '    <!-- When visiting unraveled.com/publications/css_tabs it appeared to be a toxic website - BE CAREFUL -->\n',
@@ -86,8 +88,8 @@ add_css <- function(htmlfile) {
       '      padding-bottom: 2px;\n',
       '      padding-left: 0px;\n',
       '    }\n',
-      '    </style>',
-      '</head>\n',
+      '    </style> \n',
+      ' </head>\n',
   sep = "", file=htmlfile, append=FALSE)
 } # end of add_css
 
@@ -203,7 +205,7 @@ make_html <- function(replist=NULL,
             "' border=0 width=", width, "></a><br>",
             plotinfo$caption[i],
             "<br><i><small>file: <a href='", plotinfo$basename[i],
-            "'>", plotinfo$basename[i], "</a></small></i>\n",
+            "'>", plotinfo$basename[i], "</a></small></i>\n\n",
             sep="",  file=htmlfile,  append=TRUE)
       }
     } # end of category if else statement
