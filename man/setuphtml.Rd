@@ -7,13 +7,12 @@
 setuphtml(pldir, runname)
 }
 \arguments{
-\item{runname}{the name of the particular run being summarized.}
+\item{pldir}{full path to the directory to contain the plots}
 
-\item{plotdir}{full path to the directory to contain the plots}
+\item{runname}{the name of the particular run being summarized.}
 }
 \value{
-nothing but it does generate a csv file stored in the plots
-    directory, named directly into the global environment.
+full path to the plottabfile. creating the file in plotdir
 }
 \description{
 setuphtml initiates the csv file used to contain the
@@ -27,6 +26,6 @@ setuphtml initiates the csv file used to contain the
 indir <- tempdir()
 plotdir <- filenametopath(indir,"plots")
 dirExists(plotdir,verbose=FALSE)
-setuphtml(plotdir,"example_only")
+plottabfile <- setuphtml(plotdir,"example_only")
 dir(plotdir)
 }

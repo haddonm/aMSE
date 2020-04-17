@@ -20,6 +20,7 @@ testregC is a region list made up of 6 equilibrium
    \item testing of functions that require a full region
    \item initial equilibrium
  }
+ @export
 }
 
 \examples{

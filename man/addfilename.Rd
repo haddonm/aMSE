@@ -4,7 +4,7 @@
 \alias{addfilename}
 \title{addfilename adds a filename to the autoresult csv file}
 \usage{
-addfilename(filename, caption, category, filen = plottabfile)
+addfilename(filename, caption, category, filen)
 }
 \arguments{
 \item{filename}{the full path and filename for the file being added}
@@ -13,12 +13,11 @@ addfilename(filename, caption, category, filen = plottabfile)
 
 \item{category}{what HTML tab should it be displayed on?}
 
-\item{filen}{the file to be added to. defaults to plottabfile, which
-is defined into the0 global environment from inside setuphtml.R,
-found in aMSE_utils}
+\item{filen}{the file to be added to, which is defined by
+setuphtml found in aMSE_utils}
 }
 \value{
-nothing but it does add a line to the plottabfile
+nothing but it does add a line to filen
 }
 \description{
 addfilename is used to facilitate the produciton of
@@ -32,10 +31,12 @@ addfilename is used to facilitate the produciton of
 indir <- tempdir()
 plotdir <- filenametopath(indir,"plots")
 dirExists(plotdir,verbose=FALSE)
-setuphtml(plotdir,"example_only")
+plottabfile <- setuphtml(plotdir,"example_only")
 filename <- filenametopath(plotdir,"example.png")
-plotprep(filename=filename,verbose=FALSE)
+png(filename=filename,width=7,height=4,units="in",res=300)
 plot(runif(100),runif(100),type="p")
 graphics.off()  # could use dev.off()
+addfilename(filename=filename,caption="Example Figure","A_category",
+            filen=plottabfile)
 dir(plotdir)
 }

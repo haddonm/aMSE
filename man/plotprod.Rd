@@ -40,10 +40,8 @@ plotprod graphs a selected productivity variable from
 }
 \examples{
 data(product)
-plotprep(width=7, height=5)
 plotprod(product)
-msy <- getlistvar(regionC,"MSY")
-effB0 <- getlistvar(regionC,"effB0")
-abline(h=msy,col=1:6,lwd=2)
-abline(v=effB0,col=1:6,lwd=2)
+stat <- findmsy(product)
+abline(h=stat[,"Catch"],col=1:6,lwd=2)
+abline(v=stat[,"MatB"],col=1:6,lwd=2)
 }

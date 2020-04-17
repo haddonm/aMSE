@@ -65,7 +65,7 @@ getlistvar <- function(regC,indexvar,indexvar2="") {
     numpop <- length(regC)
     if (is.na(pick)) {
       warning(paste0(fields,"  "))
-      stop("Invalid variable name attempted in getlistVar")
+      stop("Invalid variable name attempted in getlistvar")
     }
     x <- sapply(regC,"[[",indexvar)
     if (fields[pick] %in% vects) {
@@ -81,7 +81,7 @@ getlistvar <- function(regC,indexvar,indexvar2="") {
     stop("Non-character variable in indexvar within getlistvar")
   }
   return(x)
-} # End of getlistVar
+} # End of getlistvar
 
 
 

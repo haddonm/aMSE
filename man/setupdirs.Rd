@@ -19,12 +19,9 @@ nothing, it allocates directly to the global environment
 \description{
 setupdirs sets up and checks the directories used in
     a run, if they do not exist to start with they will be created.
-    Note the use of the <<- funciton, which assigns the directory
-    names in teh global environment rather than only within the
-    function environment. This saves returning them and extracting
-    them.
 }
 \examples{
 rund <- tempdir()
-setupdirs(rund)
+out <- setupdirs(rund)
+str(out)
 }

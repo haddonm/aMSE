@@ -7,10 +7,7 @@
 findF1(product)
 }
 \arguments{
-\item{produyct}{the 3D array from doproduction}
-
-\item{location}{return the index (default=TRUE) or the gradient
-vector if location=FALSE}
+\item{product}{the 3D array from doproduction}
 }
 \value{
 either the index within the production array or the vector

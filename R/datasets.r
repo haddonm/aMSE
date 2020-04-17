@@ -90,6 +90,7 @@ NULL
 #'    \item inverse logistic, von Bertalanffy, Gompertz
 #'    \item Static model fitting
 #'  }
+#'  @export
 #'
 #' @source Thanks to the Institute of Marine and Antarctic Science,
 #'     which is part of the University of Tasmania, and especially to
@@ -191,6 +192,7 @@ NULL
 #'    \item maturity ogives or logistic curves
 #'    \item Binomial likelihoods
 #'  }
+#'  @export
 #'
 #' @source Thanks to the Institute of Marine and Antarctic Science,
 #'     which is part of the University of Tasmania, and especially to
@@ -224,6 +226,7 @@ NULL
 #'    \item testing of functions that require a full region
 #'    \item initial equilibrium
 #'  }
+#'  @export
 #'
 #' @examples
 #'  data(testregC)
@@ -233,9 +236,9 @@ NULL
 #'  ans <- testequil(testregC, testregD, glb)
 NULL
 
-#' @title testregC is a list of 8 matrices and 2 arrays defining the dynamics of a region
+#' @title testregD is a list of 8 matrices and 2 arrays defining the dynamics of a region
 #'
-#' @description testregC is a list of 8 matrices and 2 arrays defining
+#' @description testregD is a list of 8 matrices and 2 arrays defining
 #'     the dynamics of a region. These have been run with a larval
 #'     dispersal rate of 0.03 to achieve an initial equilibrium. This
 #'     is here to simplify the internal testing of functions that
@@ -253,6 +256,7 @@ NULL
 #'    \item testing of functions that require a full region
 #'    \item initial equilibrium
 #'  }
+#'  @export
 #'
 #' @examples
 #'  data(testregC)

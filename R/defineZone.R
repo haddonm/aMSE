@@ -161,7 +161,7 @@ definepops <- function(inSMU,inSMUindex,const,glob) {
 #' }
 dodepletion <- function(regC,regD,glob,depl,product,len=15) {
   #regC=regionC; regD=regionD; glob=glb;  product=product; depl=0.3;len=15
-  regB0 <- sum(sapply(regionC,"[[","effB0"))
+  regB0 <- sum(sapply(regC,"[[","effB0"))
   matb <- rowSums(product[,"MatB",])
   regdepl <- matb/regB0
   initH <- as.numeric(names(regdepl))
@@ -359,9 +359,7 @@ fillzoneDef <- function(regC,regD,prod) {  # inzone=zone; prod=production
 #'     for the selected pop number and selecting the best approximation
 #'     by searching for the gradient that is cloest to 0.1.
 #'
-#' @param produyct the 3D array from doproduction
-#' @param location return the index (default=TRUE) or the gradient
-#'     vector if location=FALSE
+#' @param product the 3D array from doproduction
 #'
 #' @return either the index within the production array or the vector
 #'     of gradients
@@ -992,8 +990,8 @@ print.zoneDefinition <- function(x, ...) {
 print.zone <- function(x, ...) {
   cat("Number of populations: ",length(x),"\n")
   cat("Number of years      : ",length(x[[1]]$ExploitB),"\n")
-  cat("B0                   : ",round(sum(getlistVar(x,"B0")),3), "\n")
-  cat("MSY                  : ",round(sum(getlistVar(x,"MSY")),3), "\n")
+  cat("B0                   : ",round(sum(getlistvar(x,"B0")),3), "\n")
+  cat("MSY                  : ",round(sum(getlistvar(x,"MSY")),3), "\n")
   cat("Size of zone (bytes) : ",object.size(x),"\n\n")
   NextMethod("print")
 }

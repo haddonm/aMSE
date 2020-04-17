@@ -286,10 +286,12 @@ makeLabel <- function(invect,insep="_") {
 #' @export
 #'
 #' @examples
-#'  direct="./../../rcode2/aMSE/data-raw"
-#'  infile="control.csv"
-#'  ctrl <- readctrlfile(indir=direct,infile=infile)
-#'  str(ctrl)
+#' \dontrun{
+#'   direct="./../../rcode2/aMSE/data-raw"
+#'   infile="control.csv"
+#'   ctrl <- readctrlfile(indir=direct,infile=infile)
+#'   str(ctrl)
+#'  }
 readctrlfile <- function(indir,infile="control.csv") {
    filename <- filenametopath(indir,infile)
    indat <- readLines(filename)   # reads the whole file as character strings
@@ -328,6 +330,7 @@ readctrlfile <- function(indir,infile="control.csv") {
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' data(region1)
 #' glb <- region1$globals
 #' glb
@@ -338,6 +341,7 @@ readctrlfile <- function(indir,infile="control.csv") {
 #' reg1 <- readregionfile(datadir,ctrl$regionfile)
 #' popdefs <- readdatafile(datadir,ctrl$datafile,reg1$globals)
 #' print(popdefs)
+#' }
 readdatafile <- function(indir,infile,glb) {  # indir=datadir;infile=ctrl$datafile;glb=ctrl$globals
    numpop <- glb$numpop
    filename <- filenametopath(indir,infile)
@@ -576,148 +580,6 @@ replaceVar <- function(infile,invar,newval) {
   indat[begin] <- ans
   write(indat,file=infile) #,row.names=FALSE)
 }  # end of replaceVar
-
-
-#' @title readdatafile reads in the constants and matrices of data required
-#'
-#' @description given a filename readdatafile will expect a given format.
-#'     Each required section starts with the section names in capitals. The
-#'     required sections are: SIZECLASS, BLOCKNAMES, PDFs, CONDITIONING,
-#'     PROJLML, HISTLML, YEARS, RANDOMSEED, PRODUCTIVITY, CATCHES,
-#'     PROJCATCH, CPUE, STANDARDIZED, EFFORT. An example data file is
-#'     included in the package to illustrate the required formatting for the
-#'     data
-#'
-#' @param infile a character string containing the filename of the data file
-#' @return Twenty different objects, some matrices, others single numbers
-#' \itemize{
-#'   \item constants the array of variables as means and stdev used to
-#'       define the variation within each of the populations used to define
-#'       a zone
-#'   \item projLML the LML expected in each block in each projection year;
-#'       a matrix
-#'   \item histLML LML imposed in each block in each historical year used
-#'       in the conditioning
-#'   \item randomseed literally the randomseed used to ensure that each
-#'       simulation run starts in the same place
-#'   \item catches catches in each block in each year during the
-#'       conditioning
-#'       period
-#'   \item geomCE a matrix of the geometric mean CPUE for each block in each
-#'       year of the conditioning period
-#'   \item standCE a matrix of the standardized mean CPUE for each block in
-#'       each year of the conditioning period
-#'   \item effort a matrix of the effort imposed for each block in each year
-#'       of the conditioning period
-#'   \item nblock a scaler defining the number of blocks simulated
-#'   \item blockNames a vector of character with the names of each block
-#'   \item blkpop defines the number of populations within each block
-#'   \item numpop scaler defining the total number of populations in zone
-#'   \item minc scaler defining the mid point of the smallest size class
-#'   \item cw scaler defining the class width
-#'   \item Nclass scaler defiing the number of size classes
-#'   \item midpts vector of midpoints calculated from minc, cw, and Nclass
-#'   \item prodfile filename for zone production data; used in zoneStart
-#'   \item projCatch a matrix of catches expected in each block in each
-#'      projection year
-#' }
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' #need to have an example data file before I can run an example
-#' filename <- datafiletemplate(numblock=3,filename="block3.csv")
-#' condDat <- readdatafile(filename)
-#' str(condDat,max.level=1)
-#' }
-readdatafileold <- function(infile) {  # infile <- infile
-   ## pickVar = "CATCHES"; dat = indat; nb <- numblk
-   # indat <- filename
-   indat <- readLines(infile)   # reads the whole file as character strings
-   begin <- grep("SIZECLASS",indat)
-   minc <-  getConst(indat[begin+1],1) # minimum size class
-   cw    <- getConst(indat[begin+2],1) # class width
-   Nclass <- getConst(indat[begin+3],1) # number of classes
-   midpts <- seq(minc,minc+((Nclass-1)*cw),2)
-
-   begin <- grep("BLOCKNAMES",indat)
-   numblk <- getConst(indat[begin],1) # number of blocks
-   blockNames <- getStr(indat[begin+1],numblk)
-   popbyblk <- getConst(indat[begin+2],numblk)
-   popnum <- sum(popbyblk)
-   label <- c("numpop","nblock","midpts","Nclass","Nyrs")
-   globals <- vector("list",length(label))
-   names(globals) <- label
-   globals$numpop <- popnum
-   globals$nblock <- numblk
-   globals$midpts <- midpts
-   globals$Nclass <- Nclass   # still have Nyrs to fill in
-   rows <- c("DLMax","sMaxDL","L50","sL50","L50inc","sL50inc","SigMax","sSigMax",
-             "LML","Wtb","sWtb","Wtbtoa","sWtbtoa","Me","sMe","AvRec",
-             "sAvRec","defsteep","sdefsteep","L50C","sL50C","deltaC","sdeltaC",
-             "MaxCEpars","sMaxCEpars","selL50p","selL95p","SaMa","L50Mat","sL50Mat")
-   ans <- matrix(0,nrow=length(rows),ncol=numblk,dimnames=list(rows,blockNames))
-   begin <- grep("PDFS",indat)
-   gr <- length(rows) # number of parameters
-   pickdat <- indat[(begin+1):(begin+gr+1)]
-   for (i in 1:gr) {
-      ans[i,] <- getConst(pickdat[i],numblk)
-   } # completed filling ans matrix
-   begin <- grep("CONDITIONING",indat)
-   tmp <- getConst(indat[begin],1) # number of maturity parameters
-   if (tmp > 0) condition = TRUE else condition = FALSE
-
-   fillMat <- function(pickVar,dat,nb) {
-      begin <- grep(pickVar,dat)
-      if (length(begin) > 0) {
-         nVar <- getConst(dat[begin],1) # number of rows in the matrix
-         if (nVar > 0) {
-            outmat <- matrix(0,nrow=nVar,ncol=nb,dimnames=list(1:nVar,1:nb))
-            pickdat <- dat[(begin+2):(begin+nVar+2)]
-            for (i in 1:nVar) {
-               outmat[i,] <- getConst(pickdat[i],nb)
-               colnames(outmat) <- blockNames
-            }
-         } else {
-            print(paste0("No data for ",pickVar))
-            outmat <- NA
-         }
-      }  else {
-         print(paste0("No data for ",pickVar))
-         outmat <- NA
-      }
-      return(outmat)
-   } # end of fillmat
-
-   lmlProj <- fillMat("PROJLML",indat,numblk)
-   lmlhist <- fillMat("HISTLML",indat,numblk)
-   if (condition) Nyrs <- length(lmlhist[,1]) else Nyrs <- length(lmlProj[,1])
-   globals$Nyrs <- Nyrs
-   begin <- grep("YEARS",indat)
-   #Nyrs <- getConst(indat[(begin+1)],1)     # now derived from the LML matrices
-   firstYear <- getConst(indat[(begin+2)],1)
-   fixYear <- getConst(indat[(begin+3)],1)
-   outYear <- c(Nyrs,fixYear,firstYear)
-
-   begin <- grep("RANDOMSEED",indat)
-   randomseed <- getConst(indat[begin],1) # number of maturity parameters
-
-   begin <- grep("PRODUCTIVITY",indat)
-   prodfile <- getStr(indat[begin],1) # nname of prpoductivity file
-   catches <- fillMat("CATCHES",indat,numblk)
-   projCatch <- fillMat("PROJCATCH",indat,numblk)
-   gcpue <- fillMat("CPUE",indat,numblk)  # geometric mean CPUE
-   scpue <- fillMat("STANDARDIZED",indat,numblk)  # Standardized CPUE
-   effort <- fillMat("EFFORT",indat,numblk)
-   totans <- list(ans,lmlProj,randomseed,catches,gcpue,scpue,effort,numblk,
-                  blockNames,popbyblk,popnum,minc,cw,Nclass,Nyrs,midpts,outYear,
-                  prodfile,lmlhist,condition,projCatch,globals)
-   names(totans) <- c("constants","projLML","randomseed","catches","geomCE",
-                      "standCE","effort","nblock","blockNames","blkpop",
-                      "numpop","minc","cw","Nclass","Nyrs","midpts","outYear",
-                      "prodfile","histLML","Condition","projCatch","globals")
-   return(totans)
-}  # end of readdatafile
 
 # end of utility functions used in parseFile
 

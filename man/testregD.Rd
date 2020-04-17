@@ -3,9 +3,9 @@
 \docType{data}
 \name{testregD}
 \alias{testregD}
-\title{testregC is a list of 8 matrices and 2 arrays defining the dynamics of a region}
+\title{testregD is a list of 8 matrices and 2 arrays defining the dynamics of a region}
 \description{
-testregC is a list of 8 matrices and 2 arrays defining
+testregD is a list of 8 matrices and 2 arrays defining
     the dynamics of a region. These have been run with a larval
     dispersal rate of 0.03 to achieve an initial equilibrium. This
     is here to simplify the internal testing of functions that
@@ -20,6 +20,7 @@ testregC is a list of 8 matrices and 2 arrays defining
    \item testing of functions that require a full region
    \item initial equilibrium
  }
+ @export
 }
 
 \examples{

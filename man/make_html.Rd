@@ -2,7 +2,7 @@
 % Please edit documentation in R/makehtml_funs.R
 \name{make_html}
 \alias{make_html}
-\title{make_html create a HTML files to view figures in a browser.}
+\title{make_html create HTML files to view results in a browser.}
 \usage{
 make_html(
   replist = NULL,
@@ -19,9 +19,9 @@ make_html(
 \item{rundir}{Directory where a particular run's files,
 including the region files, the results, as tables and plots,
 and any other files, are all held. It will always contain at
-least 'data', plots', and 'tables' sub-directories.}
+least the 'data' and 'plots' sub-directories.}
 
-\item{width}{Width of plots (in pixels).}
+\item{width}{Width of plots (in pixels). Default = 500}
 
 \item{openfile}{Automatically open index.html in default browser?}
 
@@ -30,14 +30,16 @@ least 'data', plots', and 'tables' sub-directories.}
 \item{verbose}{Display more info while running this function?}
 }
 \description{
-make_html writes a set of HTML files with tabbed navigation
-    between them, with each tab containing output relating to a particular
-    set of results or diagnostics from a particular aMSE run. This code
-    was borrowed and extensively modified from Ian Taylors r4ss. By default,
-    this function will look in the directory where PNG files were created
-    for a plotFileTable_runname.csv file with the name 'runname' written by
-    aMSE. HTML files are written to link to these plots and put in the same
-    directory.
+make_html writes a set of HTML files with tabbed
+    navigation, with each tab containing the results relating to a
+    given set of results or diagnostics from a particular aMSE run.
+    This code was borrowed from Ian Taylor's r4ss, but has been
+    extensively modified to improve both the css (see write_css)
+    and the HTML. By default, this function will look in the
+    plots directory where PNG files were created for a
+    plotFileTable_runname.csv file with the name 'runname' written
+    added by aMSE. HTML files are written to link to these plots
+    and put in the same directory.
 }
 \author{
 Originally Ian Taylor, modified by Malcolm Haddon

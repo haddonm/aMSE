@@ -2,9 +2,9 @@
 #' @importFrom grDevices palette
 #' @importFrom graphics grid hist lines mtext par plot points title
 #' @importFrom stats dnorm pnorm rlnorm rnorm quantile sd
-#' @importFrom utils object.size
+#' @importFrom utils object.size browseURL packageDescription read.csv
 #' @importFrom rutilsMH getmax getmin setpalette plotprep removeEmpty
-#' @importFrom rutilsMH splitDate
+#' @importFrom rutilsMH splitDate which.closest parset
 NULL
 
 #' @title aMSE functions for Conditioning and Running an Invertebrate MSE

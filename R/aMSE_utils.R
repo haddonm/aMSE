@@ -11,24 +11,25 @@
 #' @param filename the full path and filename for the file being added
 #' @param caption the caption for the figure or table
 #' @param category what HTML tab should it be displayed on?
-#' @param filen the file to be added to. defaults to plottabfile, which
-#'     is defined into the0 global environment from inside setuphtml.R,
-#'     found in aMSE_utils
+#' @param filen the file to be added to, which is defined by
+#'     setuphtml found in aMSE_utils
 #'
-#' @return nothing but it does add a line to the plottabfile
+#' @return nothing but it does add a line to filen
 #' @export
 #'
 #' @examples
 #' indir <- tempdir()
 #' plotdir <- filenametopath(indir,"plots")
 #' dirExists(plotdir,verbose=FALSE)
-#' setuphtml(plotdir,"example_only")
+#' plottabfile <- setuphtml(plotdir,"example_only")
 #' filename <- filenametopath(plotdir,"example.png")
-#' plotprep(filename=filename,verbose=FALSE)
+#' png(filename=filename,width=7,height=4,units="in",res=300)
 #' plot(runif(100),runif(100),type="p")
 #' graphics.off()  # could use dev.off()
+#' addfilename(filename=filename,caption="Example Figure","A_category",
+#'             filen=plottabfile)
 #' dir(plotdir)
-addfilename <- function(filename,caption,category,filen=plottabfile) {
+addfilename <- function(filename,caption,category,filen) {
   cat(c(filename,caption,category,as.character(Sys.time())," \n"),
       file=filen,sep=",",append=TRUE)
 }
@@ -264,10 +265,6 @@ pathtype <- function(inpath) {
 #'
 #' @description setupdirs sets up and checks the directories used in
 #'     a run, if they do not exist to start with they will be created.
-#'     Note the use of the <<- funciton, which assigns the directory
-#'     names in teh global environment rather than only within the
-#'     function environment. This saves returning them and extracting
-#'     them.
 #'
 #' @param rundir the principle directory in which all all files
 #'     relating to a particular run are to be held
@@ -279,14 +276,14 @@ pathtype <- function(inpath) {
 #'
 #' @examples
 #' rund <- tempdir()
-#' setupdirs(rund)
+#' out <- setupdirs(rund)
+#' str(out)
 setupdirs <- function(rundir, verbose=TRUE) {
-  datadir <<- filenametopath(rundir,"data")
-  plotdir <<- filenametopath(rundir,"plots")
-  tabledir <<- filenametopath(rundir,"tables")
+  datadir <- filenametopath(rundir,"data")
+  plotdir <- filenametopath(rundir,"plots")
   dirExists(datadir,verbose=verbose)
   dirExists(plotdir,verbose=verbose)
-  dirExists(tabledir,verbose=verbose)
+  return(list(datadir=datadir,plotdir=plotdir))
 } # end of setupdirs
 
 #' @title setuphtml initiates csv files lsiting results to be included
@@ -298,23 +295,23 @@ setupdirs <- function(rundir, verbose=TRUE) {
 #'     timestamp. Then, each plot and table is included with an entry
 #'     for each column.
 #'
-#' @param plotdir full path to the directory to contain the plots
+#' @param pldir full path to the directory to contain the plots
 #' @param runname the name of the particular run being summarized.
 #'
-#' @return nothing but it does generate a csv file stored in the plots
-#'     directory, named directly into the global environment.
+#' @return full path to the plottabfile. creating the file in plotdir
 #' @export
 #'
 #' @examples
 #' indir <- tempdir()
 #' plotdir <- filenametopath(indir,"plots")
 #' dirExists(plotdir,verbose=FALSE)
-#' setuphtml(plotdir,"example_only")
+#' plottabfile <- setuphtml(plotdir,"example_only")
 #' dir(plotdir)
 setuphtml <- function(pldir, runname) {
-  plottabfile <<- filenametopath(pldir,paste0("plotFileTable_",
+  plottabfile <- filenametopath(pldir,paste0("plotFileTable_",
                                               runname,".csv"))
   label <- c("file","caption","category","TimeStamp")
   cat(label,"\n",file = plottabfile,sep=",")
+  return(plottabfile)
 } # end of setuphtml
 

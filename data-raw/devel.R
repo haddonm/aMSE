@@ -11,10 +11,9 @@ setpalette("R4")
  source(filenametopath(sourcedir,"sourcer.R"))
 
  rundir <- "./../../rcode2/aMSEUse/run2"
- setupdirs(rundir)
-
- datadir
- plotdir
+ outdir <- setupdirs(rundir)
+ datadir <- outdir$datadir
+ plotdir <- outdir$plotdir
 
  ctrl <- readctrlfile(datadir,infile="control.csv")
  runname <- ctrl$runlabel
