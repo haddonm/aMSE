@@ -1,0 +1,39 @@
+---
+title: "SomeTables"
+author: "Malcolm Haddon"
+date: "20/04/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r}
+getvar <- function(indexvar,regC=regionC) {
+  invar <- getlistvar(regC,indexvar)
+  return(c(invar,sum(invar)))
+}
+numpop <- glb$numpop
+rows <- c("M","R0","B0","effB0","ExB0","effExB0","MSY","MSYDepl","bLML")
+columns <- c(paste0("p",1:numpop),"region")
+results <- matrix(0,nrow=length(rows),ncol=length(columns),
+                  dimnames=list(rows,columns))
+results["B0",] <- getvar("B0")
+M <- getlistvar(regionC,"Me")
+wtr <- (results["B0",1:numpop]/results["B0",(numpop+1)])
+results["M",] <- c(M,sum(M*wtr))
+results["R0",] <- getvar("R0")
+results["effB0",] <- getvar("effB0")
+results["ExB0",] <- getvar("ExB0")
+results["effExB0",] <- getvar("effExB0")
+results["MSY",] <- getvar("MSY")
+MSYD <- getlistvar(regionC,"MSYDepl")
+results["MSYDepl",] <- c(MSYD,sum(MSYD * wtr))
+bLML <- getlistvar(regionC,"bLML")
+results["bLML",] <- c(bLML,sum(bLML * wtr))
+kable(results,digits=c(rep(3,(numpop+1))))
+```
+
+

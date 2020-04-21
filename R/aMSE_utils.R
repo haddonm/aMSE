@@ -9,10 +9,12 @@
 #'     remember the syntax.
 #'
 #' @param filename the full path and filename for the file being added
-#' @param caption the caption for the figure or table
-#' @param category what HTML tab should it be displayed on?
-#' @param filen the file to be added to, which is defined by
+#' @param tabfile the file to be added to, which is defined by
 #'     setuphtml found in aMSE_utils
+#' @param category what HTML tab should it be displayed on?
+#' @param type the type of addition, either a plot or table
+#' @param caption the caption for the figure or table
+
 #'
 #' @return nothing but it does add a line to filen
 #' @export
@@ -26,12 +28,12 @@
 #' png(filename=filename,width=7,height=4,units="in",res=300)
 #' plot(runif(100),runif(100),type="p")
 #' graphics.off()  # could use dev.off()
-#' addfilename(filename=filename,caption="Example Figure","A_category",
-#'             filen=plottabfile)
+#' addfilename(filename=filename,tabfile=plottabfile,"A_category",
+#'             type="plot",caption="Example Figure")
 #' dir(plotdir)
-addfilename <- function(filename,caption,category,filen) {
-  cat(c(filename,caption,category,as.character(Sys.time())," \n"),
-      file=filen,sep=",",append=TRUE)
+addfilename <- function(filename,tabfile,category,type,caption) {
+  cat(c(filename,category,type,as.character(Sys.time()),caption," \n"),
+      file=tabfile,sep=",",append=TRUE)
 }
 
 #' @title dirExists: Checks for the existence of a directory
@@ -310,8 +312,8 @@ setupdirs <- function(rundir, verbose=TRUE) {
 setuphtml <- function(pldir, runname) {
   plottabfile <- filenametopath(pldir,paste0("plotFileTable_",
                                               runname,".csv"))
-  label <- c("file","caption","category","TimeStamp")
-  cat(label,"\n",file = plottabfile,sep=",")
+  label <- c("file","category","type","timestamp","caption")
+  cat(label,"\n",file = plottabfile,sep=",",append=FALSE)
   return(plottabfile)
 } # end of setuphtml
 

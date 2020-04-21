@@ -21,7 +21,7 @@ setpalette("R4")
  glb <- region1$globals
  constants <- readdatafile(datadir,ctrl$datafile,glb)
 
- setuphtml(plotdir,runname)
+ plottabfile <- setuphtml(plotdir,runname)
 
  # Define the Zone without production ---------------------------------
 ans <- makeregionC(region1,constants)
@@ -71,9 +71,13 @@ source(filenametopath(sourcedir,"plotbiology_source.R"))
  )
  str(reportlist,max.level = 1)
 
+ runnotes <- paste0("The results presented here relate to the included data-sets testregC, ",
+                    "testregD, and product. They are for a region made up of 2 SMU and 6 population. ",
+                    "These results are currently under development and there are many more needed yet.")
 
+ source(filenametopath(sourcedir,"sourcer.R"))
  make_html(replist=reportlist,rundir=rundir,width=500,
-           openfile=TRUE,runnotes=NULL,verbose=TRUE)
+           openfile=TRUE,runnotes=runnotes,verbose=FALSE)
 
 
 

@@ -4,17 +4,19 @@
 \alias{addfilename}
 \title{addfilename adds a filename to the autoresult csv file}
 \usage{
-addfilename(filename, caption, category, filen)
+addfilename(filename, tabfile, category, type, caption)
 }
 \arguments{
 \item{filename}{the full path and filename for the file being added}
 
-\item{caption}{the caption for the figure or table}
+\item{tabfile}{the file to be added to, which is defined by
+setuphtml found in aMSE_utils}
 
 \item{category}{what HTML tab should it be displayed on?}
 
-\item{filen}{the file to be added to, which is defined by
-setuphtml found in aMSE_utils}
+\item{type}{the type of addition, either a plot or table}
+
+\item{caption}{the caption for the figure or table}
 }
 \value{
 nothing but it does add a line to filen
@@ -36,7 +38,7 @@ filename <- filenametopath(plotdir,"example.png")
 png(filename=filename,width=7,height=4,units="in",res=300)
 plot(runif(100),runif(100),type="p")
 graphics.off()  # could use dev.off()
-addfilename(filename=filename,caption="Example Figure","A_category",
-            filen=plottabfile)
+addfilename(filename=filename,tabfile=plottabfile,"A_category",
+            type="plot",caption="Example Figure")
 dir(plotdir)
 }

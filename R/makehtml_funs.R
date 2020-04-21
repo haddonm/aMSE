@@ -78,7 +78,22 @@ write_css <- function(plotdir) {
       '      padding-bottom: 2px;\n',
       '      padding-left: 0px;\n',
       '    }\n',
-      sep = "", file=filename, append=FALSE)
+      '    .odd {\n',
+      '      background-color: #cfc;\n ',
+      '    } \n',
+      '    table, th, td { \n',
+      '      font-size: 15px; \n',
+      '      border: 1px solid black;\n',
+      '      border-collapse: collapse; \n',
+      '      style=width: 100%; \n',
+      '    } \n',
+      '    th, td {\n',
+      '       padding: 5px; \n',
+      '    }\n',
+      '    th { \n',
+      '       text-align: right; \n',
+      '    }\n',
+           sep = "", file=filename, append=FALSE)
 } # end of write_css
 
 
@@ -110,6 +125,49 @@ write_head <- function(htmlfile) {
 } # end of write_head
 
 
+
+#' @title htmltable generates the html to print out a table
+#'
+#' @description htmltable generates the required html code to add a
+#'     table to the website of the results. This requires the
+#'     addfilename function to include both a category biology,
+#'     productivity, etc, and a type, which is currently limited to
+#'     plot or table.
+#'
+#' @param inmat the 2D matrix or data.frame to be printed
+#' @param filename the filename to which to add the html, defined by
+#'     makehtml
+#' @param caption the caption text placed at the top of the table
+#'
+#' @return nothing but it does add some html to the input filename
+#' @export
+htmltable <- function(inmat,filename,caption) {
+  rows <- rownames(inmat)
+  numrow <- length(rows)
+  columns <- colnames(inmat)
+  numcol <- length(columns)
+  cat('<br><br> \n',file=filename,append=TRUE)
+  cat('<table> \n',file=filename,append=TRUE)
+  cat('<caption> ',caption,'</caption> \n',file=filename,append=TRUE)
+  cat('<tr> \n',file=filename,append=TRUE)
+  cat('<th>Var</th> \n',file=filename,append=TRUE)
+  tmp <- NULL
+  for (cl in 1:numcol) tmp <- paste(tmp,paste('<th>',columns[cl],'</th>',collapse=""),collapse="")
+  cat(tmp,file=filename,append=TRUE)
+  for (rw in 1:numrow) {
+    if ((rw %% 2) == 0) {
+      cat('<tr> \n',file=filename,append=TRUE)
+    } else {
+      cat('<tr class="odd"> \n',file=filename,append=TRUE)
+    }
+    cat('<th>',rows[rw],'</th> \n',file=filename,append=TRUE)
+    tmp <- NULL
+    for (cl in 1:numcol) tmp <- paste(tmp,paste('<th>',inmat[rw,cl],'</th>',collapse=""),collapse="")
+    cat(tmp,file=filename,append=TRUE)
+    cat('</tr> \n',file=filename,append=TRUE)
+  }
+  cat('</table>',file=filename,append=TRUE)
+} # end of htmltable
 
 
 #' @title make_html create HTML files to view results in a browser.
@@ -143,6 +201,7 @@ make_html <- function(replist=NULL,
                       openfile=TRUE,
                       runnotes=NULL,
                       verbose=TRUE) {
+  # replist=reportlist;rundir=rundir;width=500;openfile=TRUE;runnotes=runnotes;verbose=FALSE
   # Clarify data
   plotdir <- filenametopath(rundir,"plots")
   if(is.null(plotdir)) stop("input 'plotdir' required \n")
@@ -159,6 +218,7 @@ make_html <- function(replist=NULL,
   tablefile$dirname <- plotdir
   # identify the categories and name each html file
   categories <- unique(tablefile$category)
+  types <- tablefile$type
   for (icat in 0:length(categories)) { # icat=1
     if(icat==0){
       category <- "Home"
@@ -188,7 +248,8 @@ make_html <- function(replist=NULL,
     cat('  </ul>\n', file=htmlfile, append=TRUE)
 
     if (category=="Home") {    # add text on "Home" page
-      cat('\n\n<h2><a name="', category, '">', category, '</a></h2>\n', sep="",
+      newcat <- "Run Details"
+      cat('\n\n<h2><a name="', category, '">', newcat, '</a></h2>\n', sep="",
           file=htmlfile, append=TRUE)
       MSE_info <- packageDescription("aMSE")
       goodnames <- c("Version", "Date", "Built",grep("Remote", names(MSE_info),
@@ -218,6 +279,7 @@ make_html <- function(replist=NULL,
       cat('\n\n<h2><a name="', category, '">', category, '</a></h2>\n', sep="",
           file=htmlfile, append=TRUE)
       for(i in 1:nrow(plotinfo)){  # i=1
+        if (plotinfo$type[i] == "plot") {
         cat("<p align=left><a href='", plotinfo$basename[i],
             "'><img src='", plotinfo$basename[i],
             "' border=0 width=", width, "></a><br>",
@@ -225,6 +287,12 @@ make_html <- function(replist=NULL,
             "<br><i>file: <a href='", plotinfo$basename[i],
             "'>", plotinfo$basename[i], "</a></i></p>\n\n",
             sep="",  file=htmlfile,  append=TRUE)
+        }
+        if (plotinfo$type[i] == "table") {
+          datafile <- filenametopath(plotdir,plotinfo$basename[i])
+          dat <- read.csv(file=datafile,header=TRUE,row.names=1)
+          htmltable(inmat=dat,filename=htmlfile,caption=plotinfo$caption[i])
+        }
       }
     } # end of category if else statement
 
