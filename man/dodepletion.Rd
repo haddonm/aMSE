@@ -51,7 +51,7 @@ dodepletion resets the depletion level of the whole
   regionD <- ans2$regionD  # region dynamics
   product <- ans2$product
   regDD <- dodepletion(regionC,regionD,glb,depl=0.3,product)
-  sum(regDD$matureB)/sum(getlistvar(regionC,"effB0"))
+  sum((regDD$matureB[1,]/sum(regDD$matureB[1,]))*regDD$deplsB[1,])
   mean(regDD$deplsB[1,])
 }
 }

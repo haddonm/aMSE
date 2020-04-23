@@ -4,43 +4,35 @@
 \alias{datafiletemplate}
 \title{datafiletemplate generates a template input datafile}
 \usage{
-datafiletemplate(
-  numblock = 3,
-  Nyrs = NA,
-  filename = "tmpdat.csv",
-  FisheryData = FALSE
-)
+datafiletemplate(glob, dirdata, filename = "tmpdat.csv", verbose = FALSE)
 }
 \arguments{
-\item{numblock}{literally the number of blocks in the simulated zone. The
-number of populations per block is pre-set but can easily be altered by
-editing the generated data file; a scalar, defaults to 3}
+\item{glob}{the global constants obtained from the region file}
 
-\item{Nyrs}{the number of years of projection from year 2 to Nyrs; year 1
-is the initial state, either depleted to a predetermined state or in an
-unfished state}
+\item{dirdata}{the directory into which to place the data template}
 
-\item{filename}{the name for the generated datafile, character string,
-defaults to tmpdat.csv}
+\item{filename}{the name for the generated datafile, a character
+string, defaults to tmpdat.csv}
 
-\item{FisheryData}{a boolean determining whether or not fishery data,
-meaning CPUE, historical catches, effort, and historical LML are to be
-included in the data file. These would be used in any stock reduction
-that becomes part of the conditioning; defaults to FALSE}
+\item{verbose}{print the filename to the console but default=FALSE}
 }
 \value{
-a standard definition data file ready to be read by readdatafile
+a standard definition data file, to be read by readdatafile
 }
 \description{
-datafiletemplate generates a standard input datafile to use
-    as a template. It is possible to define the number of blocks and
-    then, once the data file is created, go in an edit it appropriately
-    to suit exactly your own needs.
+datafiletemplate generates a standard input datafile
+    to use as a template, go in and edit it appropriately to suit
+    your own needs. It contains the probability distributions that
+    are sampled to provide the necessary biological constants for
+    each population.
 }
 \examples{
 \dontrun{
- filename <- dataTemplate()
- condDat <- readdatafile(filename)
- str(condDat,max.level=1)
+ yourdir <- tempdir()
+ datafiletemplate(yourdir,"tmpdat.csv")
+ data(region1)
+ glb <- region1$globals
+ constants <- readdatafile(yourdir,"tmpdat.csv",glb)
+ str(constants,max.level=1)
 }
 }

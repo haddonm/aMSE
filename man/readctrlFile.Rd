@@ -15,7 +15,7 @@ readctrlfile(indir, infile = "control.csv")
 a list object containing the control variables
 }
 \description{
-readctrlFile complements the readdatafile. The MSE requires
+readctrlfile complements the readdatafile. The MSE requires
     a data file to condition the operating model but it also needs a
     control file to setup the details of the simulation test being
     conducted. See ctrlfileTemplate./

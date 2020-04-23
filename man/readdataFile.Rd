@@ -4,15 +4,15 @@
 \alias{readdatafile}
 \title{readdatafile reads in a matrix of data defining each population}
 \usage{
-readdatafile(indir, infile, glb)
+readdatafile(glb, indir, infile)
 }
 \arguments{
+\item{glb}{the globals variable from the region file, so obviously
+the readregionfile needs to run before readdatafile}
+
 \item{indir}{directory in which to find the date file}
 
 \item{infile}{character string with filename of the data file}
-
-\item{glb}{the globals variable from the region file, so obviously
-the readregionfile needs to run before readdatafile}
 }
 \value{
 a matrix of values defining the PDFs used to define the
@@ -34,7 +34,7 @@ constants
 ctrlfile <- "control.csv"
 ctrl <- readctrlfile(datadir,ctrlfile)
 reg1 <- readregionfile(datadir,ctrl$regionfile)
-popdefs <- readdatafile(datadir,ctrl$datafile,reg1$globals)
+popdefs <- readdatafile(reg1$globals,datadir,ctrl$datafile)
 print(popdefs)
 }
 }

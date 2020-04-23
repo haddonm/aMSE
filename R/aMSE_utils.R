@@ -172,8 +172,8 @@ getLogical <- function(inline,nb) {  #inline <- txtline; nb=2
 #'
 #' @param varname the name of the variable to get from intxt
 #' @param intxt text to be parsed, usually obtained using readLines
-#' @param context the surrounding function context in which the
-#'     funciton is being used. Only used if an error occurs
+#' @param context the function name within which getsingleNum is
+#'     being used, defaults to empty string
 #'
 #' @return a single number
 #' @export
@@ -186,12 +186,12 @@ getLogical <- function(inline,nb) {  #inline <- txtline; nb=2
 #'  aMSE:::getsingleNum("replicates",txtline,context=context)
 #'  aMSE:::getsingleNum("eeplicates",txtline,context=context)
 #' }
-getsingleNum <- function(varname,intxt,context) {
+getsingleNum <- function(varname,intxt,context="") {
   begin <- grep(varname,intxt)
   if (length(begin) > 0) {
     return(as.numeric(getConst(intxt[begin],1)))
   } else {
-    stop(paste0("No data for ",varname," in ",context))
+    stop(paste0("No data for ",varname," within ",context))
   }
 }
 
@@ -280,7 +280,7 @@ pathtype <- function(inpath) {
 #' rund <- tempdir()
 #' out <- setupdirs(rund)
 #' str(out)
-setupdirs <- function(rundir, verbose=TRUE) {
+setupdirs <- function(rundir, verbose=TRUE) { # rundir=plotdir; runname=runname; verbose=TRUE
   datadir <- filenametopath(rundir,"data")
   plotdir <- filenametopath(rundir,"plots")
   dirExists(datadir,verbose=verbose)
@@ -309,7 +309,7 @@ setupdirs <- function(rundir, verbose=TRUE) {
 #' dirExists(plotdir,verbose=FALSE)
 #' plottabfile <- setuphtml(plotdir,"example_only")
 #' dir(plotdir)
-setuphtml <- function(pldir, runname) {
+setuphtml <- function(pldir, runname) {  # pldir=plotdir; runname=runname
   plottabfile <- filenametopath(pldir,paste0("plotFileTable_",
                                               runname,".csv"))
   label <- c("file","category","type","timestamp","caption")

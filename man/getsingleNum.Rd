@@ -4,15 +4,15 @@
 \alias{getsingleNum}
 \title{getsingleNum extracts a single number from an input line of text}
 \usage{
-getsingleNum(varname, intxt, context)
+getsingleNum(varname, intxt, context = "")
 }
 \arguments{
 \item{varname}{the name of the variable to get from intxt}
 
 \item{intxt}{text to be parsed, usually obtained using readLines}
 
-\item{context}{the surrounding function context in which the
-funciton is being used. Only used if an error occurs}
+\item{context}{the function name within which getsingleNum is
+being used, defaults to empty string}
 }
 \value{
 a single number

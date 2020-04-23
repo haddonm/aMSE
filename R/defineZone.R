@@ -156,27 +156,33 @@ definepops <- function(inSMU,inSMUindex,const,glob) {
 #'   regionD <- ans2$regionD  # region dynamics
 #'   product <- ans2$product
 #'   regDD <- dodepletion(regionC,regionD,glb,depl=0.3,product)
-#'   sum(regDD$matureB)/sum(getlistvar(regionC,"effB0"))
+#'   sum((regDD$matureB[1,]/sum(regDD$matureB[1,]))*regDD$deplsB[1,])
 #'   mean(regDD$deplsB[1,])
 #' }
 dodepletion <- function(regC,regD,glob,depl,product,len=15) {
-  #regC=regionC; regD=regionD; glob=glb;  product=product; depl=0.3;len=15
-  regB0 <- sum(sapply(regC,"[[","effB0"))
-  matb <- rowSums(product[,"MatB",])
-  regdepl <- matb/regB0
-  initH <- as.numeric(names(regdepl))
-  pick <- which.closest(depl,regdepl)
-  if (abs(regdepl[pick] - depl) > 0.05)
+  #  regC=regionC; regD=regionD; glob=glb;  product=product; depl=0.3;len=15
+  spb <- rowSums(product[,"MatB",])
+  initH <- as.numeric(rownames(product))
+  regdyn <- cbind(initH,spb,spb/spb[1])
+  colnames(regdyn) <- c("harv","spb","deplet")
+  regB0 <- spb[1]
+  pick <- which.closest(depl,regdyn[,"deplet"])
+  if (abs(regdyn[pick,"deplet"] - depl) > 0.05)
     warning("Resolution of production curves may be insufficient.")
   lowl <- initH[pick-1]
   upl <- initH[pick+1]
   dinitH <- seq(lowl,upl,length=len)
   inc <- dinitH[2] - dinitH[1]
-  regprod <- doproduction(regC,regD,glob,lowlim=lowl,uplim=upl,inc=inc)
-  finedepl <- rowSums(regprod[,"MatB",])/regB0
-  harv <- seq(lowl,upl,inc)
-  pick <- which.closest(depl,finedepl)
-  pickharv <- rep(harv[pick],glob$numpop)
+  regdepl <- numeric(len)
+  numpop <- glob$numpop
+  for (harv in 1:len) {
+    doharv <- rep(dinitH[harv],numpop)
+    regDD <- runthreeH(regC,regD,glob,inHarv=doharv)
+    regdepl[harv] <- sum((regDD$matureB[1,]/sum(regDD$matureB[1,])) *
+                           regDD$deplsB[1,])
+  }
+  pick <- which.closest(depl,regdepl)
+  pickharv <- rep(dinitH[pick],numpop)
   regDD <- runthreeH(regC,regD,glob,inHarv=pickharv)
   return(regDD)
 } # end of dodepletion

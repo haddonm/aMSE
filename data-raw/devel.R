@@ -1,9 +1,9 @@
 # file reading ------------------------------------------------------
 starttime <- as.character(Sys.time())
-library(rutilsMH)
+#library(rutilsMH)
 library(aMSE)
 library(microbenchmark)
-setpalette("R4")
+rutilsMH::setpalette("R4")
 
 # read data files ----------------------------------------------------
 
@@ -19,9 +19,7 @@ setpalette("R4")
  runname <- ctrl$runlabel
  region1 <- readregionfile(datadir,ctrl$regionfile)
  glb <- region1$globals
- constants <- readdatafile(datadir,ctrl$datafile,glb)
-
- plottabfile <- setuphtml(plotdir,runname)
+ constants <- readdatafile(glb,datadir,ctrl$datafile)
 
  # Define the Zone without production ---------------------------------
 ans <- makeregionC(region1,constants)
@@ -47,6 +45,8 @@ product <- ans$product
 # within three decimal places.
  regDe <- testequil(regionC,regionD,glb)
  #  str(regDe)
+
+plottabfile <- setuphtml(plotdir,runname)
 
 # characterize productivity ------------------------------------------
 source(filenametopath(sourcedir,"plotproductivity_source.R"))

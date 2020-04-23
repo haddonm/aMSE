@@ -1,70 +1,61 @@
 
-# codeutils::listFunctions("C:/A_Mal/Rcode/Abalone/AbMSE/R/inputfiles.R")
+# rutilsMH::listFunctions("C:/Users/User/Dropbox/rcode2/aMSE/R/inputfiles.R")
 
-#' @title ctrlfileTemplate generates a template input control file
+#' @title ctrlfiletemplate generates a template input control file
 #'
-#' @description ctrlfileTemplate generates a standardized input control
-#'     file template. Generate this and then modify the contents to suit
-#'     the system you are attempting to simulate. Defaults to 4 replicates,
-#'     starting at 100% depletion,i.e. at B0, with an assessInterval = 1
-#'     year, a very small probability of an unusual recruitment event,
-#'     and using the mcdaHCR harvest strategy.
+#' @description ctrlfiletemplate generates a standardized control file
+#'     template. Generate this and then modify the contents to suit
+#'     the system you are attempting to simulate. Defaults to 10
+#'     replicates, starting at 100% depletion,i.e. at B0 and with
+#'     effectively no variation in recruitment, mature biomass or cpue
+#'     calculations.
 #'
-#' @param filename the name for the generated ctrlfile, character string,
-#'     defaults to tmpctl.csv
+#' @param filename the name for the generated ctrlfile, a character
+#'     string that defaults to control.csv. It is best to include the
+#'     complete path
 #'
 #' @return a standard definition control file
 #'
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#'  ctrlfile <- paste0(yourdir,"/newctrl.csv")
-#'  ctrlfileTemplate(filename=ctrlfile)   #
-#'  control <- readcrtlFile(ctrlfile)
+#'  yourdir <- tempdir()
+#'  ctrlfile <- filenametopath(yourdir,"testctrl.csv")
+#'  ctrlfiletemplate(filename=ctrlfile)   #
+#'  control <- readctrlfile(yourdir,"testctrl.csv")
 #'  str(control,max.level=1)
-#' }
-ctrlfileTemplate <- function(filename="tmpctl.csv") {
-   cat("Modify the contents to suit your own situation \n",file=filename,
-       append=FALSE)
-   cat("batch,  FALSE","\n",file=filename, append=TRUE)
-   cat("replicates,  4  \n",file=filename, append=TRUE)
-   cat("initDepl,  1.0 \n",file=filename, append=TRUE)
-   cat("recthreshold, 0.0000001  \n",file=filename, append=TRUE)
-   cat("hcrLabel,  mcdaHCR  \n",file=filename, append=TRUE)
-   cat("mcdaHCR,  TRUE   \n",file=filename, append=TRUE)
-   cat("ConstC,   FALSE  \n",file=filename, append=TRUE)
-   cat("ConstH,   FALSE  \n",file=filename, append=TRUE)
-   TACadj <- c(0.75,0.8,0.85,0.9,0.95,1.0,1.05,1.10,1.15,1.2,1.25)
-   cat(paste0("TACadj,  ",makeLabel(TACadj,insep=",")," \n"),file=filename,
+ctrlfiletemplate <- function(filename="control.csv") {
+   cat("Control file containing details of a particular run \n",
+       file=filename,append=FALSE)
+   cat("Modify the contents to suit your own situation \n",
+       file=filename,append=TRUE)
+   cat("\n",file=filename,append=TRUE)
+   cat("START \n",file=filename,append=TRUE)
+   cat("runlabel, run200423, label for particular run \n",
+       file=filename,append=TRUE)
+   cat("regionfile, region1.csv, name of region wide constants \n",
+       file=filename,append=TRUE)
+   cat("datafile, reg1smu2pop6.csv, name of popdefs file \n",
+       file=filename,append=TRUE)
+   cat("hcrfile, HCRfile.csv, HCR details file name \n",file=filename,
        append=TRUE)
-   mcdaWeights <- c(0.4,0.5,0.1)
-   cat(paste0("mcdaWts,  ",makeLabel(mcdaWeights,insep=",")," \n"),
+   cat("outdir, C:/Users/user/Dropbox/rcode2/aMSEUse, output directory \n",
+       file=filename,append=TRUE)
+   cat("\n",file=filename,append=TRUE)
+   cat("\n",file=filename,append=TRUE)
+   cat("REGIONCOAST \n",file=filename,append=TRUE)
+   cat("batch,  0, run job interactively or as a batch (0 = FALSE) \n",
        file=filename, append=TRUE)
-   postmcdaWeights <- mcdaWeights  # wts after target
-   cat(paste0("postmcdaWts, ",makeLabel(postmcdaWeights,insep=",")," \n"),
-       file=filename,
-       append=TRUE)
-   cat(paste0("withVariation,    TRUE  \n"),file=filename, append=TRUE)
-   # Gradient based HCR
-   cat(paste0("cpuePeriod,  4   \n"),file=filename, append=TRUE)
-   cat(paste0("maxGrad4,   0.2   \n"),file=filename, append=TRUE)
-   cat(paste0("maxRate1,   0.4   \n"),file=filename, append=TRUE)
-   # Target Based HCR
-   targCE <- rep(80.0,4)
-   cat(paste0("CETarg,  ",makeLabel(targCE,insep=",")," \n"),file=filename,
-       append=TRUE)   # if using rep then same target in each block
-   deltCE <- rep(45,4)
-   cat(paste0("deltaCE,  ",makeLabel(deltCE,insep=",")," \n"),file=filename,
-       append=TRUE)
-   cat(paste0("implementE, 0.0  \n"),file=filename, append=TRUE) # 0 = no delay, 1 = 1 year delay, used in all HCR
-   cat(paste0("LRPTAC,  TRUE   \n"),file=filename, append=TRUE)
-   cat(paste0("TACLower, 500.0   \n"),file=filename, append=TRUE)# TAC can only decline to >= TACLower * origTAC
-   cat(paste0("TACUpper, 1000.0  \n"),file=filename, append=TRUE)
-   cat(paste0("refyr,  20     \n"),file=filename, append=TRUE)
-   cat(paste0("withsigR,  0.5   \n"),file=filename, append=TRUE)
-   cat(paste0("withsigB,  0.2   \n"),file=filename, append=TRUE)
-   cat(paste0("withsigCE, 0.11  \n"),file=filename, append=TRUE)
+   cat("replicates,  10, number of replicates, usually 1000  \n",
+       file=filename, append=TRUE)
+   cat("initdepl,  1.0, the initial depletion for each population \n",
+       file=filename, append=TRUE)
+   cat("withsigR,  1.0e-08, recruitment variability eg 0.3 \n",
+       file=filename, append=TRUE)
+   cat("withsigB,  1.0e-08, process error on mature biomass \n",
+       file=filename, append=TRUE)
+   cat("withsigCE, 1.0e-08, process error on cpue calculations  \n",
+       file=filename, append=TRUE)
 } # end of ctrlfiletemplate
 
 #' @title diagnostics generates an array of diagnostic plots
@@ -106,35 +97,32 @@ diagnostics <- function(regC,regD,glob,plot=TRUE) {   # inzone <- testzone
 
 #' @title datafiletemplate generates a template input datafile
 #'
-#' @description datafiletemplate generates a standard input datafile to use
-#'     as a template. It is possible to define the number of blocks and
-#'     then, once the data file is created, go in an edit it appropriately
-#'     to suit exactly your own needs.
+#' @description datafiletemplate generates a standard input datafile
+#'     to use as a template, go in and edit it appropriately to suit
+#'     your own needs. It contains the probability distributions that
+#'     are sampled to provide the necessary biological constants for
+#'     each population.
 #'
-#' @param numblock literally the number of blocks in the simulated zone. The
-#'     number of populations per block is pre-set but can easily be altered by
-#'     editing the generated data file; a scalar, defaults to 3
-#' @param Nyrs the number of years of projection from year 2 to Nyrs; year 1
-#'     is the initial state, either depleted to a predetermined state or in an
-#'     unfished state
-#' @param filename the name for the generated datafile, character string,
-#'     defaults to tmpdat.csv
-#' @param FisheryData a boolean determining whether or not fishery data,
-#'     meaning CPUE, historical catches, effort, and historical LML are to be
-#'     included in the data file. These would be used in any stock reduction
-#'     that becomes part of the conditioning; defaults to FALSE
+#' @param glob the global constants obtained from the region file
+#' @param dirdata the directory into which to place the data template
+#' @param filename the name for the generated datafile, a character
+#'     string, defaults to tmpdat.csv
+#' @param verbose print the filename to the console but default=FALSE
 #'
-#' @return a standard definition data file ready to be read by readdatafile
+#' @return a standard definition data file, to be read by readdatafile
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#'  filename <- dataTemplate()
-#'  condDat <- readdatafile(filename)
-#'  str(condDat,max.level=1)
+#'  yourdir <- tempdir()
+#'  datafiletemplate(yourdir,"tmpdat.csv")
+#'  data(region1)
+#'  glb <- region1$globals
+#'  constants <- readdatafile(yourdir,"tmpdat.csv",glb)
+#'  str(constants,max.level=1)
 #' }
-datafiletemplate <- function(numblock=3,Nyrs=NA,filename="tmpdat.csv",
-                             FisheryData=FALSE) {
+datafiletemplate <- function(glob,dirdata,filename="tmpdat.csv",
+                             verbose=FALSE) {
    genconst <- function(invect) {
       nlab <- length(invect)
       invect <- as.character(invect)
@@ -142,73 +130,78 @@ datafiletemplate <- function(numblock=3,Nyrs=NA,filename="tmpdat.csv",
       if (nlab > 1) for (i in 2:nlab) ans <- paste(ans,invect[i],sep=",")
       return(ans)
    }
-   label <- paste0("Label,",genconst(1:numblock))
-   cat(label,"\n",file=filename, append=FALSE)
-   cat("#SIZECLASS  \n",file=filename, append=TRUE)
-   cat("minc,  2  \n",file=filename, append=TRUE)
-   cat("cw,    2  \n",file=filename, append=TRUE)
-   cat("Nclass, 105  \n",file=filename, append=TRUE)
-   cat("\n",file=filename, append=TRUE)
-   cat("BLOCKNAMES,",numblock,"\n",file=filename, append=TRUE)
-   addon <- paste0("Block",1:numblock,insep=",")
-   cat("Blockname,",addon,"\n",file=filename, append=TRUE)
-   cat("numpop,",genconst(rep(2,numblock)),"\n",file=filename, append=TRUE)
-   cat("PDFS,  32   \n",file=filename, append=TRUE)
-   cat("MaxDL ,",genconst(rep(32,numblock)),"\n",file=filename, append=TRUE)
-   cat("sMaxDL ,",genconst(rep(2.5,numblock)),"\n",file=filename, append=TRUE)
-   cat("L50 ,",genconst(rep(123.0,numblock)),"\n",file=filename, append=TRUE)
-   cat("sL50 ,",genconst(rep(5,numblock)),"\n",file=filename, append=TRUE)
-   cat("L50inc ,",genconst(rep(45,numblock)),"\n",file=filename, append=TRUE)
-   cat("sL50inc ,",genconst(rep(1.25,numblock)),"\n",file=filename, append=TRUE)
-   cat("SigMax  ,",genconst(rep(4.6,numblock)),"\n",file=filename, append=TRUE)
-   cat("sSigMax ,",genconst(rep(0.1,numblock)),"\n",file=filename, append=TRUE)
-   cat("LML ,",genconst(rep(140,numblock)),"\n",file=filename, append=TRUE)
-   cat("Wtb ,",genconst(rep(3.161963,numblock)),"\n",file=filename, append=TRUE)
-   cat("sWtb ,",genconst(rep(0.148,numblock)),"\n",file=filename, append=TRUE)
-   cat("Wtbtoa ,",genconst(rep(962.8098,numblock)),"\n",file=filename, append=TRUE)
-   cat("sWtbtoa ,",genconst(rep(-14.3526,numblock)),"\n",file=filename, append=TRUE)
-   cat("Me ,",genconst(rep(0.2,numblock)),"\n",file=filename, append=TRUE)
-   cat("sMe ,",genconst(rep(0.003,numblock)),"\n",file=filename, append=TRUE)
-   cat("Mc ,",genconst(rep(0.2,numblock)),"\n",file=filename, append=TRUE)
-   cat("sMc ,",genconst(rep(0.003,numblock)),"\n",file=filename, append=TRUE)
-   cat("AvRec ,",genconst(rep(13.0,numblock)),"\n",file=filename, append=TRUE)
-   cat("sAvRec ,",genconst(rep(1,numblock)),"\n",file=filename, append=TRUE)
-   cat("defsteep ,",genconst(rep(0.6,numblock)),"\n",file=filename, append=TRUE)
-   cat("sdefsteep ,",genconst(rep(0.02,numblock)),"\n",file=filename, append=TRUE)
-   cat("L50C ,",genconst(rep(126.4222,numblock)),"\n",file=filename, append=TRUE)
-   cat("sL50C ,",genconst(rep(0.5,numblock)),"\n",file=filename, append=TRUE)
-   cat("L95C ,",genconst(rep(136.3749,numblock)),"\n",file=filename, append=TRUE)
-   cat("sL95C ,",genconst(rep(1.0,numblock)),"\n",file=filename, append=TRUE)
-   cat("MaxCEpar,",genconst(rep(0.37,numblock)),"\n",file=filename, append=TRUE)
-   cat("MaxCEpar,",genconst(rep(0.02,numblock)),"\n",file=filename, append=TRUE)
-   cat("selL50p ,",genconst(rep(0.0,numblock)),"\n",file=filename, append=TRUE)
-   cat("selL95p ,",genconst(rep(1.5,numblock)),"\n",file=filename, append=TRUE)
-   cat("SaMa,",genconst(rep(-16,numblock)),"\n",file=filename, append=TRUE)
-   cat("L50Mat,",genconst(rep(123.384,numblock)),"\n",file=filename, append=TRUE)
-   cat("sL50Mat,",genconst(rep(4,numblock)),"\n",file=filename, append=TRUE)
-   cat("\n",file=filename, append=TRUE)
-   cat("CONDITIONING, 0  \n",file=filename, append=TRUE)
-   cat("\n",file=filename, append=TRUE)
-   cat("RANDOMSEED,  10  \n",file=filename, append=TRUE)
-   cat("\n",file=filename, append=TRUE)
-   cat("YEARS,   3  \n",file=filename, append=TRUE)
-   if (is.na(Nyrs)) Nyrs <- 20
-   firstYear <- 2014
-   cat("Nyrs,",Nyrs,"\n",file=filename, append=TRUE)
-   cat("firstYear,",firstYear,"\n",file=filename, append=TRUE)
-   cat("fixYear, 3  \n",file=filename, append=TRUE)
-   cat("\n",file=filename, append=TRUE)
-   cat("PRODUCTIVITY,undefined,  \n",file=filename, append=TRUE)
-   cat("\n",file=filename, append=TRUE)
-   cat("PROJLML,",Nyrs,"\n",file=filename, append=TRUE)
-   addon <- paste0("Block",1:numblock,insep=",")
-   cat("Parameter,",addon, "\n",file=filename, append=TRUE)
-   addon <- makeLabel(rep(132,numblock),insep=",")
-   for (yr in firstYear:(firstYear+Nyrs-1)) cat(yr,",",addon,"\n",
-                                                file=filename, append=TRUE)
-   cat("data placed into ",filename,"\n\n")
+   numpop <- glob$numpop
+   filename <- filenametopath(dirdata,filename)
+   cat("Population definitions containing the Probability Density Functions by parameter  popdefs \n",
+       file=filename,append=FALSE)
+   cat("Define the populations in the same sequence in which they occur along the coast \n",
+       file=filename,append=TRUE)
+   cat("\n",file=filename,append=TRUE)
+   cat("PDFs,  32   \n",file=filename, append=TRUE)
+   cat("popnum,1, 2, 3, 4, 5, 6, the index number for each population \n",
+       file=filename, append=TRUE)
+   cat("SMU, 1, 1, 2, 2, 2, 2, define the SMU index for each population \n",
+       file=filename,append=TRUE)
+   cat("MaxDL ,",genconst(rep(32,numpop)),", maximum growth increment \n",
+       file=filename, append=TRUE)
+   cat("sMaxDL ,",genconst(rep(2.5,numpop)),", variation of MaxDL \n",
+       file=filename, append=TRUE)
+   cat("L50 ,",genconst(rep(123.0,numpop)),", Length at 50% MaxDL \n",
+       file=filename, append=TRUE)
+   cat("sL50 ,",genconst(rep(5,numpop)),", variation of L50 \n",
+       file=filename, append=TRUE)
+   cat("L50inc ,",genconst(rep(45,numpop)),", L95 - L50 = delta =L50inc \n",
+       file=filename, append=TRUE)
+   cat("sL50inc ,",genconst(rep(1.25,numpop)),", variation of L50inc \n",
+       file=filename, append=TRUE)
+   cat("SigMax  ,",genconst(rep(4.6,numpop)),", max var around growth \n",
+       file=filename, append=TRUE)
+   cat("sSigMax ,",genconst(rep(0.1,numpop)),", var of SigMax \n",
+       file=filename, append=TRUE)
+   cat("LML ,",genconst(rep(140,numpop)),", current legal minimum length \n",
+       file=filename, append=TRUE)
+   cat("Wtb ,",genconst(rep(3.161963,numpop)),", weight-at-length exponent \n",
+       file=filename, append=TRUE)
+   cat("sWtb ,",genconst(rep(0.148,numpop)),", var of Wtb \n",
+       file=filename, append=TRUE)
+   cat("Wtbtoa ,",genconst(rep(962.8098,numpop)),
+       ", intercept of power curve between Wtb and Wta \n",file=filename,
+       append=TRUE)
+   cat("sWtbtoa ,",genconst(rep(-14.3526,numpop)),
+       ", exponent of power curve between Wtb and Wta \n",file=filename,
+       append=TRUE)
+   cat("Me ,",genconst(rep(0.2,numpop)),", Nat Mort, 0.2 maxage=23, 0.1 maxage=46 \n",
+       file=filename, append=TRUE)
+   cat("sMe ,",genconst(rep(0.003,numpop)),", var of Me\n",
+       file=filename, append=TRUE)
+   cat("AvRec ,",genconst(rep(13.0,numpop)),", log of unfished recruitment LnR0 \n",
+       file=filename, append=TRUE)
+   cat("sAvRec ,",genconst(rep(1,numpop)),", \n",file=filename, append=TRUE)
+   cat("defsteep ,",genconst(rep(0.6,numpop)),", Beverton-Holt steepness \n",
+       file=filename, append=TRUE)
+   cat("sdefsteep ,",genconst(rep(0.02,numpop)),", \n",file=filename,
+       append=TRUE)
+   cat("L50C ,",genconst(rep(126.4222,numpop)),", length at 50% emergent \n",
+       file=filename, append=TRUE)
+   cat("sL50C ,",genconst(rep(0.5,numpop)),", \n",file=filename, append=TRUE)
+   cat("L95C ,",genconst(rep(136.3749,numpop)),", length at 95% emergent \n",
+       file=filename, append=TRUE)
+   cat("sL95C ,",genconst(rep(1.0,numpop)),", \n",file=filename, append=TRUE)
+   cat("MaxCEpar,",genconst(rep(0.37,numpop)),", max cpue t-hr \n",
+       file=filename, append=TRUE)
+   cat("MaxCEvar,",genconst(rep(0.02,numpop)),", \n",file=filename, append=TRUE)
+   cat("selL50p ,",genconst(rep(0.0,numpop)),", L50 of selectivity \n",
+       file=filename, append=TRUE)
+   cat("selL95p ,",genconst(rep(1.5,numpop)),", L95 of selectivity \n",
+       file=filename, append=TRUE)
+   cat("SaMa,",genconst(rep(-16,numpop)),", matuirity logistic a par \n",
+       file=filename, append=TRUE)
+   cat("L50Mat,",genconst(rep(123.384,numpop)),", L50 for maturity b = -1/L50\n",
+       file=filename, append=TRUE)
+   cat("sL50Mat,",genconst(rep(4,numpop)),", \n",file=filename, append=TRUE)
+   if (verbose) cat("data placed into ",filename,"\n\n")
    return(filename)
-}  # end of dataTemplate
+}  # end of datafileTemplate
 
 # Utility functions used within parseFile, not exported
 
@@ -274,7 +267,7 @@ makeLabel <- function(invect,insep="_") {
 
 #' @title readctrlfile reads a csv file for controlling aMSE
 #'
-#' @description readctrlFile complements the readdatafile. The MSE requires
+#' @description readctrlfile complements the readdatafile. The MSE requires
 #'     a data file to condition the operating model but it also needs a
 #'     control file to setup the details of the simulation test being
 #'     conducted. See ctrlfileTemplate./
@@ -300,18 +293,21 @@ readctrlfile <- function(indir,infile="control.csv") {
    regionfile <- getStr(indat[begin+1],1)
    datafile <- getStr(indat[begin+2],1)
    hcrfile <- getStr(indat[begin+3],1)
+   outdir <- getStr(indat[begin+4],1)
+
+   batch <- getsingleNum("batch",indat)
    reps <- getsingleNum("replicates",indat)
    initdepl <- getsingleNum("initdepl",indat)
    withsigR <- getsingleNum("withsigR",indat)
    withsigB <- getsingleNum("withsigB",indat)
    withsigCE <- getsingleNum("withsigCE",indat)
-   outctrl <- list(runlabel,regionfile,datafile,hcrfile,
-                   reps,initdepl,withsigR,withsigB,withsigCE)
+   outctrl <- list(runlabel,regionfile,datafile,hcrfile,outdir,
+                   batch,reps,initdepl,withsigR,withsigB,withsigCE)
    names(outctrl) <- c("runlabel","regionfile","datafile","hcrfile",
-                       "reps","initdepl",
+                       "outdir","batch","reps","initdepl",
                        "withsigR","withsigB","withsigCE")
    return(outctrl)
-}
+} # end of readctrlfile
 
 #' @title readdatafile reads in a matrix of data defining each population
 #'
@@ -339,10 +335,10 @@ readctrlfile <- function(indir,infile="control.csv") {
 #' ctrlfile <- "control.csv"
 #' ctrl <- readctrlfile(datadir,ctrlfile)
 #' reg1 <- readregionfile(datadir,ctrl$regionfile)
-#' popdefs <- readdatafile(datadir,ctrl$datafile,reg1$globals)
+#' popdefs <- readdatafile(reg1$globals,datadir,ctrl$datafile)
 #' print(popdefs)
 #' }
-readdatafile <- function(indir,infile,glb) {  # indir=datadir;infile=ctrl$datafile;glb=ctrl$globals
+readdatafile <- function(glb,indir,infile) {  # indir=yourdir;infile="constdat.csv";glb=region1$globals
    numpop <- glb$numpop
    filename <- filenametopath(indir,infile)
    indat <- readLines(filename)   # reads the whole file as character strings
@@ -517,15 +513,8 @@ readregionfile <- function(indir,infile) {  # infile="region1.csv"; indir=datadi
          histLML[i] <- getConst(indat[begin],1)
       }
    }
-   label <- c("numpop","nSMU","midpts","Nclass","Nyrs","larvdisp")
-   globals <- vector("list",length(label))
-   names(globals) <- label
-   globals$numpop <- numpop
-   globals$nSMU <- nSMU
-   globals$midpts <- midpts
-   globals$Nclass <- Nclass   # still have Nyrs to fill in
-   globals$Nyrs <- Nyrs
-   globals$larvdisp <- larvdisp
+   globals <- list(numpop=numpop, nSMU=nSMU, midpts=midpts,
+                   Nclass=Nclass, Nyrs=Nyrs, larvdisp=larvdisp)
    totans <- list(SMUnames,SMUpop,minc,cw,larvdisp,randomseed,outyear,
                   projLML,condition,histLML,globals)
    names(totans) <- c("SMUnames","SMUpop","minc","cw","larvdisp",
@@ -533,6 +522,78 @@ readregionfile <- function(indir,infile) {  # infile="region1.csv"; indir=datadi
                       "histLML","globals")
    return(totans)
 }  # end of readregionfile
+
+#' @title regionfiletemplate generates a template region file
+#'
+#' @description regionfiletemplate generates a standardized region file
+#'     template containing constants tha toperate at a regional level.
+#'     Generate this and then modify the contents to suit
+#'     the system you are attempting to simulate.
+#'
+#' @param filename the name for the generated region file, a character
+#'     string that defaults to region1.csv. It is best to include the
+#'     complete path
+#'
+#' @return a standard definition region file
+#'
+#' @export
+#'
+#' @examples
+#'  yourdir <- tempdir()
+#'  regionfile <- filenametopath(yourdir,"region1.csv")
+#'  regionfiletemplate(filename=regionfile)   #
+#'  region1 <- readregionfile(yourdir,"region1.csv")
+#'  str(region1,max.level=1)
+regionfiletemplate <- function(filename="region1.csv") {
+   cat("region file containing region wide constants for a run \n",
+       file=filename,append=FALSE)
+   cat("Modify the contents to suit your own situation \n",
+       file=filename,append=TRUE)
+   cat("\n",file=filename,append=TRUE)
+   cat("REGION \n",file=filename,append=TRUE)
+   cat("nSMU, 2, number of spatial management units eg 2 \n",
+       file=filename,append=TRUE)
+   cat("SMUpop, 2, 4, number of populations per SMU in sequence \n",
+       file=filename,append=TRUE)
+   cat("SMUnames, block1, block2, labels for each SMU \n",file=filename,
+       append=TRUE)
+   cat("\n",file=filename,append=TRUE)
+   cat("SIZE \n",file=filename,append=TRUE)
+   cat("minc, 2, centre of minimum size class \n",file=filename,append=TRUE)
+   cat("cw, 2, class width mm \n",file=filename,append=TRUE)
+   cat("Nclass, 105, number of size classes \n",file=filename,append=TRUE)
+   cat("\n",file=filename,append=TRUE)
+   cat("RECRUIT \n",file=filename,append=TRUE)
+   cat("larvdisp, 0.03, rate of larval dispersal eg 0.03=3precent \n",
+       file=filename,append=TRUE)
+   cat("\n",file=filename,append=TRUE)
+   cat("RANDOM \n",file=filename,append=TRUE)
+   cat("randomseed, 4024136, for repeatability of results if wished \n",
+       file=filename,append=TRUE)
+   cat("\n",file=filename,append=TRUE)
+   cat("YEARS \n",file=filename,append=TRUE)
+   cat("Nyrs, 30, number of projection years for each simulation \n",
+       file=filename,append=TRUE)
+   cat("firstyear, 2014, first year of simulation if 1 hypothetical 2014 conditioned \n",
+       file=filename,append=TRUE)
+   cat("fixyear, 3, conditions fixed for the first three years \n",
+       file=filename,append=TRUE)
+   cat("\n",file=filename,append=TRUE)
+   cat("PROJLML, same number of projection years \n",file=filename,
+       append=TRUE) # ensure there are Nyrs lines
+   cat("projLML1, 132,  Legal Minimum Length (LML, MLL, MLS) e.g. 140 \n",
+       file=filename,append=TRUE)
+   for (i in 2:30) {
+      label <- paste0("projLML",i)
+      cat(label,"132 \n",file=filename,append=TRUE)
+   }
+   cat("\n",file=filename,append=TRUE)
+   cat("CONDITION, 0, if > 1 then how many years in the histLML \n",
+       file=filename,append=TRUE)
+   cat("\n",file=filename,append=TRUE)
+   cat("HistoricalLML, 0, if >1 then number reflects number of histLML \n",
+       file=filename,append=TRUE)
+} # end of regionfiletemplate
 
 
 

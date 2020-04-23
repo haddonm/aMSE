@@ -125,15 +125,15 @@ addfilename(filename,tabfile=plottabfile,"Tables","table",caption)
 
 # total regional productivity ----------------------------------------
 
-numrow <- length(product[,1,1])
-numvar <- length(product[1,,1])
-columns <- names(product[1,,1])
-rows <- names(product[,1,1])
-result <- matrix(0,nrow=numrow,ncol=numvar,dimnames=list(rows,columns))
-cols <- c(1,2,4)
-for (i in cols) result[,i] <- rowSums(product[,i,])
-result[,"AnnH"] <- result
-result
+# numrow <- length(product[,1,1])
+# numvar <- length(product[1,,1])
+# columns <- names(product[1,,1])
+# rows <- names(product[,1,1])
+# result <- matrix(0,nrow=numrow,ncol=numvar,dimnames=list(rows,columns))
+# cols <- c(1,2,4)
+# for (i in cols) result[,i] <- rowSums(product[,i,])
+# result[,"AnnH"] <- result
+# result
 
 
 
