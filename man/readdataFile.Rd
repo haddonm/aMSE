@@ -4,11 +4,10 @@
 \alias{readdatafile}
 \title{readdatafile reads in a matrix of data defining each population}
 \usage{
-readdatafile(glb, indir, infile)
+readdatafile(numpop, indir, infile)
 }
 \arguments{
-\item{glb}{the globals variable from the region file, so obviously
-the readregionfile needs to run before readdatafile}
+\item{numpop}{the total number of populations across the region}
 
 \item{indir}{directory in which to find the date file}
 
@@ -32,7 +31,7 @@ glb
 data(constants)
 constants
 ctrlfile <- "control.csv"
-ctrl <- readctrlfile(datadir,ctrlfile)
+ctrl <- readctrlfile(glb$numpop,datadir,ctrlfile)
 reg1 <- readregionfile(datadir,ctrl$regionfile)
 popdefs <- readdatafile(reg1$globals,datadir,ctrl$datafile)
 print(popdefs)

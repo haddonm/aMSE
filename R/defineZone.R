@@ -1,3 +1,4 @@
+#  rutilsMH::listFunctions("C:/Users/User/Dropbox/rcode2/aMSE/R/defineZone.R")
 
 #' @title defineBlock subdivides defined number of populations into blocks
 #'

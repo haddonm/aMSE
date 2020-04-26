@@ -10,28 +10,29 @@
 #'     effectively no variation in recruitment, mature biomass or cpue
 #'     calculations.
 #'
+#' @param indir directory in which to place the control.csv file
 #' @param filename the name for the generated ctrlfile, a character
-#'     string that defaults to control.csv. It is best to include the
-#'     complete path
+#'     string that defaults to control.csv.
 #'
-#' @return a standard definition control file
+#' @return invisibly the fill path and name of the control file. More
+#'     importantly, it write a control file template to that directory.
 #'
 #' @export
 #'
 #' @examples
 #'  yourdir <- tempdir()
-#'  ctrlfile <- filenametopath(yourdir,"testctrl.csv")
-#'  ctrlfiletemplate(filename=ctrlfile)   #
+#'  ctrlfiletemplate(yourdir,filename="testctrl.csv")   #
 #'  control <- readctrlfile(yourdir,"testctrl.csv")
 #'  str(control,max.level=1)
-ctrlfiletemplate <- function(filename="control.csv") {
+ctrlfiletemplate <- function(indir,filename="control.csv") {
+   filename <- filenametopath(indir,filename)
    cat("Control file containing details of a particular run \n",
        file=filename,append=FALSE)
    cat("Modify the contents to suit your own situation \n",
        file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
    cat("START \n",file=filename,append=TRUE)
-   cat("runlabel, run200423, label for particular run \n",
+   cat("runlabel, testrun, label for particular run \n",
        file=filename,append=TRUE)
    cat("regionfile, region1.csv, name of region wide constants \n",
        file=filename,append=TRUE)
@@ -56,6 +57,7 @@ ctrlfiletemplate <- function(filename="control.csv") {
        file=filename, append=TRUE)
    cat("withsigCE, 1.0e-08, process error on cpue calculations  \n",
        file=filename, append=TRUE)
+   return(invisible(filename))
 } # end of ctrlfiletemplate
 
 #' @title diagnostics generates an array of diagnostic plots
@@ -103,26 +105,25 @@ diagnostics <- function(regC,regD,glob,plot=TRUE) {   # inzone <- testzone
 #'     are sampled to provide the necessary biological constants for
 #'     each population.
 #'
-#' @param glob the global constants obtained from the region file
-#' @param dirdata the directory into which to place the data template
+#' @param numpop the totla number of populations in the region
+#' @param indir the directory into which to place the data template
 #' @param filename the name for the generated datafile, a character
 #'     string, defaults to tmpdat.csv
-#' @param verbose print the filename to the console but default=FALSE
 #'
 #' @return a standard definition data file, to be read by readdatafile
+#'     whose name and path is returned invisibly
 #' @export
 #'
 #' @examples
 #' \dontrun{
 #'  yourdir <- tempdir()
-#'  datafiletemplate(yourdir,"tmpdat.csv")
+#'  datafiletemplate(numpop=6,yourdir,"tmpdat.csv")
 #'  data(region1)
 #'  glb <- region1$globals
-#'  constants <- readdatafile(yourdir,"tmpdat.csv",glb)
+#'  constants <- readdatafile(numpop,yourdir,"tmpdat.csv")
 #'  str(constants,max.level=1)
 #' }
-datafiletemplate <- function(glob,dirdata,filename="tmpdat.csv",
-                             verbose=FALSE) {
+datafiletemplate <- function(numpop,indir,filename="tmpdat.csv") {
    genconst <- function(invect) {
       nlab <- length(invect)
       invect <- as.character(invect)
@@ -130,8 +131,7 @@ datafiletemplate <- function(glob,dirdata,filename="tmpdat.csv",
       if (nlab > 1) for (i in 2:nlab) ans <- paste(ans,invect[i],sep=",")
       return(ans)
    }
-   numpop <- glob$numpop
-   filename <- filenametopath(dirdata,filename)
+   filename <- filenametopath(indir,filename)
    cat("Population definitions containing the Probability Density Functions by parameter  popdefs \n",
        file=filename,append=FALSE)
    cat("Define the populations in the same sequence in which they occur along the coast \n",
@@ -199,8 +199,7 @@ datafiletemplate <- function(glob,dirdata,filename="tmpdat.csv",
    cat("L50Mat,",genconst(rep(123.384,numpop)),", L50 for maturity b = -1/L50\n",
        file=filename, append=TRUE)
    cat("sL50Mat,",genconst(rep(4,numpop)),", \n",file=filename, append=TRUE)
-   if (verbose) cat("data placed into ",filename,"\n\n")
-   return(filename)
+   return(invisible(filename))
 }  # end of datafileTemplate
 
 # Utility functions used within parseFile, not exported
@@ -316,10 +315,9 @@ readctrlfile <- function(indir,infile="control.csv") {
 #'     used in the simualtion. These constitute the definition of
 #'     popdefs.
 #'
+#' @param numpop the total number of populations across the region
 #' @param indir directory in which to find the date file
 #' @param infile character string with filename of the data file
-#' @param glb the globals variable from the region file, so obviously
-#'     the readregionfile needs to run before readdatafile
 #'
 #' @return a matrix of values defining the PDFs used to define the
 #'     properties of each population. The contents of popdefs
@@ -333,13 +331,12 @@ readctrlfile <- function(indir,infile="control.csv") {
 #' data(constants)
 #' constants
 #' ctrlfile <- "control.csv"
-#' ctrl <- readctrlfile(datadir,ctrlfile)
+#' ctrl <- readctrlfile(glb$numpop,datadir,ctrlfile)
 #' reg1 <- readregionfile(datadir,ctrl$regionfile)
 #' popdefs <- readdatafile(reg1$globals,datadir,ctrl$datafile)
 #' print(popdefs)
 #' }
-readdatafile <- function(glb,indir,infile) {  # indir=yourdir;infile="constdat.csv";glb=region1$globals
-   numpop <- glb$numpop
+readdatafile <- function(numpop,indir,infile) {  # indir=yourdir;infile="constdat.csv";numpop=6
    filename <- filenametopath(indir,infile)
    indat <- readLines(filename)   # reads the whole file as character strings
    begin <- grep("PDFs",indat)
@@ -530,21 +527,22 @@ readregionfile <- function(indir,infile) {  # infile="region1.csv"; indir=datadi
 #'     Generate this and then modify the contents to suit
 #'     the system you are attempting to simulate.
 #'
+#' @param indir directory in which to place the region file
 #' @param filename the name for the generated region file, a character
 #'     string that defaults to region1.csv. It is best to include the
 #'     complete path
 #'
-#' @return a standard definition region file
+#' @return nothing, but it creates a template region file within indir
 #'
 #' @export
 #'
 #' @examples
 #'  yourdir <- tempdir()
-#'  regionfile <- filenametopath(yourdir,"region1.csv")
-#'  regionfiletemplate(filename=regionfile)   #
+#'  regionfiletemplate(yourdir,filename="region1.csv")   #
 #'  region1 <- readregionfile(yourdir,"region1.csv")
 #'  str(region1,max.level=1)
-regionfiletemplate <- function(filename="region1.csv") {
+regionfiletemplate <- function(indir,filename="region1.csv") {
+   filename <- filenametopath(indir,filename)
    cat("region file containing region wide constants for a run \n",
        file=filename,append=FALSE)
    cat("Modify the contents to suit your own situation \n",

@@ -1,34 +1,5 @@
 
 
-##  inzone <- zone1; indexVar <- "Nt"
-## gets all LF data from a zone across pops and years
-#' @title getregionLF extracts all LF data from a zone across pops and years
-#'
-#' @description getregionLF extracts all LF data from a region across
-#'     all populations for each year. Thus an Nclass x Nyrs X numpop
-#'     matrix is compressed into a Nclass x Nyrs matrix
-#'
-#' @param regD the dynamic part of the region
-#' @param glb the global constants
-#'
-#' @return an Nclass x Nyrs matrix containing LF data across all
-#'     populations by year
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' print("An example needs to be written")
-#' }
-getregionLF <- function(regD,glb) { # need to define years
-  numpop <- glb$numpop
-  Nyrs <- glb$Nyrs
-  storeLF <- matrix(0,nrow=glb$Nclass,ncol=Nyrs,
-                    dimnames=list(glb$midpts,1:Nyrs))
-  for (yr in 1:Nyrs)
-    storeLF[,yr] <- rowSums(regD$Nt[,yr,])
-  return(storeLF)
-} # end of getregionLF
-
 #' @title getlistvar extracts a vector or matrix from regionC
 #'
 #' @description getlistvar extracts a vector or matrix from regionC.
@@ -82,6 +53,36 @@ getlistvar <- function(regC,indexvar,indexvar2="") {
   }
   return(x)
 } # End of getlistvar
+
+
+##  inzone <- zone1; indexVar <- "Nt"
+## gets all LF data from a zone across pops and years
+#' @title getregionLF extracts all LF data from a zone across pops and years
+#'
+#' @description getregionLF extracts all LF data from a region across
+#'     all populations for each year. Thus an Nclass x Nyrs X numpop
+#'     matrix is compressed into a Nclass x Nyrs matrix
+#'
+#' @param regD the dynamic part of the region
+#' @param glb the global constants
+#'
+#' @return an Nclass x Nyrs matrix containing LF data across all
+#'     populations by year
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' print("An example needs to be written")
+#' }
+getregionLF <- function(regD,glb) { # need to define years
+  numpop <- glb$numpop
+  Nyrs <- glb$Nyrs
+  storeLF <- matrix(0,nrow=glb$Nclass,ncol=Nyrs,
+                    dimnames=list(glb$midpts,1:Nyrs))
+  for (yr in 1:Nyrs)
+    storeLF[,yr] <- rowSums(regD$Nt[,yr,])
+  return(storeLF)
+} # end of getregionLF
 
 
 

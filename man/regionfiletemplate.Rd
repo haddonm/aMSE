@@ -4,15 +4,17 @@
 \alias{regionfiletemplate}
 \title{regionfiletemplate generates a template region file}
 \usage{
-regionfiletemplate(filename = "region1.csv")
+regionfiletemplate(indir, filename = "region1.csv")
 }
 \arguments{
+\item{indir}{directory in which to place the region file}
+
 \item{filename}{the name for the generated region file, a character
 string that defaults to region1.csv. It is best to include the
 complete path}
 }
 \value{
-a standard definition region file
+nothing, but it creates a template region file within indir
 }
 \description{
 regionfiletemplate generates a standardized region file
@@ -22,8 +24,7 @@ regionfiletemplate generates a standardized region file
 }
 \examples{
  yourdir <- tempdir()
- regionfile <- filenametopath(yourdir,"region1.csv")
- regionfiletemplate(filename=regionfile)   #
+ regionfiletemplate(yourdir,filename="region1.csv")   #
  region1 <- readregionfile(yourdir,"region1.csv")
  str(region1,max.level=1)
 }

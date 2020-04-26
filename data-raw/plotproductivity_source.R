@@ -1,4 +1,4 @@
-
+# All these plots only use the product array
 # characterize productivity ------------------------------------------
 # plot of Yield vs Spawning biomass
 xval <- findmsy(product)

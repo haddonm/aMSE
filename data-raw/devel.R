@@ -56,6 +56,11 @@ source(filenametopath(sourcedir,"plotproductivity_source.R"))
 source(filenametopath(sourcedir,"plotbiology_source.R"))
 # end characterize biology -------------------------------------------
 
+if (ctrl$initdepl < 1.0) {
+  regionD <- dodepletion(regionC, regionD, glb, product)
+}
+
+
  endtime <- as.character(Sys.time())
 
 

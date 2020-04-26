@@ -39,12 +39,17 @@ NULL
 #'
 #' @section Data sets:
 #' \describe{
-#'   \item{midg}{a tagging data-set from abalone taken from the Middle
-#'       Ground in the Actaeons.}
+#'   \item{constants}{ is conditioning data for 6 populations}
+#'   \item{ctrl}{control file for a 2 MSU 6 population MSE run}
+#'   \item{midg}{an abalone tagging data-set from the Actaeons}
+#'   \item{product}{productivity matrix from a 2 MSU 6 population
+#'       example}
+#'   \item{region1}{the constants common to a region}
 #'   \item{tasab}{Abalone maturity data from two sites on the
 #'       south-west of Tasmania.}
-#'   \item{condDat}{a two block, six population data set for conditioning
-#'       the operating model to be used in the function examples.}
+#'   \item{tasregC}{a region list made up of 6 equilibrium populations}
+#'   \item{tasregD}{a list of 8 matrices and 2 arrays defining the
+#'       dynamics of a region}
 #' }
 #' @docType package
 #' @name aMSE

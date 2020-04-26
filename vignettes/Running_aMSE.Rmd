@@ -1,0 +1,203 @@
+---
+title: "Setting up a Simulation Run of aMSE"
+author: "Malcolm Haddon"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Running_the_MSE}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
+
+options(knitr.kable.NA = "",
+        knitr.table.format = "pandoc")
+
+options("show.signif.stars"=FALSE,
+        "stringsAsFactors"=FALSE,
+        "max.print"=50000,
+        "width"=240)
+
+library(diagrams)
+library(aMSE)
+library(knitr)
+library(captioner)
+
+tab_nums <- captioner(prefix = "Table")
+fig_nums <- captioner(prefix = "Figure")
+
+```
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: { 
+      equationNumbers: { 
+            autoNumber: "all",
+            formatNumber: function (n) {return '3.'+n}
+      } 
+  }
+});
+</script>
+
+# Introduction
+
+## The Input File Requirements
+
+To implement a run using the __aMSE__ R package one would need to install both __aMSE__ and __rutilsMH__, both of which can be downloaded or installed from the GitHub sites:  
+
+https://github.com/haddonm/aMSE and https://github.com/haddonm/rutilsMH 
+
+Instructions for how to make those downloads are included in the _ReadMe.md_ files for each package, but as an example one could use:
+
+```{r echo=TRUE, eval=FALSE}
+if (!require(devtools)){install.packages("devtools")}
+
+devtools::install_github("https://github.com/haddonm/rutilsMH")
+
+```
+
+
+Apart from the R packages __aMSE__ and __rutilsMH__, you will need to define and prepare a directory somewhere on your computer, here we will refer to it as the _rundir_, which will have two subdirectories 'rundir/data' and 'rundir/plots' (note the forward slash notation required within R). This run directory, especially the plots sub-directory, will be the focus for all the stored results from the particular run being made. The idea is that given the _rundir_ it will be possible to recreate the plots and tables generating from the given run. Later functions will be written that will take a set of such run directories and summarize the results found within.
+
+In the 'rundir/data' subdirectory there needs to be at least four .csv files:
+
+1. A control file that identifies ideally, a unique run name, the other input file names, the number of replicates, and other details of a particular MSE run, such as which harvest control rule (HCR) to use.
+
+2. A regionfile, which contains a set of constants that relate to the whole region. this includes the definition of the spatial structure, constants relating ot the size structure, and a set of global constants used throughout the modelling.
+
+3. A file of biological constants for each population making up the region, including details of growth, maturity, weight-at-length, natural mortality, recruitment, emergence, selectivity and expected initial unfished catch rates.
+
+4. A harvest control rule file containing any constants or values used within the HCR.
+
+Functions are provided within __aMSE__ for writing out template versions of the first three files. These mimic the worked example we will use below and have been used to generate some of the built-in data-sets within __aMSE__, which are used to illustrate the operation of the various R functions that have been developed for conducting the simulations. In practice, one would run the _ctrlfiletemplate_, the _datafiletemplate_, and the _regionfiletemplate_ R functions to produce such files and then use them after editing the contents to suit your own fishery and particular run details. You should not be surprised to find that just as there are _xxxxfiletemplate_ functions there are _readctrlfile_, _readdatafile_, and _readregionfile_ R functions (though eventually these may be hidden within more all encompassing functions).
+
+## Initial Decisions
+
+Running the simulations involved when conducting a management strategy evaluation to compare a set of harvest strategies requires a number of decisions about how to condition the model to reflect a particular fishery. The following questions require an answer:
+
+1. How many Spatial Management Units are going to be included in the simulated region?
+
+2. How many separate populations will make up each SMU? 
+
+3. How will the will the biological properties of each population be allocated? Will they be characterized as if they are linearly arranged along the simulated coast, or will their properties be allocated randomly?
+
+4. Will larval dispersal among the populations be set at zero, or will a particular proportion of larval production be allocated to dispersal to adjacent populations.
+
+These questions are important because they determine the spatial structure imposed on the operating model of the fisheries dynamics (see the vignette on MSE for explanations of the components that make up an MSE model). 
+
+The first question about the number of SMUs will depend upon how management is arranged. For example, in Tasmania, a total allowable catch is allocated to each quota zone. But spatial management is taken further by allocating intended catch levels to each statistical block to avoid excessive fishing in any single block should abalone become available in greater numbers than usual (__`r fig_nums("r1",display="cite")`__). Elsewhere, however, it may be the case that management decisions are made at the level of each SMU and the spread of effort or catch among its component populations is decided each year by the industry members. Such possible variation canbe accommodated by __aMSE__ by changing the number of SMU and associated populations.
+
+<br>
+
+```{r pressure, echo=FALSE, fig.cap="A caption", out.width = '80%'}
+knitr::include_graphics("C:/Users/User/Dropbox/rcode2/aMSEUse/figures/Tas_Abalone_Zones.png")
+```
+
+`r fig_nums("r1", caption=" A schematic map of the Tasmanian quota zones and associated legal minimum lengths. A trimmed version of the figure on page 189 of Mundy and McAllister (2019).")`
+
+<br>
+
+The number of populations making up each SMU is also an important decision, which is fundamental to the level of detail to which it is possible to take the model's conditioning. The expectation is that, within Tasmania, using the GPS-logger data it will be possible to characterize smaller more homogeneous areas within each statistial block (SMU). These may be characterized using their average relative productivity through the available time-series, or by any other form of data available for the selected  area. In answer to the third question, it should also be possible, using the GPS-logger data, to characterize such populations in terms of relative productivity in sequence around the coastline, which can then be mimicked within the simulation model. If such detailed data are not available then conditioning the operating model might involve randomly allocating biological properties across populations repeatedly until a schema arises that generates data with strong similarities to the observed history of the fishery.
+
+The fourth question about larval dispersal will be influenced by the area and the species being considered. With blacklip abalone in Tasmania mostly larval settlement occurs locally with only minor levels of larval dispersal to populations no large distance away (Miller _et al_., 2008). But even low levels of larval dispersal (the example we will use below has a dispersal rate of 3% - 0.03) have an influence on equilibrium conditions and potential yields, especially when large productive populations lie next to less productive smaller populations.
+
+## Conditioning on Biological Characteristics
+
+An array of biological characteristics are required for each population (see the contents of _daat(constants)_). These relate to maturity and growth, and other aspects of productivity such as unfished recruitment levels. Translating the biological data that has been collected from the various fisheries through time into these parameters is a large part of what is entailed in conditioning the operating model. The full requirements will become clear when we discuss the format and contents of the various files required to conduct a model run.
+
+## A Quick Worked Example
+
+We have already had quite a few details much of which will already have been forgotten, so now we will examine setting up a model in practice and getting it operational. In this example, we will be creating directories on your hard-drive. At that point in the code you may wish to change the names of the directory structure so that the example does not upset your, no doubt, neat and tidy 'C:' drive directory layout.
+
+```{r echo=TRUE}
+starttime <- as.character(Sys.time()) # When did the run start?
+library(aMSE)  # you might check out the help pages for each function
+rutilsMH::setpalette("R4") # Not needed if you have updated to R4.0.0
+ # Obviously you should change the rundir to something that suits you!!!!
+ rundir <- "C:/Users/User/DropBox/rcode2/aMSEUse/testrun"
+ outdir <- setupdirs(rundir) # checks for existence of rundir, data and
+ datadir <- outdir$datadir   # plots and creates them if they do not 
+ plotdir <- outdir$plotdir   # already exist
+ # No changes will be made to the templates at this stage. 
+ # First create and edit the control file; look at contents of ctrl
+ ctrlfiletemplate(datadir,"control.csv")
+ ctrl <- readctrlfile(datadir,infile="control.csv") 
+ runname <- ctrl$runlabel
+ # Now create and edit the region file, which sets the globals
+ regionfiletemplate(datadir,ctrl$regionfile)
+ region1 <- readregionfile(datadir,ctrl$regionfile)
+ glb <- region1$globals # put the globals into the hoem environment
+ # finally 
+ datafiletemplate(glb$numpop,datadir,ctrl$datafile) # 2SMU 6 pops
+ constants <- readdatafile(glb$numpop,datadir,ctrl$datafile)
+
+```
+
+<br>
+
+Assuming you got this far then you have successfully generated template files, and we will assume that lots of changes have been made to them to customize them to a particular fishery. Then you will have read them back into the R environment (in sequence because each depends on its predecessor). 
+
+With all the inputs in the system the next thing to do isto generate the region. This largest of spatial scales is made up of two components. The first contains the constants relating to the region and this large object is a list of _numpop_ populations, each of which is a list of all the properties that will not change through the run. Then there is the dynamic part of the region, which is a list of matrices and arrays that contain the dynamics, the things that change through time. We will describe the structure of each in some detail below once they have been generated. The generation is a two step process, initially an analytical solution to unfished equilibrium conditions is used and then we use the function _findunfished_ to numerically find the equilibrium when there is larval dispersal present in the region.
+
+```{r}
+ans <- makeregionC(region1,constants)
+regionC <- ans$regionC
+popdefs <- ans$popdefs
+ans <- makeregion(glb,regionC)
+regionC <- ans$regionC  # region constants
+regionD <- ans$regionD  # region dynamics
+# estimate production and move regionC to equilibrium, which estimates
+# a revised MSY and related statistics. This takes a while to run.
+ans <- findunfished(regionC,regionD,glb)
+regionC <- ans$regionC  # region constants
+regionD <- ans$regionD  # region dynamics
+product <- ans$product
+str(regionC[[1]])
+```
+
+
+
+
+
+<br>
+
+# References
+
+Miller, K.J., Maynard, B.T. and C.N. Mundy (2008) Genetic diversity and gene flow in
+collapsed and healthy abalone fisheries. _Molecular Ecology_ __18__:200-211.
+
+Mundy, C. and J. McAllister (2019) _Tasmanian abalone fishery assessment 2018_, Institute of Marine and Antarctic Studies, University of Tasmania. 190p.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

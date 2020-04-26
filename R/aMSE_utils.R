@@ -281,6 +281,7 @@ pathtype <- function(inpath) {
 #' out <- setupdirs(rund)
 #' str(out)
 setupdirs <- function(rundir, verbose=TRUE) { # rundir=plotdir; runname=runname; verbose=TRUE
+  dirExists(rundir,verbose=verbose)
   datadir <- filenametopath(rundir,"data")
   plotdir <- filenametopath(rundir,"plots")
   dirExists(datadir,verbose=verbose)

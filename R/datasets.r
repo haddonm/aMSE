@@ -135,7 +135,7 @@ NULL
 NULL
 
 
-#' @title region1 the constants within a region
+#' @title region1 the constants common to a region
 #'
 #' @description region1 contains the constants relating to the whole
 #'     region rather than th epopulations. See th elisting below.

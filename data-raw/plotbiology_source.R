@@ -1,10 +1,10 @@
-
+# These plots use both regionC and regionD
 # characterize productivity ------------------------------------------
 # plot of Yield vs Spawning biomass
 mids <- glb$midpts
 numpop <- glb$numpop
 
-# maturation ---------------------------------------------------------
+# maturation uses regionC---------------------------------------------
 maturity <- getlistvar(regionC,"Maturity")
 rownames(maturity) <- mids
 
@@ -22,7 +22,7 @@ if (nchar(filename) > 0) dev.off()
 caption <- "The maturity vs length for each population."
 addfilename(filename,tabfile=plottabfile,"Biology","plot",caption)
 
-# weight-at-length ---------------------------------------------------
+# weight-at-length uses regionC---------------------------------------
 WtL <- getlistvar(regionC,"WtL")
 rownames(WtL) <- mids
 
@@ -40,7 +40,7 @@ if (nchar(filename) > 0) dev.off()
 caption <- "The weight-at-length for each population. The x-axis is constrained to encompass legal sizes."
 addfilename(filename,tabfile=plottabfile,"Biology","plot",caption)
 
-# emergence  ---------------------------------------------------------
+# emergence uses regionC----------------------------------------------
 emerg <- getlistvar(regionC,"Emergent")
 rownames(emerg) <- mids
 
@@ -58,7 +58,7 @@ if (nchar(filename) > 0) dev.off()
 caption <- "The emergence-at-length for each population. The x-axis is constrained to emphasize differences."
 addfilename(filename,tabfile=plottabfile,"Biology","plot",caption)
 
-# initial numbers-at-size --------------------------------------------
+# initial numbers-at-size uses regionD--------------------------------
 
 mids <- glb$midpts
 numpop <- glb$numpop
@@ -86,7 +86,7 @@ caption <- "The numbers-at-size for the whole region and for each population sep
 addfilename(filename,tabfile=plottabfile,"Biology","plot",caption)
 
 
-# Tabulate biological properties -------------------------------------
+# Tabulate biological properties uses regionC-------------------------
 
 getvar <- function(indexvar,regC=regionC) {
         invar <- getlistvar(regC,indexvar)

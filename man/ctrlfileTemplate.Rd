@@ -4,15 +4,17 @@
 \alias{ctrlfiletemplate}
 \title{ctrlfiletemplate generates a template input control file}
 \usage{
-ctrlfiletemplate(filename = "control.csv")
+ctrlfiletemplate(indir, filename = "control.csv")
 }
 \arguments{
+\item{indir}{directory in which to place the control.csv file}
+
 \item{filename}{the name for the generated ctrlfile, a character
-string that defaults to control.csv. It is best to include the
-complete path}
+string that defaults to control.csv.}
 }
 \value{
-a standard definition control file
+invisibly the fill path and name of the control file. More
+    importantly, it write a control file template to that directory.
 }
 \description{
 ctrlfiletemplate generates a standardized control file
@@ -24,8 +26,7 @@ ctrlfiletemplate generates a standardized control file
 }
 \examples{
  yourdir <- tempdir()
- ctrlfile <- filenametopath(yourdir,"testctrl.csv")
- ctrlfiletemplate(filename=ctrlfile)   #
+ ctrlfiletemplate(yourdir,filename="testctrl.csv")   #
  control <- readctrlfile(yourdir,"testctrl.csv")
  str(control,max.level=1)
 }

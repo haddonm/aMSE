@@ -3,7 +3,7 @@
 \docType{data}
 \name{region1}
 \alias{region1}
-\title{region1 the constants within a region}
+\title{region1 the constants common to a region}
 \format{A list of constants that are uniform across all populations
     in a region
 \describe{

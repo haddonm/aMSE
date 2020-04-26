@@ -4,12 +4,12 @@
 \alias{datafiletemplate}
 \title{datafiletemplate generates a template input datafile}
 \usage{
-datafiletemplate(glob, dirdata, filename = "tmpdat.csv", verbose = FALSE)
+datafiletemplate(numpop, indir, filename = "tmpdat.csv", verbose = FALSE)
 }
 \arguments{
-\item{glob}{the global constants obtained from the region file}
+\item{numpop}{the totla number of populations in the region}
 
-\item{dirdata}{the directory into which to place the data template}
+\item{indir}{the directory into which to place the data template}
 
 \item{filename}{the name for the generated datafile, a character
 string, defaults to tmpdat.csv}
@@ -29,10 +29,10 @@ datafiletemplate generates a standard input datafile
 \examples{
 \dontrun{
  yourdir <- tempdir()
- datafiletemplate(yourdir,"tmpdat.csv")
+ datafiletemplate(numpop=6,yourdir,"tmpdat.csv")
  data(region1)
  glb <- region1$globals
- constants <- readdatafile(yourdir,"tmpdat.csv",glb)
+ constants <- readdatafile(numpop,yourdir,"tmpdat.csv")
  str(constants,max.level=1)
 }
 }
