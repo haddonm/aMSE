@@ -158,46 +158,69 @@ getunFished <- function(inzone,glb) {  # inzone=zone
   return(nofished)
 }  # End of getUnfished
 
-#' @title getzoneProps extracts the depletion level for a given year
+#' @title getregionprops extracts the depletion level for a given year
 #'
-#' @description getzoneProps extracts the depletion level along with an
-#'     array of other statistics for a given year.
+#' @description getregionprops extracts a set of properties for each
+#'     population and summarizes them for the region as well. These
+#'     properties include effB0, matureB, legalmatB, propprot, MSY,
+#'     effexB0, exploitB, SpBDepl, ExBDepl, legalDepl, MSYDepl, LML,
+#'     and bLML. See the model documentation for the meaning of each
+#'     of these.
 #'
 #' @param regC the constants for the region being simulated
+#' @param regD the dynamic part of the region being simulated
 #' @param glb the global constants
-#' @param year which years information is wanted
+#' @param year which years information is wanted, default=1
 #'
-#' @return a list of size objects
+#' @return a matrix of population properties with a column of totals
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#'  print("wait on internal data sets")
-#' }
-getzoneProps <- function(regC,glb,year=1) { # inzone=zone; glb=glb; year=1
+#' data(testregC)
+#' data(testregD)
+#' data(region1)
+#' glb <- region1$globals
+#' round(getregionprops(testregC,testregD,glb),4)
+getregionprops <- function(regC,regD,glb,year=1) { # regC=regionC; regD=regionD; glb=glb; year=1
   numpop <- glb$numpop
   Nclass <- glb$Nclass
-  totB0 <- sum(sapply(regC,"[[","B0"))
-  ExB0 <- sum(sapply(regC,"[[","ExB0"))
-  matB <- 0.0
-  ExB <- 0.0
-  legalMatB <- 0.0
-  ce <- 0.0
-  for (pop in 1:numpop) {
-    ExB <- ExB + regC[[pop]]$ExploitB[year]
-    matB <- matB + regC[[pop]]$MatureB[year]
-    ce <- ce + log(regC[[pop]]$cpue[year])
+  effB0 <- sapply(regC,"[[","effB0")
+  effExB0 <- sapply(regC,"[[","effExB0")
+  blml <- sapply(regC,"[[","bLML")
+  msy <- sapply(regC,"[[","MSY")
+  msydepl <- sapply(regC,"[[","MSYDepl")
+  matB <- regD$matureB[year,]
+  ExB <- regD$exploitB[year,]
+  legalmatB <- numeric(numpop); names(legalmatB) <- 1:numpop
+  lml <- sapply(regC,"[[","LML")[year,]
+  for (pop in 1:numpop) { #   pop=1
     MatWt <- regC[[pop]]$MatWt
-    lml <- regC[[pop]]$LML[year]
-    pick <- which(glb$midpts >= lml)
-    first <- pick[1]
-    legalMatB <- legalMatB + (sum(MatWt[first:Nclass]*
-                         regC[[pop]]$Nt[first:Nclass,year])/1000000.0)
+    first <- which(glb$midpts >= lml[pop])[1]
+    legalmatB[pop] <- sum(regC[[pop]]$MatWt[first:Nclass] *
+                            regD$Nt[first:Nclass,year,pop])/1000000.0
   }
-  deplet <- matB/totB0
-  depletEx <- ExB/ExB0
-  expCE <- exp(ce/numpop)
-  ans <- c(deplet,depletEx,ExB,expCE,(legalMatB/totB0))
-  names(ans) <- c("SpBDepl","ExBDepl","ExploitB","ExpCE","LegalMatB")
+  deplet <- matB/effB0
+  depletEx <- ExB/effExB0
+  legaldepl <- legalmatB/effB0
+  propprot <- (matB - legalmatB)/matB
+  label <- c("effB0","matureB","legalmatB","propprot","MSY",
+             "effexB0","exploitB","SpBDepl","ExBDepl",
+             "legalDepl","MSYDepl","LML","bLML")
+  ans <- rbind(effB0,matB,legalmatB,propprot,msy,effExB0,ExB,deplet,
+               depletEx,legaldepl,msydepl,lml,blml)
+  rownames(ans) <- label
+  tot <- numeric(length(rownames(ans))); names(tot) <- label
+  tot[c(1:3,5:7)] <- rowSums(ans)[c(1:3,5:7)]
+  tot["propprot"] <- (tot["matureB"] - tot["legalmatB"])/tot["matureB"]
+  wgts <- ans["effB0",]/tot["effB0"]
+  tot["SpBDepl"] <- sum(wgts * ans["SpBDepl",])
+  tot["ExBDepl"] <- sum((ans["effexB0",]/tot["effexB0"]) * ans["ExBDepl",])
+  tot["legalDepl"] <- sum(wgts * ans["legalDepl",])
+  tot["MSYDepl"] <- sum(wgts * ans["MSYDepl",])
+  tot["LML"] <- mean(ans["LML",])
+  tot["bLML"] <- sum(wgts * ans["bLML",])
+  ans <- cbind(ans,tot)
+  colnames(ans) <- c(paste0("p",1:numpop),"total")
   return(ans)
-}  # end of getzoneProps
+}  # end of getregionprops
+

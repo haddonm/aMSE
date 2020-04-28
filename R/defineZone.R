@@ -161,7 +161,7 @@ definepops <- function(inSMU,inSMUindex,const,glob) {
 #'   mean(regDD$deplsB[1,])
 #' }
 dodepletion <- function(regC,regD,glob,depl,product,len=15) {
-  #  regC=regionC; regD=regionD; glob=glb;  product=product; depl=0.3;len=15
+  #  regC=regionC; regD=regionD; glob=glb;  product=product; depl=0.2;len=15
   spb <- rowSums(product[,"MatB",])
   initH <- as.numeric(rownames(product))
   regdyn <- cbind(initH,spb,spb/spb[1])
@@ -170,6 +170,12 @@ dodepletion <- function(regC,regD,glob,depl,product,len=15) {
   pick <- which.closest(depl,regdyn[,"deplet"])
   if (abs(regdyn[pick,"deplet"] - depl) > 0.05)
     warning("Resolution of production curves may be insufficient.")
+  if (pick == nrow(product)) {
+    mssg <- paste0("Initial maximum harvest rate when estimating ",
+                   "productivity was too low to generate desired ",
+                   "depletion level")
+    stop(mssg)
+  }
   lowl <- initH[pick-1]
   upl <- initH[pick+1]
   dinitH <- seq(lowl,upl,length=len)
@@ -480,7 +486,7 @@ findmsy <- function(product) {  # product=product
 #'   ans2 <- findunfished(regionC,regionD,glb)
 #'   str(ans2,max.level=2)
 #' }
-findunfished <- function(regC,regD,glob,lowlim=0.0,uplim=0.35,inc=0.005) {
+findunfished <- function(regC,regD,glob,lowlim=0.0,uplim=0.4,inc=0.005) {
   #  regC=regionC; regD=regionD;  glob=glb;lowlim=0.005;uplim=0.35;inc=0.005
   numpop <- glob$numpop
   inH <- rep(0.0,numpop)

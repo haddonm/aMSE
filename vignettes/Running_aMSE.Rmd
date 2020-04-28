@@ -26,7 +26,6 @@ options("show.signif.stars"=FALSE,
         "max.print"=50000,
         "width"=240)
 
-library(diagrams)
 library(aMSE)
 library(knitr)
 library(captioner)
@@ -94,7 +93,7 @@ Running the simulations involved when conducting a management strategy evaluatio
 
 These questions are important because they determine the spatial structure imposed on the operating model of the fisheries dynamics (see the vignette on MSE for explanations of the components that make up an MSE model). 
 
-The first question about the number of SMUs will depend upon how management is arranged. For example, in Tasmania, a total allowable catch is allocated to each quota zone. But spatial management is taken further by allocating intended catch levels to each statistical block to avoid excessive fishing in any single block should abalone become available in greater numbers than usual (__`r fig_nums("r1",display="cite")`__). Elsewhere, however, it may be the case that management decisions are made at the level of each SMU and the spread of effort or catch among its component populations is decided each year by the industry members. Such possible variation canbe accommodated by __aMSE__ by changing the number of SMU and associated populations.
+The first question about the number of SMUs will depend upon how management is arranged. For example, in Tasmania, a total allowable catch is allocated to each quota zone. But spatial management is taken further by allocating intended catch levels to each statistical block to avoid excessive fishing in any single block should abalone become available in greater numbers than usual (__`r fig_nums("f1",display="cite")`__). Elsewhere, however, it may be the case that management decisions are made at the level of each SMU and the spread of effort or catch among its component populations is decided each year by the industry members. Such possible variation canbe accommodated by __aMSE__ by changing the number of SMU and associated populations.
 
 <br>
 
@@ -102,7 +101,7 @@ The first question about the number of SMUs will depend upon how management is a
 knitr::include_graphics("C:/Users/User/Dropbox/rcode2/aMSEUse/figures/Tas_Abalone_Zones.png")
 ```
 
-`r fig_nums("r1", caption=" A schematic map of the Tasmanian quota zones and associated legal minimum lengths. A trimmed version of the figure on page 189 of Mundy and McAllister (2019).")`
+`r fig_nums("f1", caption=" A schematic map of the Tasmanian quota zones and associated legal minimum lengths. A trimmed version of the figure on page 189 of Mundy and McAllister (2019).")`
 
 <br>
 
@@ -112,19 +111,19 @@ The fourth question about larval dispersal will be influenced by the area and th
 
 ## Conditioning on Biological Characteristics
 
-An array of biological characteristics are required for each population (see the contents of _daat(constants)_). These relate to maturity and growth, and other aspects of productivity such as unfished recruitment levels. Translating the biological data that has been collected from the various fisheries through time into these parameters is a large part of what is entailed in conditioning the operating model. The full requirements will become clear when we discuss the format and contents of the various files required to conduct a model run.
+An array of biological characteristics are required for each population (see the contents of _data(constants)_). These relate to maturity and growth, and other aspects of productivity such as unfished recruitment levels. Translating the biological data that has been collected from the various fisheries through time into these parameters is a large part of what is entailed in conditioning the operating model. The full requirements will become clear when we discuss the format and contents of the various files required to conduct a model run.
 
 ## A Quick Worked Example
 
-We have already had quite a few details much of which will already have been forgotten, so now we will examine setting up a model in practice and getting it operational. In this example, we will be creating directories on your hard-drive. At that point in the code you may wish to change the names of the directory structure so that the example does not upset your, no doubt, neat and tidy 'C:' drive directory layout.
+We have already gone through quite a few details, much of which will easily have been forgotten, so now we will examine setting up a model in practice and getting it operational. In this example, we will be creating directories on your hard-drive. At that point in the code you may wish to change the names of the directory structure so that the example does not upset your, no doubt, neat and tidy 'C:' drive directory layout. Throughout the worked example, we will be calling numerous R functions. I recommend that you examine the help page for each of these, for example using _?setupdirs_. To see the code just type ther name of the function into the console but without brackets. Finally, to see what arguments each function have you can use _args(function_name)_ or _formals(function_name)_.
 
 ```{r echo=TRUE}
 starttime <- as.character(Sys.time()) # When did the run start?
 library(aMSE)  # you might check out the help pages for each function
 rutilsMH::setpalette("R4") # Not needed if you have updated to R4.0.0
- # Obviously you should change the rundir to something that suits you!!!!
- rundir <- "C:/Users/User/DropBox/rcode2/aMSEUse/testrun"
- outdir <- setupdirs(rundir) # checks for existence of rundir, data and
+ # Obviously you should change the rundir to something that suits you!
+ rundir <- tempdir()   #temporary directory that expects to be deleted
+ outdir <- setupdirs(rundir) #checks for existence of rundir, data and
  datadir <- outdir$datadir   # plots and creates them if they do not 
  plotdir <- outdir$plotdir   # already exist
  # No changes will be made to the templates at this stage. 
@@ -146,7 +145,9 @@ rutilsMH::setpalette("R4") # Not needed if you have updated to R4.0.0
 
 Assuming you got this far then you have successfully generated template files, and we will assume that lots of changes have been made to them to customize them to a particular fishery. Then you will have read them back into the R environment (in sequence because each depends on its predecessor). 
 
-With all the inputs in the system the next thing to do isto generate the region. This largest of spatial scales is made up of two components. The first contains the constants relating to the region and this large object is a list of _numpop_ populations, each of which is a list of all the properties that will not change through the run. Then there is the dynamic part of the region, which is a list of matrices and arrays that contain the dynamics, the things that change through time. We will describe the structure of each in some detail below once they have been generated. The generation is a two step process, initially an analytical solution to unfished equilibrium conditions is used and then we use the function _findunfished_ to numerically find the equilibrium when there is larval dispersal present in the region.
+### The Region Structure
+
+With all the inputs in the system the next thing to do is to generate the simulated region. This largest of spatial scales is made up of two components. The first contains the constants relating to the region and this large object is a list of _numpop_ populations, each of which is a list of all the properties that will not change through the run (see its structure just below). Then there is the dynamic part of the region, which is a list of matrices and arrays that contain the dynamics, the things that change through time. We will describe the structure of each in some detail below once they have been generated. The generation is a two step process, initially an analytical solution to unfished equilibrium conditions is used and then we use the function _findunfished_ to numerically find the equilibrium when there is larval dispersal present in the region.
 
 ```{r}
 ans <- makeregionC(region1,constants)
@@ -155,8 +156,9 @@ popdefs <- ans$popdefs
 ans <- makeregion(glb,regionC)
 regionC <- ans$regionC  # region constants
 regionD <- ans$regionD  # region dynamics
-# estimate production and move regionC to equilibrium, which estimates
-# a revised MSY and related statistics. This takes a while to run.
+# estimate production and iterate regionC to equilibrium, which 
+# estimates a revised MSY and related statistics. This can take a 
+# while to run.
 ans <- findunfished(regionC,regionD,glb)
 regionC <- ans$regionC  # region constants
 regionD <- ans$regionD  # region dynamics
@@ -164,11 +166,62 @@ product <- ans$product
 str(regionC[[1]])
 ```
 
+<br>
 
+The structure of each of the lists within the _regionC_ object has the constant scalars come first followed by the vectors and matrices. The _Select_ matrix has as many columns as there will be years in the forward projection, which allows for any changes that might occur in the LML during the MSE run. The vector _MatWt_ is simply a shortcut to avoid having to multiple the maturity-at-length vector by the weight-at-length each time the mature biomass is calculated. Similarly, _SelWt_ is a matrix of selectivity-at-length by weight-at-length to avoid having to repeatedly calculate this every time the exploitable biomass is calculated. Once setup, none of these constants should change through the period of the particular run being made.
 
+The dynamic part of the region is derived within the _makeregion_ function using the constant part. It is more simply a list of matrices and arrays. Thus, the mature biomass, exploitable biomass, catch, and other _Nyrs_ x _numpop_ matrices provide repositories for the projection of each variable. The two arrays, _catchN_ and _Nt_ have dimensions of length-class x year x population, so the complete dynamics is captured within these.
 
+```{r}
+str(regionD)
+```
+
+* for each population, _matureB_ = mature biomass, _exploitB_ = exploitable biomass, _catch_ = catch in tonnes, _harvestR_ = annual harvest rate, _cpue_ is the expected cpue, _recruit_ = recruitment in each year, _deplsB_ = depletion of mature biomass, _depleB_ = depletion of exploitable biomass, _catchN_ = numbers-at-length in the catch each year, and finally, _Nt_ is the population numbers-at-length each year.
 
 <br>
+
+The properties of each population and the region can be tabulated using the function _getregionprops_.
+
+```{r}
+unfishprops <- getregionprops(regC=regionC,regD=regionD,glb=glb,year=1)
+# check out the help for getregionprops
+```
+
+`r tab_nums("t1", caption=" The summary of a region's properties for the unfished newly generated region.")`
+
+```{r echo=FALSE}
+suppressMessages(kable(unfishprops,digits=c(4,4,4,4,4,4,4)))
+```
+
+## Starting at a Depletion < 1.0
+
+During the comparisons of different harvest strategies it wil be necessary to determine how well each HS performs starting from different initial depletion levels. This would be answering questions such as 'how well does the HS allow for stock recovery from a depleted stock?'. The intended initial depletion is included as an entry in the _ctrl_ file. And a function, _dodepletion_ is provided to impose fishing mortality onto the stock so that the region is depleted until it is close to the intended level. The regional depletion is determined from a weighted mean depletion across all populations, where the weighting is the relative unfished mature biomass predicted for each population (see the equations describing the operating model). If, for example, we wanted to deplete our initial region to a level close to 20% unfished matrure biomass we would implement the following code (see the function's help page for a desription of the six arguments.
+
+```{r}
+regionDD <- dodepletion(regC=regionC,regD=regionD,glob=glb,depl=0.25,product=product)
+str(regionDD)
+```
+
+<br>
+
+If we now run the _getregionprops_ funciton, of course we would expect a different set of answers for the depletion of mature and exploitable biomass.
+
+
+```{r}
+initprops <- getregionprops(regC=regionC,regD=regionDD,glb=glb,year=1)
+# check out the help for getregionprops
+```
+
+`r tab_nums("t2", caption=" The summary of a region's properties for the region once it has been depleted to approximately 0.25B0.")`
+
+```{r echo=FALSE}
+suppressMessages(kable(initprops,digits=c(4,4,4,4,4,4,4)))
+```
+
+<br>
+
+Notice that while the spawning biomass (=mature biomass = SpbDepl) is 0.2464 (almost 25%B0), the values for each of the populations varies between 0.19 and 0.32, which reflects the effects of the different productivity levels of each population.
+
 
 # References
 

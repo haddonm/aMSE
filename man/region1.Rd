@@ -4,7 +4,8 @@
 \name{region1}
 \alias{region1}
 \title{region1 the constants common to a region}
-\format{A list of constants that are uniform across all populations
+\format{
+A list of constants that are uniform across all populations
     in a region
 \describe{
   \item{SMUnames}{the names of each SMU}
@@ -19,7 +20,8 @@
       to projections}
   \item{globals}{a list of global constants, containing numpop,
       nSMU, midpts, Nclass, Nyrs, and larvdisp}
-}}
+}
+}
 \description{
 region1 contains the constants relating to the whole
     region rather than th epopulations. See th elisting below.

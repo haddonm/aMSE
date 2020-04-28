@@ -4,7 +4,7 @@
 \alias{findunfished}
 \title{findunfished runs the region 3 x Nyrs to equilibrium}
 \usage{
-findunfished(regC, regD, glob, lowlim = 0, uplim = 0.35, inc = 0.005)
+findunfished(regC, regD, glob, lowlim = 0, uplim = 0.4, inc = 0.005)
 }
 \arguments{
 \item{regC}{the constants components of the simulated region}

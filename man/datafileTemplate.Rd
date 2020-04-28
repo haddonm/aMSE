@@ -4,7 +4,7 @@
 \alias{datafiletemplate}
 \title{datafiletemplate generates a template input datafile}
 \usage{
-datafiletemplate(numpop, indir, filename = "tmpdat.csv", verbose = FALSE)
+datafiletemplate(numpop, indir, filename = "tmpdat.csv")
 }
 \arguments{
 \item{numpop}{the totla number of populations in the region}
@@ -13,11 +13,10 @@ datafiletemplate(numpop, indir, filename = "tmpdat.csv", verbose = FALSE)
 
 \item{filename}{the name for the generated datafile, a character
 string, defaults to tmpdat.csv}
-
-\item{verbose}{print the filename to the console but default=FALSE}
 }
 \value{
 a standard definition data file, to be read by readdatafile
+    whose name and path is returned invisibly
 }
 \description{
 datafiletemplate generates a standard input datafile

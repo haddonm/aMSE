@@ -4,14 +4,16 @@
 \name{midg}
 \alias{midg}
 \title{midg is an abalone tagging data-set from the Actaeons}
-\format{A data.frame of abalone tagging data
+\format{
+A data.frame of abalone tagging data
 \describe{
   \item{RecapL}{the length at recapture}
   \item{Lt}{the length at tagging}
   \item{Dt}{The time interval between tagging and recapture, in this
       instance they are all listed as 1 year}
   \item{DL}{the growth increment in mm}
-}}
+}
+}
 \source{
 Thanks to the Institute of Marine and Antarctic Science,
     which is part of the University of Tasmania, and especially to
