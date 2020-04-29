@@ -1,79 +1,56 @@
 # All these plots only use the product array
 # characterize productivity ------------------------------------------
 # plot of Yield vs Spawning biomass
+
 xval <- findmsy(product)
 numpop <- glb$numpop
 
 file <- paste0("production_SpB_",ctrl$runlabel,".png")
-filename <- filenametopath(plotdir,file)  #  filename=""
-plotprep(width=7,height=4,newdev=FALSE,filename=filename,cex=0.9,
-         verbose=FALSE)
+filename <- filenametopath(resdir,file)  #  filename=""
 plotprod(product,xname="MatB",xlab="Spawning Biomass t",
-         ylab="Production t")
-for (pop in 1:numpop) abline(v=xval[pop,"MatB"],lwd=2,col=pop)
-legend("topright",paste0("P",1:numpop),lwd=3,col=c(1:numpop),bty="n",
-       cex=1.2)
-if (nchar(filename) > 0) dev.off()
+         ylab="Production t",filename = filename)
 
 caption <- "The production curve relative to each population's spawning biomass. The vertical lines identify the Bmsy values."
-addfilename(filename,tabfile=plottabfile,"Production","plot",caption)
-
-# time <- as.character(Sys.time())
-#  cat(c(filename,caption,"Production",time," \n"),file=plottabfile,sep=",",append=TRUE)
-
+addfilename(filename,resfile=resfile,"Production","plot",caption)
 
 # plot of Yield vs Annual Harvest Rate
 file <- paste0("production_AnnH_",ctrl$runlabel,".png")
-filename <- filenametopath(plotdir,file)  #  filename=""
-
-plotprep(width=7,height=4,newdev=FALSE,filename=filename,cex=0.9,
-         verbose=FALSE)
-plotprod(product,xname="AnnH",xlab="Annual Harvest Rate")
-for (pop in 1:numpop) abline(v=xval[pop,"AnnH"],lwd=2,col=pop)
-legend("topright",paste0("P",1:numpop),lwd=3,col=c(1:numpop),bty="n",
-       cex=1.2)
-if (nchar(filename) > 0) dev.off()
+filename <- filenametopath(resdir,file)  #  filename=""
+plotprod(product,xname="AnnH",xlab="Annual Harvest Rate",filename = filename)
 
 caption <- "The production curve relative to the Annual Harvest Rate applied to each population. The vertical lines identify the Hmsy values."
-addfilename(filename,tabfile=plottabfile,"Production","plot",caption)
-
-
+addfilename(filename,resfile=resfile,"Production","plot",caption)
 
 # plot of Yield vs population depletion
 file <- paste0("production_Deplet_",ctrl$runlabel,".png")
-filename <- filenametopath(plotdir,file)
-plotprep(width=7,height=4,newdev=FALSE,filename=filename,cex=0.9,
-         verbose=FALSE)
+filename <- filenametopath(resdir,file)
+
 xval <- findmsy(product)
 numpop <- glb$numpop
-plotprod(product,xname="Deplet",xlab="Population Depletion Level")
+plotprod(product,xname="Deplet",xlab="Population Depletion Level",
+         filename = filename,devoff=FALSE)
 for (pop in 1:numpop) abline(v=xval[pop,"Deplet"],lwd=2,col=pop)
-legend("topright",paste0("P",1:numpop),lwd=3,col=c(1:numpop),bty="n",
-       cex=1.2)
 if (nchar(filename) > 0) dev.off()
 
 caption <- "The production curve relative to the depletion level of each population. The vertical lines identify the Depletion level giving rise to the MSY."
-addfilename(filename,tabfile=plottabfile,"Production","plot",caption)
+addfilename(filename,resfile=resfile,"Production","plot",caption)
 
 
 # plot of Yield vs population depletion but constrained to within
 # 0.2 and 0.35 levels, to illustrate nearly flat rpoduction curve
 # and more clearly identify the population depletion at MSY
 file <- paste0("production_Deplet_0.2_0.35_",ctrl$runlabel,".png")
-filename <- filenametopath(plotdir,file)
-plotprep(width=7,height=4,newdev=FALSE,filename=filename,cex=0.9,
-         verbose=FALSE)
+filename <- filenametopath(resdir,file)
+
 xval <- findmsy(product)
 numpop <- glb$numpop
 plotprod(product,xname="Deplet",xlab="Population Depletion Level",
-         xlimit=c(0.2,0.35))
+         xlimit=c(0.2,0.35),filename = filename,devoff=FALSE)
 for (pop in 1:numpop) abline(v=xval[pop,"Deplet"],lwd=2,col=pop)
-legend("topright",paste0("P",1:numpop),lwd=3,col=c(1:numpop),bty="n",
-       cex=1.2)
 if (nchar(filename) > 0) dev.off()
 
 caption <- "The production curve relative to the depletion level of each population. Here the x-axis is shortened to clarify the flatness of the production curve about the MSY points."
-addfilename(filename,tabfile=plottabfile,"Production","plot",caption)
+addfilename(filename,resfile=resfile,"Production","plot",caption)
 
 # Now do total production --------------------------------------------
 yield <- rowSums(product[,"Catch",])
@@ -84,7 +61,7 @@ pickmsy <- which.max(yield)
 maxy <- getmax(yield)
 
 file <- paste0("production_SpB_Total_",ctrl$runlabel,".png")
-filename <- filenametopath(plotdir,file)  #  filename=""
+filename <- filenametopath(resdir,file)  #  filename=""
 plotprep(width=7,height=6,newdev=FALSE,filename=filename,verbose=FALSE)
 parset(plots=c(3,2),cex=0.9)
 plot(spb,yield,type="l",lwd=2,col=1,xlab="Spawning Biomass t",
@@ -122,7 +99,7 @@ abline(v=Ht[pickmsy],col=2,lwd=2)
 if (nchar(filename) > 0) dev.off()
 
 caption <- "The production curves for the region. Also the relationships between spawning biomass depletion and harvest rate."
-addfilename(filename,tabfile=plottabfile,"Production","plot",caption)
+addfilename(filename,resfile=resfile,"Production","plot",caption)
 
 
 

@@ -49,7 +49,7 @@ NULL
 #'   \item regionfile  filename containing the region data, see region1
 #'   \item datafile  filename containing the population defintions, see constants
 #'   \item hcrfile  filename continaing the details of the HCR used
-#'   \item outdir  the output directory, containing a plots subdir
+#'   \item outdir  the output directory, containing a results subdir
 #'   \item reps  how many replicates in this instance, usually 1000
 #'   \item initdepl  the initial depletion level for the region
 #'   \item assessinterval  how often should the region be assessed

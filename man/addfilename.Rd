@@ -4,12 +4,12 @@
 \alias{addfilename}
 \title{addfilename adds a filename to the autoresult csv file}
 \usage{
-addfilename(filename, tabfile, category, type, caption)
+addfilename(filename, resfile, category, type, caption)
 }
 \arguments{
 \item{filename}{the full path and filename for the file being added}
 
-\item{tabfile}{the file to be added to, which is defined by
+\item{resfile}{the file to be added to, which is defined by
 setuphtml found in aMSE_utils}
 
 \item{category}{what HTML tab should it be displayed on?}
@@ -31,14 +31,14 @@ addfilename is used to facilitate the produciton of
 }
 \examples{
 indir <- tempdir()
-plotdir <- filenametopath(indir,"plots")
-dirExists(plotdir,verbose=FALSE)
-plottabfile <- setuphtml(plotdir,"example_only")
-filename <- filenametopath(plotdir,"example.png")
+resdir <- filenametopath(indir,"result")
+dirExists(resdir,verbose=FALSE)
+resfile <- setuphtml(resdir,"example_only")
+filename <- filenametopath(resdir,"example.png")
 png(filename=filename,width=7,height=4,units="in",res=300)
 plot(runif(100),runif(100),type="p")
 graphics.off()  # could use dev.off()
-addfilename(filename=filename,tabfile=plottabfile,"A_category",
+addfilename(filename=filename,resfile=resfile,"A_category",
             type="plot",caption="Example Figure")
-dir(plotdir)
+dir(resdir)
 }

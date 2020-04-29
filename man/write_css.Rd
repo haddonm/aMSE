@@ -4,14 +4,14 @@
 \alias{write_css}
 \title{write_css generates a CSS file used by all html files}
 \usage{
-write_css(plotdir)
+write_css(resdir)
 }
 \arguments{
-\item{plotdir}{the directory within the run directory that contains
+\item{resdir}{the directory within the run directory that contains
 all the plot results}
 }
 \value{
-nothing but it does generate a .css file in the plotdir
+nothing but it does generate a .css file in the resdir
 }
 \description{
 write_css generates a cascading style sheet that will

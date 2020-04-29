@@ -9,7 +9,7 @@
 #'     remember the syntax.
 #'
 #' @param filename the full path and filename for the file being added
-#' @param tabfile the file to be added to, which is defined by
+#' @param resfile the file to be added to, which is defined by
 #'     setuphtml found in aMSE_utils
 #' @param category what HTML tab should it be displayed on?
 #' @param type the type of addition, either a plot or table
@@ -21,19 +21,19 @@
 #'
 #' @examples
 #' indir <- tempdir()
-#' plotdir <- filenametopath(indir,"plots")
-#' dirExists(plotdir,verbose=FALSE)
-#' plottabfile <- setuphtml(plotdir,"example_only")
-#' filename <- filenametopath(plotdir,"example.png")
+#' resdir <- filenametopath(indir,"result")
+#' dirExists(resdir,verbose=FALSE)
+#' resfile <- setuphtml(resdir,"example_only")
+#' filename <- filenametopath(resdir,"example.png")
 #' png(filename=filename,width=7,height=4,units="in",res=300)
 #' plot(runif(100),runif(100),type="p")
 #' graphics.off()  # could use dev.off()
-#' addfilename(filename=filename,tabfile=plottabfile,"A_category",
+#' addfilename(filename=filename,resfile=resfile,"A_category",
 #'             type="plot",caption="Example Figure")
-#' dir(plotdir)
-addfilename <- function(filename,tabfile,category,type,caption) {
+#' dir(resdir)
+addfilename <- function(filename,resfile,category,type,caption) {
   cat(c(filename,category,type,as.character(Sys.time()),caption," \n"),
-      file=tabfile,sep=",",append=TRUE)
+      file=resfile,sep=",",append=TRUE)
 }
 
 #' @title dirExists: Checks for the existence of a directory
@@ -280,13 +280,13 @@ pathtype <- function(inpath) {
 #' rund <- tempdir()
 #' out <- setupdirs(rund)
 #' str(out)
-setupdirs <- function(rundir, verbose=TRUE) { # rundir=plotdir; runname=runname; verbose=TRUE
+setupdirs <- function(rundir, verbose=TRUE) { # rundir=resdir; runname=runname; verbose=TRUE
   dirExists(rundir,verbose=verbose)
   datadir <- filenametopath(rundir,"data")
-  plotdir <- filenametopath(rundir,"plots")
+  resdir <- filenametopath(rundir,"results")
   dirExists(datadir,verbose=verbose)
-  dirExists(plotdir,verbose=verbose)
-  return(list(datadir=datadir,plotdir=plotdir))
+  dirExists(resdir,verbose=verbose)
+  return(list(datadir=datadir,resdir=resdir))
 } # end of setupdirs
 
 #' @title setuphtml initiates csv files lsiting results to be included
@@ -298,23 +298,23 @@ setupdirs <- function(rundir, verbose=TRUE) { # rundir=plotdir; runname=runname;
 #'     timestamp. Then, each plot and table is included with an entry
 #'     for each column.
 #'
-#' @param pldir full path to the directory to contain the plots
+#' @param resdir full path to the directory to contain the plots
 #' @param runname the name of the particular run being summarized.
 #'
-#' @return full path to the plottabfile. creating the file in plotdir
+#' @return full path to the resfile. creating the file in resdir
 #' @export
 #'
 #' @examples
 #' indir <- tempdir()
-#' plotdir <- filenametopath(indir,"plots")
-#' dirExists(plotdir,verbose=FALSE)
-#' plottabfile <- setuphtml(plotdir,"example_only")
-#' dir(plotdir)
-setuphtml <- function(pldir, runname) {  # pldir=plotdir; runname=runname
-  plottabfile <- filenametopath(pldir,paste0("plotFileTable_",
+#' resdir <- filenametopath(indir,"results")
+#' dirExists(resdir,verbose=FALSE)
+#' resfile <- setuphtml(resdir,"example_only")
+#' dir(resdir)
+setuphtml <- function(resdir, runname) {  # resdir=resdir; runname=runname
+  resfile <- filenametopath(resdir,paste0("resultTable_",
                                               runname,".csv"))
   label <- c("file","category","type","timestamp","caption")
-  cat(label,"\n",file = plottabfile,sep=",",append=FALSE)
-  return(plottabfile)
+  cat(label,"\n",file = resfile,sep=",",append=FALSE)
+  return(resfile)
 } # end of setuphtml
 

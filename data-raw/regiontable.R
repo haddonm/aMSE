@@ -1,11 +1,11 @@
 
 
-filename <- filenametopath(plotdir,"regiontable.html")
+filename <- filenametopath(resdir,"regiontable.html")
 
 
 
 capt <- "Table Regional Population Biological Properties."
-filename <- filenametopath(plotdir,"regiontable.html")
+filename <- filenametopath(resdir,"regiontable.html")
 htmltable(results,filename,capt)
 
 

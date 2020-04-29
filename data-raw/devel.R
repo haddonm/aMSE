@@ -1,9 +1,9 @@
 # file reading ------------------------------------------------------
 starttime <- as.character(Sys.time())
-#library(rutilsMH)
+library(rutilsMH)
 library(aMSE)
 library(microbenchmark)
-rutilsMH::setpalette("R4")
+
 
 # read data files ----------------------------------------------------
 
@@ -13,13 +13,15 @@ rutilsMH::setpalette("R4")
  rundir <- "./../../rcode2/aMSEUse/run2"
  outdir <- setupdirs(rundir)
  datadir <- outdir$datadir
- plotdir <- outdir$plotdir
+ resdir <- outdir$resdir
 
  ctrl <- readctrlfile(datadir,infile="control.csv")
  runname <- ctrl$runlabel
  region1 <- readregionfile(datadir,ctrl$regionfile)
  glb <- region1$globals
- constants <- readdatafile(glb,datadir,ctrl$datafile)
+ constants <- readdatafile(glb$numpop,datadir,ctrl$datafile)
+
+ resfile <- setuphtml(resdir,runname)
 
  # Define the Zone without production ---------------------------------
 ans <- makeregionC(region1,constants)
@@ -38,6 +40,7 @@ regionD <- ans$regionD  # region dynamics
 product <- ans$product
 
 
+
 # testing the equilibrium --------------------------------------------
 # This runs the dynamics for Nyrs with zero harvest rate, a constant
 # larval dispersal rate (from globals), and negligible recruitment
@@ -46,8 +49,6 @@ product <- ans$product
  regDe <- testequil(regionC,regionD,glb)
  #  str(regDe)
 
-plottabfile <- setuphtml(plotdir,runname)
-
 # characterize productivity ------------------------------------------
 source(filenametopath(sourcedir,"plotproductivity_source.R"))
 # end characterize productivity --------------------------------------
@@ -55,11 +56,26 @@ source(filenametopath(sourcedir,"plotproductivity_source.R"))
 #characterize biology ------------------------------------------------
 source(filenametopath(sourcedir,"plotbiology_source.R"))
 # end characterize biology -------------------------------------------
+# store the initial properties
+unfishprops <- getregionprops(regC=regionC,regD=regionD,glb=glb,year=1)
+filename <- filenametopath(resdir,"unfishprops.csv")
+write.table(round(unfishprops,4),file = filename,sep=",")
+#  or use tmp <- read.csv(file=filename,header=TRUE,row.names=1)
+caption <- r"(The unfished equilibrium properties of the populations and region before any initial depletion.)"
+addfilename(filename,resfile=resfile,"Tables","table",caption=caption)
+
+ctrl$initdepl <-  0.25
 
 if (ctrl$initdepl < 1.0) {
-  regionD <- dodepletion(regionC, regionD, glb, product)
+  regionDD <- dodepletion(regionC, regionD, glb, depl=ctrl$initdepl, product)
+  # store the initial properties after depletion
+  initprops <- getregionprops(regC=regionC,regD=regionDD,glb=glb,year=1)
+  filename <- filenametopath(resdir,"initprops.csv")
+  write.table(round(initprops,4),file = filename,sep=",")
+   #  or use tmp <- read.csv(file=filename,header=TRUE,row.names=1)
+  caption <- r"(The unfished equilibrium properties of the populations and region before any initial depletion.)"
+  addfilename(filename,resfile=resfile,"Tables","table",caption=caption)
 }
-
 
  endtime <- as.character(Sys.time())
 
@@ -128,7 +144,7 @@ if (ctrl$initdepl < 1.0) {
  # turn plot into a function
 
  file <- paste0("production_total_SpB_",ctrl$runlabel,".png")
- filename <- filenametopath(plotdir,file)
+ filename <- filenametopath(resdir,file)
  caption <- "The production curve relative to the depletion level of each population. The vertical lines identify the Depletion level giving rise to the MSY."
  category <- "Production"
  x <- product[,""]

@@ -120,12 +120,11 @@ We have already gone through quite a few details, much of which will easily have
 ```{r echo=TRUE}
 starttime <- as.character(Sys.time()) # When did the run start?
 library(aMSE)  # you might check out the help pages for each function
-rutilsMH::setpalette("R4") # Not needed if you have updated to R4.0.0
  # Obviously you should change the rundir to something that suits you!
  rundir <- tempdir()   #temporary directory that expects to be deleted
  outdir <- setupdirs(rundir) #checks for existence of rundir, data and
  datadir <- outdir$datadir   # plots and creates them if they do not 
- plotdir <- outdir$plotdir   # already exist
+ resdir <- outdir$resdir   # already exist
  # No changes will be made to the templates at this stage. 
  # First create and edit the control file; look at contents of ctrl
  ctrlfiletemplate(datadir,"control.csv")
@@ -139,11 +138,12 @@ rutilsMH::setpalette("R4") # Not needed if you have updated to R4.0.0
  datafiletemplate(glb$numpop,datadir,ctrl$datafile) # 2SMU 6 pops
  constants <- readdatafile(glb$numpop,datadir,ctrl$datafile)
 
+ resfile <- setuphtml(resdir,runname) #needed to formalize the outputs
 ```
 
 <br>
 
-Assuming you got this far then you have successfully generated template files, and we will assume that lots of changes have been made to them to customize them to a particular fishery. Then you will have read them back into the R environment (in sequence because each depends on its predecessor). 
+Assuming you got this far then you have successfully generated template files, and we will assume that lots of changes have been made to them to customize them to a particular fishery. Then you will have read them back into the R environment (in sequence because each depends on its predecessor). Of course, once edited the _ctrl..._, _region..._, and _datafiletemplate_ function calls will need to be deleted or hashed into comments, otherwise if you run the task again you will over-write you edits. 
 
 ### The Region Structure
 
@@ -157,9 +157,8 @@ ans <- makeregion(glb,regionC)
 regionC <- ans$regionC  # region constants
 regionD <- ans$regionD  # region dynamics
 # estimate production and iterate regionC to equilibrium, which 
-# estimates a revised MSY and related statistics. This can take a 
-# while to run.
-ans <- findunfished(regionC,regionD,glb)
+# estimates a revised MSY and related statistics.
+ans <- findunfished(regionC,regionD,glb) # can take a while
 regionC <- ans$regionC  # region constants
 regionD <- ans$regionD  # region dynamics
 product <- ans$product
@@ -190,7 +189,14 @@ unfishprops <- getregionprops(regC=regionC,regD=regionD,glb=glb,year=1)
 `r tab_nums("t1", caption=" The summary of a region's properties for the unfished newly generated region.")`
 
 ```{r echo=FALSE}
-suppressMessages(kable(unfishprops,digits=c(4,4,4,4,4,4,4)))
+suppressWarnings(kable(unfishprops,digits=c(4,4,4,4,4,4,4)))
+filename <- filenametopath(resdir,"unfishprops.csv")
+write.table(unfishprops,file = filename,sep=",")
+#  or use tmp <- read.csv(file=filename,header=TRUE,row.names=1)
+caption <- paste("The unfished equilibrium properties of the populations ",
+                         "and region, before any initial depletion.",collapse=" ")
+addfilename(filename,resfile=resfile,"Tables","table",caption)
+
 ```
 
 ## Starting at a Depletion < 1.0
@@ -210,12 +216,18 @@ If we now run the _getregionprops_ funciton, of course we would expect a differe
 ```{r}
 initprops <- getregionprops(regC=regionC,regD=regionDD,glb=glb,year=1)
 # check out the help for getregionprops
+filename <- filenametopath(resdir,"initprops.csv")
+write.table(initprops,file = filename,sep=",")
+#  or use tmp <- read.csv(file=filename,header=TRUE,row.names=1)
+caption <- paste("The properties of the populations and region after ",
+                 "the region has been depleted to its starting point.",collapse=" ")
+addfilename(filename,resfile=resfile,"Tables","table",caption)
 ```
 
 `r tab_nums("t2", caption=" The summary of a region's properties for the region once it has been depleted to approximately 0.25B0.")`
 
 ```{r echo=FALSE}
-suppressMessages(kable(initprops,digits=c(4,4,4,4,4,4,4)))
+kable(initprops,digits=c(4,4,4,4,4,4,4))
 ```
 
 <br>

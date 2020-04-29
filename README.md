@@ -20,12 +20,12 @@ populations within spatial management units (SMUs), within a region:
   - population - literally a population. These are the active components
     within the simulation framework. The dynamics of the simulation are
     based around the populations, although, with positive larval
-    dispersal (the default) there is some dependency of neighboiuring
+    dispersal (the default) there is some dependency of neighbouring
     populations on each other.
 
 This conceptual structure has implications for how the simulations are
 conditioned during the management strategy testing. While it is still
-the case tha tthe general properties of each SMU are used to set the
+the case that the general properties of each SMU are used to set the
 scene for each SMU’s component populations, the advent of sufficient GPS
 logger data now allows a more formal definition of the productivity of
 each population. Currently, the modelling assumes that each population
@@ -99,3 +99,9 @@ library(rutilsMH)
 #>  $ catchN  : num [1:105, 1:40, 1:6] 0 0 0 0 0 0 0 0 0 0 ...
 #>  $ Nt      : num [1:105, 1:40, 1:6] 6.30e+05 2.40e-06 4.41e-05 6.75e-04 8.57e-03 ...
 ```
+
+### 29/04/2020
+
+Now developing a vignette entitled *Running\_aMSE*, which contains some
+worked examples to get a user moving in the uise of **aMSE**. There
+remains much development still to do.

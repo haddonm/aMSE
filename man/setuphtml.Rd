@@ -4,15 +4,15 @@
 \alias{setuphtml}
 \title{setuphtml initiates csv files lsiting results to be included}
 \usage{
-setuphtml(pldir, runname)
+setuphtml(resdir, runname)
 }
 \arguments{
-\item{pldir}{full path to the directory to contain the plots}
+\item{resdir}{full path to the directory to contain the plots}
 
 \item{runname}{the name of the particular run being summarized.}
 }
 \value{
-full path to the plottabfile. creating the file in plotdir
+full path to the resfile. creating the file in resdir
 }
 \description{
 setuphtml initiates the csv file used to contain the
@@ -24,8 +24,8 @@ setuphtml initiates the csv file used to contain the
 }
 \examples{
 indir <- tempdir()
-plotdir <- filenametopath(indir,"plots")
-dirExists(plotdir,verbose=FALSE)
-plottabfile <- setuphtml(plotdir,"example_only")
-dir(plotdir)
+resdir <- filenametopath(indir,"results")
+dirExists(resdir,verbose=FALSE)
+resfile <- setuphtml(resdir,"example_only")
+dir(resdir)
 }

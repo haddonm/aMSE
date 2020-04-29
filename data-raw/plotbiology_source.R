@@ -9,7 +9,7 @@ maturity <- getlistvar(regionC,"Maturity")
 rownames(maturity) <- mids
 
 file <- paste0("maturity_v_Length_",ctrl$runlabel,".png")
-filename <- filenametopath(plotdir,file)  #  filename=""
+filename <- filenametopath(resdir,file)  #  filename=""
 plotprep(width=7,height=4,newdev=FALSE,filename=filename,cex=0.9,
          verbose=FALSE)
 plot(mids,maturity[,1],type="l",lwd=2,xlab="Shell Length mm",
@@ -20,14 +20,14 @@ legend("topright",paste0("P",1:numpop),lwd=3,col=c(1:numpop),bty="n",
 if (nchar(filename) > 0) dev.off()
 
 caption <- "The maturity vs length for each population."
-addfilename(filename,tabfile=plottabfile,"Biology","plot",caption)
+addfilename(filename,resfile=resfile,"Biology","plot",caption)
 
 # weight-at-length uses regionC---------------------------------------
 WtL <- getlistvar(regionC,"WtL")
 rownames(WtL) <- mids
 
 file <- paste0("Weight_at_Length_",ctrl$runlabel,".png")
-filename <- filenametopath(plotdir,file)  #  filename=""
+filename <- filenametopath(resdir,file)  #  filename=""
 plotprep(width=7,height=4,newdev=FALSE,filename=filename,cex=0.9,
          verbose=FALSE)
 plot(mids,WtL[,1],type="l",lwd=2,xlab="Shell Length mm",
@@ -38,14 +38,14 @@ legend("topleft",paste0("P",1:numpop),lwd=3,col=c(1:numpop),bty="n",
 if (nchar(filename) > 0) dev.off()
 
 caption <- "The weight-at-length for each population. The x-axis is constrained to encompass legal sizes."
-addfilename(filename,tabfile=plottabfile,"Biology","plot",caption)
+addfilename(filename,resfile=resfile,"Biology","plot",caption)
 
 # emergence uses regionC----------------------------------------------
 emerg <- getlistvar(regionC,"Emergent")
 rownames(emerg) <- mids
 
 file <- paste0("Emergence_at_Length_",ctrl$runlabel,".png")
-filename <- filenametopath(plotdir,file)  #  filename=""
+filename <- filenametopath(resdir,file)  #  filename=""
 plotprep(width=7,height=4,newdev=FALSE,filename=filename,cex=0.9,
          verbose=FALSE)
 plot(mids,emerg[,1],type="l",lwd=2,xlab="Shell Length mm",
@@ -56,7 +56,7 @@ legend("topleft",paste0("P",1:numpop),lwd=3,col=c(1:numpop),bty="n",
 if (nchar(filename) > 0) dev.off()
 
 caption <- "The emergence-at-length for each population. The x-axis is constrained to emphasize differences."
-addfilename(filename,tabfile=plottabfile,"Biology","plot",caption)
+addfilename(filename,resfile=resfile,"Biology","plot",caption)
 
 # initial numbers-at-size uses regionD--------------------------------
 
@@ -66,7 +66,7 @@ Nt <- regionD$Nt[,1,]/1000.0
 Ntt <- rowSums(regionD$Nt[,1,])/1000.0
 
 file <- paste0("Total_Initial_Numbers-at-Size_",ctrl$runlabel,".png")
-filename <- filenametopath(plotdir,file)  #  filename=""
+filename <- filenametopath(resdir,file)  #  filename=""
 plotprep(width=7,height=6,newdev=FALSE,filename=filename,cex=0.9,
          verbose=FALSE)
 parset(plots=c(2,1))
@@ -83,7 +83,7 @@ legend("topright",paste0("P",1:numpop),lwd=3,col=c(1:numpop),bty="n",
 if (nchar(filename) > 0) dev.off()
 
 caption <- "The numbers-at-size for the whole region and for each population separately. The recruitment numbers are omitted for clarity."
-addfilename(filename,tabfile=plottabfile,"Biology","plot",caption)
+addfilename(filename,resfile=resfile,"Biology","plot",caption)
 
 
 # Tabulate biological properties uses regionC-------------------------
@@ -112,7 +112,7 @@ results["MSYDepl",] <- c(MSYD,sum(MSYD * wtr))
 bLML <- getlistvar(regionC,"bLML")
 results["bLML",] <- c(bLML,sum(bLML * wtr))
 res <- round(results,3)
-filename <- filenametopath(plotdir,"regionbiology.csv")
+filename <- filenametopath(resdir,"regionbiology.csv")
 write.table(res,file = filename,sep=",")
 #  use tmp <- read.csv(file=filename,header=TRUE,row.names=1)
 
@@ -120,7 +120,7 @@ write.table(res,file = filename,sep=",")
 caption <- paste("Population amd Regional Biological Properties.",
                          "Where the regional total is an average it is weighted",
                          "relative to the proportion of total B0.",collapse=" ")
-addfilename(filename,tabfile=plottabfile,"Tables","table",caption)
+addfilename(filename,resfile=resfile,"Tables","table",caption)
 
 
 # total regional productivity ----------------------------------------

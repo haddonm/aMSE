@@ -19,7 +19,7 @@ make_html(
 \item{rundir}{Directory where a particular run's files,
 including the region files, the results, as tables and plots,
 and any other files, are all held. It will always contain at
-least the 'data' and 'plots' sub-directories.}
+least the 'data' and 'results' sub-directories.}
 
 \item{width}{Width of plots (in pixels). Default = 500}
 
@@ -36,8 +36,8 @@ make_html writes a set of HTML files with tabbed
     This code was borrowed from Ian Taylor's r4ss, but has been
     extensively modified to improve both the css (see write_css)
     and the HTML. By default, this function will look in the
-    plots directory where PNG files were created for a
-    plotFileTable_runname.csv file with the name 'runname' written
+    results directory where PNG files were created for a
+    resultTable_runname.csv file with the name 'runname' written
     added by aMSE. HTML files are written to link to these plots
     and put in the same directory.
 }

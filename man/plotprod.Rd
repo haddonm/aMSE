@@ -10,7 +10,10 @@ plotprod(
   yname = "Catch",
   xlimit = NA,
   xlab = "Mature Biomass t",
-  ylab = "Production t"
+  ylab = "Production t",
+  font = 7,
+  filename = "",
+  devoff = TRUE
 )
 }
 \arguments{
@@ -27,6 +30,16 @@ constrained, for example using xlimit=c(0.15,0.4)}
 \item{xlab}{the x-axis label, default=""}
 
 \item{ylab}{the y-axis label, default=""}
+
+\item{font}{the type of font used in the plot. default = 7, bold
+Times, 6 is not bold, 1 is sans-serif, 2 bold sans-serif}
+
+\item{filename}{the complete path and filename of where to save the
+png plot file. default is empty, meaning no file is produced.}
+
+\item{devoff}{a boolean to allow the plot device to remain open for
+the user to add more components. Of course, if this is set to
+FALSE then it is up to the user to use dev.off}
 }
 \value{
 invisibly a list of the x and y matrices plotted

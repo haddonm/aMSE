@@ -8,12 +8,12 @@
 #'     results. The origin came from Ian Taylor although I have
 #'     modified the styles and ensure correct Version 3 CSS
 #'
-#' @param plotdir the directory within the run directory that contains
+#' @param resdir the directory within the run directory that contains
 #'     all the plot results
 #'
-#' @return nothing but it does generate a .css file in the plotdir
-write_css <- function(plotdir) {
-  filename <- filenametopath(plotdir,"aMSEout.css")
+#' @return nothing but it does generate a .css file in the resdir
+write_css <- function(resdir) {
+  filename <- filenametopath(resdir,"aMSEout.css")
   cat('    \n',
       '    body {\n',
       '      font-size:  18px; \n',
@@ -86,7 +86,6 @@ write_css <- function(plotdir) {
       '      font-size: 15px; \n',
       '      border: 1px solid black;\n',
       '      border-collapse: collapse; \n',
-      '      width: 100%; \n',
       '    } \n',
       '    th, td {\n',
       '      padding: 5px; \n',
@@ -116,6 +115,7 @@ write_head <- function(htmlfile) {
       '<html> \n',
       '  <head>',
       '    <meta charset="utf-8"> \n',
+      '    <meta name="format-detection" content="telephone=no"/> \n',
       '    <title>', 'aMSEout', '</title>\n',
       '    <!-- source for text below is http://unraveled.com/publications/css_tabs/ -->\n',
       '    <!-- CSS Tabs is licensed under Creative Commons Attribution 3.0 - http://creativecommons.org/licenses/by/3.0/ -->\n',
@@ -152,21 +152,20 @@ htmltable <- function(inmat,filename,caption) {
   cat('<br><br> \n',file=filename,append=TRUE)
   cat('<table> \n',file=filename,append=TRUE)
   cat('<caption> ',caption,'</caption> \n',file=filename,append=TRUE)
+  cat('<br> \n',file=filename,append=TRUE)
   cat('<tr> \n',file=filename,append=TRUE)
-  cat('<th>Var</th> \n',file=filename,append=TRUE)
-  tmp <- NULL
-  for (cl in 1:numcol) tmp <- paste(tmp,paste('<th>',columns[cl],'</th>',collapse=""),collapse="")
-  cat(tmp,file=filename,append=TRUE)
+  cat(' <th>Var</th> \n',file=filename,append=TRUE)
+  for (cl in 1:numcol)
+     cat(' <th>',columns[cl],'</th> \n',file=filename,append=TRUE)
   for (rw in 1:numrow) {
     if ((rw %% 2) == 0) {
       cat('<tr> \n',file=filename,append=TRUE)
     } else {
       cat('<tr class="odd"> \n',file=filename,append=TRUE)
     }
-    cat('<th>',rows[rw],'</th> \n',file=filename,append=TRUE)
-    tmp <- NULL
-    for (cl in 1:numcol) tmp <- paste(tmp,paste('<th>',inmat[rw,cl],'</th>',collapse=""),collapse="")
-    cat(tmp,file=filename,append=TRUE)
+    cat(' <th>',rows[rw],'</th> \n',file=filename,append=TRUE)
+    for (cl in 1:numcol)
+      cat(' <th>',inmat[rw,cl],'</th> \n',file=filename,append=TRUE)
     cat('</tr> \n',file=filename,append=TRUE)
   }
   cat('</table>',file=filename,append=TRUE)
@@ -181,8 +180,8 @@ htmltable <- function(inmat,filename,caption) {
 #'     This code was borrowed from Ian Taylor's r4ss, but has been
 #'     extensively modified to improve both the css (see write_css)
 #'     and the HTML. By default, this function will look in the
-#'     plots directory where PNG files were created for a
-#'     plotFileTable_runname.csv file with the name 'runname' written
+#'     results directory where PNG files were created for a
+#'     resultTable_runname.csv file with the name 'runname' written
 #'     added by aMSE. HTML files are written to link to these plots
 #'     and put in the same directory.
 #'
@@ -190,7 +189,7 @@ htmltable <- function(inmat,filename,caption) {
 #' @param rundir Directory where a particular run's files,
 #'     including the region files, the results, as tables and plots,
 #'     and any other files, are all held. It will always contain at
-#'     least the 'data' and 'plots' sub-directories.
+#'     least the 'data' and 'results' sub-directories.
 #' @param width Width of plots (in pixels). Default = 500
 #' @param openfile Automatically open index.html in default browser?
 #' @param runnotes Add additional notes to home page.
@@ -206,31 +205,31 @@ make_html <- function(replist=NULL,
                       verbose=TRUE) {
   # replist=reportlist;rundir=rundir;width=500;openfile=TRUE;runnotes=runnotes;verbose=FALSE
   # Clarify data
-  plotdir <- filenametopath(rundir,"plots")
-  if(is.null(plotdir)) stop("input 'plotdir' required \n")
-  write_css(plotdir)
-  filenames <- dir(plotdir)
-  filetable <- filenames[grep("plotFileTable",filenames)]
-  if(length(filetable)==0) stop("No plotFileTable, did the run fail? \n")
-  filename <- filenametopath(plotdir,filetable)
+  resdir <- filenametopath(rundir,"results")
+  if(is.null(resdir)) stop("input 'resdir' required \n")
+  write_css(resdir)
+  filenames <- dir(resdir)
+  filetable <- filenames[grep("resultTable",filenames)]
+  if(length(filetable)==0) stop("No resultTable, did the run fail? \n")
+  filename <- filenametopath(resdir,filetable)
   tablefile <- read.csv(filename,colClasses = "character")
   if(!is.data.frame(tablefile))
     stop("The list of files to plot needs to be a data.frame \n")
   #tablefile$TimeMade <- as.POSIXlt(tablefile$png_time)
   tablefile$basename <- basename(as.character(tablefile$file))
-  tablefile$dirname <- plotdir
+  tablefile$dirname <- resdir
   # identify the categories and name each html file
   categories <- unique(tablefile$category)
   types <- tablefile$type
   for (icat in 0:length(categories)) { # icat=1
     if(icat==0){
       category <- "Home"
-      htmlfile <- paste0(plotdir,"/aMSEout.html")
+      htmlfile <- paste0(resdir,"/aMSEout.html")
       htmlhome <- htmlfile
       if(verbose) cat("Home HTML file with output will be:\n",htmlhome,'\n')
     }  else{
       category <- categories[icat]
-      htmlfile <- paste0(plotdir,"/aMSEout_",category,".html")
+      htmlfile <- paste0(resdir,"/aMSEout_",category,".html")
       if(verbose) cat("tab HTML file with output will be:\n",htmlfile,'\n')
     }
     write_head(htmlfile)
@@ -292,7 +291,7 @@ make_html <- function(replist=NULL,
             sep="",  file=htmlfile,  append=TRUE)
         }
         if (plotinfo$type[i] == "table") {
-          datafile <- filenametopath(plotdir,plotinfo$basename[i])
+          datafile <- filenametopath(resdir,plotinfo$basename[i])
           dat <- read.csv(file=datafile,header=TRUE,row.names=1)
           htmltable(inmat=dat,filename=htmlfile,caption=plotinfo$caption[i])
         }

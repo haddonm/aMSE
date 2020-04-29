@@ -336,7 +336,7 @@ readctrlfile <- function(indir,infile="control.csv") {
 #' popdefs <- readdatafile(reg1$globals,datadir,ctrl$datafile)
 #' print(popdefs)
 #' }
-readdatafile <- function(numpop,indir,infile) {  # indir=yourdir;infile="constdat.csv";numpop=6
+readdatafile <- function(numpop,indir,infile) {  # indir=datadir;infile="reg1smu2pop6.csv";numpop=6
    filename <- filenametopath(indir,infile)
    indat <- readLines(filename)   # reads the whole file as character strings
    begin <- grep("PDFs",indat)
