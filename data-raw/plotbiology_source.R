@@ -20,7 +20,7 @@ legend("topright",paste0("P",1:numpop),lwd=3,col=c(1:numpop),bty="n",
 if (nchar(filename) > 0) dev.off()
 
 caption <- "The maturity vs length for each population."
-addfilename(filename,resfile=resfile,"Biology","plot",caption)
+logfilename(filename,resfile=resfile,"Biology",caption)
 
 # weight-at-length uses regionC---------------------------------------
 WtL <- getlistvar(regionC,"WtL")
@@ -38,7 +38,7 @@ legend("topleft",paste0("P",1:numpop),lwd=3,col=c(1:numpop),bty="n",
 if (nchar(filename) > 0) dev.off()
 
 caption <- "The weight-at-length for each population. The x-axis is constrained to encompass legal sizes."
-addfilename(filename,resfile=resfile,"Biology","plot",caption)
+logfilename(filename,resfile=resfile,"Biology",caption)
 
 # emergence uses regionC----------------------------------------------
 emerg <- getlistvar(regionC,"Emergent")
@@ -56,7 +56,7 @@ legend("topleft",paste0("P",1:numpop),lwd=3,col=c(1:numpop),bty="n",
 if (nchar(filename) > 0) dev.off()
 
 caption <- "The emergence-at-length for each population. The x-axis is constrained to emphasize differences."
-addfilename(filename,resfile=resfile,"Biology","plot",caption)
+logfilename(filename,resfile=resfile,"Biology",caption)
 
 # initial numbers-at-size uses regionD--------------------------------
 
@@ -83,7 +83,7 @@ legend("topright",paste0("P",1:numpop),lwd=3,col=c(1:numpop),bty="n",
 if (nchar(filename) > 0) dev.off()
 
 caption <- "The numbers-at-size for the whole region and for each population separately. The recruitment numbers are omitted for clarity."
-addfilename(filename,resfile=resfile,"Biology","plot",caption)
+logfilename(filename,resfile=resfile,"Biology",caption)
 
 
 # Tabulate biological properties uses regionC-------------------------
@@ -118,9 +118,10 @@ write.table(res,file = filename,sep=",")
 
 
 caption <- paste("Population amd Regional Biological Properties.",
-                         "Where the regional total is an average it is weighted",
-                         "relative to the proportion of total B0.",collapse=" ")
-addfilename(filename,resfile=resfile,"Tables","table",caption)
+                 "For 'M' 'MSYDepl' and 'bLML' total is an average",
+                 "weighted relative to the proportion of total B0.",
+                 collapse=" ")
+logfilename(filename,resfile=resfile,"Tables",caption)
 
 
 # total regional productivity ----------------------------------------

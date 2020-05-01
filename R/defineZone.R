@@ -162,6 +162,7 @@ definepops <- function(inSMU,inSMUindex,const,glob) {
 #' }
 dodepletion <- function(regC,regD,glob,depl,product,len=15) {
   #  regC=regionC; regD=regionD; glob=glb;  product=product; depl=0.2;len=15
+  # use product to find bounds on H around the desried depletion level
   spb <- rowSums(product[,"MatB",])
   initH <- as.numeric(rownames(product))
   regdyn <- cbind(initH,spb,spb/spb[1])
@@ -179,7 +180,6 @@ dodepletion <- function(regC,regD,glob,depl,product,len=15) {
   lowl <- initH[pick-1]
   upl <- initH[pick+1]
   dinitH <- seq(lowl,upl,length=len)
-  inc <- dinitH[2] - dinitH[1]
   regdepl <- numeric(len)
   numpop <- glob$numpop
   for (harv in 1:len) {
@@ -193,7 +193,6 @@ dodepletion <- function(regC,regD,glob,depl,product,len=15) {
   regDD <- runthreeH(regC,regD,glob,inHarv=pickharv)
   return(regDD)
 } # end of dodepletion
-
 
 #' @title doproduction estimates a production curve for each population
 #'

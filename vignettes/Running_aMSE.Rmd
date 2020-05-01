@@ -9,6 +9,31 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+<style type="text/css">
+  body, td {
+     font-size: 15px;
+  }
+  code.r{
+    font-size: 15px;
+  }
+  pre {
+    font-size: 8px
+  }
+</style>
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: { 
+      equationNumbers: { 
+            autoNumber: "all",
+            formatNumber: function (n) {return '3.'+n}
+      } 
+  }
+});
+</script>
+
+
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
@@ -32,20 +57,9 @@ library(captioner)
 
 tab_nums <- captioner(prefix = "Table")
 fig_nums <- captioner(prefix = "Figure")
-
+pgwid=75
 ```
 
-
-<script type="text/x-mathjax-config">
-MathJax.Hub.Config({
-  TeX: { 
-      equationNumbers: { 
-            autoNumber: "all",
-            formatNumber: function (n) {return '3.'+n}
-      } 
-  }
-});
-</script>
 
 # Introduction
 
@@ -65,19 +79,37 @@ devtools::install_github("https://github.com/haddonm/rutilsMH")
 ```
 
 
-Apart from the R packages __aMSE__ and __rutilsMH__, you will need to define and prepare a directory somewhere on your computer, here we will refer to it as the _rundir_, which will have two subdirectories 'rundir/data' and 'rundir/plots' (note the forward slash notation required within R). This run directory, especially the plots sub-directory, will be the focus for all the stored results from the particular run being made. The idea is that given the _rundir_ it will be possible to recreate the plots and tables generating from the given run. Later functions will be written that will take a set of such run directories and summarize the results found within.
+Apart from the R packages __aMSE__ and __rutilsMH__, you will need to define and prepare a directory somewhere on your computer, here we will refer to it as the _rundir_, which will have two subdirectories 'rundir/data' and 'rundir/results' (note the forward slash notation required within R). This run directory, especially the results sub-directory, will be the focus for all the stored results from the particular run being made. The idea is that given the _rundir_ it will be possible to recreate the plots and tables generating from the given run. Later functions will be written that will take a set of such run directories and summarize the results found within.
 
 In the 'rundir/data' subdirectory there needs to be at least four .csv files:
 
 1. A control file that identifies ideally, a unique run name, the other input file names, the number of replicates, and other details of a particular MSE run, such as which harvest control rule (HCR) to use.
 
-2. A regionfile, which contains a set of constants that relate to the whole region. this includes the definition of the spatial structure, constants relating ot the size structure, and a set of global constants used throughout the modelling.
+2. A regionfile, which contains a set of constants that relate to the whole region. this includes the definition of the spatial structure, constants relating to the size structure, and a set of global constants used throughout the modelling.
 
 3. A file of biological constants for each population making up the region, including details of growth, maturity, weight-at-length, natural mortality, recruitment, emergence, selectivity and expected initial unfished catch rates.
 
 4. A harvest control rule file containing any constants or values used within the HCR.
 
 Functions are provided within __aMSE__ for writing out template versions of the first three files. These mimic the worked example we will use below and have been used to generate some of the built-in data-sets within __aMSE__, which are used to illustrate the operation of the various R functions that have been developed for conducting the simulations. In practice, one would run the _ctrlfiletemplate_, the _datafiletemplate_, and the _regionfiletemplate_ R functions to produce such files and then use them after editing the contents to suit your own fishery and particular run details. You should not be surprised to find that just as there are _xxxxfiletemplate_ functions there are _readctrlfile_, _readdatafile_, and _readregionfile_ R functions (though eventually these may be hidden within more all encompassing functions).
+
+The 'rundir/results' subdirectory (referred to in the R code as _resdir_) is the repository for all the plots and tables that are produced by __aMSE__ for a particular run. When the directories for a particular run are setup and checked (using _setupdirs_), a 'resultTable_runname.csv' file is also created. After that, if desired, each plot or table that are generated can be stored as a '.png' or '.csv' file in the _resdir_, and the filename of each result logged by adding it to the 'resultTable_runname.csv' (the function _logfilename_ is used to add the filename to the list). At the same time one should add a category (productivity, catches, etc.) and caption (see the help page for _logfilename_). At any stage in the run, it is then possible to call the function _make_html_ and this will produce a local webpage inside the resdir and open it in a local browser. This provides for a quick way to visualize the results from a run and allow for the planning of later comparisons.
+
+## A Possible Workflow
+
+There are a number of steps involved when running __aMSE__. 
+
+1. Initial decisions on the runname, filenames for the region, data, and HCR files, the spatial structure to be simulated, the region wide properties (such as larval dispersal rate), the number of simulations to run, the number of years to project the simulation, and other aspects relating to the details of a particular run (see the details of the _ctrl_ and _region_ objects and data files).
+
+2. Condition the operating model on a fishery using biological characteristics taken from the fishery, or, alternatively, use a hypothetical set of characters as a testbed (see the details of the _constants_ R object).
+
+3. The initiation of the operating model sets up the dynamics in an unfished state at equilibrium. Once that is achieved the properties of the unfished 'fishery' are characterized. This characterization includes a summary of the basic biological properties for each population of the selectivity, maturation, growth, and productivity at all spatial scales (population, SMU, region). This characterization results in a series of plots and tables all of which are stored in _resdir_ and logged in _resfile_.
+
+4. If the initial depletion for the run is < 1.0, then one uses _dodepletion_ to achieve the desired depletion for the region. This region-wide depletion level is found by searching for the harvest rate that, when applied to all populations, depletes the region to close to the desired initial level. This means that the depletion within each population may differ (the example code within the _getregionprops_ function illustrates this). 
+
+5. Once again one can characterize the properties of the region and populations to contrast the fished state with the unfished.
+
+6. Once all this has been achieved then one can move to conducting projections under the control to the selected harvest control rule.
 
 ## Initial Decisions
 
@@ -93,11 +125,11 @@ Running the simulations involved when conducting a management strategy evaluatio
 
 These questions are important because they determine the spatial structure imposed on the operating model of the fisheries dynamics (see the vignette on MSE for explanations of the components that make up an MSE model). 
 
-The first question about the number of SMUs will depend upon how management is arranged. For example, in Tasmania, a total allowable catch is allocated to each quota zone. But spatial management is taken further by allocating intended catch levels to each statistical block to avoid excessive fishing in any single block should abalone become available in greater numbers than usual (__`r fig_nums("f1",display="cite")`__). Elsewhere, however, it may be the case that management decisions are made at the level of each SMU and the spread of effort or catch among its component populations is decided each year by the industry members. Such possible variation canbe accommodated by __aMSE__ by changing the number of SMU and associated populations.
+The first question about the number of SMUs will depend upon how management is arranged. For example, in Tasmania, a total allowable catch is allocated to each quota zone. But spatial management is taken further by allocating intended catch levels to each statistical block to avoid excessive fishing in any single block should abalone become available in greater numbers than usual (__`r fig_nums("f1",display="cite")`__). Elsewhere, however, it may be the case that management decisions are made at the level of each SMU and the spread of effort or catch among its component populations is decided each year by the industry members. Such possible variation can be accommodated by __aMSE__ by changing the number of SMU and associated populations.
 
 <br>
 
-```{r pressure, echo=FALSE, fig.cap="A caption", out.width = '80%'}
+```{r pressure, echo=FALSE, fig.cap="A caption", out.width = '65%'}
 knitr::include_graphics("C:/Users/User/Dropbox/rcode2/aMSEUse/figures/Tas_Abalone_Zones.png")
 ```
 
@@ -105,7 +137,7 @@ knitr::include_graphics("C:/Users/User/Dropbox/rcode2/aMSEUse/figures/Tas_Abalon
 
 <br>
 
-The number of populations making up each SMU is also an important decision, which is fundamental to the level of detail to which it is possible to take the model's conditioning. The expectation is that, within Tasmania, using the GPS-logger data it will be possible to characterize smaller more homogeneous areas within each statistial block (SMU). These may be characterized using their average relative productivity through the available time-series, or by any other form of data available for the selected  area. In answer to the third question, it should also be possible, using the GPS-logger data, to characterize such populations in terms of relative productivity in sequence around the coastline, which can then be mimicked within the simulation model. If such detailed data are not available then conditioning the operating model might involve randomly allocating biological properties across populations repeatedly until a schema arises that generates data with strong similarities to the observed history of the fishery.
+The number of populations making up each SMU is also an important decision, which is fundamental to the level of detail to which it is possible to take the model's conditioning. The expectation is that, within Tasmania, using the GPS-logger data it will be possible to characterize smaller more homogeneous areas within each statistical block (SMU). These may be characterized using their average relative productivity through the available time-series, or by any other form of data available for the selected  area. In answer to the third question, it should also be possible, using the GPS-logger data, to characterize such populations in terms of relative productivity in sequence around the coastline, which can then be mimicked within the simulation model. If such detailed data are not available then conditioning the operating model might involve randomly allocating biological properties across populations repeatedly until a schema arises that generates data with strong similarities to the observed history of the fishery.
 
 The fourth question about larval dispersal will be influenced by the area and the species being considered. With blacklip abalone in Tasmania mostly larval settlement occurs locally with only minor levels of larval dispersal to populations no large distance away (Miller _et al_., 2008). But even low levels of larval dispersal (the example we will use below has a dispersal rate of 3% - 0.03) have an influence on equilibrium conditions and potential yields, especially when large productive populations lie next to less productive smaller populations.
 
@@ -113,9 +145,11 @@ The fourth question about larval dispersal will be influenced by the area and th
 
 An array of biological characteristics are required for each population (see the contents of _data(constants)_). These relate to maturity and growth, and other aspects of productivity such as unfished recruitment levels. Translating the biological data that has been collected from the various fisheries through time into these parameters is a large part of what is entailed in conditioning the operating model. The full requirements will become clear when we discuss the format and contents of the various files required to conduct a model run.
 
-## A Quick Worked Example
+## A Worked Example
 
-We have already gone through quite a few details, much of which will easily have been forgotten, so now we will examine setting up a model in practice and getting it operational. In this example, we will be creating directories on your hard-drive. At that point in the code you may wish to change the names of the directory structure so that the example does not upset your, no doubt, neat and tidy 'C:' drive directory layout. Throughout the worked example, we will be calling numerous R functions. I recommend that you examine the help page for each of these, for example using _?setupdirs_. To see the code just type ther name of the function into the console but without brackets. Finally, to see what arguments each function have you can use _args(function_name)_ or _formals(function_name)_.
+We have already gone through quite a few details, much of which will easily have been forgotten, so now we will examine setting up a model in practice and getting it operational, which will include displaying the initial results. In this example, we will be creating directories on your hard-drive. At that point in the code you may wish to change the names of the directory structure so that the example does not upset your, no doubt, neat and tidy 'C:' drive directory layout. Throughout the worked example, we will be calling numerous R functions. 
+
+I recommend that you examine the help page for each of these (for example using _?setupdirs_). To see the code for each function just type the name of the function into the console but without brackets. Finally, to see what arguments each function have you can use _args(function_name)_ or _formals(function_name)_.
 
 ```{r echo=TRUE}
 starttime <- as.character(Sys.time()) # When did the run start?
@@ -143,7 +177,7 @@ library(aMSE)  # you might check out the help pages for each function
 
 <br>
 
-Assuming you got this far then you have successfully generated template files, and we will assume that lots of changes have been made to them to customize them to a particular fishery. Then you will have read them back into the R environment (in sequence because each depends on its predecessor). Of course, once edited the _ctrl..._, _region..._, and _datafiletemplate_ function calls will need to be deleted or hashed into comments, otherwise if you run the task again you will over-write you edits. 
+Assuming you got this far then you have successfully generated template files, and we will assume that lots of changes have been made to them to customize them to a particular fishery. Then you will have read them back into the R environment (in sequence because each depends on its predecessor). Of course, once edited the _ctrl..._, _region..._, and _datafiletemplate_ function calls will need to be deleted or hashed into comments, otherwise if you run the task again you will over-write your edits. 
 
 ### The Region Structure
 
@@ -162,7 +196,7 @@ ans <- findunfished(regionC,regionD,glb) # can take a while
 regionC <- ans$regionC  # region constants
 regionD <- ans$regionD  # region dynamics
 product <- ans$product
-str(regionC[[1]])
+str(regionC[[1]],width=pgwid,strict.width="cut")
 ```
 
 <br>
@@ -172,7 +206,7 @@ The structure of each of the lists within the _regionC_ object has the constant 
 The dynamic part of the region is derived within the _makeregion_ function using the constant part. It is more simply a list of matrices and arrays. Thus, the mature biomass, exploitable biomass, catch, and other _Nyrs_ x _numpop_ matrices provide repositories for the projection of each variable. The two arrays, _catchN_ and _Nt_ have dimensions of length-class x year x population, so the complete dynamics is captured within these.
 
 ```{r}
-str(regionD)
+str(regionD,width=pgwid,strict.width="cut")
 ```
 
 * for each population, _matureB_ = mature biomass, _exploitB_ = exploitable biomass, _catch_ = catch in tonnes, _harvestR_ = annual harvest rate, _cpue_ is the expected cpue, _recruit_ = recruitment in each year, _deplsB_ = depletion of mature biomass, _depleB_ = depletion of exploitable biomass, _catchN_ = numbers-at-length in the catch each year, and finally, _Nt_ is the population numbers-at-length each year.
@@ -194,23 +228,23 @@ filename <- filenametopath(resdir,"unfishprops.csv")
 write.table(unfishprops,file = filename,sep=",")
 #  or use tmp <- read.csv(file=filename,header=TRUE,row.names=1)
 caption <- paste("The unfished equilibrium properties of the populations ",
-                         "and region, before any initial depletion.",collapse=" ")
-addfilename(filename,resfile=resfile,"Tables","table",caption)
+                 "and region, before any initial depletion.",collapse=" ")
+logfilename(filename,resfile=resfile,"Tables",caption)
 
 ```
 
 ## Starting at a Depletion < 1.0
 
-During the comparisons of different harvest strategies it wil be necessary to determine how well each HS performs starting from different initial depletion levels. This would be answering questions such as 'how well does the HS allow for stock recovery from a depleted stock?'. The intended initial depletion is included as an entry in the _ctrl_ file. And a function, _dodepletion_ is provided to impose fishing mortality onto the stock so that the region is depleted until it is close to the intended level. The regional depletion is determined from a weighted mean depletion across all populations, where the weighting is the relative unfished mature biomass predicted for each population (see the equations describing the operating model). If, for example, we wanted to deplete our initial region to a level close to 20% unfished matrure biomass we would implement the following code (see the function's help page for a desription of the six arguments.
+During the comparisons of different harvest strategies it will be necessary to determine how well each HS performs starting from different initial depletion levels. This would be answering questions such as 'how well does the HS allow for stock recovery from a depleted stock?'. The intended initial depletion is included as an entry in the _ctrl_ file. And a function, _dodepletion_ is provided to impose fishing mortality onto the stock so that the region is depleted until it is close to the intended level. The regional depletion is determined from a weighted mean depletion across all populations, where the weighting is the relative unfished mature biomass predicted for each population (see the equations describing the operating model). If, for example, we wanted to deplete our initial region to a level close to 20% unfished mature biomass we would implement the following code (see the function's help page for a description of the six arguments.
 
 ```{r}
 regionDD <- dodepletion(regC=regionC,regD=regionD,glob=glb,depl=0.25,product=product)
-str(regionDD)
+str(regionDD,width=pgwid,strict.width="cut")
 ```
 
 <br>
 
-If we now run the _getregionprops_ funciton, of course we would expect a different set of answers for the depletion of mature and exploitable biomass.
+If we now run the _getregionprops_ function, of course we would expect a different set of answers for the depletion of mature and exploitable biomass.
 
 
 ```{r}
@@ -221,7 +255,7 @@ write.table(initprops,file = filename,sep=",")
 #  or use tmp <- read.csv(file=filename,header=TRUE,row.names=1)
 caption <- paste("The properties of the populations and region after ",
                  "the region has been depleted to its starting point.",collapse=" ")
-addfilename(filename,resfile=resfile,"Tables","table",caption)
+logfilename(filename,resfile=resfile,"Tables",caption)
 ```
 
 `r tab_nums("t2", caption=" The summary of a region's properties for the region once it has been depleted to approximately 0.25B0.")`

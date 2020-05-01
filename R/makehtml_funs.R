@@ -133,7 +133,7 @@ write_head <- function(htmlfile) {
 #'
 #' @description htmltable generates the required html code to add a
 #'     table to the website of the results. This requires the
-#'     addfilename function to include both a category biology,
+#'     logfilename function to include both a category biology,
 #'     productivity, etc, and a type, which is currently limited to
 #'     plot or table.
 #'

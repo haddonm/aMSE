@@ -62,9 +62,9 @@ filename <- filenametopath(resdir,"unfishprops.csv")
 write.table(round(unfishprops,4),file = filename,sep=",")
 #  or use tmp <- read.csv(file=filename,header=TRUE,row.names=1)
 caption <- r"(The unfished equilibrium properties of the populations and region before any initial depletion.)"
-addfilename(filename,resfile=resfile,"Tables","table",caption=caption)
+logfilename(filename,resfile=resfile,"Tables",caption=caption)
 
-ctrl$initdepl <-  0.25
+ctrl$initdepl <-  0.40
 
 if (ctrl$initdepl < 1.0) {
   regionDD <- dodepletion(regionC, regionD, glb, depl=ctrl$initdepl, product)
@@ -74,7 +74,7 @@ if (ctrl$initdepl < 1.0) {
   write.table(round(initprops,4),file = filename,sep=",")
    #  or use tmp <- read.csv(file=filename,header=TRUE,row.names=1)
   caption <- r"(The unfished equilibrium properties of the populations and region before any initial depletion.)"
-  addfilename(filename,resfile=resfile,"Tables","table",caption=caption)
+  logfilename(filename,resfile=resfile,"Tables",caption=caption)
 }
 
  endtime <- as.character(Sys.time())

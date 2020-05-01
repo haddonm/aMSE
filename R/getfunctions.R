@@ -1,4 +1,33 @@
 
+#' @title getextension gets the 3 letter file extension from a filename
+#'
+#' @description getextension is a utility function that is used with
+#'     logfilename to determine whether one is dealing with a csv or a
+#'     png file. depending on which it will return either a 'table' or
+#'     'plot' value. Any other extension type will throw an error and
+#'     stop execution.
+#'
+#' @param filename the filename, with path attached, whose extension
+#'     needs to be determined.
+#'
+#' @return a character string of either 'table' or 'plot'
+#' @export
+#'
+#' @examples
+#' filen <- "not_a_real_file.png"
+#' getextension(filen)
+#' filen <- "another_unreal_file.csv"
+#' getextension(filen)
+getextension <- function(filename) {
+  lenc <- nchar(filename)
+  exten <- substr(filename,(lenc-2),lenc)
+  type <- ""
+  if (exten == "png") type <- "plot"
+  if (exten == "csv") type <- "table"
+  if (nchar(type) == 0)
+    stop("A file added to results must be either 'png' or 'csv'")
+  return(type)
+} # end of getextension
 
 #' @title getlistvar extracts a vector or matrix from regionC
 #'
@@ -191,6 +220,8 @@ getregionprops <- function(regC,regD,glb,year=1) { # regC=regionC; regD=regionD;
   msydepl <- sapply(regC,"[[","MSYDepl")
   matB <- regD$matureB[year,]
   ExB <- regD$exploitB[year,]
+  harvestR <- regD$harvestR[year,]
+  catch <- regD$catch[year,]
   legalmatB <- numeric(numpop); names(legalmatB) <- 1:numpop
   lml <- sapply(regC,"[[","LML")[year,]
   for (pop in 1:numpop) { #   pop=1
@@ -205,9 +236,9 @@ getregionprops <- function(regC,regD,glb,year=1) { # regC=regionC; regD=regionD;
   propprot <- (matB - legalmatB)/matB
   label <- c("effB0","matureB","legalmatB","propprot","MSY",
              "effexB0","exploitB","SpBDepl","ExBDepl",
-             "legalDepl","MSYDepl","LML","bLML")
+             "legalDepl","MSYDepl","LML","bLML","harvestR","catch")
   ans <- rbind(effB0,matB,legalmatB,propprot,msy,effExB0,ExB,deplet,
-               depletEx,legaldepl,msydepl,lml,blml)
+               depletEx,legaldepl,msydepl,lml,blml,harvestR,catch)
   rownames(ans) <- label
   tot <- numeric(length(rownames(ans))); names(tot) <- label
   tot[c(1:3,5:7)] <- rowSums(ans)[c(1:3,5:7)]
@@ -219,6 +250,8 @@ getregionprops <- function(regC,regD,glb,year=1) { # regC=regionC; regD=regionD;
   tot["MSYDepl"] <- sum(wgts * ans["MSYDepl",])
   tot["LML"] <- mean(ans["LML",])
   tot["bLML"] <- sum(wgts * ans["bLML",])
+  tot["harvestR"] <- mean(ans["harvestR",])
+  tot["catch"] <- sum(ans["catch",])
   ans <- cbind(ans,tot)
   colnames(ans) <- c(paste0("p",1:numpop),"total")
   return(ans)

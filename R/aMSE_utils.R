@@ -1,41 +1,4 @@
 
-#' @title addfilename adds a filename to the autoresult csv file
-#'
-#' @description addfilename is used to facilitate the produciton of
-#'     the HTML results summary for a particular run. This depends
-#'     upon a csv file containing the names of each file to be
-#'     plotted or tabulated. This function adds a filename and the
-#'     supporting caption and category, without one needing to
-#'     remember the syntax.
-#'
-#' @param filename the full path and filename for the file being added
-#' @param resfile the file to be added to, which is defined by
-#'     setuphtml found in aMSE_utils
-#' @param category what HTML tab should it be displayed on?
-#' @param type the type of addition, either a plot or table
-#' @param caption the caption for the figure or table
-
-#'
-#' @return nothing but it does add a line to filen
-#' @export
-#'
-#' @examples
-#' indir <- tempdir()
-#' resdir <- filenametopath(indir,"result")
-#' dirExists(resdir,verbose=FALSE)
-#' resfile <- setuphtml(resdir,"example_only")
-#' filename <- filenametopath(resdir,"example.png")
-#' png(filename=filename,width=7,height=4,units="in",res=300)
-#' plot(runif(100),runif(100),type="p")
-#' graphics.off()  # could use dev.off()
-#' addfilename(filename=filename,resfile=resfile,"A_category",
-#'             type="plot",caption="Example Figure")
-#' dir(resdir)
-addfilename <- function(filename,resfile,category,type,caption) {
-  cat(c(filename,category,type,as.character(Sys.time()),caption," \n"),
-      file=resfile,sep=",",append=TRUE)
-}
-
 #' @title dirExists: Checks for the existence of a directory
 #'
 #' @description dirExists: does a directory exist? It uses dir.exists
@@ -217,6 +180,44 @@ getStr <- function(inline,nb) {
   outconst <- as.character(tmp[2:(nb+1)])
   return(outconst)
 } # end of getStr
+
+#' @title logfilename adds a filename to the autoresult csv file
+#'
+#' @description logfilename is used to facilitate the produciton of
+#'     the HTML results summary for a particular run. This depends
+#'     upon a csv file containing the names of each file to be
+#'     plotted or tabulated. This function adds a filename and the
+#'     supporting caption and category, without one needing to
+#'     remember the syntax. If no category is added explicitly then
+#'     the local webpage will have an 'any' tab containing these
+#'     unloved results.
+#'
+#' @param filename the full path and filename for the file being added
+#' @param resfile the file to be added to, which is defined by
+#'     setuphtml found in aMSE_utils
+#' @param category what HTML tab should it be added to? default="any"
+#' @param caption the caption for the figure or table, default = ""
+#'
+#' @return nothing but it does add a line to resfile
+#' @export
+#'
+#' @examples
+#' indir <- tempdir()
+#' resdir <- filenametopath(indir,"result")
+#' dirExists(resdir,verbose=FALSE)
+#' resfile <- setuphtml(resdir,"example_only")
+#' filename <- filenametopath(resdir,"example.png")
+#' png(filename=filename,width=7,height=4,units="in",res=300)
+#' plot(runif(100),runif(100),type="p")
+#' graphics.off()  # could use dev.off()
+#' logfilename(filename=filename,resfile=resfile,"A_category",
+#'             caption="Example Figure")
+#' dir(resdir)
+logfilename <- function(filename,resfile,category="any",caption="") {
+  type <- getextension(filename)
+  cat(c(filename,category,type,as.character(Sys.time()),caption," \n"),
+      file=resfile,sep=",",append=TRUE)
+}
 
 #' @title pathend determines what character is at the end of a path
 #'

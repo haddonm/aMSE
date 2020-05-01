@@ -11,7 +11,7 @@ plotprod(product,xname="MatB",xlab="Spawning Biomass t",
          ylab="Production t",filename = filename)
 
 caption <- "The production curve relative to each population's spawning biomass. The vertical lines identify the Bmsy values."
-addfilename(filename,resfile=resfile,"Production","plot",caption)
+logfilename(filename,resfile=resfile,"Production",caption)
 
 # plot of Yield vs Annual Harvest Rate
 file <- paste0("production_AnnH_",ctrl$runlabel,".png")
@@ -19,7 +19,7 @@ filename <- filenametopath(resdir,file)  #  filename=""
 plotprod(product,xname="AnnH",xlab="Annual Harvest Rate",filename = filename)
 
 caption <- "The production curve relative to the Annual Harvest Rate applied to each population. The vertical lines identify the Hmsy values."
-addfilename(filename,resfile=resfile,"Production","plot",caption)
+logfilename(filename,resfile=resfile,"Production",caption)
 
 # plot of Yield vs population depletion
 file <- paste0("production_Deplet_",ctrl$runlabel,".png")
@@ -33,7 +33,7 @@ for (pop in 1:numpop) abline(v=xval[pop,"Deplet"],lwd=2,col=pop)
 if (nchar(filename) > 0) dev.off()
 
 caption <- "The production curve relative to the depletion level of each population. The vertical lines identify the Depletion level giving rise to the MSY."
-addfilename(filename,resfile=resfile,"Production","plot",caption)
+logfilename(filename,resfile=resfile,"Production",caption)
 
 
 # plot of Yield vs population depletion but constrained to within
@@ -50,7 +50,7 @@ for (pop in 1:numpop) abline(v=xval[pop,"Deplet"],lwd=2,col=pop)
 if (nchar(filename) > 0) dev.off()
 
 caption <- "The production curve relative to the depletion level of each population. Here the x-axis is shortened to clarify the flatness of the production curve about the MSY points."
-addfilename(filename,resfile=resfile,"Production","plot",caption)
+logfilename(filename,resfile=resfile,"Production",caption)
 
 # Now do total production --------------------------------------------
 yield <- rowSums(product[,"Catch",])
@@ -99,7 +99,7 @@ abline(v=Ht[pickmsy],col=2,lwd=2)
 if (nchar(filename) > 0) dev.off()
 
 caption <- "The production curves for the region. Also the relationships between spawning biomass depletion and harvest rate."
-addfilename(filename,resfile=resfile,"Production","plot",caption)
+logfilename(filename,resfile=resfile,"Production",caption)
 
 
 
