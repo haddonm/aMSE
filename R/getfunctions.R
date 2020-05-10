@@ -1,4 +1,35 @@
 
+#' @title getConst extracts 'nb' numbers from a line of text
+#'
+#' @description getConst parses a line of text and extracts 'nb' pieces of
+#'     text as numbers
+#'
+#' @param inline text line to be parsed, usually obtained using readLines
+#' @param nb the number of numbers to extract
+#' @param index which non-empty object to begin extracting from?
+#'
+#' @return a vector of length 'nb'
+#' @export
+#'
+#' @examples
+#'   txtline <- "MaxDL , 32,32,32"
+#'   getConst(txtline,nb=3,index=2)
+getConst <- function(inline,nb,index=2) { # parses lines containing numbers
+  ans <- numeric(nb)
+  tmp <- unlist(strsplit(inline,","))
+  if (length(tmp) < (nb+1))
+    warning(paste("possible problem with data",tmp[1],
+                  "missing comma?",sep=" "),"\n")
+  count <- 0
+  for (j in index:(nb+index-1)) {
+    count <- count + 1
+    ans[count] <- as.numeric(tmp[j])
+  }
+  return(ans)
+}   # end getConst
+
+
+
 #' @title getextension gets the 3 letter file extension from a filename
 #'
 #' @description getextension is a utility function that is used with
@@ -83,6 +114,31 @@ getlistvar <- function(regC,indexvar,indexvar2="") {
   return(x)
 } # End of getlistvar
 
+#' @title getLogical extracts nb logicals from an input line of text
+#'
+#' @description getLogical obtains nb logicals from an input line
+#'
+#' @param inline text line to be parsed, usually obtained using readLines
+#' @param nb the number of logicals to extract, if nb is longer than the
+#'     number of logicals within inline the vector will contain NAs
+#'
+#' @return a vector of length nb
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'  # Not exported, prefix with AbMSE:::
+#'  txtline <- "Depleted, TRUE"
+#'  AbMSE:::getLogical(txtline,nb=1)
+#'  txtline2 <- "calcthis, TRUE, FALSE"
+#'  AbMSE:::getLogical(txtline2,nb=2)
+#' }
+getLogical <- function(inline,nb) {  #inline <- txtline; nb=2
+  tmp <- unlist(strsplit(inline,","))
+  tmp <- removeEmpty(tmp)
+  outtmp <- as.logical(as.character(tmp[2:(nb+1)]))
+  return(outtmp)
+}
 
 ##  inzone <- zone1; indexVar <- "Nt"
 ## gets all LF data from a zone across pops and years
@@ -112,6 +168,61 @@ getregionLF <- function(regD,glb) { # need to define years
     storeLF[,yr] <- rowSums(regD$Nt[,yr,])
   return(storeLF)
 } # end of getregionLF
+
+#' @title getsingleNum extracts a single number from an input line of text
+#'
+#' @description getsingleNum obtains a number from an input line. The
+#'     variable context is the a variable declared in each function within
+#'     which getsingleNum is to be called. This cvan then be used in a
+#'     the stop function.
+#'
+#' @param varname the name of the variable to get from intxt
+#' @param intxt text to be parsed, usually obtained using readLines
+#' @param context the function name within which getsingleNum is
+#'     being used, defaults to empty string
+#'
+#' @return a single number
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'  # Not exported, prefix with aMSE:::
+#'  context = "Function Example"
+#'  txtline <- "replicates, 100"
+#'  aMSE:::getsingleNum("replicates",txtline,context=context)
+#'  aMSE:::getsingleNum("eeplicates",txtline,context=context)
+#' }
+getsingleNum <- function(varname,intxt,context="") {
+  begin <- grep(varname,intxt)
+  if (length(begin) > 0) {
+    return(as.numeric(getConst(intxt[begin],1)))
+  } else {
+    stop(paste0("No data for ",varname," within ",context))
+  }
+}
+
+#' @title getStr obtains a string from an input text line
+#'
+#' @description  getStr obtains a string from an input text line in
+#'     which any parts are separated by ','. Then, after ignoring the
+#'     first component, assumed to be a label, it returns the first
+#'     nb parts.
+#'
+#' @param inline input text line with components separated by ','
+#' @param nb number of parts to return
+#'
+#' @return a vector of character string(s)
+#' @export
+#'
+#' @examples
+#'   txt <- "runlabel, development_run, label for this particular run"
+#'   getStr(txt,1)
+getStr <- function(inline,nb) {
+  tmp <- unlist(strsplit(inline,","))
+  tmp <- removeEmpty(tmp)
+  outconst <- as.character(tmp[2:(nb+1)])
+  return(outconst)
+} # end of getStr
 
 
 

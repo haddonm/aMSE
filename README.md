@@ -100,8 +100,4 @@ library(rutilsMH)
 #>  $ Nt      : num [1:105, 1:40, 1:6] 6.30e+05 2.40e-06 4.41e-05 6.75e-04 8.57e-03 ...
 ```
 
-### 29/04/2020
-
-Now developing a vignette entitled *Running\_aMSE*, which contains some
-worked examples to get a user moving in the uise of **aMSE**. There
-remains much development still to do.
+See the vignette Running\_aMSE.Rmd for a more detailed example.
