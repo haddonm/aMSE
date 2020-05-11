@@ -1,36 +1,36 @@
-Population definitions containing the Probability Density Functions by parameter  popdefs,,,,,,,
-Define the populations in the same sequence in which they occur along the coast,,,,,,,
-,,,,,,,
-PDFs,32,The number of parameters with probability density functions,,,,,
-popnum,1,2,3,4,5,6,The index number of each population
-SMU,1,1,2,2,2,2,
-MaxDL ,32,32,32,32,32,32,Maximum growth increment
-sMaxDL ,2.5,2.5,2.5,2.5,2.5,2.5,variation of maxDL
-L50 ,123,123,123,123,123,123,Length at 50% MaxDL
-sL50 ,5,5,5,5,5,5,variation of L50
-L50inc ,45,45,45,45,45,45,L95 - L50 =  delta
-sL50inc ,1.25,1.25,1.25,1.25,1.25,1.25,variation of L50inc
-SigMax  ,4.6,4.6,4.6,4.6,4.6,4.6,maximum variation around growth increment
-sSigMax ,0.1,0.1,0.1,0.1,0.1,0.1,var of SigMax
-LML ,140,140,140,140,140,140,Current legal minimum length
-Wtb ,3.161963,3.161963,3.161963,3.161963,3.161963,3.161963,weight-at-length exponent
-sWtb ,0.148,0.148,0.148,0.148,0.148,0.148,var of Wtb
-Wtbtoa ,962.8098,962.8098,962.8098,962.8098,962.8098,962.8098,intercept power relationship betweeb Wtb and Wta
-sWtbtoa ,-14.3526,-14.3526,-14.3526,-14.3526,-14.3526,-14.3526,exponent of power relationship betweeb Wtb and Wta
-Me ,0.175,0.175,0.175,0.175,0.175,0.175,"Natural mortality 0.2 maxage=23, 0.1 maxa=46"
-sMe ,0.003,0.003,0.003,0.003,0.003,0.003,var of Me
-AvRec ,13,13,13,13,13,13,log of unfished recruitment LnR0
-sAvRec ,1,1,1,1,1,1,
-defsteep ,0.7,0.7,0.7,0.7,0.7,0.7,Beverton-Holt Steepness
-sdefsteep ,0.02,0.02,0.02,0.02,0.02,0.02,
-L50C ,126.4222,126.4222,126.4222,126.4222,126.4222,126.4222,length at 50% emergent
-sL50C ,1.5,1.5,1.5,1.5,1.5,1.5,
-deltaC,10,10,10,10,10,10,length at 95% emergent
-sdeltaC ,0.5,0.5,0.5,0.5,0.5,0.5,
-MaxCEpar,0.37,0.37,0.37,0.37,0.37,0.37,maximum cpue tonnes/hour for defining catchability
-MaxCEpar,0.02,0.02,0.02,0.02,0.02,0.02,
-selL50p ,0,0,0,0,0,0,L50 of selectivity
-selL95p ,1.5,1.5,1.5,1.5,1.5,1.5,L95 of selectivity
-SaMa,-16,-16,-16,-16,-16,-16,maturity logistic a parameter
-L50Mat,123.384,123.384,123.384,123.384,123.384,123.384,L50 for maturity b = -a/L50
-sL50Mat,4,4,4,4,4,4,
+Population definitions containing the Probability Density Functions by parameter  popdefs ,,,,,,,,,
+Define the populations in the same sequence in which they occur along the coast ,,,,,,,,,
+,,,,,,,,,
+PDFs,32,,,,,,,,
+popnum,1,2,3,4,5,6, the index number for each population ,,
+SMU,1,1,2,2,2,2, define the SMU index for each population ,,
+MaxDL ,32,32,32,32,32,32, maximum growth increment ,,
+sMaxDL ,2.5,2.5,2.5,2.5,2.5,2.5, variation of MaxDL ,,
+L50 ,123,123,123,123,123,123, Length at 50% MaxDL ,,
+sL50 ,5,5,5,5,5,5, variation of L50 ,,
+L50inc ,45,45,45,45,45,45, L95 - L50 = delta =L50inc ,,
+sL50inc ,1.25,1.25,1.25,1.25,1.25,1.25, variation of L50inc ,,
+SigMax  ,4.6,4.6,4.6,4.6,4.6,4.6, max var around growth ,,
+sSigMax ,0.1,0.1,0.1,0.1,0.1,0.1, var of SigMax ,,
+LML ,140,140,140,140,140,140, current legal minimum length ,,
+Wtb ,3.161963,3.161963,3.161963,3.161963,3.161963,3.161963, weight-at-length exponent ,,
+sWtb ,0.148,0.148,0.148,0.148,0.148,0.148, var of Wtb ,,
+Wtbtoa ,962.8098,962.8098,962.8098,962.8098,962.8098,962.8098, intercept of power curve between Wtb and Wta ,,
+sWtbtoa ,-14.3526,-14.3526,-14.3526,-14.3526,-14.3526,-14.3526, exponent of power curve between Wtb and Wta ,,
+Me ,0.2,0.2,0.2,0.2,0.2,0.2, Nat Mort, 0.2 maxage=23, 0.1 maxage=46 
+sMe ,0.003,0.003,0.003,0.003,0.003,0.003, var of Me,,
+AvRec ,13,13,13,13,13,13, log of unfished recruitment LnR0 ,,
+sAvRec ,1,1,1,1,1,1, ,,
+defsteep ,0.6,0.6,0.6,0.6,0.6,0.6, Beverton-Holt steepness ,,
+sdefsteep ,0.02,0.02,0.02,0.02,0.02,0.02, ,,
+L50C ,126.4222,126.4222,126.4222,126.4222,126.4222,126.4222, length at 50% emergent ,,
+sL50C ,0.5,0.5,0.5,0.5,0.5,0.5, ,,
+deltaC ,10,10,10,10,10,10,L95 - L50 for emergent,,
+sdeltaC ,0.5,0.5,0.5,0.5,0.5,0.5, ,,
+MaxCEpar,0.37,0.37,0.37,0.37,0.37,0.37, max cpue t-hr ,,
+MaxCEvar,0.02,0.02,0.02,0.02,0.02,0.02, ,,
+selL50p ,0,0,0,0,0,0, L50 of selectivity ,,
+selL95p ,1.5,1.5,1.5,1.5,1.5,1.5, L95 of selectivity ,,
+SaMa,-16,-16,-16,-16,-16,-16, matuirity logistic a par ,,
+L50Mat,123.384,123.384,123.384,123.384,123.384,123.384, L50 for maturity b = -1/L50,,
+sL50Mat,4,4,4,4,4,4, ,,

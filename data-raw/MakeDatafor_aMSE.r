@@ -24,8 +24,8 @@ ctrlfile <- "control.csv"
 
 ctrl <- readctrlfile(datadir,ctrlfile)
 region1 <- readregionfile(datadir,ctrl$regionfile)
-glb <- reg1$globals
-constants <- readdatafile(datadir,ctrl$datafile,glb)
+glb <- region1$globals
+constants <- readdatafile(glb$numpop,datadir,ctrl$datafile)
 
 
 

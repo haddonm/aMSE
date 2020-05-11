@@ -53,18 +53,53 @@ It would be a good idea to read Hadley Wickham's draft chpater on Git and GitHub
 This is a basic example which illustrates the generation of an initial equilibrium. It uses built in data-sets but usually you would generate regionC (constants) and regionD (the dynamic components) from the conditioning data:
 
 ```{r example}
-# basic example code
+# a minimal example
+starttime <- as.character(Sys.time())
 library(aMSE)
-library(rutilsMH)
+# Obviously you should modify the rundir to suit your own computer
+rundir <- "./../../rcode2/aMSEUse/run2"
+outdir <- setupdirs(rundir)
+datadir <- outdir$datadir # this usually has the data files 
+resdir <- outdir$resdir   # this holds all results
 
-  data(region1)
-  glb <- region1$globals
-  data(testregC)
-  data(testregD)
-  regDe <- testequil(regC=testregC,regD=testregD,glob=glb)
-  str(regDe)
+data(ctrl)
+data(constants)
+data(region1)
+glb <- region1$globals
+runname <- ctrl$runlabel
+
+out <- setupregion(constants, glb, region1)
+regionC <- out$regionC
+regionD <- out$regionD
+product <- out$product  # important bits usually saved in resdir
+# did the larval dispersal level disturb the equilibrium?
+regDe <- testequil(regionC,regionD,glb)
+
+resfile <- setuphtml(resdir,runname)  # prepare to log results
+plotproductivity(resdir,runname,product,glb)
+biology_plots(resdir, runname, glb, regionC, regionD, product)
+numbersatsize(resdir, runname, glb, regionD)
+
+endtime <- as.character(Sys.time())
+
+reportlist <- list(runname=runname,
+  starttime=starttime,endtime=endtime,
+  regionC=regionC,
+  regionD=regionD,
+  product=product,
+  glb=glb,constants=constants
+)
+
+runnotes <- "This is a bare-bones example."
+# If you unhash this last function call it will generate and open a 
+# local website inside resdir so you can see the results so far.
+
+# make_html(replist=reportlist,rundir=rundir,width=500,
+#           openfile=TRUE,runnotes=runnotes,verbose=FALSE)
   
 ```
 
 
 See the vignette Running_aMSE.Rmd for a more detailed example.
+
+See the New.Rd for recent developments

@@ -52,12 +52,12 @@ options("show.signif.stars"=FALSE,
         "width"=240)
 
 library(aMSE)
-library(knitr)
+suppressPackageStartupMessages(library(knitr))
 library(captioner)
 
 tab_nums <- captioner(prefix = "Table")
 fig_nums <- captioner(prefix = "Figure")
-
+pgwid=75     
 ```
 
 
@@ -166,7 +166,7 @@ I recommend that you examine the help page for each of these (for example using 
 starttime <- as.character(Sys.time()) # When did the run start?
 library(aMSE)  # you might check out the help pages for each function
  # Obviously you should change the rundir to something that suits you!
- rundir <- tempdir()   #temporary directory that expects to be deleted
+ rundir <- "C:/Users/User/Dropbox/rcode2/aMSEUse/run2"
  outdir <- setupdirs(rundir) #checks for existence of rundir, data and
  datadir <- outdir$datadir   # plots and creates them if they do not 
  resdir <- outdir$resdir   # already exist
@@ -195,19 +195,31 @@ Assuming you got this far then you have successfully generated template files, a
 With all the inputs in the system the next thing to do is to generate the simulated region. This largest of spatial scales is made up of two components. The first contains the constants relating to the region and this large object is a list of _numpop_ populations, each of which is a list of all the properties that will not change through the run (see its structure just below). Then there is the dynamic part of the region, which is a list of matrices and arrays that contain the dynamics, the things that change through time. We will describe the structure of each in some detail once they have been generated. The generation is a two step process, initially an analytical solution to unfished equilibrium conditions is used and then we use the function _findunfished_ to numerically find the equilibrium when there is larval dispersal present in the region.
 
 ```{r}
-ans <- makeregionC(region1,constants)
-regionC <- ans$regionC
-popdefs <- ans$popdefs
-ans <- makeregion(glb,regionC)
-regionC <- ans$regionC  # region constants
-regionD <- ans$regionD  # region dynamics
-# estimate production and iterate regionC to equilibrium, which 
-# estimates a revised MSY and related statistics.
-ans <- findunfished(regionC,regionD,glb) # can take a while
-regionC <- ans$regionC  # region constants
-regionD <- ans$regionD  # region dynamics
-product <- ans$product
-pgwid=75      # the structure of only one region is shown
+out <- setupregion(constants, glb, region1)  # can take a few seconds
+ regionC <- out$regionC  # the constant part
+ regionD <- out$regionD  # the dynamic part
+ product <- out$product  # the productivity defined
+# Is there an equilibrium even with larval dispersal?
+regDe <- testequil(regionC,regionD,glb)
+```
+
+<br>
+
+Generating the region entails the production of what we have called _regionC_, _regionD_, and _product_. Now we can examine their individual structure and components. If we first consider the structure of _product_ this is the simplest of the R objects being a 3-D array of harvest rates vs population statistic vs population.
+
+```{r}
+str(product)
+```
+
+<br> 
+
+Essentially it is a matrix of of _numpop_ matrices with the exploitable biomass, the mature biomass, the effective harvest rate, the catch or yield, the depletion level, and the relative cpue. Each row of values is obtained by running the dynamics with each constant harvest rate (listed in the rownames) until an equilibrium is reached. Thus, by searching for the maximum equilibrium or sustainable yield one can characterize what is required to obtain the $MSY$, the $B_{MSY}$, the $H_{MSY}$ and what lelve of stock depletion will be expected to provide the circumstances that can lead to the maximum sustainable yields.
+
+These values are searched for and then included into each population list within the  _regionC_ object, which is why generatig that object takes two steps.
+
+
+```{r }
+ # the structure of only one region is shown
 str(regionC[[1]],width=pgwid,strict.width="cut")
 ```
 
@@ -232,18 +244,28 @@ unfishprops <- getregionprops(regC=regionC,regD=regionD,glb=glb,year=1)
 # check out the help for getregionprops
 ```
 
+As well as printing out them out we would want to save the unfished region properties for later reference. We can do that using the usual _write.table_ function but also by logging the filename used into _resfile_ defined earlier. 
+
+```{r }
+# Use a unique file name and put it into the resdir
+filename <- filenametopath(resdir,"unfishprops.csv")
+write.table(unfishprops,file = filename,sep=",")
+# make up a caption for use when the table is printed
+caption <- paste("The unfished equilibrium properties of the populations ",
+                 "and region, before any initial depletion.",collapse=" ")
+# The category names the tab in local website where the table would be found 
+logfilename(filename,resfile=resfile,category="Tables",caption)
+```
+
+Here we print out the table to see the typical contents
+
 `r tab_nums("t1", caption=" The summary of a region's properties for the unfished newly generated region.")`
 
 ```{r echo=FALSE}
-suppressWarnings(kable(unfishprops,digits=c(4,4,4,4,4,4,4)))
-filename <- filenametopath(resdir,"unfishprops.csv")
-write.table(unfishprops,file = filename,sep=",")
-#  or use tmp <- read.csv(file=filename,header=TRUE,row.names=1)
-caption <- paste("The unfished equilibrium properties of the populations ",
-                 "and region, before any initial depletion.",collapse=" ")
-logfilename(filename,resfile=resfile,"Tables",caption)
+suppressMessages(kable(unfishprops,digits=c(4,4,4,4,4,4,4)))
 
 ```
+
 
 ## Starting at a Depletion < 1.0
 

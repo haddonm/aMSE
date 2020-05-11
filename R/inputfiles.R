@@ -184,9 +184,9 @@ datafiletemplate <- function(numpop,indir,filename="tmpdat.csv") {
    cat("L50C ,",genconst(rep(126.4222,numpop)),", length at 50% emergent \n",
        file=filename, append=TRUE)
    cat("sL50C ,",genconst(rep(0.5,numpop)),", \n",file=filename, append=TRUE)
-   cat("L95C ,",genconst(rep(136.3749,numpop)),", length at 95% emergent \n",
+   cat("deltaC ,",genconst(rep(10.0,numpop)),", length at 95% emergent \n",
        file=filename, append=TRUE)
-   cat("sL95C ,",genconst(rep(1.0,numpop)),", \n",file=filename, append=TRUE)
+   cat("sdeltaC ,",genconst(rep(0.1,numpop)),", \n",file=filename, append=TRUE)
    cat("MaxCEpar,",genconst(rep(0.37,numpop)),", max cpue t-hr \n",
        file=filename, append=TRUE)
    cat("MaxCEvar,",genconst(rep(0.02,numpop)),", \n",file=filename, append=TRUE)

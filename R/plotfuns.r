@@ -57,3 +57,5 @@ plotprod <- function(product,xname="MatB",yname="Catch",xlimit=NA,
   return(invisible(list(xname=x,yname=y)))
 } # end of plotprod
 
+
+

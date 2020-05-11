@@ -73,31 +73,59 @@ regionC (constants) and regionD (the dynamic components) from the
 conditioning data:
 
 ``` r
-# basic example code
+# a minimal example
+starttime <- as.character(Sys.time())
 library(aMSE)
-library(rutilsMH)
+# Obviously you should modify the rundir to suit your own computer
+rundir <- "./../../rcode2/aMSEUse/run2"
+outdir <- setupdirs(rundir)
+#> ./../../rcode2/aMSEUse/run2 :  exists  
+#> ./../../rcode2/aMSEUse/run2/data :  exists  
+#> ./../../rcode2/aMSEUse/run2/results :  exists
+datadir <- outdir$datadir # this usually has the data files 
+resdir <- outdir$resdir   # this holds all results
 
-  data(region1)
-  glb <- region1$globals
-  data(testregC)
-  data(testregD)
-  regDe <- testequil(regC=testregC,regD=testregD,glob=glb)
+data(ctrl)
+data(constants)
+data(region1)
+glb <- region1$globals
+runname <- ctrl$runlabel
+
+out <- setupregion(constants, glb, region1)
+regionC <- out$regionC
+regionD <- out$regionD
+product <- out$product  # important bits usually saved in resdir
+# did the larval dispersal level disturb the equilibrium?
+regDe <- testequil(regionC,regionD,glb)
 #> [1] matureB OK
 #> [1] exploitB OK
 #> [1] recruitment OK
 #> [1] spawning depletion OK
-  str(regDe)
-#> List of 10
-#>  $ matureB : num [1:40, 1:6] 1037 1037 1037 1037 1037 ...
-#>  $ exploitB: num [1:40, 1:6] 1168 1168 1168 1168 1168 ...
-#>  $ catch   : num [1:40, 1:6] 0 0 0 0 0 0 0 0 0 0 ...
-#>  $ harvestR: num [1:40, 1:6] 0 0 0 0 0 0 0 0 0 0 ...
-#>  $ cpue    : num [1:40, 1:6] NA 417 417 417 417 ...
-#>  $ recruit : num [1:40, 1:6] 629906 629906 629906 629906 629906 ...
-#>  $ deplsB  : num [1:40, 1:6] 1 1 1 1 1 ...
-#>  $ depleB  : num [1:40, 1:6] 1 1 1 1 1 ...
-#>  $ catchN  : num [1:105, 1:40, 1:6] 0 0 0 0 0 0 0 0 0 0 ...
-#>  $ Nt      : num [1:105, 1:40, 1:6] 6.30e+05 2.40e-06 4.41e-05 6.75e-04 8.57e-03 ...
+
+resfile <- setuphtml(resdir,runname)  # prepare to log results
+plotproductivity(resdir,runname,product,glb)
+biology_plots(resdir, runname, glb, regionC, regionD, product)
+numbersatsize(resdir, runname, glb, regionD)
+
+endtime <- as.character(Sys.time())
+
+reportlist <- list(runname=runname,
+  starttime=starttime,endtime=endtime,
+  regionC=regionC,
+  regionD=regionD,
+  product=product,
+  glb=glb,constants=constants
+)
+
+runnotes <- "This is a bare-bones example."
+# If you unhash this last function call it will generate and open a 
+# local website inside resdir so you can see the results so far.
+
+# make_html(replist=reportlist,rundir=rundir,width=500,
+#           openfile=TRUE,runnotes=runnotes,verbose=FALSE)
+  
 ```
 
 See the vignette Running\_aMSE.Rmd for a more detailed example.
+
+See the New.Rd for recent developments

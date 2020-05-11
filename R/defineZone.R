@@ -606,7 +606,7 @@ makeabpop <- function(popparam,midpts,projLML) {  #popparam=popdef;midpts=midpts
   MSY <- 0
   MSYDepl <- 0
   bLML <- 0
-  SMUname <- ""
+  SMUname <- 0
   ans <- list(Me,AvRec,B0,B0,ExB0,ExB0,MSY,MSYDepl,bLML,catq,SaM,
               popparam,zLML,G,mature,WtL,emergent,zSelect,zSelWt,MatWt,
               SMUname)
@@ -640,14 +640,14 @@ makeabpop <- function(popparam,midpts,projLML) {  #popparam=popdef;midpts=midpts
 #' str(regionC,max.level=1)
 #' str(regionC[[1]])  # not complete at this stage
 #' print(popdefs)
-makeregionC <- function(region,const) { # region=reg1; const=constants
+makeregionC <- function(region,const) { # region=region1; const=constants
   glb <- region$globals
   nSMU <- glb$nSMU
   numpop <- glb$numpop
   midpts <- glb$midpts
   blkdef <- region$SMUpop
   SMUindex <- defineBlock(nSMU,blkdef,numpop)
-  SMUnames <- region$SMUnames
+  SMUnames <- const["SMU",]
   if (region$randomseed > 0) set.seed(region$randomseed)
   projectionLML <- region$projLML
   historicalLML <- region$histLML
@@ -661,7 +661,7 @@ makeregionC <- function(region,const) { # region=reg1; const=constants
     regionC[[pop]] <- makeabpop(popdef,midpts,projLML)
     tmpL <- oneyrgrowth(regionC[[pop]],regionC[[pop]]$SaM)
     regionC[[pop]]$bLML <- oneyrgrowth(regionC[[pop]],tmpL)
-    regionC[[pop]]$SMUname <- SMUnames[SMUindex[pop]]
+    regionC[[pop]]$SMUname <- SMUnames[pop]
   }
   class(regionC) <- "regionC"
   ans <- list(regionC=regionC,popdefs=popdefs)
@@ -1129,6 +1129,41 @@ runthreeH <- function(regC,regD,glob,inHarv) {
   }
   return(regD)
 } # end of runthree
+
+
+
+#' @title setupregion makes the region's constant, dynamic, and productivity parts
+#'
+#' @description setupregion makes the region's constant, dynamic, and
+#'     productivity parts returning them all in a list
+#'
+#' @param constants the population constants derived from readdatafile
+#' @param glb the global constants out of region1
+#' @param region1 the regional constants
+#'
+#' @return a list of regionC, regionD and product, the main components
+#'     of the region
+#' @export
+#'
+#' @examples
+#' print("this will be quite long when I get to it")
+setupregion <- function(constants,glb,region1) {
+  # Define the Zone without production ---------------------------------
+  ans <- makeregionC(region1,constants)
+  regionC <- ans$regionC
+  popdefs <- ans$popdefs
+  ans <- makeregion(glb,regionC)
+  regionC <- ans$regionC  # region constants
+  regionD <- ans$regionD  # region dynamics
+  # estimate production and move regionC to equilibrium-----------------
+  ans <- findunfished(regionC,regionD,glb)
+  regionC <- ans$regionC  # region constants
+  regionD <- ans$regionD  # region dynamics
+  product <- ans$product
+  out <- list(regionC=regionC, regionD=regionD, product=product)
+  return(out)
+} # end of setupregion
+
 
 #' @title STM Generates the Size Transition Matrix for Inverse Logistic
 #'
