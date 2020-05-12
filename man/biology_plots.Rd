@@ -4,7 +4,7 @@
 \alias{biology_plots}
 \title{biology_plots generates a series of stored plots and tables}
 \usage{
-biology_plots(resdir, runlabel, glb, regC, regD, product)
+biology_plots(resdir, runlabel, glb, regC)
 }
 \arguments{
 \item{resdir}{the results directory}
@@ -14,10 +14,6 @@ biology_plots(resdir, runlabel, glb, regC, regD, product)
 \item{glb}{the globals list}
 
 \item{regC}{the regional constants by population, regionC}
-
-\item{regD}{the dynamic part of the region, regionD}
-
-\item{product}{the productivity 3-D array}
 }
 \value{
 nothing but it does plot 3 plots and put one table into

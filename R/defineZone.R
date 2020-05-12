@@ -1148,18 +1148,15 @@ runthreeH <- function(regC,regD,glob,inHarv) {
 #' @examples
 #' print("this will be quite long when I get to it")
 setupregion <- function(constants,glb,region1) {
-  # Define the Zone without production ---------------------------------
-  ans <- makeregionC(region1,constants)
+  ans <- makeregionC(region1,constants) # classical equilibrium
   regionC <- ans$regionC
-  popdefs <- ans$popdefs
-  ans <- makeregion(glb,regionC)
+  ans <- makeregion(glb,regionC) # now make regionD
   regionC <- ans$regionC  # region constants
   regionD <- ans$regionD  # region dynamics
-  # estimate production and move regionC to equilibrium-----------------
   ans <- findunfished(regionC,regionD,glb)
   regionC <- ans$regionC  # region constants
   regionD <- ans$regionD  # region dynamics
-  product <- ans$product
+  product <- ans$product  # productivity by population
   out <- list(regionC=regionC, regionD=regionD, product=product)
   return(out)
 } # end of setupregion
@@ -1262,22 +1259,22 @@ testequil <- function(regC,regD,glob,inH=0.0,verbose=TRUE) {
                      deltarec=larvdisp)
   if (verbose) {
     if (all(trunc(regD$matureB[1,],3) == trunc(regD$matureB[Nyrs,],3))) {
-      print("matureB OK",quote=FALSE)
+      print("matureB Stable",quote=FALSE)
     } else {
       print("matureB varies",quote=FALSE)
     }
     if (all(trunc(regD$exploitB[1,],3) == trunc(regD$exploitB[Nyrs,],3))) {
-      print("exploitB OK",quote=FALSE)
+      print("exploitB Stable",quote=FALSE)
     } else {
       print("exploitB varies",quote=FALSE)
     }
     if (all(trunc(regD$recruit[1,],3) == trunc(regD$recruit[Nyrs,],3))) {
-      print("recruitment OK",quote=FALSE)
+      print("recruitment Stable",quote=FALSE)
     } else {
       print("recruitment varies",quote=FALSE)
     }
     if (all(round(regD$deplsB[1,],3) == round(regD$deplsB[Nyrs,],3))) {
-      print("spawning depletion OK",quote=FALSE)
+      print("spawning depletion Stable",quote=FALSE)
     } else {
       print("spawning depletion varies",quote=FALSE)
     }

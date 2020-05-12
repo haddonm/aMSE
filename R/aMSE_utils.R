@@ -1,27 +1,37 @@
 
 
-#' @title setupdirs sets up and checks the directories used in a run
+#' @title checkresdir checks resdir contains the required csv files
 #'
-#' @description setupdirs sets up and checks the directories used in
-#'     a run, if they do not exist to start with they will be created.
+#' @description checkresdir checks resdir contains the required csv
+#'     files including the named control file, which then contains
+#'     the names of the region data file, and the population data
+#'     file. The run stops if any are not present or are misnamed.
 #'
-#' @param rundir the principle directory in which all all files
-#'     relating to a particular run are to be held
-#' @param verbose default=TRUE, prints directory status to the console
-#'     if FALSE no status reports will be made to the console
+#' @param resdir the directory in which all all files relating to a
+#'     particular run are to be held.
+#' @param ctrlfile default="control.csv", the filename of the control
+#'     file present in resdir containing information regarding the
+#'     run.
 #'
-#' @return nothing, it allocates directly to the global environment
+#' @return the control list for the run
 #' @export
 #'
 #' @examples
-#' rund <- tempdir()
-#' out <- setupdirs(rund)
-#' str(out)
-setupdirs <- function(rundir, verbose=TRUE) { # rundir=resdir; runname=runname; verbose=TRUE
-  dirExists(rundir,verbose=verbose)
-  datadir <- filenametopath(rundir,"data")
-  resdir <- filenametopath(rundir,"results")
-  dirExists(datadir,verbose=verbose)
-  dirExists(resdir,verbose=verbose)
-  return(list(datadir=datadir,resdir=resdir))
+#' resdir <- tempdir()
+#' ctrlfiletemplate(resdir)
+#' regionfiletemplate(resdir)
+#' datafiletemplate(6,resdir,filename="reg1smu2pop6.csv")
+#' ctrl <- checkresdir(resdir)
+#' ctrl
+checkresdir <- function(resdir,ctrlfile="control.csv") { # resdir=resdir; ctrlfile="control.csv"
+  filenames <- dir(resdir)
+  if (length(grep(ctrlfile,filenames)) != 1)
+    stop(cat(ctrlfile," not found in resdir \n"))
+  ctrol <- readctrlfile(resdir,infile=ctrlfile)
+  if (length(grep(ctrol$regionfile,filenames)) != 1)
+      stop("region data file not found \n")
+  if (length(grep(ctrol$datafile,filenames)) != 1)
+    stop("population data file not found \n")
+  cat("All required files appear to be present \n")
+  return(ctrol)
 } # end of setupdirs

@@ -6,7 +6,7 @@
 \usage{
 make_html(
   replist = NULL,
-  rundir = NULL,
+  resdir = NULL,
   width = 500,
   openfile = TRUE,
   runnotes = NULL,
@@ -16,7 +16,7 @@ make_html(
 \arguments{
 \item{replist}{Object created by an aMSE run}
 
-\item{rundir}{Directory where a particular run's files,
+\item{resdir}{Directory where a particular run's files,
 including the region files, the results, as tables and plots,
 and any other files, are all held. It will always contain at
 least the 'data' and 'results' sub-directories.}

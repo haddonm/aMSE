@@ -160,7 +160,7 @@ logfilename <- function(filename,resfile,category="any",caption="") {
 #'     and put in the same directory.
 #'
 #' @param replist Object created by an aMSE run
-#' @param rundir Directory where a particular run's files,
+#' @param resdir Directory where a particular run's files,
 #'     including the region files, the results, as tables and plots,
 #'     and any other files, are all held. It will always contain at
 #'     least the 'data' and 'results' sub-directories.
@@ -172,29 +172,27 @@ logfilename <- function(filename,resfile,category="any",caption="") {
 #'
 #' @export
 make_html <- function(replist=NULL,
-                      rundir=NULL,
+                      resdir=NULL,
                       width=500,
                       openfile=TRUE,
                       runnotes=NULL,
                       verbose=TRUE) {
-  # replist=reportlist;rundir=rundir;width=500;openfile=TRUE;runnotes=runnotes;verbose=FALSE
+  # replist=reportlist;resdir=resdir;width=500;openfile=TRUE;runnotes=runnotes;verbose=FALSE
   # Clarify data
-  resdir <- filenametopath(rundir,"results")
   if(is.null(resdir)) stop("input 'resdir' required \n")
   write_css(resdir)
   filenames <- dir(resdir)
   filetable <- filenames[grep("resultTable",filenames)]
-  if(length(filetable)==0) stop("No resultTable, did the run fail? \n")
+  if(length(filetable)==0) stop("No resultTable, what went wrong? \n")
   filename <- filenametopath(resdir,filetable)
   tablefile <- read.csv(filename,colClasses = "character")
   if(!is.data.frame(tablefile))
-    stop("The list of files to plot needs to be a data.frame \n")
-  #tablefile$TimeMade <- as.POSIXlt(tablefile$png_time)
+    stop("The list of files to output needs to be a data.frame \n")
   tablefile$basename <- basename(as.character(tablefile$file))
   tablefile$dirname <- resdir
   # identify the categories and name each html file
-  categories <- unique(tablefile$category)
-  types <- tablefile$type
+  categories <- unique(tablefile$category)  # html tab names
+  types <- tablefile$type   #  table or plot
   for (icat in 0:length(categories)) { # icat=1
     if(icat==0){
       category <- "Home"
@@ -237,7 +235,7 @@ make_html <- function(replist=NULL,
       }
       cat('\n\n<p>',MSE_info_text,'</p>\n',
           '<p><b>Name of Run: </b>',replist$runname,'</p>\n',
-          '<p><b>Directory: </b>',rundir,'</p>\n',
+          '<p><b>Directory: </b>',resdir,'</p>\n',
           '<p><b>Starting time of model: </b>',
           replist$starttime,'</p>\n',
           '<p><b>End time of model: </b>',

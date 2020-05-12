@@ -6,25 +6,16 @@ library(microbenchmark)
 
 
 # read data files ----------------------------------------------------
-
- sourcedir <- "./../../rcode2/aMSE/data-raw"
- #source(filenametopath(sourcedir,"sourcer.R"))
-
- rundir <- "./../../rcode2/aMSEUse/run2"
- outdir <- setupdirs(rundir)
- datadir <- outdir$datadir
- resdir <- outdir$resdir
-
+ resdir <- "./../../rcode2/aMSEUse/out/run1"
+ dirExists(resdir,make=TRUE,verbose=TRUE)
  # You now need to ensure that there is a control.csv, reg1smu2pop6.csv
  # and region1.csv file in the data directory
-
- ctrl <- readctrlfile(datadir,infile="control.csv")
+ ctrl <- checkresdir(resdir)
  runname <- ctrl$runlabel
- region1 <- readregionfile(datadir,ctrl$regionfile)
+ region1 <- readregionfile(resdir,ctrl$regionfile)
  glb <- region1$globals
- constants <- readdatafile(glb$numpop,datadir,ctrl$datafile)
+ constants <- readdatafile(glb$numpop,resdir,ctrl$datafile)
 
- # source(filenametopath(sourcedir,"sourcer.R"))
  out <- setupregion(constants, glb, region1)
  regionC <- out$regionC
  regionD <- out$regionD
@@ -49,9 +40,9 @@ save(regionD,file=filenametopath(resdir,"regionD.RData"))
 
 # characterize productivity and unfished biology ---------------------
 plotproductivity(resdir,runname,product,glb)
-biology_plots(resdir, runname, glb, regionC, regionD, product)
-numbersatsize(resdir, runname, glb, regionC, regionD, product)
-# end characterize biology -------------------------------------------
+biology_plots(resdir, runname, glb, regionC)
+numbersatsize(resdir, runname, glb, regionD)
+
 # store the initial properties
 unfishprops <- getregionprops(regC=regionC,regD=regionD,glb=glb,year=1)
 filename <- filenametopath(resdir,"unfishprops.csv")
@@ -80,14 +71,10 @@ if (ctrl$initdepl < 1.0) {
 
 
  reportlist <- list(
-         runname=runname,
-         starttime=starttime,
-         endtime=endtime,
-         regionC=regionC,
-         regionD=regionD,
-         product=product,
-         glb=glb,
-         constants=constants
+   runname=runname,
+   starttime=starttime,endtime=endtime,
+   regionC=regionC, regionD=regionD, product=product,
+   glb=glb,constants=constants
  )
  str(reportlist,max.level = 1)
 
@@ -96,7 +83,7 @@ if (ctrl$initdepl < 1.0) {
                     "These results are currently under development and there are many more needed yet.")
 
 #  source(filenametopath(sourcedir,"sourcer.R"))
- make_html(replist=reportlist,rundir=rundir,width=500,
+ make_html(replist=reportlist,resdir=resdir,width=500,
            openfile=TRUE,runnotes=runnotes,verbose=FALSE)
 
 

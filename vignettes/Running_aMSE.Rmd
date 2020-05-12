@@ -80,7 +80,7 @@ Instructions for how to make those downloads are included in the _ReadMe.md_ fil
 ```{r echo=TRUE, eval=FALSE}
 if (!require(devtools)){install.packages("devtools")}
 
-devtools::install_github("https://github.com/haddonm/rutilsMH")
+devtools::install_github("https://github.com/haddonm/aMSE",build_vignettes=TRUE)
 
 ```
 
@@ -165,25 +165,35 @@ I recommend that you examine the help page for each of these (for example using 
 # once the code development is complete. 
 starttime <- as.character(Sys.time()) # When did the run start?
 library(aMSE)  # you might check out the help pages for each function
- # Obviously you should change the rundir to something that suits you!
- rundir <- "C:/Users/User/Dropbox/rcode2/aMSEUse/run2"
- outdir <- setupdirs(rundir) #checks for existence of rundir, data and
- datadir <- outdir$datadir   # plots and creates them if they do not 
- resdir <- outdir$resdir   # already exist
- # No changes will be made to the templates at this stage. 
- # First create and edit the control file; look at contents of ctrl
- ctrlfiletemplate(datadir,"control.csv")
- ctrl <- readctrlfile(datadir,infile="control.csv") 
- runname <- ctrl$runlabel
- # Now create and edit the region file, which sets the globals
- regionfiletemplate(datadir,ctrl$regionfile)
- region1 <- readregionfile(datadir,ctrl$regionfile)
- glb <- region1$globals # put the globals into the hoem environment
- # finally 
- datafiletemplate(glb$numpop,datadir,ctrl$datafile) # 2SMU 6 pops
- constants <- readdatafile(glb$numpop,datadir,ctrl$datafile)
+ # Obviously you should change the resdir to something that suits you!
+ resdir <- "C:/Users/User/Dropbox/rcode2/aMSEUse/out/run1"
+ dirExists(resdir,make=TRUE,verbose=TRUE)
+ # You now need to ensure that there is a control.csv, reg1smu2pop6.csv
+ # and region1.csv file in the data directory
+ctrlfiletemplate(resdir)
+regionfiletemplate(resdir)
+datafiletemplate(6,resdir,filename="reg1smu2pop6.csv")
 
- resfile <- setuphtml(resdir,runname) #needed to formalize the outputs
+ctrl <- checkresdir(resdir)
+runname <- ctrl$runlabel
+region1 <- readregionfile(resdir,ctrl$regionfile)
+glb <- region1$globals
+constants <- readdatafile(glb$numpop,resdir,ctrl$datafile)
+
+out <- setupregion(constants, glb, region1)  # can take a few seconds
+regionC <- out$regionC  # the constant part
+regionD <- out$regionD  # the dynamic part
+product <- out$product  # the productivity defined
+
+
+resfile <- setuphtml(resdir,runname) #needed to formalize the outputs
+ # store the initial objects
+save(ctrl,file=filenametopath(resdir,"ctrl.RData"))
+save(glb,file=filenametopath(resdir,"glb.RData"))
+save(product,file=filenametopath(resdir,"product.RData"))
+save(regionC,file=filenametopath(resdir,"regionC.RData"))
+save(regionD,file=filenametopath(resdir,"regionD.RData"))
+
 ```
 
 <br>
@@ -195,10 +205,6 @@ Assuming you got this far then you have successfully generated template files, a
 With all the inputs in the system the next thing to do is to generate the simulated region. This largest of spatial scales is made up of two components. The first contains the constants relating to the region and this large object is a list of _numpop_ populations, each of which is a list of all the properties that will not change through the run (see its structure just below). Then there is the dynamic part of the region, which is a list of matrices and arrays that contain the dynamics, the things that change through time. We will describe the structure of each in some detail once they have been generated. The generation is a two step process, initially an analytical solution to unfished equilibrium conditions is used and then we use the function _findunfished_ to numerically find the equilibrium when there is larval dispersal present in the region.
 
 ```{r}
-out <- setupregion(constants, glb, region1)  # can take a few seconds
- regionC <- out$regionC  # the constant part
- regionD <- out$regionD  # the dynamic part
- product <- out$product  # the productivity defined
 # Is there an equilibrium even with larval dispersal?
 regDe <- testequil(regionC,regionD,glb)
 ```

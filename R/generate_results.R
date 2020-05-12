@@ -13,8 +13,6 @@
 #' @param runlabel the runlabel, ideally from the ctrl object
 #' @param glb the globals list
 #' @param regC the regional constants by population, regionC
-#' @param regD the dynamic part of the region, regionD
-#' @param product the productivity 3-D array
 #'
 #' @return nothing but it does plot 3 plots and put one table into
 #'     resdir
@@ -22,12 +20,12 @@
 #'
 #' @examples
 #' print("this will be quite long when I get to it")
-biology_plots <- function(resdir, runlabel, glb, regC, regD, product) {
+biology_plots <- function(resdir, runlabel, glb, regC) {
   #      resdir=resdir; regC=regionC; regD=regionD; product=product; glb=glb; runlabel=ctrl$runlabel
   # some globals
   mids <- glb$midpts
   numpop <- glb$numpop
-  resfile <- paste0(resdir,"resultTable_",runlabel,".csv")
+  resfile <- paste0(resdir,"/resultTable_",runlabel,".csv")
   # Yield vs Spawning biomass-----------------------
   # maturation uses regC
   matur <- getlistvar(regC,"Maturity")
@@ -136,11 +134,11 @@ biology_plots <- function(resdir, runlabel, glb, regC, regD, product) {
 #' @examples
 #' print("this will be quite long when I get to it")
 numbersatsize <- function(resdir, runlabel, glb, regD) {
-  #      resdir=resdir; regC=regionC; regD=regionD; product=product; glb=glb; runlabel=ctrl$runlabel
+  #      resdir=resdir; regD=regionD; glb=glb; runlabel=ctrl$runlabel
   # some globals
   mids <- glb$midpts
   numpop <- glb$numpop
-  resfile <- paste0(resdir,"resultTable_",runlabel,".csv")
+  resfile <- paste0(resdir,"/resultTable_",runlabel,".csv")
   # initial numbers-at-size uses regD--------------------------------
   Nt <- regD$Nt[,1,]/1000.0
   Ntt <- rowSums(regD$Nt[,1,])/1000.0  # totals
@@ -186,7 +184,7 @@ plotproductivity <- function(resdir,runlabel,product,glb) {
   # All these plots only use the product array
   xval <- findmsy(product)
   numpop <- glb$numpop
-  resfile <- paste0(resdir,"resultTable_",runlabel,".csv")
+  resfile <- paste0(resdir,"/resultTable_",runlabel,".csv")
   # Yield vs Spawning biomass --------
   file <- paste0("production_SpB_",runlabel,".png")
   filename <- filenametopath(resdir,file)  #  filename=""

@@ -42,7 +42,7 @@ larval dispersal rate is \> 0.0.
 Of course, adding such a component increases the number of options that
 may need to be explored, but currently we envisage including a very low,
 a middle range, and a relatively high level of larval dispersal, to
-examin its implications.
+examine its implications.
 
 ## Installation
 
@@ -50,9 +50,9 @@ You can install the development version from
 [GitHub](https://github.com/haddonm/aMSE) with:
 
 ``` r
-# install.packages("devtools")
-devtools::install_github("haddonm/aMSE")
-devtools::install_github(haddonm/rutilsMH) # also useful for plotting, etc
+if (!require(devtools)){install.packages("devtools")} 
+
+devtools::install_github("https://github.com/haddonm/aMSE",build_vignettes = TRUE)
 ```
 
 Alternatively, you can generate a branch that you can work on by cloning
@@ -76,54 +76,52 @@ conditioning data:
 # a minimal example
 starttime <- as.character(Sys.time())
 library(aMSE)
-# Obviously you should modify the rundir to suit your own computer
-rundir <- "./../../rcode2/aMSEUse/run2"
-outdir <- setupdirs(rundir)
-#> ./../../rcode2/aMSEUse/run2 :  exists  
-#> ./../../rcode2/aMSEUse/run2/data :  exists  
-#> ./../../rcode2/aMSEUse/run2/results :  exists
-datadir <- outdir$datadir # this usually has the data files 
-resdir <- outdir$resdir   # this holds all results
-
-data(ctrl)
-data(constants)
-data(region1)
+# Obviously you should modify the resdir to suit your own computer
+resdir <- "./../../rcode2/aMSEUse/out/testrun"
+dirExists(resdir,make=TRUE,verbose=TRUE)
+#> ./../../rcode2/aMSEUse/out/testrun :  exists
+# You now need to ensure that there is a control.csv, reg1smu2pop6.csv
+# and region1.csv file in the data directory
+ctrlfiletemplate(resdir)  # puts a template ctrlfile into resdir
+regionfiletemplate(resdir)  # puts a template region file into resdir
+datafiletemplate(6,resdir,filename="reg1smu2pop6.csv") # etc
+ctrl <- checkresdir(resdir) # checks the data files are present
+runname <- ctrl$runlabel    # and reads the control file, if present
+region1 <- readregionfile(resdir,ctrl$regionfile)
 glb <- region1$globals
-runname <- ctrl$runlabel
+constants <- readdatafile(glb$numpop,resdir,ctrl$datafile)
 
-out <- setupregion(constants, glb, region1)
-regionC <- out$regionC
-regionD <- out$regionD
-product <- out$product  # important bits usually saved in resdir
-# did the larval dispersal level disturb the equilibrium?
-regDe <- testequil(regionC,regionD,glb)
-#> [1] matureB OK
-#> [1] exploitB OK
-#> [1] recruitment OK
-#> [1] spawning depletion OK
+out <- setupregion(constants, glb, region1) # make operating model 
+regionC <- out$regionC     # constant bits
+regionD <- out$regionD     # dynamics bits
+product <- out$product     # all usually saved in resdir, not here
+  # did the larval dispersal level disturb the equilibrium?
+regDe <- testequil(regionC,regionD,glb) 
+#> [1] matureB Stable
+#> [1] exploitB Stable
+#> [1] recruitment Stable
+#> [1] spawning depletion Stable
 
-resfile <- setuphtml(resdir,runname)  # prepare to log results
+resfile <- setuphtml(resdir,runname)# prepare to save and log results
+
 plotproductivity(resdir,runname,product,glb)
-biology_plots(resdir, runname, glb, regionC, regionD, product)
+biology_plots(resdir, runname, glb, regionC)
 numbersatsize(resdir, runname, glb, regionD)
 
 endtime <- as.character(Sys.time())
 
 reportlist <- list(runname=runname,
-  starttime=starttime,endtime=endtime,
-  regionC=regionC,
-  regionD=regionD,
-  product=product,
-  glb=glb,constants=constants
+                   starttime=starttime,endtime=endtime,
+                   regionC=regionC, regionD=regionD, product=product,
+                   glb=glb,constants=constants
 )
 
 runnotes <- "This is a bare-bones example."
-# If you unhash this last function call it will generate and open a 
-# local website inside resdir so you can see the results so far.
-
-# make_html(replist=reportlist,rundir=rundir,width=500,
-#           openfile=TRUE,runnotes=runnotes,verbose=FALSE)
-  
+# If you unhash the make_html component it will generate a local 
+# website inside resdir and open it so you can see the results so far.
+#
+# make_html(replist=reportlist,resdir=resdir,width=500,
+#          openfile=TRUE,runnotes=runnotes,verbose=FALSE)
 ```
 
 See the vignette Running\_aMSE.Rmd for a more detailed example.

@@ -40,8 +40,6 @@ ctrlfiletemplate <- function(indir,filename="control.csv") {
        file=filename,append=TRUE)
    cat("hcrfile, HCRfile.csv, HCR details file name \n",file=filename,
        append=TRUE)
-   cat("outdir, C:/Users/user/Dropbox/rcode2/aMSEUse, output directory \n",
-       file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
    cat("REGIONCOAST \n",file=filename,append=TRUE)
