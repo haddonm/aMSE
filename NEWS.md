@@ -15,3 +15,5 @@
 * 11-05-2020 0.0.0.8450 Put the results generation into internal functions so their production can be automated as new ones are developed. Ensured all internal functions were operating consistently with regard the variolus name changes I have made. e.g. fixed the emergence calculations, which was really messing with the results! Set up a better worked example in the readme in the github version so it now produces plots and tables and can generate the local website shoudl the user wish.
 
 * 12-05-2020 0.0.0.8400 Simplified the intended directory structure to a single results directory _resdir_. Cleaned out old, now unused code, and tidied the help files.
+
+* 15-05-2020 0.0.0.8350 Started including estimates relating to SMUs as well as populations and whole of region. This entailed making changes to the design of regionD, to ensure internal consistency and ease of use. Began adding details of the fleet dynamics to Running-aMSE.Rmd.

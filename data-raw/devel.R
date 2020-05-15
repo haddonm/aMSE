@@ -90,17 +90,22 @@ if (ctrl$initdepl < 1.0) {
 
 # end of run ---------------------------------------------------------
 
+# outline a real run--------------------------------------------------
+
+ npop <- glb$numpop
+ Nc <- glb$Nclass
+ nyrs <- glb$Nyrs
+ larvdisp <- glb$larvdisp
+ catch <- 300.0
+
+ for (yr in 2:nyrs) {
+       regD <- oneyearD(regC=regionC,regD=regionD,Ncl=Nc,
+                        inHt=inHarv,year=yr,sigmar=1e-08,npop=npop,
+                        deltarec=larvdisp)
+
+ }
 
 
-
-
- str(regionC[[1]])
- str(regionC[[4]])
- str(product)
-
- # Summarize MSY and related statistics ------------------------------
- approxMSY <- findmsy(product)
- approxMSY
 
  # Some summaries ----------------------------------------------------
  sapply(regionC,"[[","MSY")           # msy by population
@@ -126,31 +131,4 @@ if (ctrl$initdepl < 1.0) {
 
  tmp <- read.csv(filen)
 
-
- # turn plot into a function
-
- file <- paste0("production_total_SpB_",ctrl$runlabel,".png")
- filename <- filenametopath(resdir,file)
- caption <- "The production curve relative to the depletion level of each population. The vertical lines identify the Depletion level giving rise to the MSY."
- category <- "Production"
- x <- product[,""]
-
- makexypng <- function(x,y,filen="",legendloc="topright",wid=7,hgt=4,
-                         xlab="",ylab="") {
-    plotprep(width=wid,height=hgt,filename=filen,verbose=FALSE)
-
- }
-
-
-
- xval <- findmsy(product)
- numpop <- glb$numpop
- plotprod(product,xname="Deplet",xlab="Population Depletion Level")
- for (pop in 1:numpop) abline(v=xval[pop,"Deplet"],lwd=2,col=pop)
- legend(legendloc,paste0("P",1:numpop),lwd=3,col=c(1:numpop),bty="n",
-        cex=1.2)
- if (nchar(filen) > 0) dev.off()
-
-  time <- as.character(Sys.time())
- cat(c(filename,caption,"production",time," \n"),file=plottabfile,sep=",",append=TRUE)
 

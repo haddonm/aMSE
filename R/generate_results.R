@@ -7,7 +7,7 @@
 #' @description biology_plots generates the yield vs spawning biomass,
 #'     weight-at-lenght, and emergence plots for all populations. In
 #'     addition, it also tabulates the biological properties of each
-#'     population and SMU
+#'     population and SMU and the total region
 #'
 #' @param resdir the results directory
 #' @param runlabel the runlabel, ideally from the ctrl object
@@ -79,38 +79,57 @@ biology_plots <- function(resdir, runlabel, glb, regC) {
 
 
   # Tabulate biological properties uses regC-------------------------
-  getvar <- function(indexvar,reg=regC) { # indexvar="B0"
+  getvar <- function(indexvar,reg=regC) { # indexvar="B0"; regC=regionC
+    smu <- getlistvar(regC,"SMU")
+    nSMU <- length(unique(smu))
+    smures <- numeric(nSMU)
     invar <- getlistvar(reg,indexvar)
-    ans <- c(invar,sum(invar))
+    for (mu in 1:nSMU) {
+      pickcol <- which(smu == mu)
+      smures[mu] <- sum(invar[pickcol])
+    }
+    ans <- c(invar,smures,sum(invar))
     return(ans)
   }
   rows <- c("SMU","M","R0","B0","effB0","ExB0","effExB0","MSY","MSYDepl","bLML")
-  columns <- c(paste0("p",1:numpop),"region")
+  smu <- getlistvar(regC,"SMU")
+  nSMU <- length(unique(smu))
+  columns <- c(paste0("p",1:numpop),
+               paste0("smu",1:nSMU),"region")
   numrow <- length(rows)
   numcol <- length(columns)
   results <- matrix(0,nrow=numrow,ncol=numcol,
                                   dimnames=list(rows,columns))
-  results["SMU",] <- c(getlistvar(regC,"SMUname"),0) # no total
+  results["SMU",] <- c(getlistvar(regC,"SMU"),(1:nSMU),0) # no total
   results["B0",] <- as.numeric(getvar("B0"))
   M <- getlistvar(regC,"Me")
-  wtr <- (results["B0",1:numpop]/results["B0",(numpop+1)])
-  results["M",] <- c(M,sum(M*wtr))
+  wtr <- (results["B0",1:numpop]/results["B0",(numpop+nSMU+1)])
+
+  results["M",] <- c(M,0,0,sum(M*wtr))
   results["R0",] <- getvar("R0")
   results["effB0",] <- getvar("effB0")
   results["ExB0",] <- getvar("ExB0")
   results["effExB0",] <- getvar("effExB0")
   results["MSY",] <- getvar("MSY")
   MSYD <- getlistvar(regC,"MSYDepl")
-  results["MSYDepl",] <- c(MSYD,sum(MSYD * wtr))
+  results["MSYDepl",] <- c(MSYD,0,0,sum(MSYD * wtr))
   bLML <- getlistvar(regC,"bLML")
-  results["bLML",] <- c(bLML,sum(bLML * wtr))
+  results["bLML",] <- c(bLML,0,0,sum(bLML * wtr))
+  for (mu in 1:nSMU) { # mu = 2
+    pickcol <- which(smu == mu)
+    wtmu <- length(pickcol)
+    wtmu <- results["B0",pickcol]/results["B0",(numpop + mu)]
+    results["M",(numpop + mu)] <- sum(M[pickcol]*wtmu)
+    results["MSYDepl",(numpop + mu)] <- sum(MSYD[pickcol]*wtmu)
+    results["bLML",(numpop + mu)] <- sum(bLML[pickcol]*wtmu)
+  }
   res <- round(results,3)
   filen <- paste0("regionbiology_",runlabel,".csv")
   filename <- filenametopath(resdir,filen)
   write.table(res,file = filename,sep=",")
-  caption <- paste0("Population amd Regional Biological Properties. ",
-                   "For 'M' 'MSYDepl' and 'bLML' total is an average ",
-                   "weighted relative to the proportion of total B0.")
+  caption <- paste0("Population SMU and Regional Biological Properties. ",
+              "For 'M' 'MSYDepl' and 'bLML' SMU and total is an average ",
+              "weighted relative to the proportion of SMU or total B0.")
   logfilename(filename,resfile=resfile,"Tables",caption)
 
 
@@ -158,8 +177,6 @@ numbersatsize <- function(resdir, runlabel, glb, regD) {
   if (nchar(filename) > 0) dev.off()
     caption <- "The numbers-at-size for the whole region and for each population separately. The recruitment numbers are omitted for clarity."
   logfilename(filename,resfile=resfile,"NumSize",caption)
-
-
 
 } # end of numbersatsize
 

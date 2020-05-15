@@ -41,6 +41,6 @@ reportlist <- list(runname=runname,
 runnotes <- "This is a bare-bones example."
 # If you unhash this component it will generate a local website inside
 # resdir and open it so you can see the results so far.
-# make_html(replist=reportlist,resdir=resdir,width=500,
-#          openfile=TRUE,runnotes=runnotes,verbose=FALSE)
+ make_html(replist=reportlist,resdir=resdir,width=500,
+          openfile=TRUE,runnotes=runnotes,verbose=FALSE)
 

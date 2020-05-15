@@ -35,7 +35,8 @@ oneyear do one year's dynamics for one input population.
    the application of the last half of natural mortality and the
    addition of recruits. Which allows the exploitable biomass to be
    estimated after fishing. The recruitment occurs in oneyearD so
-   that larval dispersal can be accounted for.
+   that larval dispersal can be accounted for. oneyear is not used
+   independently of oneyearD.
 }
 \examples{
 print("need to wait on built in data sets")

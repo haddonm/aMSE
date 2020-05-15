@@ -40,22 +40,23 @@ library(rutilsMH)
 library(aMSE)
 library(microbenchmark)
 
-data(ctrl)
-data(region1)
+datadir <- "./../../rcode2/aMSE/data-raw/"
+# read data files ----------------------------------------------------
+resdir <- "./../../rcode2/aMSEUse/out/run1"
+dirExists(resdir,make=TRUE,verbose=TRUE)
+# You now need to ensure that there is a control.csv, reg1smu2pop6.csv
+# and region1.csv file in the data directory
+ctrl <- checkresdir(resdir)
+runname <- ctrl$runlabel
+region1 <- readregionfile(resdir,ctrl$regionfile)
 glb <- region1$globals
-data(constants)
-# Define the region
-ans <- makeregionC(region1,constants)
-regionC <- ans$regionC
-popdefs <- ans$popdefs
-ans <- makeregion(glb,regionC)
-regionC <- ans$regionC  # region constants
-regionD <- ans$regionD  # region dynamics
-# adjust for larval dispersal
-ans <- findunfished(regionC,regionD,glb)
-testregC <- ans$regionC  # region constants
-testregD <- ans$regionD  # region dynamics
-product <- ans$product
+constants <- readdatafile(glb$numpop,resdir,ctrl$datafile)
+
+out <- setupregion(constants, glb, region1)
+testregC <- out$regionC
+testregD <- out$regionD
+product <- out$product
+
 
 save(testregC,file=paste0(datadir,"testregC.RData"))
 save(testregD,file=paste0(datadir,"testregD.RData"))

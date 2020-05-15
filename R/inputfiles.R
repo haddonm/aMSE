@@ -568,7 +568,7 @@ regionfiletemplate <- function(indir,filename="region1.csv") {
        file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
    cat("YEARS \n",file=filename,append=TRUE)
-   cat("Nyrs, 30, number of projection years for each simulation \n",
+   cat("Nyrs, 40, number of projection years for each simulation \n",
        file=filename,append=TRUE)
    cat("firstyear, 2014, first year of simulation if 1 hypothetical 2014 conditioned \n",
        file=filename,append=TRUE)

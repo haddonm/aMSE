@@ -65,7 +65,7 @@ getextension <- function(filename) {
 #' @description getlistvar extracts a vector or matrix from regionC.
 #'    If a vector of scalars, the names relate to populations, if a
 #'    matrix the columns relate to populations. Only Me, R0, B0, effB0,
-#'    ExB0, effExB0, MSY, MSYDepl, bLML, popq, SaM, SMUname, popdef,
+#'    ExB0, effExB0, MSY, MSYDepl, bLML, popq, SaM, SMU, popdef,
 #'    LML, Maturity, WtL, Emergent, and MatWt are currently valid
 #'    choices. The indexvar = popdef would generate a listing of all
 #'    the constants. If you only want a single constant from popdefs
@@ -89,7 +89,7 @@ getextension <- function(filename) {
 getlistvar <- function(regC,indexvar,indexvar2="") {
   if (is.character(indexvar)) {
     fields <- c("Me","R0","B0","effB0","ExB0","effExB0","MSY",
-                "MSYDepl","bLML","popq","SaM","SMUname",
+                "MSYDepl","bLML","popq","SaM","SMU",
                 "popdef","LML","Maturity","WtL","Emergent","MatWt")
     vects<- c("popdef","LML","Maturity","WtL","Emergent","MatWt")
     pick <- match(indexvar,fields)
@@ -139,6 +139,41 @@ getLogical <- function(inline,nb) {  #inline <- txtline; nb=2
   outtmp <- as.logical(as.character(tmp[2:(nb+1)]))
   return(outtmp)
 }
+
+#' @title getnas gets the numbers-at-size for all spatial scales
+#'
+#' @description getnas extracts numbers-at-size for all populations,
+#'     SMUs, and the region. There will therefore be numpop + nSMU + 1
+#'     columns of numbers-at-size fr the particular year given.
+#'
+#' @param regD the dynamic portion of the region
+#' @param yr which yr from the range available should be summarized
+#' @param glob the global variables object
+#' @param region the region constants
+#'
+#' @return a matrix of numpop + nSMU + 1 columns of numbers-at-size
+#' @export
+#'
+#' @examples
+#' data(region1)
+#' glb <- region1$globals
+#' data(testregD)
+#' nas <- getnas(testregD,yr=1,glob=glb,region=region1)
+#' round(nas[1:30,],1)
+getnas <- function(regD,yr,glob,region) {
+  numpop <- glob$numpop
+  nSMU <- glob$nSMU
+  columns <- c(paste0("p",1:numpop),region$SMUnames,"region")
+  nas <- matrix(0,nrow=glob$Nclass,ncol=length(columns),
+                dimnames=list(glob$midpts,columns))
+  for (pop in 1:numpop) nas[,pop] <- regD$Nt[,yr,pop]
+  nas[,"region"] <- rowSums(nas[,1:numpop],na.rm=TRUE)
+  for (mu in 1:nSMU) {
+    pickcol <- which(regD$SMU == mu)
+    nas[,(numpop+mu)] <- rowSums(nas[,pickcol],na.rm=TRUE)
+  }
+  return(nas)
+} #end of getnas
 
 ##  inzone <- zone1; indexVar <- "Nt"
 ## gets all LF data from a zone across pops and years

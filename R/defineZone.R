@@ -606,13 +606,13 @@ makeabpop <- function(popparam,midpts,projLML) {  #popparam=popdef;midpts=midpts
   MSY <- 0
   MSYDepl <- 0
   bLML <- 0
-  SMUname <- 0
+  SMU <- 0
   ans <- list(Me,AvRec,B0,B0,ExB0,ExB0,MSY,MSYDepl,bLML,catq,SaM,
               popparam,zLML,G,mature,WtL,emergent,zSelect,zSelWt,MatWt,
-              SMUname)
+              SMU)
   names(ans) <- c("Me","R0","B0","effB0","ExB0","effExB0","MSY","MSYDepl","bLML","popq",
                   "SaM","popdef","LML","G","Maturity","WtL","Emergent",
-                  "Select","SelWt","MatWt","SMUname")
+                  "Select","SelWt","MatWt","SMU")
   class(ans) <- "abpop"
   return(ans)
 } # End of makeabpop
@@ -647,7 +647,7 @@ makeregionC <- function(region,const) { # region=region1; const=constants
   midpts <- glb$midpts
   blkdef <- region$SMUpop
   SMUindex <- defineBlock(nSMU,blkdef,numpop)
-  SMUnames <- const["SMU",]
+  SMU <- const["SMU",]
   if (region$randomseed > 0) set.seed(region$randomseed)
   projectionLML <- region$projLML
   historicalLML <- region$histLML
@@ -661,7 +661,7 @@ makeregionC <- function(region,const) { # region=region1; const=constants
     regionC[[pop]] <- makeabpop(popdef,midpts,projLML)
     tmpL <- oneyrgrowth(regionC[[pop]],regionC[[pop]]$SaM)
     regionC[[pop]]$bLML <- oneyrgrowth(regionC[[pop]],tmpL)
-    regionC[[pop]]$SMUname <- SMUnames[pop]
+    regionC[[pop]]$SMU <- SMU[pop]
   }
   class(regionC) <- "regionC"
   ans <- list(regionC=regionC,popdefs=popdefs)
@@ -683,8 +683,6 @@ makeregionC <- function(region,const) { # region=region1; const=constants
 #' @param glob the global constants defined for the current simulation.
 #'     These include numpop, nblock, midptsd, Nclass, and Nyrs
 #' @param regC the regionC object from makeregionC
-#' @param uplim default=0.4, the upper bound on harvest rate used when
-#'     estimation the production curves and statistic
 #'
 #' @return a list of the dynamics and the constant components of the
 #'     simulation
@@ -698,7 +696,7 @@ makeregionC <- function(region,const) { # region=region1; const=constants
 #'   regionC <- ans$regionC
 #'   ans2 <- makeregion(glb,regionC)
 #'   str(ans2,max.level=2)
-makeregion <- function(glob,regC,uplim=0.4) {
+makeregion <- function(glob,regC) { #glob=glb; regC=regionC;
   Nyrs <- glob$Nyrs
   numpop <- glob$numpop
   N <- glob$Nclass
@@ -712,6 +710,7 @@ makeregion <- function(glob,regC,uplim=0.4) {
   Recruit <- matrix(0,nrow=Nyrs,ncol=numpop)
   CatchN <- array(data=0,dim=c(N,Nyrs,numpop))
   Nt <- array(data=0,dim=c(N,Nyrs,numpop))
+  SMU <- as.numeric(sapply(regC,"[[","SMU"))
   for (pop in 1:numpop) {  # pop=1
     SurvE <- exp(-regC[[pop]]$Me)
     recr <- rep(0,N)
@@ -732,11 +731,11 @@ makeregion <- function(glob,regC,uplim=0.4) {
     regC[[pop]]$popq <- regC[[pop]]$popdef["MaxCE"]/ExplB[1,pop]
     cpue[1,pop] <- 1000.0 * regC[[pop]]$popq * ExplB[1,pop]
   }
-  ans <- list(matureB=MatB,exploitB=ExplB,catch=Catch,
+  ans <- list(SMU=SMU,matureB=MatB,exploitB=ExplB,catch=Catch,
               harvestR=Harvest,cpue=cpue,recruit=Recruit,
               deplsB=deplSpB,depleB=deplExB,catchN=CatchN,Nt=Nt)
   return(list(regionD=ans,regionC=regC))
-} # end of makeregionD
+} # end of makeregion
 
 
 
@@ -775,7 +774,8 @@ maturity <- function(ina,inb,lens) {
 #'    the application of the last half of natural mortality and the
 #'    addition of recruits. Which allows the exploitable biomass to be
 #'    estimated after fishing. The recruitment occurs in oneyearD so
-#'    that larval dispersal can be accounted for.
+#'    that larval dispersal can be accounted for. oneyear is not used
+#'    independently of oneyearD.
 #'
 #' @param inpopC a single population from a regionC, an abpop
 #' @param inNt the numbers at size for the year previous to the year
@@ -849,7 +849,7 @@ oneyear <- function(inpopC,inNt,Nclass,inH,yr) {  #
 #' @examples
 #' print("wait for built in data sets")
 oneyearD <- function(regC,regD,Ncl,inHt,year,sigmar,npop,deltarec) {
-  # npop=6; regC=regC; regD=regLD; Ncl=glb$Nclass; inHt=rep(0.05,npop);
+  # npop=6; regC=regC; regD=regD; Ncl=glb$Nclass; inHt=rep(0.00,npop);
   # year=2; sigmar=1e-08; deltarec=glb$larvdisp
   matb <- numeric(npop)
   for (popn in 1:npop) {  # year=2
@@ -1077,8 +1077,8 @@ restart <- function(oldregD,nyrs,npop,N,zero=TRUE) { # oldregD=regionD; nyrs=Nyr
   Recruit <- matrix(0,nrow=nyrs,ncol=npop)
   CatchN <- array(data=0,dim=c(N,nyrs,npop))
   Nt <- array(data=0,dim=c(N,nyrs,npop))
-  regD <- list(matureB=MatB,exploitB=ExplB,catch=Catch,
-               harvestR=Harvest,cpue=cpue,recruit=Recruit,
+  regD <- list(SMU=oldregD$SMU,matureB=MatB,exploitB=ExplB,
+               catch=Catch,harvestR=Harvest,cpue=cpue,recruit=Recruit,
                deplsB=deplSpB,depleB=deplExB,catchN=CatchN,Nt=Nt)
   if (!zero) regD <- oldregD
   regD$matureB[1,] <- oldregD$matureB[nyrs,]
@@ -1147,7 +1147,7 @@ runthreeH <- function(regC,regD,glob,inHarv) {
 #'
 #' @examples
 #' print("this will be quite long when I get to it")
-setupregion <- function(constants,glb,region1) {
+setupregion <- function(constants,glb,region1) { # constants=constants; glb=glb; region1=region1
   ans <- makeregionC(region1,constants) # classical equilibrium
   regionC <- ans$regionC
   ans <- makeregion(glb,regionC) # now make regionD
@@ -1246,7 +1246,7 @@ STM <- function(p,mids) { #    # p <- popparam[1:4]; mids <- midpts
 #'  regionC <- ans$regionC  # region constants
 #'  regionD <- ans$regionD  # region dynamics
 #'  regDe <- testequil(regC=regionC,regD=regionD,glob=glb)
-#' }
+#' }    #  regC=testregC; regD=testregD; glob=glb; inH=0.0; verbose=TRUE
 testequil <- function(regC,regD,glob,inH=0.0,verbose=TRUE) {
   Nyrs <- glob$Nyrs
   Nclass <- glob$Nclass

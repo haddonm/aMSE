@@ -23,7 +23,7 @@ nothing but it does plot 3 plots and put one table into
 biology_plots generates the yield vs spawning biomass,
     weight-at-lenght, and emergence plots for all populations. In
     addition, it also tabulates the biological properties of each
-    population and SMU
+    population and SMU and the total region
 }
 \examples{
 print("this will be quite long when I get to it")

@@ -42,5 +42,5 @@ testequil runs a given region for Nyrs at the given
  regionC <- ans$regionC  # region constants
  regionD <- ans$regionD  # region dynamics
  regDe <- testequil(regC=regionC,regD=regionD,glob=glb)
-}
+}    #  regC=testregC; regD=testregD; glob=glb; inH=0.0; verbose=TRUE
 }

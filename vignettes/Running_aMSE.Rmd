@@ -69,6 +69,13 @@ However, during the development of the MSE framework it is expected that this wi
 
 Despite this being more of a development document than a final document it remains important to install from the beginning the underlying requirements of the final batch running environment. The details of these requirements may change through the project development but the fundamental structures should remain the same.
 
+## The Underlying Spatial Structure and Population Dynamics
+
+The spatial complexity of abalone fisheries is the main reason that structurally simple stock assessment models fail to capture the dynamics of abalone fisheries. Hence, an explicit spatial structure is required for the operating model. Here, the upper geographical scale being used is that of a region, which is the scale at which quota or TACs are set. In Tasmania this is equivalent to the quota zone. Within the single region, there will be (can be) multiple spatial management units (SMUs) for which aspirational catches are set (which sum to the TAC; in Tasmania these are equivalent to the statistical blocks), and within each SMU there can be multiple populations (sub-areas) of abalone, each with their own set of biological properties, which reflect, to some extent, the average properties for the SMU.
+
+Within each population the population dynamics are described using difference equations operating at an annual time-step with the biological processes of growth, mortality, and recruitment occurring in a modelled sequence. The dynamics in this size-based model are described by following the fate of the numbers-at-size. In each year the dynamics begin with the numbers-at-asize at the start of each year. The first process undergone is that growth occurs, then half natural mortality is applied. At that point the exploitable biomass can be calculated from the numbers-at-size before fishing occurs. The remaining dynamics involve the removal of the catch, the application of the last half of natural mortality and the addition of recruits, at that point larval dispersal occurs (if it is > 0.0), which produces the numbers-at-size at the start of the next year.
+
+
 ## The Input File Requirements
 
 To implement a run using the __aMSE__ R package one currently needs to install both __aMSE__ and __rutilsMH__, both of which can be downloaded or installed from the GitHub sites:  
@@ -307,6 +314,48 @@ kable(initprops,digits=c(4,4,4,4,4,4,4))
 <br>
 
 Notice that while the spawning biomass (=mature biomass = SpbDepl) is 0.1967 (almost 20%B0), the values for each of the populations varies between 0.14 and 0.27, which reflects the effects of the same fishing mortality on the different productivity levels of each population.
+
+
+
+## Fleet Dynamics
+
+The application of any harvest control rule in this complex spatial model will entail the translation of SMU level aspirational catches (which should sum to the region's TAC), into catches appied to each individual population within each SMU. Of course, the aspirational catches per SMU derived from the harvest control rules (HCR) within each harvest strategy will not be taken exactly, The overall TAC will eventually constrain total catches, but some SMU will experience larger catches than expected, and others will experience smaller catches. SO the applicaiton of catches to populations requires two steps.
+
+The first step is to include variation into the aspirational catches from the HCR and then scale them until their sum equals the original TAC. The second step requires that each SMU's actual catch is distributed across their component populations in some  manner that reflects plausible fleet dynamics.
+
+If $C_{u,HCR}$ is the aspiration catch for each SMU $u$ from the HCR, then the first step on the way to setting the actual SMU catch is to include Normal variation:
+
+$$C_{u}^*=N(C_{u,HCR},\sigma_u)$$
+
+where $C_{u}^*$ is the SMU catch before re-scaling to the TAC, and $\sigma_u$ is the standard deviation of the variation that occurs between the aspiration and the actual catches within SMU's. We need to find a scaling factor $\lambda$ to re-scale the total SMU catches to sum to the agreed TAC:
+
+$$\lambda=\frac{\sum\limits_{u=1}^{nSMU}C_{u}^*}{TAC}$$
+
+Thus, the actual SMU catches, $C_u$, after including variation and re-scaling are:
+
+$$C_u=\frac{C_{u}^*}{\lambda}$$
+
+Each SMU will have various numbers of component populations, so now the problem becomes how to allocate a proportion of the actual SMU catch, $C_u$, to each of those populations. 
+
+At least in the Tasmanian blacklip abalone fishery the relationship between catch-rates and catches is usually observed to be a linear, hence the relation between catches and effort is also linear. Because of this catch-rates are assumed to have at least some influence over the distribution of catches among areas. Observed catch-rates (cpue)
+would naturally be expected to be variable through time and across areas and so are modelled as:
+
+$$I_{t,p}={q_p}\left(B_{t,p}^E\right)^{\lambda}{e^{N(0,\sigma_q)}}$$
+
+where $I_{t,p}$ is the cpue in year $t$ for area $p$, $q_p$ is the catchability coefficient within area $p$, ${B_{t,p}^E}$ is the exploitable biomass in year $t$ and area $p$, with a non-linearity coefficient of $\lambda$, and ${e^{N(0,\sigma_q)}}$ is a Log-Normal random deviate, with $\sigma_p$ being the standard deviation of the catchability coefficient $q_p$. If $\lambda = 1.0$ then the relationship between cpue and exploitble biomass is linear, values other than $\lambda = 1.0$ lead to non-linear relationships. Given how important the use of cpue is in all Australian abalone harvest strategies, this is one assumption whose influence is in need of testing. We are using $p$ as a sub-script for area, because in the conditioning each population within each Spatial Management Unit corresponds to a particular area within that SMU. Effectively, area and population are the same thing in the model.
+
+In the operating model, given a total allowable catch (TAC) or quota, if the harvest strategy selected does not allocated the desired level of catch among the different populations (sub-areas) in any given year then some fleet dynamics process will need to be adopted to make that distribution. Given the previous reasoning about cpue, then previous catch rates across the different populations may be considered able to serve as a guide to where to fish in subsequent years. This is a reasonable assumption if the fishery regularly leaves behind a significant proportion of the legal sized animals. However, catch-rates in one year do not give any indication of the availability of undersized abalone that are expected to grow into the fishery. In fisheries that are being fully exploited the advent of new recruits will be an important component of each year’s fishery. Fortunately, the abalone fishery depends on divers literally handling their catch and this automatically provides them an opportunity to identify visually those areas that would be expected to be productive in the next year and also those areas that would be expected to become less productive. Their own observations
+would be made with some error and discussions among divers would also rarely be precise. Such diver expectations provide an indication of exploitable biomass and this can thus be used in an algorithm for distributing catches by area:
+
+$$C_{t,p}=TAC \frac{B_{t,p}^E{e^{N(0,\sigma_d)}}}{\sum\limits_{p=1}^{n}{B_{t,p}^{E}{{e}^{N(0,\sigma_d)}}}}$$
+
+where $C_{t,p}$ is the expected catch in area $p$ in year $t$, $TAC$ is the total allowable catch, and $\sigma_d$ is the standard deviation of the catchability interpreted as the diver’s observations on available biomass in the $n$ areas assessed within the year in question.
+
+This approach reflects a system adopted in Dichmont et al (1999) and by Dichmont and Brown (2010) for distributing a TAC among areas. Their approach was related directly to catch-rates rather than exploitable biomass (despite their equation implying a catchability coefficient of 1.0). However, here the exploitable biomass is directly related to catch-rates (even if not always linearly) and so, especially with the random noise added to the biomass values, this can adequately drive the distribution of catches.
+
+As these proxies are for the diver perception of relative abundance they automatically include their knowledge of catches and catch rates from previous years. It would be expected that as $\sigma_d$ increased the ability of divers to appropriately distribute catches between areas within SMUs would decline, which would, in turn, be expected to lead to poor outcomes for the fishery in terms of depletion levels within SMUs.
+
+In practice, in Tasmania, each SMU is considered separately and an aspirational catch is allocated. After all SMUs within a region have been considered, the individual predicted catches are summed and the whole is then proposed as a TAC for the following year. Alternatively, a formal harvest strategy developed in Tasmania proposes aspirational catches for each SMU (statistical block) based on a multi-criteria decision analysis founded on different but related fishery performance measures.   
 
 
 # References
