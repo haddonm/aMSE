@@ -28,5 +28,9 @@ testregC is a region list made up of 6 equilibrium
  data(testregD)
  data(region1)
  glb <- region1$globals
+ r0 <- getvar(testregC,"R0")
+ move <- makemove(glb$numpop,r0,glb$larvdisp)
+ glb$move <- move
  ans <- testequil(testregC, testregD, glb)
+ str(testregC[[1]])
 }

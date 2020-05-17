@@ -28,5 +28,9 @@ testregD is a list of 8 matrices and 2 arrays defining
  data(testregD)
  data(region1)
  glb <- region1$globals
+ r0 <- getvar(testregC,"R0")
+ move <- makemove(glb$numpop,r0,glb$larvdisp)
+ glb$move <- move
  ans <- testequil(testregC, testregD, glb)
+ str(testregD)
 }

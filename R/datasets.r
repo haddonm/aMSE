@@ -111,12 +111,12 @@ NULL
 #' @description product is the productivity curve matrix from
 #'     doproduction when the example region is generated using the
 #'     inbuilt datasets ctrl, region1, and constants. The slowest
-#'     part of building the whole is to use the findunfished function
-#'     to adjust the regionC and regionD values to account for any
-#'     larval dispersal. To save that time in the examples (to avoid
-#'     time limits of examples should this package ewver go to CRAN),
-#'     then this dataset can be used instead. This is a three
-#'     dimensional array of productivity variables. Catch is the explected
+#'     part of building the whole is to use the modregC function
+#'     to adjust the regionC and generate the production array. To
+#'     save that time in the examples (to avoid time limits on
+#'     examples should this package go to CRAN), then this dataset can
+#'     be used instead. This is a three dimensional array of
+#'     productivity variables.
 #'
 #' @name product
 #'
@@ -233,7 +233,11 @@ NULL
 #'  data(testregD)
 #'  data(region1)
 #'  glb <- region1$globals
+#'  r0 <- getvar(testregC,"R0")
+#'  move <- makemove(glb$numpop,r0,glb$larvdisp)
+#'  glb$move <- move
 #'  ans <- testequil(testregC, testregD, glb)
+#'  str(testregC[[1]])
 NULL
 
 #' @title testregD is a list of 8 matrices and 2 arrays defining the dynamics of a region
@@ -263,5 +267,9 @@ NULL
 #'  data(testregD)
 #'  data(region1)
 #'  glb <- region1$globals
+#'  r0 <- getvar(testregC,"R0")
+#'  move <- makemove(glb$numpop,r0,glb$larvdisp)
+#'  glb$move <- move
 #'  ans <- testequil(testregC, testregD, glb)
+#'  str(testregD)
 NULL

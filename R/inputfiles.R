@@ -73,10 +73,10 @@ ctrlfiletemplate <- function(indir,filename="control.csv") {
 #'
 #' @examples
 #' \dontrun{
-#'   print("stiull to devise an example.")
+#'   print("still to devise an example.")
 #' }
 diagnostics <- function(regC,regD,glob,plot=TRUE) {   # inzone <- testzone
-   useLML <- sapply(regC,"[[","LML")
+   useLML <- sapply(regC,"[[","LML") # pulls out vectors
    colLML <- apply(useLML,2,unique)
    valLML <- unique(colLML)
    nLML <- length(valLML)

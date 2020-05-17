@@ -187,11 +187,11 @@ region1 <- readregionfile(resdir,ctrl$regionfile)
 glb <- region1$globals
 constants <- readdatafile(glb$numpop,resdir,ctrl$datafile)
 
-out <- setupregion(constants, glb, region1)  # can take a few seconds
+out <- setupregion(constants, region1)  # can take a few seconds
 regionC <- out$regionC  # the constant part
 regionD <- out$regionD  # the dynamic part
 product <- out$product  # the productivity defined
-
+glb <- out$glb
 
 resfile <- setuphtml(resdir,runname) #needed to formalize the outputs
  # store the initial objects

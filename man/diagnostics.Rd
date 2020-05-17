@@ -24,6 +24,6 @@ diagnostics can generates an array of diagnostic plots,
 }
 \examples{
 \dontrun{
-  print("stiull to devise an example.")
+  print("still to devise an example.")
 }
 }

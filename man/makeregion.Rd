@@ -32,6 +32,7 @@ makeregion generates the dynamics components of the
   data(constants)
   ans <- makeregionC(region1,constants)
   regionC <- ans$regionC
+  glb <- ans$glb
   ans2 <- makeregion(glb,regionC)
   str(ans2,max.level=2)
 }

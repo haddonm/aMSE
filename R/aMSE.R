@@ -7,6 +7,8 @@
 #' @importFrom utils write.table
 #' @importFrom rutilsMH getmax getmin setpalette plotprep removeEmpty
 #' @importFrom rutilsMH splitDate which.closest parset
+#' @importFrom Rcpp evalCpp
+#' @useDynLib aMSE
 NULL
 
 #' @title aMSE functions for Conditioning and Running an Invertebrate MSE

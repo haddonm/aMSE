@@ -8,12 +8,12 @@
 product is the productivity curve matrix from
     doproduction when the example region is generated using the
     inbuilt datasets ctrl, region1, and constants. The slowest
-    part of building the whole is to use the findunfished function
-    to adjust the regionC and regionD values to account for any
-    larval dispersal. To save that time in the examples (to avoid
-    time limits of examples should this package ewver go to CRAN),
-    then this dataset can be used instead. This is a three
-    dimensional array of productivity variables. Catch is the explected
+    part of building the whole is to use the modregC function
+    to adjust the regionC and generate the production array. To
+    save that time in the examples (to avoid time limits on
+    examples should this package go to CRAN), then this dataset can
+    be used instead. This is a three dimensional array of
+    productivity variables.
 }
 \section{contents}{
 

@@ -4,7 +4,7 @@
 \alias{oneyearD}
 \title{oneyearD conducts one year's dynamics in the simulation}
 \usage{
-oneyearD(regC, regD, Ncl, inHt, year, sigmar, npop, deltarec)
+oneyearD(regC, regD, Ncl, inHt, year, sigmar, npop, movem)
 }
 \arguments{
 \item{regC}{the constant portion of the region with a list of
@@ -27,7 +27,7 @@ when searching for equilibria.}
 
 \item{npop}{the number of populations, the global numpop}
 
-\item{deltarec}{the rate of larval dispersal}
+\item{movem}{the larval dispersal movement matrix}
 }
 \value{
 a list containing a revised dynamics list
@@ -38,5 +38,19 @@ onyearD conducts one year's dynamics in the simulation
     of activity included in each of its components.
 }
 \examples{
-print("wait for built in data sets")
+ data(constants)
+ data(region1)
+ ans <- makeregionC(region1,constants) # classical equilibrium
+ regionC <- ans$regionC
+ glb <- ans$glb
+ ans <- makeregion(glb,regionC) # now make regionD
+ regionC <- ans$regionC  # region constants
+ regionD <- ans$regionD
+ numpop <- glb$numpop
+ harvest <- rep(0.2,numpop)
+ regionD <- oneyearD(regC=regionC,regD=regionD,Ncl=glb$Nclass,
+                     inHt=harvest,year=2,sigmar=1e-06,npop=numpop,
+                     movem=glb$move)
+ str(regionD)
+ round(regionD$catchN[60:105,1:5,1],1)
 }

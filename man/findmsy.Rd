@@ -27,12 +27,12 @@ findmsy for each population in the region, identifies
   data(constants)
   ans <- makeregionC(region1,constants)
   regionC <- ans$regionC
+  glb <- ans$glb
   ans <- makeregion(glb,regionC)
   regionC <- ans$regionC
   regionD <- ans$regionD
-  ans2 <- findunfished(regionC,regionD,glb)
+  ans2 <- modregC(regionC,regionD,glb)
   regionC <- ans2$regionC  # region constants
-  regionD <- ans2$regionD  # region dynamics
   product <- ans2$product
   approxMSY <- findmsy(product)
   print(approxMSY)

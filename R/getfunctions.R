@@ -359,8 +359,8 @@ getunFished <- function(inzone,glb) {  # inzone=zone
 getregionprops <- function(regC,regD,glb,year=1) { # regC=regionC; regD=regionD; glb=glb; year=1
   numpop <- glb$numpop
   Nclass <- glb$Nclass
-  effB0 <- sapply(regC,"[[","effB0")
-  effExB0 <- sapply(regC,"[[","effExB0")
+  B0 <- sapply(regC,"[[","B0")
+  ExB0 <- sapply(regC,"[[","ExB0")
   blml <- sapply(regC,"[[","bLML")
   msy <- sapply(regC,"[[","MSY")
   msydepl <- sapply(regC,"[[","MSYDepl")
@@ -376,22 +376,22 @@ getregionprops <- function(regC,regD,glb,year=1) { # regC=regionC; regD=regionD;
     legalmatB[pop] <- sum(regC[[pop]]$MatWt[first:Nclass] *
                             regD$Nt[first:Nclass,year,pop])/1000000.0
   }
-  deplet <- matB/effB0
-  depletEx <- ExB/effExB0
-  legaldepl <- legalmatB/effB0
+  deplet <- matB/B0
+  depletEx <- ExB/ExB0
+  legaldepl <- legalmatB/B0
   propprot <- (matB - legalmatB)/matB
-  label <- c("effB0","matureB","legalmatB","propprot","MSY",
-             "effexB0","exploitB","SpBDepl","ExBDepl",
+  label <- c("B0","matureB","legalmatB","propprot","MSY",
+             "exB0","exploitB","SpBDepl","ExBDepl",
              "legalDepl","MSYDepl","LML","bLML","harvestR","catch")
-  ans <- rbind(effB0,matB,legalmatB,propprot,msy,effExB0,ExB,deplet,
+  ans <- rbind(B0,matB,legalmatB,propprot,msy,ExB0,ExB,deplet,
                depletEx,legaldepl,msydepl,lml,blml,harvestR,catch)
   rownames(ans) <- label
   tot <- numeric(length(rownames(ans))); names(tot) <- label
   tot[c(1:3,5:7)] <- rowSums(ans)[c(1:3,5:7)]
   tot["propprot"] <- (tot["matureB"] - tot["legalmatB"])/tot["matureB"]
-  wgts <- ans["effB0",]/tot["effB0"]
+  wgts <- ans["B0",]/tot["B0"]
   tot["SpBDepl"] <- sum(wgts * ans["SpBDepl",])
-  tot["ExBDepl"] <- sum((ans["effexB0",]/tot["effexB0"]) * ans["ExBDepl",])
+  tot["ExBDepl"] <- sum((ans["exB0",]/tot["exB0"]) * ans["ExBDepl",])
   tot["legalDepl"] <- sum(wgts * ans["legalDepl",])
   tot["MSYDepl"] <- sum(wgts * ans["MSYDepl",])
   tot["LML"] <- mean(ans["LML",])
@@ -403,3 +403,48 @@ getregionprops <- function(regC,regD,glb,year=1) { # regC=regionC; regD=regionD;
   return(ans)
 }  # end of getregionprops
 
+#' @title getvar a replacement for sapply to obtain scalar constants
+#'
+#' @description getvar is a replacement for sapply to obtain scalar
+#'     constants from regionC and is significantly faster. It should
+#'     be used to obtain things like B0, R0, MSY, popq, etc. Still
+#'     need to use sapply to pull out vectors.
+#'
+#' @param regC the constants object for the region
+#' @param invar a character variable eg. "B0" or "R0"
+#'
+#' @return a numpop vector of the invar constants from regionC
+#' @export
+#'
+#' @examples
+#' data(testregC)
+#' getvar(testregC,"MSY")
+#' getvar(testregC,"B0")
+getvar <- function(regC,invar) {
+  npop <- length(regC)
+  recs <- numeric(npop)
+  for (i in 1:npop) recs[i] <- regC[[i]][[invar]]
+  return(recs)
+} # end of getvar
+
+#' @title getvect extracts invar from the popdef vector in regionC
+#'
+#' @description getvect extracts a numpop vector of invar from the
+#'     popdef vector in regionC. Still need to use sapply to pull out
+#'     complete vectors such as popdef or maturity etc.
+#'
+#' @param regC the constants object for the region
+#' @param invar a character variable eg. "steeph", "DLMax"
+#'
+#' @return a numpop vector of invar from the numpop popdefs in regionC
+#' @export
+#'
+#' @examples
+#' data(testregC)
+#' getvect(testregC,"steeph")
+getvect <- function(regC,invar) {
+  npop <- length(regC)
+  ans <- numeric(npop)
+  for (i in 1:npop) ans[i] <- regC[[i]]$popdef[invar]
+  return(ans)
+} # end of getvect

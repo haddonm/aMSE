@@ -28,19 +28,19 @@ testequil runs a given region for Nyrs at the given
     to the console if verbose=TRUE
 }
 \examples{
-\dontrun{  # findunfished takes too long to run
+\dontrun{  # modregC takes too long to run because of doproduction
  data(ctrl)
  data(region1)
  glb <- region1$globals
  data(constants)
  ans <- makeregionC(region1,constants)
  regionC <- ans$regionC
+ glb <- ans$glb # now contains movement matrix
  ans <- makeregion(glb,regionC)
  regionC <- ans$regionC  # region constants
  regionD <- ans$regionD
- ans <- findunfished(regionC,regionD,glb)
+ ans <- modregC(regionC,regionD,glb)
  regionC <- ans$regionC  # region constants
- regionD <- ans$regionD  # region dynamics
  regDe <- testequil(regC=regionC,regD=regionD,glob=glb)
-}    #  regC=testregC; regD=testregD; glob=glb; inH=0.0; verbose=TRUE
+}    #regC=testregC; regD=testregD; glob=glb; inH=0.0; verbose=TRUE
 }

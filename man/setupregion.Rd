@@ -2,25 +2,29 @@
 % Please edit documentation in R/defineZone.R
 \name{setupregion}
 \alias{setupregion}
-\title{setupregion makes the region's constant, dynamic, and productivity parts}
+\title{setupregion makes region's constant, dynamic, and productivity parts}
 \usage{
-setupregion(constants, glb, region1)
+setupregion(constants, region1)
 }
 \arguments{
 \item{constants}{the population constants derived from readdatafile}
 
-\item{glb}{the global constants out of region1}
-
 \item{region1}{the regional constants}
 }
 \value{
-a list of regionC, regionD and product, the main components
-    of the region
+a list of regionC, regionD, product, and glb the main
+    components of the region
 }
 \description{
 setupregion makes the region's constant, dynamic, and
-    productivity parts returning them all in a list
+    productivity parts returning them, along with glb, in a list.
 }
 \examples{
-print("this will be quite long when I get to it")
+data(constants)
+data(region1)
+out <- setupregion(constants,region1)
+regionC <- out$regionC
+glb <- out$glb
+str(regionC[[1]])
+str(glb)
 }

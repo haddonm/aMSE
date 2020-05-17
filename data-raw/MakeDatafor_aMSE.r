@@ -52,11 +52,13 @@ region1 <- readregionfile(resdir,ctrl$regionfile)
 glb <- region1$globals
 constants <- readdatafile(glb$numpop,resdir,ctrl$datafile)
 
-out <- setupregion(constants, glb, region1)
-testregC <- out$regionC
-testregD <- out$regionD
+out <- setupregion(constants, region1)
+regionC <- out$regionC
+regionD <- out$regionD
 product <- out$product
-
+glb <- out$glb
+testregC <- regionC
+testregD <- regionD
 
 save(testregC,file=paste0(datadir,"testregC.RData"))
 save(testregD,file=paste0(datadir,"testregD.RData"))

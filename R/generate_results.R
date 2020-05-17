@@ -91,7 +91,7 @@ biology_plots <- function(resdir, runlabel, glb, regC) {
     ans <- c(invar,smures,sum(invar))
     return(ans)
   }
-  rows <- c("SMU","M","R0","B0","effB0","ExB0","effExB0","MSY","MSYDepl","bLML")
+  rows <- c("SMU","M","R0","B0","ExB0","MSY","MSYDepl","bLML")
   smu <- getlistvar(regC,"SMU")
   nSMU <- length(unique(smu))
   columns <- c(paste0("p",1:numpop),
@@ -107,9 +107,7 @@ biology_plots <- function(resdir, runlabel, glb, regC) {
 
   results["M",] <- c(M,0,0,sum(M*wtr))
   results["R0",] <- getvar("R0")
-  results["effB0",] <- getvar("effB0")
   results["ExB0",] <- getvar("ExB0")
-  results["effExB0",] <- getvar("effExB0")
   results["MSY",] <- getvar("MSY")
   MSYD <- getlistvar(regC,"MSYDepl")
   results["MSYDepl",] <- c(MSYD,0,0,sum(MSYD * wtr))

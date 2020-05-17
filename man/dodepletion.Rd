@@ -43,12 +43,12 @@ dodepletion resets the depletion level of the whole
   data(constants)
   ans <- makeregionC(region1,constants)
   regionC <- ans$regionC
+  glb <- ans$glb  # now contains the move matrix
   ans <- makeregion(glb,regionC)
   regionC <- ans$regionC
   regionD <- ans$regionD
-  ans2 <- findunfished(regionC,regionD,glb)
-  regionC <- ans2$regionC  # region constants
-  regionD <- ans2$regionD  # region dynamics
+  ans2 <- modregC(regionC,regionD,glb)
+  regionC <- ans2$regionC  # now has MSY and deplMSY
   product <- ans2$product
   regDD <- dodepletion(regionC,regionD,glb,depl=0.3,product)
   sum((regDD$matureB[1,]/sum(regDD$matureB[1,]))*regDD$deplsB[1,])
