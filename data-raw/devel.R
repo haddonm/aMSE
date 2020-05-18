@@ -4,7 +4,7 @@ library(rutilsMH)
 library(aMSE)
 library(microbenchmark)
 
-Rprof()
+#Rprof()
 # read data files ----------------------------------------------------
  resdir <- "./../../rcode2/aMSEUse/out/run1"
  dirExists(resdir,make=TRUE,verbose=TRUE)
@@ -21,9 +21,9 @@ Rprof()
  regionD <- out$regionD
  product <- out$product
  glb <- out$glb
-Rprof(NULL)
-outprof <- summaryRprof()
-outprof
+# Rprof(NULL)
+# outprof <- summaryRprof()
+# outprof
 # save the primary ojects to the resdir
 resfile <- setuphtml(resdir,runname)
 
@@ -95,56 +95,83 @@ if (ctrl$initdepl < 1.0) {
 
 # outline a real run--------------------------------------------------
 
+ oneyearcat <- function(inpopC,inNt,Nclass,incat,yr) {  #
+   # yr=2; pop=2; inpopC=regC[[pop]]; inNt=regD$Nt[,yr-1,pop];
+   # Nclass=glb$Nclass; inH=0.05;
+   MatWt <- inpopC$MatWt/1e06
+   SelectWt <- inpopC$SelWt[,yr]/1e06
+   selyr <- inpopC$Select[,yr]
+   Ne <- numeric(Nclass)
+   Cat <- numeric(Nclass)
+   Os <- exp(-inpopC$Me/2)
+   #  MatureB <- sum(MatWt*inNt)
+   NumNe <- (Os * (inpopC$G %*% inNt))
+   ExploitB <- sum(SelectWt * NumNe) #SelectWt=Select*WtL
+   oldExpB <- ExploitB   # ExploitB after growth and 0.5NatM
+   estH <- min(incat/ExploitB,0.8) # no more than 0.8 harvest rate
+   Fish <- 1-(estH*selyr)
+   newNt <- (Os * (Fish * NumNe)) #+ Rec # Nt - catch - 0.5M, and + Rec
+   Cat <- (estH*selyr) * NumNe  #numbers at size in the catch
+   ExploitB <- (sum(SelectWt * newNt) + oldExpB)/2.0 #av start and end
+   MatureB <- sum(MatWt*newNt) #+ MatBC
+   Catch <- sum(inpopC$WtL*Cat)/1e06
+   Harvest <- Catch/ExploitB  # uses average of the start and end
+   ce <- inpopC$popq * ExploitB * 1000.0  #ExploitB
+   ans <- list(ExploitB,MatureB,Catch,Harvest,newNt,ce,Cat)
+   names(ans) <- c("ExploitB","MatureB","Catch","Harvest","Nt","ce",
+                   "CatchN")
+   return(ans)
+ } # End of oneyear
+
+
+
+
+
+ storeregC <- regionC
+ storeregD <- regionD
+
+ regionC <- storeregC
+ regionD <- storeregD
  npop <- glb$numpop
  Nc <- glb$Nclass
  nyrs <- glb$Nyrs
  larvdisp <- glb$larvdisp
- catch <- 300.0
+ catch <- 360.0
  B0 <- getvar(regionC,"B0") #sapply(regionC,"[[","B0")
  totB0 <- sum(B0)
  prop <- B0/totB0
  catchpop <- catch * prop
 
- oneyearC <- function(regC,regD,Ncl,catchp,year,sigmar,npop,deltarec) {
-   exB <- regD$exploitB[(year-1),]
-   matb <- numeric(npop)
-   for (popn in 1:npop) {  # year=2
-     out <- oneyear(inpopC=regC[[popn]],inNt=regD$Nt[,year-1,popn],
-                    Nclass=Ncl,inH=inHt[popn],yr=year)
-     regD$exploitB[year,popn] <- out$ExploitB
-     regD$matureB[year,popn] <- out$MatureB
-     regD$catch[year,popn] <- out$Catch
-     regD$harvestR[year,popn] <- out$Harvest
-     regD$cpue[year,popn] <- out$ce
-     regD$Nt[,year,popn] <- out$Nt
-     regD$catchN[,year,popn] <- out$CatchN
-     matb[popn] <- out$MatureB
-   }
-   steep <- getvect(regC,"steeph") #sapply(regC,"[[","popdef")["steeph",]
-   r0 <- getvar(regionC,"R0") #sapply(regC,"[[","R0")
-   b0 <- getvar(regionC,"B0") #sapply(regC,"[[","B0")
-   recs <- oneyearrec(steep,r0,b0,matb,sigR=sigmar)
-   newrec <- driftrec(recs,deltarec)
-   regD$recruit[year,] <- newrec
-   regD$Nt[1,year,] <- newrec
-   regD$deplsB[year,] <- regD$matureB[year,]/b0
-   regD$depleB[year,] <- regD$exploitB[year,]/getvar(regionC,"ExB0") #
-   return(regD)
- } # end of oneyearC   round(regD$Nt[,year,])
-
-
-
-
-
-
  for (yr in 2:nyrs) {
-       regD <- oneyearD(regC=regionC,regD=regionD,Ncl=Nc,
-                        inHt=inHarv,year=yr,sigmar=1e-08,npop=npop,
+       regionD <- oneyearC(regC=regionC,regD=regionD,Ncl=Nc,
+                        catchp=catchpop,year=yr,sigmar=1e-08,npop=npop,
                         movem=glb$move)
-
+  #  cedecline <- regionD$cpue[yr,]/regionD$cpue[1,]
+  #  cewt <- cedecline/sum(cedecline)
+  #  catchpop <- catch * cewt
  }
+str(regionD)
+regionD$harvestR[40,]
+regionD$exploitB[40,]
+regionD$matureB[40,]
+regionD$deplsB[40,]
+regionD$depleB[40,]
+regionD$cpue[1,]
+regionD$cpue[40,]
 
+regionD$cpue[40,]/regionD$cpue[1,]
 
+Nt <- regionD$Nt
+mids <- glb$midpts
+plotprep(width=8, height=9,newdev=FALSE)
+parset(plots=c(3,2),margin=c(0.3,0.3,0.05,0.05),outmargin=c(1,1,0,0))
+for (pop in 1:numpop) {
+  plot(mids[5:105],Nt[5:105,1,pop],type="l",lwd=2,panel.first=grid())
+  lines(mids[5:105],Nt[5:105,20,pop],lwd=2,col=3)
+  lines(mids[5:105],Nt[5:105,40,pop],lwd=2,col=2)
+  abline(v=132,col="grey")
+  mtext(paste0("pop",pop),side=3,outer=FALSE,line=-1.1)
+}
 
  # Some summaries ----------------------------------------------------
  getvar(regionC,"MSY") #sapply(regionC,"[[","MSY")           # msy by population
@@ -187,18 +214,6 @@ if (ctrl$initdepl < 1.0) {
  round(regionD$catchN[60:105,1:5,1],1)
 
  # end barebones------------------------------------------------------
-
- # test speed doproduction
-
-
-
- microbenchmark(
-   steep1 <- getvect(regionC,"steeph"),
-   steep <- sapply(regC,"[[","popdef")["steeph",],
-   times=100
- )
-
-
 
 
 

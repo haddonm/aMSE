@@ -217,5 +217,11 @@ This represents the dynamics before any simulations have occurred, the unfished 
 * SMU     : num 1
 
 
+In the code (_setupregion_) the sequence is:
+
+1. first generate regionC from the constants and region1. At that point each population structure contains everything except those things relating to productivity: B0, ExB0, MSY, MSYDepl and popq. makeregionC also updates glb by including the move matrix.
+2. running the _makeregion_ updates B0, ExB0, and popq in regionC and generates the initial equilibrium for regionD. As this is the unfished equilibrium the catch, harvestR, and catchN matrices are empty.
+3. The final run of _moderegC_ internally runs _doproductivity_ which allows regionC's MSY and MSYDepl entries to be updated for each population, as well as producing the product matrix.
 
 
+In the regionD matrices, the numbers-at-size are the numbers at the start of the year, similarly, the matureB is the mature biomass at the start of the year. The ExB0 is the exploitable biomass implied by the initial numbers-at-size, which means to calcualte it we need to apply half of natural mortality and growth before multiplyiung by selectivity and weight-at-length.

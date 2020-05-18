@@ -23,8 +23,10 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' indirect <- getwd()
-#' dirExists(indirect)
+#' dirExists(indirect,make=FALSE)
+#' }
 dirExists <- function(indir,make=TRUE,verbose=TRUE) {
   if (dir.exists(indir)) {
     if (verbose) cat(indir,":  exists  \n")

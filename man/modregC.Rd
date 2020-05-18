@@ -39,5 +39,5 @@ modregC runs the doproduction function so it can then
   regionD <- ans$regionD
   ans2 <- modregC(regionC,regionD,glb)
   str(ans2,max.level=2)
-}
+}   # regC=regionC; regD=regionD; glob=glb; lowlim=0.0;uplim=0.4;inc=0.005
 }

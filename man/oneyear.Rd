@@ -2,7 +2,7 @@
 % Please edit documentation in R/defineZone.R
 \name{oneyear}
 \alias{oneyear}
-\title{oneyear do one year's dynamics for one input population abpop}
+\title{oneyear one year's harvest dynamics for one abpop}
 \usage{
 oneyear(inpopC, inNt, Nclass, inH, yr)
 }

@@ -32,6 +32,8 @@ dirExists: does a directory exist? It uses dir.exists
     also present.
 }
 \examples{
+\dontrun{
 indirect <- getwd()
-dirExists(indirect)
+dirExists(indirect,make=FALSE)
+}
 }

@@ -45,7 +45,7 @@ devtools::install_github("https://github.com/haddonm/aMSE",build_vignettes = TRU
 
 Alternatively, you can generate a branch that you can work on by cloning the repository, which, again, can be done very simply within RStudio. Open the New Project option in the project dialog at the top right of the RStudio screen and selection Version Control, then use 'https://github.com/haddonm/aMSE' in the top box, identify where you want the new directory put, and press return.
 
-It would be a good idea to read Hadley Wickham's draft chpater on Git and GitHub at https://r-pkgs.org/index.html.
+It would be a good idea to read Hadley Wickham's draft chapter on Git and GitHub at https://r-pkgs.org/index.html.
 
 
 ## Example
@@ -70,11 +70,12 @@ region1 <- readregionfile(resdir,ctrl$regionfile)
 glb <- region1$globals
 constants <- readdatafile(glb$numpop,resdir,ctrl$datafile)
 
-out <- setupregion(constants, glb, region1) # make operating model 
+out <- setupregion(constants, region1) # make operating model 
 regionC <- out$regionC     # constant bits
 regionD <- out$regionD     # dynamics bits
 product <- out$product     # all usually saved in resdir, not here
-  # did the larval dispersal level disturb the equilibrium?
+glb <- out$glb             # now contains the larval movement matrix
+  # Are we at equilibrium?
 regDe <- testequil(regionC,regionD,glb) 
 
 resfile <- setuphtml(resdir,runname)# prepare to save and log results

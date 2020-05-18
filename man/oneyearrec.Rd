@@ -36,5 +36,5 @@ Bsp <- 147
 insigmar <- 0.3
 oneyearrec(steep,R0,B0,Bsp,insigmar)
 oneyearrec(steep,R0,B0,Bsp,insigmar)
-}
+}   # steep=steep; R0=mover0; B0=b0; Bsp=b0
 }

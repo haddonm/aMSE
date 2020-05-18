@@ -62,7 +62,7 @@ the RStudio screen and selection Version Control, then use
 ‘<https://github.com/haddonm/aMSE>’ in the top box, identify where you
 want the new directory put, and press return.
 
-It would be a good idea to read Hadley Wickham’s draft chpater on Git
+It would be a good idea to read Hadley Wickham’s draft chapter on Git
 and GitHub at <https://r-pkgs.org/index.html>.
 
 ## Example
@@ -86,19 +86,21 @@ ctrlfiletemplate(resdir)  # puts a template ctrlfile into resdir
 regionfiletemplate(resdir)  # puts a template region file into resdir
 datafiletemplate(6,resdir,filename="reg1smu2pop6.csv") # etc
 ctrl <- checkresdir(resdir) # checks the data files are present
+#> All required files appear to be present
 runname <- ctrl$runlabel    # and reads the control file, if present
 region1 <- readregionfile(resdir,ctrl$regionfile)
 glb <- region1$globals
 constants <- readdatafile(glb$numpop,resdir,ctrl$datafile)
 
-out <- setupregion(constants, glb, region1) # make operating model 
+out <- setupregion(constants, region1) # make operating model 
 regionC <- out$regionC     # constant bits
 regionD <- out$regionD     # dynamics bits
 product <- out$product     # all usually saved in resdir, not here
-  # did the larval dispersal level disturb the equilibrium?
+glb <- out$glb             # now contains the larval movement matrix
+  # Are we at equilibrium?
 regDe <- testequil(regionC,regionD,glb) 
 #> [1] matureB Stable
-#> [1] exploitB Stable
+#> [1] exploitB varies
 #> [1] recruitment Stable
 #> [1] spawning depletion Stable
 

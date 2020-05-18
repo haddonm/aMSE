@@ -433,7 +433,7 @@ findF1 <- function(product) {
 #'   approxMSY <- findmsy(product)
 #'   print(approxMSY)
 #' }
-findmsy <- function(product) {  # product=product
+findmsy <- function(product) {  # product=production
   catch <- product[,"Catch",]
   numpop <- ncol(catch)
   label <- c(colnames(product),"index")
@@ -693,22 +693,22 @@ makeregion <- function(glob,regC) { #glob=glb; regC=regionC;
   Nt <- array(data=0,dim=c(N,Nyrs,numpop))
   SMU <- getvar(regC,"SMU") #as.numeric(sapply(regC,"[[","SMU"))
   recs <- getvar(regC,"R0") #sapply(regC,"[[","R0")
-  newrecs <- glob$move %*% recs
+  move <- glob$move
+  newrecs <- move %*% recs
   for (pop in 1:numpop) {  # pop=1
     SurvE <- exp(-regC[[pop]]$Me)
+    hSurv <- exp(-regC[[pop]]$Me/2.0)
     recr <- rep(0,N)
     recr[1] <- newrecs[pop]  # change this once I have imported move
     UnitM <- matrix(0,nrow=N,ncol=N)
     diag(UnitM) <- 1.0
-    Minv <- solve(UnitM - (SurvE * regC[[pop]]$G ))  #could use invC
-    Nt[,1,pop] <- Minv %*% recr          # could use mvC
+    Minv <- solve(UnitM - (SurvE * regC[[pop]]$G ))
+    Nt[,1,pop] <- Minv %*% recr # initial unfished numbers-at-size
+    MatB[1,pop] <- sum(regC[[pop]]$MatWt*Nt[,1,pop])/1e06
+    regC[[pop]]$B0 <- MatB[1,pop] # mature biomass at start of year
     ExplB[1,pop] <- sum(regC[[pop]]$SelWt[,1]*Nt[,1,pop])/1e06
     regC[[pop]]$ExB0 <- ExplB[1,pop]
-  #  regC[[pop]]$effExB0 <- ExplB[1,pop]
     deplExB[1,pop] <- 1.0  # no depletion when first generating regions
-    MatB[1,pop] <- sum(regC[[pop]]$MatWt*Nt[,1,pop])/1e06
-    regC[[pop]]$B0 <- MatB[1,pop]
-   # regC[[pop]]$effB0 <- MatB[1,pop]
     deplSpB[1,pop] <- 1.0
     Recruit[1,pop] <- recr[1]
     regC[[pop]]$popq <- as.numeric(regC[[pop]]$popdef["MaxCE"]/ExplB[1,pop])
@@ -775,7 +775,7 @@ maturity <- function(ina,inb,lens) {
 #'   regionD <- ans$regionD
 #'   ans2 <- modregC(regionC,regionD,glb)
 #'   str(ans2,max.level=2)
-#' }
+#' }   # regC=regionC; regD=regionD; glob=glb; lowlim=0.0;uplim=0.4;inc=0.005
 modregC <- function(regC,regD,glob,lowlim=0.0,uplim=0.4,inc=0.005) {
   numpop <- glob$numpop
   production <- doproduction(regC=regC,regD=regD,glob=glob,
@@ -789,7 +789,7 @@ modregC <- function(regC,regD,glob,lowlim=0.0,uplim=0.4,inc=0.005) {
 } # end of modregC
 
 
-#' @title oneyear do one year's dynamics for one input population abpop
+#' @title oneyear one year's harvest dynamics for one abpop
 #'
 #' @description oneyear do one year's dynamics for one input population.
 #'    Used to step through populations of a region. Its dynamics are
@@ -828,23 +828,163 @@ oneyear <- function(inpopC,inNt,Nclass,inH,yr) {  #
   Ne <- numeric(Nclass)
   Cat <- numeric(Nclass)
   Os <- exp(-inpopC$Me/2)
-  MatureB <- sum(MatWt*inNt)
+#  MatureB <- sum(MatWt*inNt)
   NumNe <- (Os * (inpopC$G %*% inNt))
   ExploitB <- sum(SelectWt * NumNe) #SelectWt=Select*WtL
   oldExpB <- ExploitB   # ExploitB after growth and 0.5NatM
   Fish <- 1-(inH*selyr)
   newNt <- (Os * (Fish * NumNe)) #+ Rec # Nt - catch - 0.5M, and + Rec
   Cat <- (inH*selyr) * NumNe  #numbers at size in the catch
-  ExploitB <- sum(SelectWt * newNt)
+  ExploitB <- (sum(SelectWt * newNt) + oldExpB)/2.0 #av start and end
   MatureB <- sum(MatWt*newNt) #+ MatBC
   Catch <- sum(inpopC$WtL*Cat)/1e06
-  Harvest <- (2.0 * Catch)/(oldExpB + ExploitB)  # average of the start and end
-  ce <- inpopC$popq * ((oldExpB + ExploitB)/2) * 1000.0  #ExploitB
+  Harvest <- Catch/ExploitB  # uses average of the start and end
+  ce <- inpopC$popq * ExploitB * 1000.0  #ExploitB
   ans <- list(ExploitB,MatureB,Catch,Harvest,newNt,ce,Cat)
   names(ans) <- c("ExploitB","MatureB","Catch","Harvest","Nt","ce",
                   "CatchN")
   return(ans)
 } # End of oneyear
+
+#' @title oneyearcat one year's catch dynamics for one abpop
+#'
+#' @description oneyear does one year's dynamics for one input
+#'     population. Where the fishing is based on a given catch per
+#'     population, which would be determined by any harvest control
+#'     rule. It is used to step through populations of a region.
+#'     Its dynamics are such that each population first undergoes
+#'     growth, then half natural mortality. This allows an estimate of
+#'     exploitable biomass before fishing occurs. The remaining
+#'     dynamics involve the removal of the catch, after estimating the
+#'     harvest rate from catch/exploitb, the application of the last
+#'     half of natural mortality and the addition of recruits. This
+#'     allows the exploitable biomass to be estimated after fishing.
+#'     The cpue uses the average of the pre-fishing and post-fishing
+#'     exploitB to smooth over any changes brought about by fishing.
+#'     The recruitment occurs in oneyearC so that larval dispersal can
+#'     be accounted for. oneyearcat is not used independently of
+#'     oneyearD.
+#'
+#' @param inpopC a single population from a regionC, an abpop
+#' @param inNt the numbers at size for the year previous to the year
+#'     of dynamics. These are projected into the active year.
+#' @param Nclass the number of size classes used to describe growth.
+#'     used to define vectors
+#' @param incat the literal annual catch from the population. Derived
+#'     from teh harvest control rule for each SMU, then allocated to
+#'     each population with respect to its relative catching
+#'     performance.
+#' @param yr the year in the dynamics being worked on. The first year
+#'     is generated when the zone is defined or when it is initially
+#'     depleted. All dynamics are appllied from year 2 - Nyrs; scalar
+#'
+#' @return a list containing ExploitB, MatureB, Catch, Harvest, Nt,
+#'     ce, and CatchN used to update the given pop in yr + 1
+#'
+#' @examples
+#' print("need to wait on built in data sets")
+oneyearcat <- function(inpopC,inNt,Nclass,incat,yr) {  #
+  # yr=2; pop=2; inpopC=regC[[pop]]; inNt=regD$Nt[,yr-1,pop];
+  # Nclass=glb$Nclass; inH=0.05;
+  MatWt <- inpopC$MatWt/1e06
+  SelectWt <- inpopC$SelWt[,yr]/1e06
+  selyr <- inpopC$Select[,yr]
+  Ne <- numeric(Nclass)
+  Cat <- numeric(Nclass)
+  Os <- exp(-inpopC$Me/2)
+  #  MatureB <- sum(MatWt*inNt)
+  NumNe <- (Os * (inpopC$G %*% inNt))
+  ExploitB <- sum(SelectWt * NumNe) #SelectWt=Select*WtL
+  oldExpB <- ExploitB   # ExploitB after growth and 0.5NatM
+  estH <- min(incat/ExploitB,0.8) # no more than 0.8 harvest rate
+  Fish <- 1-(estH*selyr)
+  newNt <- (Os * (Fish * NumNe)) #+ Rec # Nt - catch - 0.5M, and + Rec
+  Cat <- (estH*selyr) * NumNe  #numbers at size in the catch
+  ExploitB <- (sum(SelectWt * newNt) + oldExpB)/2.0 #av start and end
+  MatureB <- sum(MatWt*newNt) #+ MatBC
+  Catch <- sum(inpopC$WtL*Cat)/1e06
+  Harvest <- Catch/ExploitB  # uses average of the start and end
+  ce <- inpopC$popq * ExploitB * 1000.0  #ExploitB
+  ans <- list(ExploitB,MatureB,Catch,Harvest,newNt,ce,Cat)
+  names(ans) <- c("ExploitB","MatureB","Catch","Harvest","Nt","ce",
+                  "CatchN")
+  return(ans)
+} # End of oneyearcat
+
+#' @title oneyearC conducts one year's dynamics using catch not harvest
+#'
+#' @description oneyearD conducts one year's dynamics in the simulation
+#'     using catches rather than harvest rates. The harvest rates are
+#'     estimated after first estimating the exploitable biomass.
+#'     returning the revised regionD, which will have had a single year
+#'     of activity included in each of its components.
+#'
+#' @param regC the constant portion of the region with a list of
+#'     properties for each population
+#' @param regD the dynamics portion of the region, with matrices and
+#'     arrays for the dynamic variables of the dynamics of the
+#'     operating model
+#' @param Ncl the number of size classes used to describe size
+#' @param catchp a vector of catches to be taken in the year from each
+#'     population
+#' @param year the year of the dynamics, would start in year 2 as year
+#'     1 is the year of initiation.
+#' @param sigmar the variation in recruitment dynamics, set to 1e-08
+#'     when searching for equilibria.
+#' @param npop the number of populations, the global numpop
+#' @param movem the larval dispersal movement matrix
+#'
+#' @return a list containing a revised dynamics list
+#' @export
+#'
+#' @examples
+#'  data(constants)
+#'  data(region1)
+#'  ans <- makeregionC(region1,constants) # classical equilibrium
+#'  regionC <- ans$regionC
+#'  glb <- ans$glb
+#'  ans <- makeregion(glb,regionC) # now make regionD
+#'  regionC <- ans$regionC  # region constants
+#'  regionD <- ans$regionD
+#'  npop <- glb$numpop
+#'  Nc <- glb$Nclass
+#'  nyrs <- glb$Nyrs
+#'  catch <- 360.0 # larger than total MSY ~ 310t
+#'  B0 <- getvar(regionC,"B0")
+#'  totB0 <- sum(B0)
+#'  prop <- B0/totB0
+#'  catchpop <- catch * prop
+#'  for (yr in 2:nyrs)
+#'    regionD <- oneyearC(regC=regionC,regD=regionD,Ncl=Nc,
+#'                    catchp=catchpop,year=yr,sigmar=1e-08,npop=npop,
+#'                    movem=glb$move)
+#'  str(regionD)
+#'  round(regionD$catchN[60:105,1:5,1],1)
+oneyearC <- function(regC,regD,Ncl,catchp,year,sigmar,npop,movem) {
+  matb <- numeric(npop)
+  for (popn in 1:npop) {  # year=2
+    out <- oneyearcat(inpopC=regC[[popn]],inNt=regD$Nt[,year-1,popn],
+                      Nclass=Ncl,incat=catchp[popn],yr=year)
+    regD$exploitB[year,popn] <- out$ExploitB
+    regD$matureB[year,popn] <- out$MatureB
+    regD$catch[year,popn] <- out$Catch
+    regD$harvestR[year,popn] <- out$Harvest
+    regD$cpue[year,popn] <- out$ce
+    regD$Nt[,year,popn] <- out$Nt
+    regD$catchN[,year,popn] <- out$CatchN
+    matb[popn] <- out$MatureB
+  }
+  steep <- getvect(regC,"steeph") #sapply(regC,"[[","popdef")["steeph",]
+  r0 <- getvar(regC,"R0") #sapply(regC,"[[","R0")
+  b0 <- getvar(regC,"B0") #sapply(regC,"[[","B0")
+  recs <- oneyearrec(steep,r0,b0,matb,sigR=sigmar)
+  newrecs <- movem %*% recs
+  regD$recruit[year,] <- newrecs
+  regD$Nt[1,year,] <- newrecs
+  regD$deplsB[year,] <- regD$matureB[year,]/b0
+  regD$depleB[year,] <- regD$exploitB[year,]/getvar(regC,"ExB0")
+  return(regD)
+} # end of oneyearC
 
 
 #' @title oneyearD conducts one year's dynamics in the simulation
@@ -903,13 +1043,13 @@ oneyearD <- function(regC,regD,Ncl,inHt,year,sigmar,npop,movem) {
   }
   steep <- getvect(regC,"steeph") #sapply(regC,"[[","popdef")["steeph",]
   r0 <- getvar(regC,"R0") #sapply(regC,"[[","R0")
-  mover0 <- movem %*% r0
   b0 <- getvar(regC,"B0") #sapply(regC,"[[","B0")
-  recs <- oneyearrec(steep,mover0,b0,matb,sigR=sigmar)
-  regD$recruit[year,] <- recs # already adjusted for larval dispersal
-  regD$Nt[1,year,] <- recs
+  recs <- oneyearrec(steep,r0,b0,matb,sigR=sigmar)
+  newrecs <- movem %*% recs
+  regD$recruit[year,] <- newrecs
+  regD$Nt[1,year,] <- newrecs
   regD$deplsB[year,] <- regD$matureB[year,]/b0
-  regD$depleB[year,] <- regD$exploitB[year,]/getvar(regC,"ExB0") #sapply(regC,"[[","ExB0")
+  regD$depleB[year,] <- regD$exploitB[year,]/getvar(regC,"ExB0")
   return(regD)
 } # end of oneyearD   round(regD$Nt[,year,])
 
@@ -938,7 +1078,7 @@ oneyearD <- function(regC,regD,Ncl,inHt,year,sigmar,npop,movem) {
 #' insigmar <- 0.3
 #' oneyearrec(steep,R0,B0,Bsp,insigmar)
 #' oneyearrec(steep,R0,B0,Bsp,insigmar)
-#' }
+#' }   # steep=steep; R0=mover0; B0=b0; Bsp=b0
 oneyearrec <- function(steep,R0,B0,Bsp,sigR) {
    epsilon <- exp(rnorm(1,mean=0,sd=sigR) - (sigR * sigR)/2)
    rec <- ((4*steep*R0*Bsp)/((1-steep)*B0+(5*steep-1)*Bsp)) * epsilon
@@ -1152,12 +1292,13 @@ restart <- function(oldregD,nyrs,npop,N,zero=TRUE) { # oldregD=regionD; nyrs=Nyr
 #'
 #' @examples
 #' print("wait on built in data sets")
+#' # regC=regionC; regD=regionD; glob=glb; inHarv=rep(0.3,numpop)
 runthreeH <- function(regC,regD,glob,inHarv) {
   npop <- glob$numpop
   Nclass <- glob$Nclass
   Nyrs <- glob$Nyrs
   larvdisp <- glob$larvdisp
-  for (iter in 1:3) {
+  for (iter in 1:3) { # iter=1; yr=2
     for (yr in 2:Nyrs)
       regD <- oneyearD(regC=regC,regD=regD,Ncl=Nclass,
                        inHt=inHarv,year=yr,sigmar=1e-08,npop=npop,
