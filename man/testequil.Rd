@@ -4,14 +4,14 @@
 \alias{testequil}
 \title{testequil runs a region Nyrs and determines stability}
 \usage{
-testequil(regC, regD, glob, inH = 0, verbose = TRUE)
+testequil(regionC, regD, glb, inH = 0, verbose = TRUE)
 }
 \arguments{
-\item{regC}{the constants components of the simulated region}
+\item{regionC}{the constants components of the simulated region}
 
 \item{regD}{the dynamic components of the simulated region}
 
-\item{glob}{the general global variables}
+\item{glb}{the global variables}
 
 \item{inH}{a vector of numpop harvest rates}
 

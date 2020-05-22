@@ -179,6 +179,45 @@ numbersatsize <- function(resdir, runlabel, glb, regD) {
 } # end of numbersatsize
 
 
+#' @title compregionN compares numbers-at-size before/after depletion
+#'
+#' @description compregionN generates a plot comparing the unfished
+#'     numbers-at-size with those for a given level of depletion.
+#'
+#' @param unfN the unfished numbers-at-size from getregionprops
+#' @param curN the current numbers-at-size from getregionprops
+#' @param glb the global object
+#' @param yr the year of the dynamics
+#' @param depl the depletion level of the current n-a-s
+#' @param LML the legal minimum length in teh comparison year
+#' @param resdir the results directory, default = "" leading to no
+#'     .png file, just a plot to the screen.
+#'
+#' @return invisibly the filename ready for logfilename
+#' @export
+#'
+#' @examples
+#' print("still to be developed")
+#' # unfN=unfN; curN=depN;glb=glb; yr=1; depl=0.3993; LML=132; resdir=resdir
+compregionN <- function(unfN,curN,glb,yr,depl,LML=0,resdir="") {
+  usecl=5:glb$Nclass
+  mids <- glb$midpts
+  filen <- ""
+  if (nchar(resdir) > 0) {
+    filen <- paste0("regional_numbers-at-size_yr",yr,".png")
+    filen <- filenametopath(resdir,filen)
+  }
+  plotprep(width=7, height=4.5, filename=filen,verbose=FALSE)
+  plot(mids[usecl],unfN[usecl,"region"]/1000.0,type="l",lwd=2,
+       panel.first=grid(),xlab="Shell Length (mm)",
+       ylab="Numbers-at-Size '000s")
+  lines(mids[usecl],curN[usecl,"region"]/1000.0,lwd=2,col=2)
+  if (LML > 0) abline(v=LML,col=1,lty=2)
+  legend("topright",c("Unfished",depl),col=c(1,2),lwd=3,bty="n")
+  if (nchar(filen) > 0) dev.off()
+  return(invisible(filen))
+} # end of compregionN
+
 #' @title plotproductivity characterizes each population's yield curve
 #'
 #' @description plotproductivity characterizes each population's yield

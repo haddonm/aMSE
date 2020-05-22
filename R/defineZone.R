@@ -132,7 +132,7 @@ definepops <- function(inSMU,inSMUindex,const,glob) {
 #'     the target depletion and then re-searches across those bounds
 #'     using len intervals.
 #'
-#' @param regC the constants components of the simulated region
+#' @param regionC the constants components of the simulated region
 #' @param regD the dynamic components of the simulated region
 #' @param glob the general global variables
 #' @param depl the target depletion proportion for the whole region
@@ -160,7 +160,7 @@ definepops <- function(inSMU,inSMUindex,const,glob) {
 #'   sum((regDD$matureB[1,]/sum(regDD$matureB[1,]))*regDD$deplsB[1,])
 #'   mean(regDD$deplsB[1,])
 #' }
-dodepletion <- function(regC,regD,glob,depl,product,len=15) {
+dodepletion <- function(regionC,regD,glob,depl,product,len=15) {
   #  regC=regionC; regD=regionD; glob=glb;  product=product; depl=0.2;len=15
   # use product to find bounds on H around the desired depletion level
   spb <- rowSums(product[,"MatB",])
@@ -184,13 +184,13 @@ dodepletion <- function(regC,regD,glob,depl,product,len=15) {
   numpop <- glob$numpop
   for (harv in 1:len) {
     doharv <- rep(dinitH[harv],numpop)
-    regDD <- runthreeH(regC,regD,glob,inHarv=doharv)
+    regDD <- runthreeH(regionC=regionC,regD,inHarv=doharv,glob)
     regdepl[harv] <- sum((regDD$matureB[1,]/sum(regDD$matureB[1,])) *
                            regDD$deplsB[1,])
   }
   pick <- which.closest(depl,regdepl)
   pickharv <- rep(dinitH[pick],numpop)
-  regDD <- runthreeH(regC,regD,glob,inHarv=pickharv)
+  regDD <- runthreeH(regionC=regionC,regD,inHarv=pickharv,glob)
   return(regDD)
 } # end of dodepletion
 
@@ -212,7 +212,7 @@ dodepletion <- function(regC,regD,glob,depl,product,len=15) {
 #'     region it is best to have a long sequence of finely incremented
 #'     harvest rates that take a long time.
 #'
-#' @param regC the constants components of the simulated region
+#' @param regionC the constants components of the simulated region
 #' @param regD the dynamic components of the simulated region
 #' @param glob the general global variables
 #' @param lowlim the lower limit of harvest rate applied, default=0.0
@@ -225,7 +225,8 @@ dodepletion <- function(regC,regD,glob,depl,product,len=15) {
 #'
 #' @examples
 #' print("wait")
-doproduction <- function(regC,regD,glob,lowlim=0.0,uplim=0.35,inc=0.005) {
+doproduction <- function(regionC,regD,glob,
+                         lowlim=0.0,uplim=0.35,inc=0.005) {
   numpop <- glob$numpop
   Nclass <- glob$Nclass
   Nyrs <- glob$Nyrs
@@ -235,7 +236,8 @@ doproduction <- function(regC,regD,glob,lowlim=0.0,uplim=0.35,inc=0.005) {
   columns <- c("ExB","MatB","AnnH","Catch","Deplet","RelCE")
   results <- array(0,dim=c(nH,6,numpop),dimnames=list(initH,columns,1:numpop))
   for (aH in 1:nH) { # aH=1 ; yr=2
-    regD <- runthreeH(regC,regD,glob,inHarv=rep(initH[aH],numpop))
+    regD <- runthreeH(regionC=regionC,regD,inHarv=rep(initH[aH],numpop),glob)
+   # regD <- runthreeH(regD,inHarv=rep(initH[aH],numpop),glob)
     results[aH,"ExB",] <- regD$exploitB[1,]
     results[aH,"MatB",] <- regD$matureB[1,]
     results[aH,"AnnH",] <- regD$harvestR[1,]
@@ -702,7 +704,8 @@ makeregion <- function(glob,regC) { #glob=glb; regC=regionC;
     recr[1] <- newrecs[pop]  # change this once I have imported move
     UnitM <- matrix(0,nrow=N,ncol=N)
     diag(UnitM) <- 1.0
-    Minv <- solve(UnitM - (SurvE * regC[[pop]]$G ))
+    G <- regC[[pop]]$G
+    Minv <- solve(UnitM - (SurvE * G ))
     Nt[,1,pop] <- Minv %*% recr # initial unfished numbers-at-size
     MatB[1,pop] <- sum(regC[[pop]]$MatWt*Nt[,1,pop])/1e06
     regC[[pop]]$B0 <- MatB[1,pop] # mature biomass at start of year
@@ -752,6 +755,8 @@ maturity <- function(ina,inb,lens) {
 #' @description modregC runs the doproduction function so it can then
 #'     appropriately fill in each population's MSY and MSYDepl values.
 #'     It outputs both the finalized regC and the prodution array.
+#'     Hence we need to push copies of both regionC and regionD into
+#'     modregC
 #'
 #' @param regC the constant components of the simulated region
 #' @param regD the dynamic components of the simulated region
@@ -775,10 +780,10 @@ maturity <- function(ina,inb,lens) {
 #'   regionD <- ans$regionD
 #'   ans2 <- modregC(regionC,regionD,glb)
 #'   str(ans2,max.level=2)
-#' }   # regC=regionC; regD=regionD; glob=glb; lowlim=0.0;uplim=0.4;inc=0.005
+#' }   # regionC=regionC; regD=regionD; glob=glb; lowlim=0.0;uplim=0.4;inc=0.005
 modregC <- function(regC,regD,glob,lowlim=0.0,uplim=0.4,inc=0.005) {
   numpop <- glob$numpop
-  production <- doproduction(regC=regC,regD=regD,glob=glob,
+  production <- doproduction(regionC=regC,regD=regD,glob=glob,
                              lowlim=lowlim,uplim=uplim,inc=inc)
   xval <- findmsy(production)
   for (pop in 1:numpop) {
@@ -835,12 +840,13 @@ oneyear <- function(inpopC,inNt,Nclass,inH,yr) {  #
   Fish <- 1-(inH*selyr)
   newNt <- (Os * (Fish * NumNe)) #+ Rec # Nt - catch - 0.5M, and + Rec
   Cat <- (inH*selyr) * NumNe  #numbers at size in the catch
-  ExploitB <- (sum(SelectWt * newNt) + oldExpB)/2.0 #av start and end
+  newExpB <- sum(SelectWt * newNt)
+  avExpB <- (newExpB + oldExpB)/2.0 #av start and end
   MatureB <- sum(MatWt*newNt) #+ MatBC
   Catch <- sum(inpopC$WtL*Cat)/1e06
-  Harvest <- Catch/ExploitB  # uses average of the start and end
-  ce <- inpopC$popq * ExploitB * 1000.0  #ExploitB
-  ans <- list(ExploitB,MatureB,Catch,Harvest,newNt,ce,Cat)
+  Harvest <- Catch/avExpB  # uses average of the start and end
+  ce <- inpopC$popq * avExpB * 1000.0  #ExploitB
+  ans <- list(newExpB,MatureB,Catch,Harvest,newNt,ce,Cat)
   names(ans) <- c("ExploitB","MatureB","Catch","Harvest","Nt","ce",
                   "CatchN")
   return(ans)
@@ -903,7 +909,7 @@ oneyearcat <- function(inpopC,inNt,Nclass,incat,yr) {  #
   ExploitB <- (sum(SelectWt * newNt) + oldExpB)/2.0 #av start and end
   MatureB <- sum(MatWt*newNt) #+ MatBC
   Catch <- sum(inpopC$WtL*Cat)/1e06
-  Harvest <- Catch/ExploitB  # uses average of the start and end
+  Harvest <- min(Catch/ExploitB,0.8)  # average of the start and end
   ce <- inpopC$popq * ExploitB * 1000.0  #ExploitB
   ans <- list(ExploitB,MatureB,Catch,Harvest,newNt,ce,Cat)
   names(ans) <- c("ExploitB","MatureB","Catch","Harvest","Nt","ce",
@@ -991,9 +997,12 @@ oneyearC <- function(regC,regD,Ncl,catchp,year,sigmar,npop,movem) {
 #'
 #' @description onyearD conducts one year's dynamics in the simulation
 #'     returning the revised regionD, which will have had a single year
-#'     of activity included in each of its components.
+#'     of activity included in each of its components. This uses regC
+#'     but always within the environment of another function in which
+#'     regC (as regionC) can be found. Used in runthreeH, (and hence
+#'     dodepletion and doproduction) and in testequil
 #'
-#' @param regC the constant portion of the region with a list of
+#' @param regionC the constant portion of the region with a list of
 #'     properties for each population
 #' @param regD the dynamics portion of the region, with matrices and
 #'     arrays for the dynamic variables of the dynamics of the
@@ -1009,7 +1018,6 @@ oneyearC <- function(regC,regD,Ncl,catchp,year,sigmar,npop,movem) {
 #' @param movem the larval dispersal movement matrix
 #'
 #' @return a list containing a revised dynamics list
-#' @export
 #'
 #' @examples
 #'  data(constants)
@@ -1018,19 +1026,19 @@ oneyearC <- function(regC,regD,Ncl,catchp,year,sigmar,npop,movem) {
 #'  regionC <- ans$regionC
 #'  glb <- ans$glb
 #'  ans <- makeregion(glb,regionC) # now make regionD
-#'  regionC <- ans$regionC  # region constants
+#'  regionC <- ans$regionC  # region constants used as regC in oneyearD
 #'  regionD <- ans$regionD
 #'  numpop <- glb$numpop
-#'  harvest <- rep(0.2,numpop)
-#'  regionD <- oneyearD(regC=regionC,regD=regionD,Ncl=glb$Nclass,
-#'                      inHt=harvest,year=2,sigmar=1e-06,npop=numpop,
-#'                      movem=glb$move)
+#'  harvest <- rep(0.2,numpop) # not exported so needs aMSE:::
+#'  regionD <- aMSE:::oneyearD(regionC=regionC,regD=regionD,
+#'                    Ncl=glb$Nclass,inHt=harvest,year=2,sigmar=1e-06,
+#'                    npop=numpop,movem=glb$move)
 #'  str(regionD)
 #'  round(regionD$catchN[60:105,1:5,1],1)
-oneyearD <- function(regC,regD,Ncl,inHt,year,sigmar,npop,movem) {
+oneyearD <- function(regionC,regD,Ncl,inHt,year,sigmar,npop,movem) {
   matb <- numeric(npop)
   for (popn in 1:npop) {  # year=2
-    out <- oneyear(inpopC=regC[[popn]],inNt=regD$Nt[,year-1,popn],
+    out <- oneyear(inpopC=regionC[[popn]],inNt=regD$Nt[,year-1,popn],
                    Nclass=Ncl,inH=inHt[popn],yr=year)
     regD$exploitB[year,popn] <- out$ExploitB
     regD$matureB[year,popn] <- out$MatureB
@@ -1041,15 +1049,15 @@ oneyearD <- function(regC,regD,Ncl,inHt,year,sigmar,npop,movem) {
     regD$catchN[,year,popn] <- out$CatchN
     matb[popn] <- out$MatureB
   }
-  steep <- getvect(regC,"steeph") #sapply(regC,"[[","popdef")["steeph",]
-  r0 <- getvar(regC,"R0") #sapply(regC,"[[","R0")
-  b0 <- getvar(regC,"B0") #sapply(regC,"[[","B0")
+  steep <- getvect(regionC,"steeph") #sapply(regC,"[[","popdef")["steeph",]
+  r0 <- getvar(regionC,"R0") #sapply(regC,"[[","R0")
+  b0 <- getvar(regionC,"B0") #sapply(regC,"[[","B0")
   recs <- oneyearrec(steep,r0,b0,matb,sigR=sigmar)
   newrecs <- movem %*% recs
   regD$recruit[year,] <- newrecs
   regD$Nt[1,year,] <- newrecs
   regD$deplsB[year,] <- regD$matureB[year,]/b0
-  regD$depleB[year,] <- regD$exploitB[year,]/getvar(regC,"ExB0")
+  regD$depleB[year,] <- regD$exploitB[year,]/getvar(regionC,"ExB0")
   return(regD)
 } # end of oneyearD   round(regD$Nt[,year,])
 
@@ -1276,10 +1284,12 @@ restart <- function(oldregD,nyrs,npop,N,zero=TRUE) { # oldregD=regionD; nyrs=Nyr
 #' @description runthree is used when searching numerically for an
 #'     equilibrium and it conducts the Nyrs dynamics three times, each
 #'     time through it replaces year 1 with year Nyrs. Thus if Nyrs is
-#'     40 it conducts 3 * 39 years of dynamics (117 years).
+#'     40 it conducts 3 * 39 years of dynamics (117 years). This is
+#'     not exported. It uses regionC but always it does this inside
+#'     the environment of another function where regionC can be found
+#'     Used inside dodepletion and doproduction
 #'
-#' @param regC the constant portion of the region with a list of
-#'     properties for each population
+#' @param regionC the constants components of the simulated region
 #' @param regD the dynamics portion of the region, with matrices and
 #'     arrays for the dynamic variables of the dynamics of the
 #'     operating model
@@ -1288,19 +1298,18 @@ restart <- function(oldregD,nyrs,npop,N,zero=TRUE) { # oldregD=regionD; nyrs=Nyr
 #'     across all years.
 #'
 #' @return a list containing a revised dynamics list, regionD
-#' @export
 #'
 #' @examples
 #' print("wait on built in data sets")
-#' # regC=regionC; regD=regionD; glob=glb; inHarv=rep(0.3,numpop)
-runthreeH <- function(regC,regD,glob,inHarv) {
+#' # regionC=regionC; regD=regionD; glob=glb; inHarv=rep(0.3,numpop)
+runthreeH <- function(regionC,regD,inHarv,glob) {
   npop <- glob$numpop
   Nclass <- glob$Nclass
   Nyrs <- glob$Nyrs
   larvdisp <- glob$larvdisp
   for (iter in 1:3) { # iter=1; yr=2
     for (yr in 2:Nyrs)
-      regD <- oneyearD(regC=regC,regD=regD,Ncl=Nclass,
+      regD <- oneyearD(regionC=regionC,regD=regD,Ncl=Nclass,
                        inHt=inHarv,year=yr,sigmar=1e-08,npop=npop,
                        movem=glob$move)
     regD <- restart(oldregD=regD,nyrs=Nyrs,npop=npop,N=Nclass,zero=TRUE)
@@ -1332,10 +1341,10 @@ setupregion <- function(constants,region1) { # constants=constants; region1=regi
   ans <- makeregionC(region1,constants) # classical equilibrium
   regionC <- ans$regionC
   glb <- ans$glb
-  ans <- makeregion(glb,regionC) # now make regionD
+  ans <- makeregion(glob=glb,regC=regionC) # now make regionD
   regionC <- ans$regionC  # region constants
   regionD <- ans$regionD  # region dynamics
-  ans <- modregC(regionC,regionD,glb)
+  ans <- modregC(regC=regionC,regD=regionD,glob=glb)
   regionC <- ans$regionC  # region constants
   product <- ans$product  # productivity by population
   out <- list(regionC=regionC, regionD=regionD, product=product,
@@ -1404,9 +1413,9 @@ STM <- function(p,mids) { #    # p <- popparam[1:4]; mids <- midpts
 #'     same as the first (to three decimal places). It reports this
 #'     to the console if verbose=TRUE
 #'
-#' @param regC the constants components of the simulated region
+#' @param regionC the constants components of the simulated region
 #' @param regD the dynamic components of the simulated region
-#' @param glob the general global variables
+#' @param glb the global variables
 #' @param inH a vector of numpop harvest rates
 #' @param verbose should results go to the console, default=TRUE
 #'
@@ -1429,16 +1438,15 @@ STM <- function(p,mids) { #    # p <- popparam[1:4]; mids <- midpts
 #'  regionC <- ans$regionC  # region constants
 #'  regDe <- testequil(regC=regionC,regD=regionD,glob=glb)
 #' }    #regC=testregC; regD=testregD; glob=glb; inH=0.0; verbose=TRUE
-testequil <- function(regC,regD,glob,inH=0.0,verbose=TRUE) {
-  Nyrs <- glob$Nyrs
-  Nclass <- glob$Nclass
-  npop <- glob$numpop
-  larvdisp <- glob$larvdisp
+testequil <- function(regionC,regD,glb,inH=0.0,verbose=TRUE) {
+  Nyrs <- glb$Nyrs
+  Nclass <- glb$Nclass
+  npop <- glb$numpop
   inHarv <- rep(inH,npop)
   for (yr in 2:Nyrs)
-    regD <- oneyearD(regC=regC,regD=regD,Ncl=Nclass,
+    regD <- oneyearD(regionC=regionC,regD=regD,Ncl=Nclass,
                      inHt=inHarv,year=yr,sigmar=1e-08,npop=npop,
-                     movem=glob$move)
+                     movem=glb$move)
   if (verbose) {
     if (all(trunc(regD$matureB[1,],3) == trunc(regD$matureB[Nyrs,],3))) {
       print("matureB Stable",quote=FALSE)

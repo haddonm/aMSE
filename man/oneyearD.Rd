@@ -4,10 +4,10 @@
 \alias{oneyearD}
 \title{oneyearD conducts one year's dynamics in the simulation}
 \usage{
-oneyearD(regC, regD, Ncl, inHt, year, sigmar, npop, movem)
+oneyearD(regionC, regD, Ncl, inHt, year, sigmar, npop, movem)
 }
 \arguments{
-\item{regC}{the constant portion of the region with a list of
+\item{regionC}{the constant portion of the region with a list of
 properties for each population}
 
 \item{regD}{the dynamics portion of the region, with matrices and
@@ -35,7 +35,10 @@ a list containing a revised dynamics list
 \description{
 onyearD conducts one year's dynamics in the simulation
     returning the revised regionD, which will have had a single year
-    of activity included in each of its components.
+    of activity included in each of its components. This uses regC
+    but always within the environment of another function in which
+    regC (as regionC) can be found. Used in runthreeH, (and hence
+    dodepletion and doproduction) and in testequil
 }
 \examples{
  data(constants)
@@ -44,13 +47,13 @@ onyearD conducts one year's dynamics in the simulation
  regionC <- ans$regionC
  glb <- ans$glb
  ans <- makeregion(glb,regionC) # now make regionD
- regionC <- ans$regionC  # region constants
+ regionC <- ans$regionC  # region constants used as regC in oneyearD
  regionD <- ans$regionD
  numpop <- glb$numpop
- harvest <- rep(0.2,numpop)
- regionD <- oneyearD(regC=regionC,regD=regionD,Ncl=glb$Nclass,
-                     inHt=harvest,year=2,sigmar=1e-06,npop=numpop,
-                     movem=glb$move)
+ harvest <- rep(0.2,numpop) # not exported so needs aMSE:::
+ regionD <- aMSE:::oneyearD(regionC=regionC,regD=regionD,
+                   Ncl=glb$Nclass,inHt=harvest,year=2,sigmar=1e-06,
+                   npop=numpop,movem=glb$move)
  str(regionD)
  round(regionD$catchN[60:105,1:5,1],1)
 }

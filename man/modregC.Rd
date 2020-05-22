@@ -26,6 +26,8 @@ a list containing the updated regionC and product
 modregC runs the doproduction function so it can then
     appropriately fill in each population's MSY and MSYDepl values.
     It outputs both the finalized regC and the prodution array.
+    Hence we need to push copies of both regionC and regionD into
+    modregC
 }
 \examples{
 \dontrun{  # the doproduction part takes too long to run
@@ -39,5 +41,5 @@ modregC runs the doproduction function so it can then
   regionD <- ans$regionD
   ans2 <- modregC(regionC,regionD,glb)
   str(ans2,max.level=2)
-}   # regC=regionC; regD=regionD; glob=glb; lowlim=0.0;uplim=0.4;inc=0.005
+}   # regionC=regionC; regD=regionD; glob=glb; lowlim=0.0;uplim=0.4;inc=0.005
 }

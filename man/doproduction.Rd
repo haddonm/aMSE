@@ -4,10 +4,10 @@
 \alias{doproduction}
 \title{doproduction estimates a production curve for each population}
 \usage{
-doproduction(regC, regD, glob, lowlim = 0, uplim = 0.35, inc = 0.005)
+doproduction(regionC, regD, glob, lowlim = 0, uplim = 0.35, inc = 0.005)
 }
 \arguments{
-\item{regC}{the constants components of the simulated region}
+\item{regionC}{the constants components of the simulated region}
 
 \item{regD}{the dynamic components of the simulated region}
 

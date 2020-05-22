@@ -4,10 +4,10 @@
 \alias{dodepletion}
 \title{dodepletion resets regionD to an input depletion level}
 \usage{
-dodepletion(regC, regD, glob, depl, product, len = 15)
+dodepletion(regionC, regD, glob, depl, product, len = 15)
 }
 \arguments{
-\item{regC}{the constants components of the simulated region}
+\item{regionC}{the constants components of the simulated region}
 
 \item{regD}{the dynamic components of the simulated region}
 

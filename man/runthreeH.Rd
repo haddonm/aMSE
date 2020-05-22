@@ -4,20 +4,19 @@
 \alias{runthreeH}
 \title{runthree conducts the dynamics with constant catch 3 times}
 \usage{
-runthreeH(regC, regD, glob, inHarv)
+runthreeH(regionC, regD, inHarv, glob)
 }
 \arguments{
-\item{regC}{the constant portion of the region with a list of
-properties for each population}
+\item{regionC}{the constants components of the simulated region}
 
 \item{regD}{the dynamics portion of the region, with matrices and
 arrays for the dynamic variables of the dynamics of the
 operating model}
 
-\item{glob}{the globals variable from readregionfile}
-
 \item{inHarv}{a vector of annual harvest rates to be held constant
 across all years.}
+
+\item{glob}{the globals variable from readregionfile}
 }
 \value{
 a list containing a revised dynamics list, regionD
@@ -26,9 +25,12 @@ a list containing a revised dynamics list, regionD
 runthree is used when searching numerically for an
     equilibrium and it conducts the Nyrs dynamics three times, each
     time through it replaces year 1 with year Nyrs. Thus if Nyrs is
-    40 it conducts 3 * 39 years of dynamics (117 years).
+    40 it conducts 3 * 39 years of dynamics (117 years). This is
+    not exported. It uses regionC but always it does this inside
+    the environment of another function where regionC can be found
+    Used inside dodepletion and doproduction
 }
 \examples{
 print("wait on built in data sets")
-# regC=regionC; regD=regionD; glob=glb; inHarv=rep(0.3,numpop)
+# regionC=regionC; regD=regionD; glob=glb; inHarv=rep(0.3,numpop)
 }

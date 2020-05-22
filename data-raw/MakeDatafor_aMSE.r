@@ -3,9 +3,7 @@
 
 
 # library(r4cpue)
-library(rutilsMH)
 library(aMSE)
-library(microbenchmark)
 
 
 options("show.signif.stars"=FALSE,"stringsAsFactors"=FALSE,
@@ -64,7 +62,20 @@ save(testregC,file=paste0(datadir,"testregC.RData"))
 save(testregD,file=paste0(datadir,"testregD.RData"))
 save(product,file=paste0(datadir,"product.RData"))
 
+
+# some cpue data -----------------------------------------------------
+
+datadir <- "./../../rcode2/aMSE/data-raw/"
+
+blockE13 <- read.csv(paste0(datadir,"block13e.csv"),header=TRUE)
+
+save(blockE13,file=paste0(datadir,"blockE13.RData"))
+
+
 # check and transfer -------------------------------------------------------
+
+
+
 
 
 

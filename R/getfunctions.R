@@ -1,4 +1,29 @@
 
+#' @title getaav calculates annual absolute variation in catch
+#'
+#' @description getaav calculates the annual absolute change in catch
+#'     for an input vector of catches, which could be across a series
+#'     of years or even across different spatial units for a single
+#'     year (an unusual use).
+#'     The equation used is aav = 100 x sum(|Ct - Ct-1|)/(sum(Ct).
+#'
+#' @param invect a vector of catches
+#'
+#' @return a single scalar value the AAV of the input catches
+#' @export
+#'
+#' @examples
+#'   catch <- c(1,2,3,4,5,4,3,2,1)
+#'   getaav(catch)  # should equal 0.32
+getaav <- function(invect) { # invect=x
+  nyr <- length(invect)
+  totC <- sum(invect,na.rm=T)
+  aac <- sum(abs(invect[2:nyr] - invect[1:(nyr-1)]))
+  aav <- 0.0
+  if (totC > 0.0) aav <- aac/totC
+  return(aav)
+} # end of getaav
+
 #' @title getConst extracts 'nb' numbers from a line of text
 #'
 #' @description getConst parses a line of text and extracts 'nb' pieces of
@@ -59,6 +84,31 @@ getextension <- function(filename) {
     stop("A file added to results must be either 'png' or 'csv'")
   return(type)
 } # end of getextension
+
+#' @title getgrad1 calculates the one year gradient score
+#'
+#' @description getgrad1 calculates the one year gradient score for a
+#'    vector of CPUE. The equation used is [CE(y) / CE(y-1)] - 1,
+#'    which provides the annual proportional change in CPUE.
+#'
+#' @param vectce vector of cpue for a given spatial scale
+#' @param maxGradient the scaling factor used in a particular zone
+#'
+#' @return a vector of gradient1 for each year, starting from year 2
+#' @export
+#'
+#' @examples
+#' data(blockE13)
+#' nyr <- length(blockE13$year)
+#' grad1 <- getgrad1(blockE13$cpue)
+#' score1 <- getscore1(grad1)
+#' cbind(blockE13$year[2:nyr],grad1,score1)
+getgrad1 <- function(vectce) {
+  nyr <- length(vectce)
+  grad1 <- (vectce[2:nyr]/vectce[1:(nyr-1)])-1
+  return(grad1)
+} # end of getgrad1
+
 
 #' @title getlistvar extracts a vector or matrix from regionC
 #'
@@ -204,6 +254,41 @@ getregionLF <- function(regD,glb) { # need to define years
   return(storeLF)
 } # end of getregionLF
 
+#' @title getscore1 calculates the scores for the grad1 PM
+#'
+#' @description getscore1 calculates the scores for the grad1
+#'     performance measure. It does this by re-scaling the range of
+#'     the
+#'
+#' @param grad1 the values derived from the function getgrad1
+#'
+#' @return a vector of scores to be included in the MCDA
+#' @export
+#'
+#' @examples
+#' data(blockE13)
+#' nyr <- length(blockE13$year)
+#' grad1 <- getgrad1(blockE13$cpue)
+#' score1 <- getscore1(grad1)
+#' cbind(blockE13$year[2:nyr],grad1,score1)
+getscore1 <- function(grad1) {
+  bounds <- round((range(grad1,na.rm=TRUE) * 1.1),2)
+  low <- seq(bounds[1],0.0,length=6)
+  high <- seq(0.0,bounds[2],length=6)
+  xax <- c(low[1:5],high)
+  model1 <- lm(0:5 ~ xax[1:6])
+  vars <- coef(model1)
+  score1 <- grad1
+  pickl0 <- which(grad1 <= 0)
+  score1[pickl0] <- grad1[pickl0]*vars[2] + vars[1]
+  points(grad1[pickl0],score1[pickl0],pch=16,cex=1.25,col=2)
+  model2 <- lm(5:10 ~ xax[6:11])
+  vars2 <- coef(model2)
+  pickg0 <- which(grad1 > 0)
+  score1[pickg0] <- grad1[pickg0]*vars2[2] + vars2[1]
+  return(score1)
+}
+
 #' @title getsingleNum extracts a single number from an input line of text
 #'
 #' @description getsingleNum obtains a number from an input line. The
@@ -236,6 +321,47 @@ getsingleNum <- function(varname,intxt,context="") {
   }
 }
 
+#' @title getsmureg summarizes regionD into MSU and region
+#'
+#' @description getsmureg rowsums the matrices of matureB, exploitB,
+#'     catch, and recruit from the input regD into the separate SMUs
+#'     and the total into the region. The harvestR is simply the
+#'     respective catch divided by the exploitB, and the cpue are the
+#'     individual population cpue weighted relative to the catch taken
+#'     from each population in either the SMU or the complete region.
+#'
+#' @param regD the regionD after nyrs of dynamics
+#'
+#' @return a list of six matrices of nSMU columns of SMU summaries,
+#'     and one column for the region
+#' @export
+#'
+#' @examples
+#' print("wait on an example")
+getsmureg <- function(regD) { # regC=regionC; regD=regionD; glb=glb
+  iSMU <- regD$SMU
+  SMU <- unique(iSMU)
+  nSMU <- length(SMU)
+  matB <- getsum(regD$matureB,iSMU)
+  expB <- getsum(regD$exploitB,iSMU)
+  catch <- getsum(regD$catch,iSMU)
+  recruit <- getsum(regD$recruit,iSMU)
+  harvestR <- catch/expB
+  cpue <- catch # just ot have a labelled matrix ready
+  wtreg <- regD$catch/catch[,(nSMU+1)]
+  wtsmu <- regD$catch
+  for (mu in 1:nSMU) {
+    wtsmu[,(iSMU==mu)] <- regD$catch[,(iSMU==mu)]/catch[,mu]
+    cpue[,mu] <- rowSums(regD$cpue[,(iSMU==mu)] * wtsmu[,(iSMU==mu)])
+  }
+  cpue[,(nSMU+1)] <- rowSums(regD$cpue * wtreg)
+  ans <- list(matB=matB,expB=expB,catch=catch,recruit=recruit,
+              harvestR=harvestR,cpue=cpue)
+  return(ans)
+}  # end of getsmureg
+
+
+
 #' @title getStr obtains a string from an input text line
 #'
 #' @description  getStr obtains a string from an input text line in
@@ -259,7 +385,27 @@ getStr <- function(inline,nb) {
   return(outconst)
 } # end of getStr
 
-
+#' @title getsum sums each of the main dynamics within regionD
+#'
+#' @description getsum is used by getsmureg to sum each of the main
+#'     dynamic variables within regionD
+#'
+#' @param inmat what matrix within regionD to sum into SMU and region
+#' @param index a vector containing an index of populations within SMU
+#'
+#' @return an nSMU+1 column matrix summarizing each SMU and the region
+#'
+#' @examples
+#' print("wait on an example")
+getsum <- function(inmat,index) {
+  nSMU <- length(unique(index))
+  nyr <- nrow(inmat)
+  matO <- matrix(0,nrow=nyr,ncol=(nSMU+1),
+                 dimnames=list(1:nyr,c(paste0("SMU",1:nSMU),"region")))
+  for (mu in 1:nSMU) matO[,mu] <- rowSums(inmat[,(index==mu)])
+  matO[,(nSMU+1)] <- rowSums(inmat)
+  return(matO)
+}
 
 #' @title getunFished - extracts all data relating to year 1; unfished.
 #'
@@ -359,11 +505,11 @@ getunFished <- function(inzone,glb) {  # inzone=zone
 getregionprops <- function(regC,regD,glb,year=1) { # regC=regionC; regD=regionD; glb=glb; year=1
   numpop <- glb$numpop
   Nclass <- glb$Nclass
-  B0 <- sapply(regC,"[[","B0")
-  ExB0 <- sapply(regC,"[[","ExB0")
-  blml <- sapply(regC,"[[","bLML")
-  msy <- sapply(regC,"[[","MSY")
-  msydepl <- sapply(regC,"[[","MSYDepl")
+  B0 <- getvar(regC,"B0")
+  ExB0 <- getvar(regC,"ExB0")
+  blml <- getvar(regC,"bLML")
+  msy <- getvar(regC,"MSY")
+  msydepl <- getvar(regC,"MSYDepl")
   matB <- regD$matureB[year,]
   ExB <- regD$exploitB[year,]
   harvestR <- regD$harvestR[year,]
@@ -399,7 +545,7 @@ getregionprops <- function(regC,regD,glb,year=1) { # regC=regionC; regD=regionD;
   tot["harvestR"] <- mean(ans["harvestR",])
   tot["catch"] <- sum(ans["catch",])
   ans <- cbind(ans,tot)
-  colnames(ans) <- c(paste0("p",1:numpop),"total")
+  colnames(ans) <- c(paste0("p",1:numpop),"region")
   return(ans)
 }  # end of getregionprops
 

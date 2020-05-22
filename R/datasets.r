@@ -1,4 +1,34 @@
 
+#' @title blockE13 is summary fishery data for East coast block 13
+#'
+#' @description blockE13 is summary fishery data for East coast block
+#'     13 blacklip abalone (\emph{Haliotis rubra}), as might be used
+#'     to condition the operating model. It can be used for exploring
+#'     the performance measure estimators getgrad1 and getscore1.
+#'
+#' @name blockE13
+#'
+#' @docType data
+#'
+#' @section contents:
+#' \itemize{
+#'   \item year the calander year for the fishery data
+#'   \item Coeff is the back-transformed standardized coefficient for
+#'       the year, appropriately bias-corrected for the Log-Normal
+#'       errors.
+#'   \item SE is the standard error of the coefficient
+#'   \item Scaled is the Coeff scaled to the mean of the time-series
+#'   \item cpue is the Scaled values multiplied by the bias-corrected
+#'       geometric mean of the entire data-set
+#'   \item catch is the total catch from the original data
+#'   \item effort is the total effort as hours from the original data
+#' }
+#'
+#' @examples
+#'  data(blockE13)
+#'  print(blockE13)
+NULL
+
 #' @title constants is conditioning data for 6 populations
 #'
 #' @description constants is a data.frame of parameters for blacklip
