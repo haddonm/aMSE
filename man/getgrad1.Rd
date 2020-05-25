@@ -8,8 +8,6 @@ getgrad1(vectce)
 }
 \arguments{
 \item{vectce}{vector of cpue for a given spatial scale}
-
-\item{maxGradient}{the scaling factor used in a particular zone}
 }
 \value{
 a vector of gradient1 for each year, starting from year 2

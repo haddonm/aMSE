@@ -253,7 +253,9 @@ fish
 class(fish)
 
 
-grad1 <- grad1PM(ab$cpue)
+data("blockE13")
+ab <- blockE13
+grad1 <- getgrad1(ab$cpue)
 range(grad1,na.rm=TRUE)
 bounds <- round((range(grad1,na.rm=TRUE) * 1.1),2)
 low <- seq(bounds[1],0.0,length=6)
@@ -289,9 +291,15 @@ cbind(1993:2019,grad1,score1)
 
 
 
+grad4 <- getgrad4(grad1)
+range(grad4)
 
-
-
+plotprep(width=7,height=5,newdev=FALSE)
+parset(plots=c(2,1))
+plot(ab$year,ab$cpue,type="l",lwd=2,ylim=c(0,100))
+plot(0:27,c(NA,grad1),type="l",lwd=2)
+lines(0:27,c(NA,NA,NA,NA,grad4),col=2,lwd=2)
+abline(h=0.0,col=3)
 
 
 

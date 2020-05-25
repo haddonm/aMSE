@@ -92,7 +92,6 @@ getextension <- function(filename) {
 #'    which provides the annual proportional change in CPUE.
 #'
 #' @param vectce vector of cpue for a given spatial scale
-#' @param maxGradient the scaling factor used in a particular zone
 #'
 #' @return a vector of gradient1 for each year, starting from year 2
 #' @export
@@ -109,6 +108,36 @@ getgrad1 <- function(vectce) {
   return(grad1)
 } # end of getgrad1
 
+#' @title getgrad4 applies a linear regression in steps of wid to input
+#'
+#' @description getgrad4 takes an input vector and applies a linear
+#'     regression along the vector in steps of the parameter wid
+#'
+#' @param vectce the inout vector of cpue or proportional changes in
+#'     cpue
+#' @param wid the number of years of the input data to use in each
+#'     regression
+#'
+#' @return a vector of length (wid-1) shorter than the input vector
+#' @export
+#'
+#' @examples
+#' x <- c(0.0169,0.1953,0.1102,0.1511,-0.0403,-0.0247,-0.0255,-0.1089,
+#'        -0.1458,-0.2082,0.0289,-0.0267)
+#' grad4 <- getgrad4(x,wid=4)
+#' grad3 <- getgrad4(x,wid=3)
+#' cbind(c(NA,grad4),grad3)
+getgrad4 <- function(vectce,wid=4) { # vectce=ab$cpue; wid=4
+  nyr <- length(vectce)
+  inc <- wid-1
+  num <- nyr-wid+1
+  x <- 1:wid
+  grad4 <- numeric(num)
+  for (i in 1:num) {
+    grad4[i] <- coef(lm(vectce[i:(i+wid-1)] ~ x))[2]
+  }
+  return(grad4)
+} # end of getgrad4
 
 #' @title getlistvar extracts a vector or matrix from regionC
 #'
@@ -281,7 +310,6 @@ getscore1 <- function(grad1) {
   score1 <- grad1
   pickl0 <- which(grad1 <= 0)
   score1[pickl0] <- grad1[pickl0]*vars[2] + vars[1]
-  points(grad1[pickl0],score1[pickl0],pch=16,cex=1.25,col=2)
   model2 <- lm(5:10 ~ xax[6:11])
   vars2 <- coef(model2)
   pickg0 <- which(grad1 > 0)

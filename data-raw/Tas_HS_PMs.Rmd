@@ -1,0 +1,205 @@
+---
+title: "Abalone Performance Measures"
+author: "Malcolm Haddon"
+date: "`r format(Sys.Date(), '%d %B %Y')`"
+output: 
+  html_document:
+    df_print: paged
+    fig_caption: yes
+    fig_height: 5.5
+    fig_witdh: 6.5
+    number_sections: yes
+    toc: yes
+    toc_depth: 4
+  pdf_document:
+    fig_caption: yes
+    fig_height: 5.75
+    fig_width: 7.5
+    includes:
+      in_header: C:\A_Mal\Rcode\header.tex
+    keep_tex: yes
+    number_sections: yes
+    toc: yes
+    toc_depth: 4
+  word_document:
+    reference_docx: C:\A_Mal\Rcode\wordreferencestyle.docx
+    toc: true
+    fig_caption: true
+---
+
+<style type="text/css">
+  body, td {
+     font-size: 15px;
+  }
+  code.r{
+    font-size: 30px;
+  }
+  pre {
+    font-size: 15px
+  }
+</style>
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: { 
+      equationNumbers: { 
+            autoNumber: "all",
+            formatNumber: function (n) {return '3.'+n}
+      } 
+  }
+});
+</script>
+
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
+knitr::opts_chunk$set(
+	echo = FALSE,
+	message = FALSE,
+	warning = FALSE)
+  options(knitr.kable.NA = "",
+          knitr.table.format = "pandoc")
+  
+options(tinytex.verbose = TRUE)  # change this to suit
+
+options("show.signif.stars"=FALSE,
+        "stringsAsFactors"=FALSE,
+        "max.print"=50000,
+        "width"=240)
+
+library(aMSE)
+library(rutilsMH)
+suppressPackageStartupMessages(library(knitr))
+library(captioner)
+
+tab_nums <- captioner(prefix = "Table")
+fig_nums <- captioner(prefix = "Figure")
+pgwid=75     
+```
+
+
+
+# Introduction
+
+The Tasmanian abalone harvest strategy uses a Multi-Criterion Decision Analysis (MCDA) on fishery data from each statistical block. The MCDA is based upon the weighted scores of three performance measures, each of which relate to a measure of abalone catch-per-unit-effort. This analysis is used as the basis for decisions concerning the aspirational catch levels intended for each statistical block, and the sum of these intended catches across the blocks within each quota zone is used as the recommended biological catch (RBC). This is then translated by the managers into a total allowable catch (TAC) by the managers. This document aims to introduce the three performance measures and illustrate how they may be used in the management strategy evaluation framework (aMSE).
+
+## The Three Performance Measures
+
+The three PMs use different aspects of the commercial fishery cpue to each produce a score, which is combined in a weighted sum which is directly translated into a recommended catch for each statistical block. In all cases below, where reference is made to using cpue, this is referring to standardized commercial cpue. Currently the docket book based cpue is still what is used, and that is limited to fishery data from 1992 to the present (prior to 1992 the cpue data was reported in a different format).
+
+1. Target CPUE - involves a comparison of the current standardized cpue with a previously agreed target cpue, with each statistical block having their own target.
+
+2. Gradient1 - the gradient or slope of the change in cpue from the current year to the previous year, which aims to represent short-term changes in the fishery.
+
+3. Gradient4 - the gradient change in cpue over the last four years (including the current year $t$, $y_t, y_{t-1}, y_{t-2}, y_{t-3}$)
+
+We will use a standardized time-series, 1992 - 2019 from the eastern zone block 13 (data-set _blockE13_ within __aMSE__) to illustrate the use and calculation of each of the performance measures. The column of data of most interest is labelled _cpue_ and is the standardized cpue scaled to the bias-corrected geometric mean cpue across the whole time series.
+
+
+```{r echo=TRUE}
+data("blockE13")
+ab <- blockE13
+```
+
+
+
+`r tab_nums("T1", caption="The blockE13 data-set from aMSE")`
+
+```{r echo=FALSE } 
+ #tabulate the data-set being used 
+kable(ab,digits=c(0,4,4,4,4,3,3,1)) 
+``` 
+
+
+### Gradient1
+
+Gradient1 is simply the proportional change in cpue from one year to the next. This implies that with a time-series of 28 years (as in the blockE13 data-set) we can obtain 27 comparisons. Formally, where $CE_{b,t}$ is the cpue in block/SMU $b$ in year $t$, then the Gradient1 for block/SMU $b$ is:
+
+$$Gradient1_b=\left (\frac{CE_{b,t}}{CE_{b,t-1}} - 1 \right )$$
+
+The central idea for the Gradient1 (and Gradient4) performance measure is that the gradient obtained in each year can be converted into a score between 0 and 10, cenrted on a score of 5 for a gradient of 0.0.
+
+In __aMSE__ we have the function _getgrad1_ to calculate the gradient. The function requires the input of a vector of cpue values (a minimum of two values) and it will output a vector of length one less than the input vector. If we input the vector _ab$cpue_ from teh blockE13 data-set we obtain Gradient1 values for 1993 - 2019, which have a range from -0.208 to 0.286, which is obviously asymmetric around the zero value.
+
+```{r echo=TRUE}
+grad1 <- getgrad1(ab$cpue)
+range(grad1,na.rm=TRUE)
+```
+
+Earlier versions of the harvest strategy used a single range of Gradient1 values for all blocks, but this made it ineffective for some blocks, so in assessments since 2017, the observed range of values within each block was extended by 10% either side and each block treated separately. The reference period for setting this range was one year less than the year of the assessment. Thus for 2020 we would use the full time-series from 1992 - 2019. This change, to customize the Gradient1 (and Gradient4) performance measures to each block, was a significant improvement to the harvest strategy as the sensitivity to the Gradient1 and Gradient4 PMs is now the same in each block. However, it does mean that the relationship between the slope value (gradient) and the resulting score is no longer necessarily linear. We can see this with our example data-set and use the function _getscore1_ to get the score for each gradient1 value.
+
+
+
+```{r echo=TRUE, plot.width=5.75, plot.height=2.75}
+# round the range to get workable numbers
+bounds <- round((range(grad1,na.rm=TRUE) * 1.1),2)
+low <- seq(bounds[1],0.0,length=6) 
+high <- seq(0.0,bounds[2],length=6)
+xax <- c(low[1:5],high)  # combine above with below zero
+xax2 <- seq(-0.32,0.32,length=11)
+wrong <- lm(0:10 ~ xax2)
+par(cex=0.9,font.axis=7,font=7,font.lab=7)
+plot(xax,0:10,type="n",xaxt="n",xlab="Gradient1 Value",yaxt="n",
+     ylab="Gradient1 Score")
+axis(side=1,at=xax,label=xax)     # need to define the axes independently
+axis(side=2,at=0:10,label=0:10)   
+abline(v=xax,lwd=1,col="grey",lty=3)
+abline(h=0:10,lwd=1,col="grey",lty=3)
+abline(wrong,lty=2)
+lines(c(-0.23,0.0),c(0,5),lwd=2)  # add the linear relationships
+lines(c(0.0,0.32),c(5,10),lwd=2)
+score1 <- getscore1(grad1)  # examine the code using getscore1 without brackets
+points(grad1,score1,pch=16,col=2,cex=1.5)
+```
+
+`r fig_nums("F1", caption="The Gradient1 scores for the Gradient1 values obtained for the cpue column in the blockE13 data-set from aMSE. The asymmetric response with a break at zero is apparent in comparison to extending the value axis from -0.32 to 0.32, as in the dashed line.")`
+
+
+There were 16 negative gradients and 11 positive gradients. As these are proportions it should not be unexpected that the negative terms will have a smaller range than the positive. If we were to force a linear relationship on to this data by making the range of Gradient1 values extend from -0.32 to +0.32 this would automatically increase the scores for the negative Gradient1 values and hence reduce any constraining influence the negative values would be having. 
+
+
+### Gradient4
+
+This algorithm needs clarification. Currently, _getgrad4_, as below, works by applying it to the grad1 values, but that implies we are using five years each time. 
+
+```{r  echo=TRUE}
+grad4 <- getgrad4(grad1,wid=4) # uses five years of data; red in the figure 
+grad3 <- getgrad4(grad1,wid=3) # uses four years of data; blue in the figure
+range(grad4)
+range(grad3)
+```
+
+
+```{r  echo=TRUE, plot.width=5.75, plot.height=2.75}
+#plotprep(width=7,height=5,newdev=FALSE)
+parset(plots=c(2,1))
+plot(ab$year,ab$cpue,type="l",lwd=2,ylim=c(0,100))
+plot(0:27,c(NA,grad1),type="l",lwd=2)        # black
+lines(0:27,c(NA,NA,NA,NA,grad4),col=2,lwd=2) # red
+lines(0:27,c(NA,NA,NA,grad3),col=4,lwd=2)    # blue
+abline(h=0.0,col=3)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

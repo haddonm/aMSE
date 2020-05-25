@@ -285,7 +285,8 @@ suppressMessages(kable(unfishprops,digits=c(4,4,4,4,4,4,4)))
 During the comparisons of different harvest strategies it will be necessary to determine how well each HS performs starting from different initial depletion levels. This would be answering questions such as 'How well does the HS allow for stock recovery from a depleted stock?'. The intended initial depletion is included as an entry in the _ctrl_ file. And a function, _dodepletion_ is provided to impose fishing mortality onto the stock so that the region is depleted until it is close to the intended level. The regional depletion is determined from a weighted mean depletion across all populations, where the weighting factor is the relative unfished mature biomass predicted for each population (see the equations describing the operating model). If, for example, we wanted to deplete our initial region to a level close to 20% unfished mature biomass we would implement the following code (see the function's help page for a description of the six arguments.
 
 ```{r}
-regionDD <- dodepletion(regC=regionC,regD=regionD,glob=glb,depl=0.20,product=product)
+regionDD <- dodepletion(regionC=regionC,regD=regionD,glob=glb,depl=0.20,
+                        product=product)
 str(regionDD,width=pgwid,strict.width="cut")
 ```
 

@@ -1,5 +1,5 @@
 ---
-title: "Management_Strategy_Evaluation"
+title: "Management Strategy Evaluation"
 author: "Malcolm Haddon"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
