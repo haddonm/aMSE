@@ -26,3 +26,4 @@
 
 * 25-05-2020 0.0.0.8150 Added getgrad4 and modified getgrad1 and getscore1 on the path to having an experimental harvest control rule that approximates the Tasmanian HS. Started a Exploring_Tas_HS.Rmd file.
 
+* 26-05-2020 0.0.0.8100 Modified getgrad4 to match current Tasmanian practice (divide each cpue chunk by the cpue in the first year of the chunk; basically I forgot but will document it thoroughly), changed getscore1 to getscore as it now works for both grad1 and grad4, and will work for gradX. Now need to add a targCE and a way to combine them in a weighted fashion and the HS and HCR are ready to go.

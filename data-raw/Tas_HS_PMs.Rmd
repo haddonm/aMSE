@@ -155,7 +155,7 @@ abline(h=0:10,lwd=1,col="grey",lty=3)
 abline(wrong,lty=2)
 lines(c(-0.23,0.0),c(0,5),lwd=2)  # add the linear relationships
 lines(c(0.0,0.32),c(5,10),lwd=2)
-score1 <- getscore1(grad1)  # examine the code using getscore1 without brackets
+score1 <- getscore(grad1)  # examine the code using getscore1 without brackets
 points(grad1,score1,pch=16,col=2,cex=1.5)
 ```
 
@@ -170,8 +170,9 @@ There were 16 negative gradients and 11 positive gradients. As these are proport
 This algorithm needs clarification. Currently, _getgrad4_, as below, works by applying it to the grad1 values, but that implies we are using five years each time. 
 
 ```{r  echo=TRUE}
-grad4 <- getgrad4(grad1,wid=4) # uses five years of data; red in the figure 
-grad3 <- getgrad4(grad1,wid=3) # uses four years of data; blue in the figure
+grad4 <- getgrad4(ab$cpue,wid=4) # uses five years of data; red in the figure 
+grad3 <- getgrad4(ab$cpue,wid=3) # uses four years of data; blue in the figure
+range(grad1)
 range(grad4)
 range(grad3)
 ```
@@ -181,16 +182,61 @@ range(grad3)
 #plotprep(width=7,height=5,newdev=FALSE)
 parset(plots=c(2,1))
 plot(ab$year,ab$cpue,type="l",lwd=2,ylim=c(0,100))
-plot(0:27,c(NA,grad1),type="l",lwd=2)        # black
-lines(0:27,c(NA,NA,NA,NA,grad4),col=2,lwd=2) # red
-lines(0:27,c(NA,NA,NA,grad3),col=4,lwd=2)    # blue
+plot(0:27,c(NA,grad1),type="l",lwd=2,ylim=c(-0.21,0.29))        # black
+lines(0:27,c(NA,NA,NA,grad4),col=2,lwd=2) # red
+lines(0:27,c(NA,NA,grad3),col=4,lwd=2)    # blue
 abline(h=0.0,col=3)
 
 ```
 
 
+```{r  echo=TRUE, plot.width=5.75, plot.height=2.75}
+# round the range to get workable numbers
+bounds <- round((range(grad4,na.rm=TRUE) * 1.1),2)
+low <- seq(bounds[1],0.0,length=6) 
+high <- seq(0.0,bounds[2],length=6)
+xax <- c(low[1:5],high)  # combine above with below zero
+xax2 <- seq(-0.31,0.31,length=11)
+wrong <- lm(0:10 ~ xax2)
+par(cex=0.9,font.axis=7,font=7,font.lab=7)
+plot(xax,0:10,type="n",xaxt="n",xlab="Gradient4 Value",yaxt="n",
+     ylab="Gradient4 Score")
+axis(side=1,at=xax,label=xax)     # need to define the axes independently
+axis(side=2,at=0:10,label=0:10)   
+abline(v=xax,lwd=1,col="grey",lty=3)
+abline(h=0:10,lwd=1,col="grey",lty=3)
+abline(wrong,lty=2)
+lines(c(-0.15,0.0),c(0,5),lwd=2)  # add the linear relationships
+lines(c(0.0,0.31),c(5,10),lwd=2)
+score4 <- getscore(grad4)  # examine the code using getscore1 without brackets
+points(grad4,score4,pch=16,col=2,cex=1.5)
+
+```
 
 
+```{r}
+cbind(score1,c(NA,NA,score4))
+```
+
+
+```{r  echo=TRUE, plot.width=5.75, plot.height=2.75}
+years <- 1993:2019
+score42 <- c(NA,NA,score4)
+parset()
+plot(years,score1,type="p",pch=16,cex=1.25,panel.first=grid(),
+     ylim=c(0,10),ylab="Score 1 and 4")
+lines(years,score1,lwd=1)
+points(years,score42,type="p",pch=16,cex=1.25,col=2)
+lines(years,score42,lwd=1,col=2)
+abline(h=5.0,col=3)
+legend("topright",c("score1","score4"),col=c(1,2),lwd=3,bty="n",cex=1.5)
+```
+
+
+```{r}
+
+
+```
 
 
 

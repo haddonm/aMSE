@@ -4,7 +4,7 @@
 #' @description blockE13 is summary fishery data for East coast block
 #'     13 blacklip abalone (\emph{Haliotis rubra}), as might be used
 #'     to condition the operating model. It can be used for exploring
-#'     the performance measure estimators getgrad1 and getscore1.
+#'     the performance measure estimators getgrad1 and getscore.
 #'
 #' @name blockE13
 #'

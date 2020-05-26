@@ -224,7 +224,9 @@ for (pop in 1:numpop) {
 
  ab <- read.csv(file=paste0(datadir,"block13e.csv"),header=TRUE)
  yrs <- 1992:2019
- qs <- quantile(ab$scaledgeo,probs = c(0.5,0.55,0.6))
+
+
+qs <- quantile(ab$cpue,probs = c(0.5,0.55,0.6))
 targCE <- qs[2]
 lowCE <- targCE - 0.45 * targCE
 upCE <- targCE + 0.45 * targCE
@@ -300,6 +302,34 @@ plot(ab$year,ab$cpue,type="l",lwd=2,ylim=c(0,100))
 plot(0:27,c(NA,grad1),type="l",lwd=2)
 lines(0:27,c(NA,NA,NA,NA,grad4),col=2,lwd=2)
 abline(h=0.0,col=3)
+
+# targCE -------------------------------------------------------------
+data(blockE13)
+ab <- blockE13
+qs <- quantile(ab$cpue,probs = c(0.5,0.55,0.6))
+targCE <- qs[2]
+lowCE <- targCE - 0.45 * targCE
+upCE <- targCE + 0.45 * targCE
+rgeCE <- c(lowCE,targCE,upCE)
+
+ymax <- getmax(ab$cpue)
+plotprep(width=7,height=6,newdev=FALSE)
+parset(plots=c(2,1))
+plot(ab$year,ab$cpue,type="p",pch=16,cex=1.25,panel.first=grid(),
+     ylab="CPUE Block13 E",xlab="",ylim=c(0,ymax))
+lines(ab$year,ab$cpue,lwd=1)
+abline(h=targCE,col=2)
+ymax <- getmax(ab$catch)
+plot(ab$year,ab$catch,type="l",lwd=2,panel.first=grid(),ylim=c(0,ymax))
+
+
+
+
+
+
+
+
+
 
 
 
