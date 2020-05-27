@@ -122,7 +122,7 @@ kable(ab,digits=c(0,4,4,4,4,3,3,1))
 
 Gradient1 is simply the proportional change in cpue from one year to the next. This implies that with a time-series of 28 years (as in the blockE13 data-set) we can obtain 27 comparisons. Formally, where $CE_{b,t}$ is the cpue in block/SMU $b$ in year $t$, then the Gradient1 for block/SMU $b$ is:
 
-$$Gradient1_b=\left (\frac{CE_{b,t}}{CE_{b,t-1}} - 1 \right )$$
+$$Grad1_b=\left (\frac{CE_{b,t}}{CE_{b,t-1}} - 1 \right )$$
 
 The central idea for the Gradient1 (and Gradient4) performance measure is that the gradient obtained in each year can be converted into a score between 0 and 10, cenrted on a score of 5 for a gradient of 0.0.
 
@@ -157,6 +157,7 @@ lines(c(-0.23,0.0),c(0,5),lwd=2)  # add the linear relationships
 lines(c(0.0,0.32),c(5,10),lwd=2)
 score1 <- getscore(grad1)  # examine the code using getscore1 without brackets
 points(grad1,score1,pch=16,col=2,cex=1.5)
+lines(c(-0.23,0.32),c(0,10),col=1,lty=3) # scores all biased low
 ```
 
 `r fig_nums("F1", caption="The Gradient1 scores for the Gradient1 values obtained for the cpue column in the blockE13 data-set from aMSE. The asymmetric response with a break at zero is apparent in comparison to extending the value axis from -0.32 to 0.32, as in the dashed line.")`
@@ -167,32 +168,49 @@ There were 16 negative gradients and 11 positive gradients. As these are proport
 
 ### Gradient4
 
-This algorithm needs clarification. Currently, _getgrad4_, as below, works by applying it to the grad1 values, but that implies we are using five years each time. 
+Gradient4 calculates the gradient of the proportional changes over four years that occurs in each Spatial Management Unit (though the four year time-frame can/may be varied). This can be applied to a time-series of cpue just as with Gradient1, but here the minimum input requirement would be a vector of four cpue values. The objective with a longer time-series owuld be to calculate how the gradient changes for each set of four values moving along the series one year at a time. Each value divides through the cpue values by the value in the first year of each group of four to give the proportional change through time relative to the first year in each group:
+
+$$p{\Delta}_t =CE_t/CE_1$$
+
+A linear regression is fitted to each group of four years where the independent variable is either the specific years in which the cpue occurred or, more simply, a series of 1, 2, 3, and 4. The independent variable only affects the intercept and for the purposes of the performance measure we are only interested in the gradient.
+
+$$Grad4=\frac{\sum{t.p{\Delta}_t}-\sum{t}\sum{p{\Delta}_t}/n}{\sum{t^2}-\left(\sum{t} \right)^2/n}$$
+
+where $t$ is the year (1 to 4), $p{\Delta}_t$ is the proportional change of cpue in year $t$ relative to the first year of the group, and $n$ is, in this case, four. This is merely the standard analytic equation for the gradient of a linear regression. More simply, in R, we can use `grad4 = coef(lm(pCE ~ 1:4))[2]`, which calculates the complete linear regression and extracts the gradient. We can compare the range of values obtained for Gradient1, Gradient4, and even try Gradient3.
+
 
 ```{r  echo=TRUE}
 grad4 <- getgrad4(ab$cpue,wid=4) # uses five years of data; red in the figure 
 grad3 <- getgrad4(ab$cpue,wid=3) # uses four years of data; blue in the figure
-range(grad1)
-range(grad4)
-range(grad3)
+cat("Grad1 ",range(grad1),"\n")
+cat("Grad4 ",range(grad4),"\n")
+cat("Grad3 ",range(grad3),"\n")
 ```
+
+These different performance measures may take on more meaning by plotting them against the respective cpue values that gave rise to them. Of course, Gradient1 will begin one year after the start of the time series while Gradient 4 will start in the fourth year of the series.
 
 
 ```{r  echo=TRUE, plot.width=5.75, plot.height=2.75}
 #plotprep(width=7,height=5,newdev=FALSE)
 parset(plots=c(2,1))
-plot(ab$year,ab$cpue,type="l",lwd=2,ylim=c(0,100))
-plot(0:27,c(NA,grad1),type="l",lwd=2,ylim=c(-0.21,0.29))        # black
-lines(0:27,c(NA,NA,NA,grad4),col=2,lwd=2) # red
-lines(0:27,c(NA,NA,grad3),col=4,lwd=2)    # blue
+plot(ab$year,ab$cpue,type="l",lwd=2,ylim=c(0,100),panel.first=grid(),
+     xlab="",ylab="CPUE kg/hr")
+plot(ab$year,c(NA,grad1),type="l",lwd=2,ylim=c(-0.21,0.29),xlab="",
+     panel.first=grid(),ylab="Gradient Value")                  # black
+lines(ab$year,c(NA,NA,NA,grad4),col=2,lwd=2) # red
+lines(ab$year,c(NA,NA,grad3),col=4,lwd=2)    # blue
 abline(h=0.0,col=3)
-
+legend("topright",c("Grad1","Grad3","Grad4"),col=c(1,4,2),lwd=3,bty="n")
 ```
 
+`r fig_nums("F2", caption="The cpue from block13 in the eastern zone compared with the time-series of values for the Gradient1, Gradient3, and Gradient4 values obtained for the cpue column in the blockE13 data-set from aMSE.")`
+
+
+Of course, before these performance measure values can be used the values need to be translated into scores between 0 and 10. Because the observed range below zero is smaller than the range of observations above zero we need to use two linear relationships to apply the same range of scores to those below as those above zero. There are two possible biased outcomes from using only one relationship. If we were to extend the lower range out to match the absolute range above zero this would bias the scores of any negative gradients high. Alternatively if we were to place a line between the lower limit and the upper limit this would bias the scores of all Gradient4 values low.
 
 ```{r  echo=TRUE, plot.width=5.75, plot.height=2.75}
-# round the range to get workable numbers
-bounds <- round((range(grad4,na.rm=TRUE) * 1.1),2)
+# round the range after extending by 10 percent to get workable numbers
+bounds <- round((range(grad4,na.rm=TRUE) * 1.1),2) # 1.1  = 10 perc
 low <- seq(bounds[1],0.0,length=6) 
 high <- seq(0.0,bounds[2],length=6)
 xax <- c(low[1:5],high)  # combine above with below zero
@@ -205,13 +223,16 @@ axis(side=1,at=xax,label=xax)     # need to define the axes independently
 axis(side=2,at=0:10,label=0:10)   
 abline(v=xax,lwd=1,col="grey",lty=3)
 abline(h=0:10,lwd=1,col="grey",lty=3)
-abline(wrong,lty=2)
+abline(wrong,lty=2)               # add the biased line
 lines(c(-0.15,0.0),c(0,5),lwd=2)  # add the linear relationships
 lines(c(0.0,0.31),c(5,10),lwd=2)
 score4 <- getscore(grad4)  # examine the code using getscore1 without brackets
 points(grad4,score4,pch=16,col=2,cex=1.5)
+lines(c(-0.15,0.31),c(0,10),col=1,lty=3) # scores all biased low
 
 ```
+
+`r fig_nums("F3", caption="The Gradient4 values translated into scores in the same manner as used with the Gradinet1 values. The broken stick approach accounts for the differences in the observed range of values below 0.0 and those above. The dashed line illustrates the effect of extending the lower range to match the extent of the upper range, which would lead to scores being biased high for negative gradients. The dotted lines illustrates how the scores would all be biased low if we merely joined the lower and upper limits of Gradient4 values.")`
 
 
 ```{r}
