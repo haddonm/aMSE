@@ -14,7 +14,7 @@ a matrix of numpop rows containing the approximate MSY
     related productivity values and the index of the approx MSY
 }
 \description{
-findmsy for each population in the region, identifies
+findmsy for each population in the zone, identifies
     the closest productivity value to MSY and returns the vector
     of productivity values for the selected harvest rate. The Catch
     in each populaiton = MSY and the other variables relate to the
@@ -22,17 +22,17 @@ findmsy for each population in the region, identifies
 }
 \examples{
 \dontrun{  # takes far too long
-  data(region1)
-  glb <- region1$globals
+  data(zone1)
+  glb <- zone1$globals
   data(constants)
-  ans <- makeregionC(region1,constants)
-  regionC <- ans$regionC
+  ans <- makezoneC(zone1,constants)
+  zoneC <- ans$zoneC
   glb <- ans$glb
-  ans <- makeregion(glb,regionC)
-  regionC <- ans$regionC
-  regionD <- ans$regionD
-  ans2 <- modregC(regionC,regionD,glb)
-  regionC <- ans2$regionC  # region constants
+  ans <- makezone(glb,zoneC)
+  zoneC <- ans$zoneC
+  zoneD <- ans$zoneD
+  ans2 <- modzoneC(zoneC,zoneD,glb)
+  zoneC <- ans2$zoneC  # zone constants
   product <- ans2$product
   approxMSY <- findmsy(product)
   print(approxMSY)

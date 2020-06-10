@@ -12,10 +12,10 @@ the specific properties of this population. Obtained from
 popdefs, which is produced by definepops}
 
 \item{midpts}{the center values of the size classes dervied from
-the region data file}
+the zone data file}
 
 \item{projLML}{the LML expected in the projection years 2 - Nyrs;
-a vector obtained from the regiondatafile}
+a vector obtained from the zonedatafile}
 }
 \value{
 a list of numpop lists of 19 objects as detailed above.
@@ -24,14 +24,14 @@ a list of numpop lists of 19 objects as detailed above.
 makeabpop generates the full population structure in an
    unfished state. The structure is pre-determined: Me R0 B0 effB0
    ExB0, effExB0 MSY MSYDepl bLML popq SaM popdef (vector of constants)
-   LML G Maturity WtL Emergent Select SelWt MatWt SMUname. See the
-   AbMSE documentation to see the full definition of a region, made
-   up of a regionC and a regionD. Notice the presence of effB0 and
+   LML G Maturity WtL Emergent Select SelWt MatWt SAUname. See the
+   AbMSE documentation to see the full definition of a zone, made
+   up of a zoneC and a zoneD. Notice the presence of effB0 and
    effExB0, these relate to the influence of larval dispersal on each
    populations productivity. The effective B0 relates to the unfished
    mature biomass after larval dispersal occurs and the population
    achieves equilibrium.
 }
 \examples{
-print("See the code for makeregionC to see usage of makeabpop")
+print("See the code for makezoneC to see usage of makeabpop")
 }

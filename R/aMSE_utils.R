@@ -4,7 +4,7 @@
 #'
 #' @description checkresdir checks resdir contains the required csv
 #'     files including the named control file, which then contains
-#'     the names of the region data file, and the population data
+#'     the names of the zone data file, and the population data
 #'     file. The run stops if any are not present or are misnamed.
 #'
 #' @param resdir the directory in which all all files relating to a
@@ -19,8 +19,8 @@
 #' @examples
 #' resdir <- tempdir()
 #' ctrlfiletemplate(resdir)
-#' regionfiletemplate(resdir)
-#' datafiletemplate(6,resdir,filename="reg1smu2pop6.csv")
+#' zonefiletemplate(resdir)
+#' datafiletemplate(6,resdir,filename="zone1sau2pop6.csv")
 #' ctrl <- checkresdir(resdir)
 #' ctrl
 checkresdir <- function(resdir,ctrlfile="control.csv") { # resdir=resdir; ctrlfile="control.csv"
@@ -28,8 +28,8 @@ checkresdir <- function(resdir,ctrlfile="control.csv") { # resdir=resdir; ctrlfi
   if (length(grep(ctrlfile,filenames)) != 1)
     stop(cat(ctrlfile," not found in resdir \n"))
   ctrol <- readctrlfile(resdir,infile=ctrlfile)
-  if (length(grep(ctrol$regionfile,filenames)) != 1)
-      stop("region data file not found \n")
+  if (length(grep(ctrol$zonefile,filenames)) != 1)
+      stop("zone data file not found \n")
   if (length(grep(ctrol$datafile,filenames)) != 1)
     stop("population data file not found \n")
   cat("All required files appear to be present \n")

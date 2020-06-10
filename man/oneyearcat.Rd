@@ -7,7 +7,7 @@
 oneyearcat(inpopC, inNt, Nclass, incat, yr)
 }
 \arguments{
-\item{inpopC}{a single population from a regionC, an abpop}
+\item{inpopC}{a single population from a zoneC, an abpop}
 
 \item{inNt}{the numbers at size for the year previous to the year
 of dynamics. These are projected into the active year.}
@@ -16,7 +16,7 @@ of dynamics. These are projected into the active year.}
 used to define vectors}
 
 \item{incat}{the literal annual catch from the population. Derived
-from teh harvest control rule for each SMU, then allocated to
+from teh harvest control rule for each SAU, then allocated to
 each population with respect to its relative catching
 performance.}
 
@@ -32,7 +32,7 @@ a list containing ExploitB, MatureB, Catch, Harvest, Nt,
 oneyear does one year's dynamics for one input
     population. Where the fishing is based on a given catch per
     population, which would be determined by any harvest control
-    rule. It is used to step through populations of a region.
+    rule. It is used to step through populations of a zone.
     Its dynamics are such that each population first undergoes
     growth, then half natural mortality. This allows an estimate of
     exploitable biomass before fishing occurs. The remaining

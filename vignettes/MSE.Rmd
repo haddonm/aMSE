@@ -90,7 +90,7 @@ The underlying objective in the current R package is to enable the simulations a
 
 ### Difficulties Inherent with MSE Testing Abalone HS
 
-The phrase 'abalone stock' sounds meaningful and most would consider this to refer to the standard notion of populations of a species having sufficient genetic homogeneity to represent a reproductively connected whole. However, as demonstrated by Miller _et al_ (2009; 2014), genetic studies indicate that abalone populations (at least of blacklip and greenlip abalone) are made up of what might be termed micro-stocks or meta-populations. In effect, the management units used to set total allowable catches (TACs) and minimum legal sizes (MLS) are indeed just spatial management units (SMUs). The solution adopted in Haddon _et al_ (2013) and Haddon and Mundy (2016) was to generate an operating model made up of numerous relatively small populations of abalone, each with their own set of biological properties and fishery productivity that reflected properties observed within real fisheries. One disadvantage of this approach was that there was no chance of fitting this model to a real fishery as no real fishery has sufficient data available concerning differences in growth, size-at-maturity, and other matters relating to productivity. This meant that one could only attempt to condition the operating model to have outputs and properties that closely matched a real fishery. Of course, as those properties were defined at a large geographical scale there would be no single or unique way of setting up a large number of individual populations to mimic such emergent or sum-of-the-parts properties. 
+The phrase 'abalone stock' sounds meaningful and most would consider this to refer to the standard notion of populations of a species having sufficient genetic homogeneity to represent a reproductively connected whole. However, as demonstrated by Miller _et al_ (2009; 2014), genetic studies indicate that abalone populations (at least of blacklip and greenlip abalone) are made up of what might be termed micro-stocks or meta-populations. In effect, the management units used to set total allowable catches (TACs) and minimum legal sizes (MLS) are indeed just spatial management units (SAUs). The solution adopted in Haddon _et al_ (2013) and Haddon and Mundy (2016) was to generate an operating model made up of numerous relatively small populations of abalone, each with their own set of biological properties and fishery productivity that reflected properties observed within real fisheries. One disadvantage of this approach was that there was no chance of fitting this model to a real fishery as no real fishery has sufficient data available concerning differences in growth, size-at-maturity, and other matters relating to productivity. This meant that one could only attempt to condition the operating model to have outputs and properties that closely matched a real fishery. Of course, as those properties were defined at a large geographical scale there would be no single or unique way of setting up a large number of individual populations to mimic such emergent or sum-of-the-parts properties. 
 
 One time-consuming option to counter this problem would be to set-up the operating model's underlying populations in a number of ways to determine whether each different arrangement leads to the same outcome. While this would be time-consuming it would be one way of characterizing the full uncertainty relating to the spatial dynamics. The use and collection of the GPS data-logger data in the various abalone fisheries (starting in Tasmania; Mundy, ???) will assist with the conditioning of the operating model, but to udnerstand how first requires an introduction into the conceptual framework being used to describe abalone 'stocks' within the MSE's operating model.
 
@@ -166,19 +166,19 @@ The operating model (OM) requires conditioning on a selected abalone fishery bec
 
 The original abalone MSE (Haddon _et al_, 2013) was designed for use with the Tasmanian blacklip abalone stocks. Spatially this was structured as statistical blocks within quota zones. Zones were introduced from 2000 onward whereas the statistical blocks have been extant since before 1980. Biological data was available from many sites around Tasmania although it tended to be summarized at a block level. Each statistical block could be simulated as containing multiple populations, and each population has its own set of properties with many such properties relating to the productivity. To attempt to capture some of the between block variations in biological properties each block simulated was given its own set of properties, which included, for many of the properties, a definition of a statistical distribution to describe the expected distribution of values for such things as the growth parameters, the parameters relating to maturity-at-size, and details of the stock recruitment relation. Thus, each sub-set of populations (in Tasmania representing a statistical block but elsewhere they might represent any spatial management unit), was sampled from selected distributions that had been conditioned on what is known about the fishery being simulated. 
 
-Unfortunately, in fisheries management in general, and abalone fisheries in particular, the terminology used to describe different details and concepts is not standardized across jurisdictions. Thus, while the term _Zone_ is used widely to describe a geographical area over which a particular quota may be taken, the names given to sub-regions within zones differs between jurisdictions. The statistical _block_ from Tasmania is not equivalent to the _reef-code_ from Victoria, or _spatial management unit_ from South Australia. Similarly, in Tasmania, the phrase the _Legal Minimum Length_ (LML) is used to define the legal size limits, which is equivalent to the _Minimum Legal Length_, and other such abbreviations from other jurisdictions.
+Unfortunately, in fisheries management in general, and abalone fisheries in particular, the terminology used to describe different details and concepts is not standardized across jurisdictions. Thus, while the term _Zone_ is used widely to describe a geographical area over which a particular quota may be taken, the names given to sub-zones within zones differs between jurisdictions. The statistical _block_ from Tasmania is not equivalent to the _reef-code_ from Victoria, or _spatial management unit_ from South Australia. Similarly, in Tasmania, the phrase the _Legal Minimum Length_ (LML) is used to define the legal size limits, which is equivalent to the _Minimum Legal Length_, and other such abbreviations from other jurisdictions.
 
 ```{r fig.width=6.9, fig.height=3, echo=FALSE}
 canvas(xstart=3,xfinish=88,ystart=55,yfinish=91)
 # top row
 makerect(left=2,xinc=87,top=90,yinc=35)
-text(3,88,"Region",cex=1.6,pos=4)
+text(3,88,"zone",cex=1.6,pos=4)
 makerect(left=4,xinc=25,top=85,yinc=28)
 makerect(left=33,xinc=25,top=85,yinc=28)
 makerect(left=62,xinc=25,top=85,yinc=28)
-text(4,83,"SMU",cex=1.4,pos=4)
-text(33,83,"SMU",cex=1.4,pos=4)
-text(62,83,"SMU",cex=1.4,pos=4)
+text(4,83,"SAU",cex=1.4,pos=4)
+text(33,83,"SAU",cex=1.4,pos=4)
+text(62,83,"SAU",cex=1.4,pos=4)
 makerect(5,11,81,11); makerect(17,11,81,11)
 makerect(5,11,69,11); makerect(17,11,69,11)
 makerect(34,11,81,11); #makerect(46,11,81,11)
@@ -190,7 +190,7 @@ text(33.25,79,"Population",cex=1.0,pos=4)
 text(62.25,79,"Population",cex=1.0,pos=4)
 ```
 
-`r fig_nums("a2", caption=" A diagrammatic representation of a simulated region made up of a number of spatial management units (SMUs) each made up of a number of separate populations, each with its own properties. In an operational simulated zone there would likely be more SMUs and more populations in at least some of those SMUs and the populations are likely to be of very different sizes, each population with its own particular properties. Redrawn from Haddon et al, 2013.")`
+`r fig_nums("a2", caption=" A diagrammatic representation of a simulated zone made up of a number of spatial management units (SAUs) each made up of a number of separate populations, each with its own properties. In an operational simulated zone there would likely be more SAUs and more populations in at least some of those SAUs and the populations are likely to be of very different sizes, each population with its own particular properties. Redrawn from Haddon et al, 2013.")`
 
 
 #####
@@ -200,7 +200,7 @@ text(62.25,79,"Population",cex=1.0,pos=4)
 
 Rather than continue with hypothetical arrangements it may be simpler to work through an example MSE run in some detail. A potential work flow might begin with these four steps:
 
-1. Generate a draft data template of the number of areas (termed _SMU_ in the R code) to be simulated using the __aMSE__ function _datafileTemplate_.
+1. Generate a draft data template of the number of areas (termed _SAU_ in the R code) to be simulated using the __aMSE__ function _datafileTemplate_.
 
 2. Edit the .csv file created by _datafileTemplate_ to match the conditioning data available for the fishery being simulation tested.
 
@@ -217,9 +217,9 @@ In this example, we can simplify this procedure by using a built-in data-set cal
 
 ```
 
-Which determines that there will be two blocks, one with two populations, and the other with four. There are no fishery data (catches or cpue) but we will project the model 20 years into the future. The approach adopted for mimicking an abalone fishery region. 
+Which determines that there will be two blocks, one with two populations, and the other with four. There are no fishery data (catches or cpue) but we will project the model 20 years into the future. The approach adopted for mimicking an abalone fishery zone. 
 
-The _constants_ object contains the probability density distribution definitions that are sampled to provide the particular biological properties for each population. Each separate block (SMU) has its own set of parameters so that spatial differences can be incorporated in the conditioning.
+The _constants_ object contains the probability density distribution definitions that are sampled to provide the particular biological properties for each population. Each separate block (SAU) has its own set of parameters so that spatial differences can be incorporated in the conditioning.
 
 The object generated by _makeZone_ contains three objects, the first is a complex object containing complete descriptions of each population, the second is a three dimensional array containing the estimated productivity dynamics for each population, and the final object, _popdefs_, is a simple matrix containing the specific biological properties generated for each population. 
 

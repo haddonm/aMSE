@@ -6,10 +6,10 @@
 \title{product is the productivity curve matrix from doproduction}
 \description{
 product is the productivity curve matrix from
-    doproduction when the example region is generated using the
-    inbuilt datasets ctrl, region1, and constants. The slowest
+    doproduction when the example zone is generated using the
+    inbuilt datasets ctrl, zone1, and constants. The slowest
     part of building the whole is to use the modregC function
-    to adjust the regionC and generate the production array. To
+    to adjust the zoneC and generate the production array. To
     save that time in the examples (to avoid time limits on
     examples should this package go to CRAN), then this dataset can
     be used instead. This is a three dimensional array of

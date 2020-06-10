@@ -29,51 +29,18 @@ getConst <- function(inline,nb,index=2) { # parses lines containing numbers
   return(ans)
 }   # end getConst
 
-
-
-#' @title getextension gets the 3 letter file extension from a filename
+#' @title getlistvar extracts a vector or matrix from zoneC
 #'
-#' @description getextension is a utility function that is used with
-#'     logfilename to determine whether one is dealing with a csv or a
-#'     png file. depending on which it will return either a 'table' or
-#'     'plot' value. Any other extension type will throw an error and
-#'     stop execution.
-#'
-#' @param filename the filename, with path attached, whose extension
-#'     needs to be determined.
-#'
-#' @return a character string of either 'table' or 'plot'
-#' @export
-#'
-#' @examples
-#' filen <- "not_a_real_file.png"
-#' getextension(filen)
-#' filen <- "another_unreal_file.csv"
-#' getextension(filen)
-getextension <- function(filename) {
-  lenc <- nchar(filename)
-  exten <- substr(filename,(lenc-2),lenc)
-  type <- ""
-  if (exten == "png") type <- "plot"
-  if (exten == "csv") type <- "table"
-  if (nchar(type) == 0)
-    stop("A file added to results must be either 'png' or 'csv'")
-  return(type)
-} # end of getextension
-
-
-#' @title getlistvar extracts a vector or matrix from regionC
-#'
-#' @description getlistvar extracts a vector or matrix from regionC.
+#' @description getlistvar extracts a vector or matrix from zoneC.
 #'    If a vector of scalars, the names relate to populations, if a
 #'    matrix the columns relate to populations. Only Me, R0, B0, effB0,
-#'    ExB0, effExB0, MSY, MSYDepl, bLML, popq, SaM, SMU, popdef,
+#'    ExB0, effExB0, MSY, MSYDepl, bLML, popq, SaM, SAU, popdef,
 #'    LML, Maturity, WtL, Emergent, and MatWt are currently valid
 #'    choices. The indexvar = popdef would generate a listing of all
 #'    the constants. If you only want a single constant from popdefs
 #'    then use indexvar2.
 #'
-#' @param regC the constants components of the simulated region
+#' @param zoneC the constants components of the simulated zone
 #' @param indexvar the name of the variable to be extracted; character
 #' @param indexvar2 the name of the variable within popdef to extract
 #'
@@ -81,33 +48,33 @@ getextension <- function(filename) {
 #' @export
 #'
 #' @examples
-#'  data(region1)
+#'  data(zone1)
 #'  data(constants)
-#'  ans <- makeregionC(region=region1,const=constants)
-#'  regionC <- ans$regionC
-#'  getlistvar(regionC,"MSY")
-#'  getlistvar(regionC,"B0")
-#'  getlistvar(regionC,"popdef","AvRec")
-getlistvar <- function(regC,indexvar,indexvar2="") {
+#'  ans <- makezoneC(zone=zone1,const=constants)
+#'  zoneC <- ans$zoneC
+#'  getlistvar(zoneC,"MSY")
+#'  getlistvar(zoneC,"B0")
+#'  getlistvar(zoneC,"popdef","AvRec")
+getlistvar <- function(zoneC,indexvar,indexvar2="") {
   if (is.character(indexvar)) {
     fields <- c("Me","R0","B0","effB0","ExB0","effExB0","MSY",
-                "MSYDepl","bLML","popq","SaM","SMU",
+                "MSYDepl","bLML","popq","SaM","SAU",
                 "popdef","LML","Maturity","WtL","Emergent","MatWt")
     vects<- c("popdef","LML","Maturity","WtL","Emergent","MatWt")
     pick <- match(indexvar,fields)
-    numpop <- length(regC)
+    numpop <- length(zoneC)
     if (is.na(pick)) {
       warning(paste0(fields,"  "))
       stop("Invalid variable name attempted in getlistvar")
     }
-    x <- sapply(regC,"[[",indexvar)
+    x <- sapply(zoneC,"[[",indexvar)
     if (fields[pick] %in% vects) {
       colnames(x) <- paste0("p",1:numpop)
     } else {
       names(x) <- paste0("p",1:numpop)
     }
     if ((indexvar == "popdef") & (nchar(indexvar2) > 0)) {
-      x <- sapply(regC,"[[",indexvar)[indexvar2,]
+      x <- sapply(zoneC,"[[",indexvar)[indexvar2,]
       names(x) <- paste0("p",1:numpop)
     }
   } else {
@@ -145,33 +112,33 @@ getLogical <- function(inline,nb) {  #inline <- txtline; nb=2
 #' @title getnas gets the numbers-at-size for all spatial scales
 #'
 #' @description getnas extracts numbers-at-size for all populations,
-#'     SMUs, and the region. There will therefore be numpop + nSMU + 1
+#'     SAUs, and the zone. There will therefore be numpop + nSAU + 1
 #'     columns of numbers-at-size fr the particular year given.
 #'
-#' @param regD the dynamic portion of the region
+#' @param zoneD the dynamic portion of the zone
 #' @param yr which yr from the range available should be summarized
 #' @param glob the global variables object
-#' @param region the region constants
+#' @param zone the zone constants
 #'
-#' @return a matrix of numpop + nSMU + 1 columns of numbers-at-size
+#' @return a matrix of numpop + nSAU + 1 columns of numbers-at-size
 #' @export
 #'
 #' @examples
-#' data(region1)
-#' glb <- region1$globals
-#' data(testregD)
-#' nas <- getnas(testregD,yr=1,glob=glb,region=region1)
+#' data(zone1)
+#' glb <- zone1$globals
+#' data(testzoneD)
+#' nas <- getnas(testzoneD,yr=1,glob=glb,zone=zone1)
 #' round(nas[1:30,],1)
-getnas <- function(regD,yr,glob,region) {
+getnas <- function(zoneD,yr,glob,zone) {
   numpop <- glob$numpop
-  nSMU <- glob$nSMU
-  columns <- c(paste0("p",1:numpop),region$SMUnames,"region")
+  nSAU <- glob$nSAU
+  columns <- c(paste0("p",1:numpop),zone$SAUnames,"zone")
   nas <- matrix(0,nrow=glob$Nclass,ncol=length(columns),
                 dimnames=list(glob$midpts,columns))
-  for (pop in 1:numpop) nas[,pop] <- regD$Nt[,yr,pop]
-  nas[,"region"] <- rowSums(nas[,1:numpop],na.rm=TRUE)
-  for (mu in 1:nSMU) {
-    pickcol <- which(regD$SMU == mu)
+  for (pop in 1:numpop) nas[,pop] <- zoneD$Nt[,yr,pop]
+  nas[,"zone"] <- rowSums(nas[,1:numpop],na.rm=TRUE)
+  for (mu in 1:nSAU) {
+    pickcol <- which(zoneD$SAU == mu)
     nas[,(numpop+mu)] <- rowSums(nas[,pickcol],na.rm=TRUE)
   }
   return(nas)
@@ -179,13 +146,13 @@ getnas <- function(regD,yr,glob,region) {
 
 ##  inzone <- zone1; indexVar <- "Nt"
 ## gets all LF data from a zone across pops and years
-#' @title getregionLF extracts all LF data from a zone across pops and years
+#' @title getzoneLF extracts all LF data from a zone across pops and years
 #'
-#' @description getregionLF extracts all LF data from a region across
+#' @description getzoneLF extracts all LF data from a zone across
 #'     all populations for each year. Thus an Nclass x Nyrs X numpop
 #'     matrix is compressed into a Nclass x Nyrs matrix
 #'
-#' @param regD the dynamic part of the region
+#' @param zoneD the dynamic part of the zone
 #' @param glb the global constants
 #'
 #' @return an Nclass x Nyrs matrix containing LF data across all
@@ -196,15 +163,15 @@ getnas <- function(regD,yr,glob,region) {
 #' \dontrun{
 #' print("An example needs to be written")
 #' }
-getregionLF <- function(regD,glb) { # need to define years
+getzoneLF <- function(zoneD,glb) { # need to define years
   numpop <- glb$numpop
   Nyrs <- glb$Nyrs
   storeLF <- matrix(0,nrow=glb$Nclass,ncol=Nyrs,
                     dimnames=list(glb$midpts,1:Nyrs))
   for (yr in 1:Nyrs)
-    storeLF[,yr] <- rowSums(regD$Nt[,yr,])
+    storeLF[,yr] <- rowSums(zoneD$Nt[,yr,])
   return(storeLF)
-} # end of getregionLF
+} # end of getzoneLF
 
 
 
@@ -240,44 +207,44 @@ getsingleNum <- function(varname,intxt,context="") {
   }
 }
 
-#' @title getsmureg summarizes regionD into MSU and region
+#' @title getsauzone summarizes zoneD into MSU and zone
 #'
-#' @description getsmureg rowsums the matrices of matureB, exploitB,
-#'     catch, and recruit from the input regD into the separate SMUs
-#'     and the total into the region. The harvestR is simply the
+#' @description getsauzone rowsums the matrices of matureB, exploitB,
+#'     catch, and recruit from the input zoneD into the separate SAUs
+#'     and the total into the zone. The harvestR is simply the
 #'     respective catch divided by the exploitB, and the cpue are the
 #'     individual population cpue weighted relative to the catch taken
-#'     from each population in either the SMU or the complete region.
+#'     from each population in either the SAU or the complete zone.
 #'
-#' @param regD the regionD after nyrs of dynamics
+#' @param zoneD the zoneD after nyrs of dynamics
 #'
-#' @return a list of six matrices of nSMU columns of SMU summaries,
-#'     and one column for the region
+#' @return a list of six matrices of nSAU columns of SAU summaries,
+#'     and one column for the zone
 #' @export
 #'
 #' @examples
 #' print("wait on an example")
-getsmureg <- function(regD) { # regC=regionC; regD=regionD; glb=glb
-  iSMU <- regD$SMU
-  SMU <- unique(iSMU)
-  nSMU <- length(SMU)
-  matB <- getsum(regD$matureB,iSMU)
-  expB <- getsum(regD$exploitB,iSMU)
-  catch <- getsum(regD$catch,iSMU)
-  recruit <- getsum(regD$recruit,iSMU)
+getsauzone <- function(zoneD) { # zoneC=zoneC; zoneD=zoneD; glb=glb
+  iSAU <- zoneD$SAU
+  SAU <- unique(iSAU)
+  nSAU <- length(SAU)
+  matB <- getsum(zoneD$matureB,iSAU)
+  expB <- getsum(zoneD$exploitB,iSAU)
+  catch <- getsum(zoneD$catch,iSAU)
+  recruit <- getsum(zoneD$recruit,iSAU)
   harvestR <- catch/expB
   cpue <- catch # just ot have a labelled matrix ready
-  wtreg <- regD$catch/catch[,(nSMU+1)]
-  wtsmu <- regD$catch
-  for (mu in 1:nSMU) {
-    wtsmu[,(iSMU==mu)] <- regD$catch[,(iSMU==mu)]/catch[,mu]
-    cpue[,mu] <- rowSums(regD$cpue[,(iSMU==mu)] * wtsmu[,(iSMU==mu)])
+  wtzone <- zoneD$catch/catch[,(nSAU+1)]
+  wtsau <- zoneD$catch
+  for (mu in 1:nSAU) {
+    wtsau[,(iSAU==mu)] <- zoneD$catch[,(iSAU==mu)]/catch[,mu]
+    cpue[,mu] <- rowSums(zoneD$cpue[,(iSAU==mu)] * wtsau[,(iSAU==mu)])
   }
-  cpue[,(nSMU+1)] <- rowSums(regD$cpue * wtreg)
+  cpue[,(nSAU+1)] <- rowSums(zoneD$cpue * wtzone)
   ans <- list(matB=matB,expB=expB,catch=catch,recruit=recruit,
               harvestR=harvestR,cpue=cpue)
   return(ans)
-}  # end of getsmureg
+}  # end of getsauzone
 
 
 
@@ -304,25 +271,25 @@ getStr <- function(inline,nb) {
   return(outconst)
 } # end of getStr
 
-#' @title getsum sums each of the main dynamics within regionD
+#' @title getsum sums each of the main dynamics within zoneD
 #'
-#' @description getsum is used by getsmureg to sum each of the main
-#'     dynamic variables within regionD
+#' @description getsum is used by getsauzone to sum each of the main
+#'     dynamic variables within zoneD
 #'
-#' @param inmat what matrix within regionD to sum into SMU and region
-#' @param index a vector containing an index of populations within SMU
+#' @param inmat what matrix within zoneD to sum into SAU and zone
+#' @param index a vector containing an index of populations within SAU
 #'
-#' @return an nSMU+1 column matrix summarizing each SMU and the region
+#' @return an nSAU+1 column matrix summarizing each SAU and the zone
 #'
 #' @examples
 #' print("wait on an example")
 getsum <- function(inmat,index) {
-  nSMU <- length(unique(index))
+  nSAU <- length(unique(index))
   nyr <- nrow(inmat)
-  matO <- matrix(0,nrow=nyr,ncol=(nSMU+1),
-                 dimnames=list(1:nyr,c(paste0("SMU",1:nSMU),"region")))
-  for (mu in 1:nSMU) matO[,mu] <- rowSums(inmat[,(index==mu)])
-  matO[,(nSMU+1)] <- rowSums(inmat)
+  matO <- matrix(0,nrow=nyr,ncol=(nSAU+1),
+                 dimnames=list(1:nyr,c(paste0("SAU",1:nSAU),"zone")))
+  for (mu in 1:nSAU) matO[,mu] <- rowSums(inmat[,(index==mu)])
+  matO[,(nSAU+1)] <- rowSums(inmat)
   return(matO)
 }
 
@@ -398,17 +365,17 @@ getunFished <- function(inzone,glb) {  # inzone=zone
   return(nofished)
 }  # End of getUnfished
 
-#' @title getregionprops extracts the depletion level for a given year
+#' @title getzoneprops extracts the depletion level for a given year
 #'
-#' @description getregionprops extracts a set of properties for each
-#'     population and summarizes them for the region as well. These
+#' @description getzoneprops extracts a set of properties for each
+#'     population and summarizes them for the zone as well. These
 #'     properties include effB0, matureB, legalmatB, propprot, MSY,
 #'     effexB0, exploitB, SpBDepl, ExBDepl, legalDepl, MSYDepl, LML,
 #'     and bLML. See the model documentation for the meaning of each
 #'     of these.
 #'
-#' @param regC the constants for the region being simulated
-#' @param regD the dynamic part of the region being simulated
+#' @param zoneC the constants for the zone being simulated
+#' @param zoneD the dynamic part of the zone being simulated
 #' @param glb the global constants
 #' @param year which years information is wanted, default=1
 #'
@@ -416,30 +383,30 @@ getunFished <- function(inzone,glb) {  # inzone=zone
 #' @export
 #'
 #' @examples
-#' data(testregC)
-#' data(testregD)
-#' data(region1)
-#' glb <- region1$globals
-#' round(getregionprops(testregC,testregD,glb),4)
-getregionprops <- function(regC,regD,glb,year=1) { # regC=regionC; regD=regionD; glb=glb; year=1
+#' data(testzoneC)
+#' data(testzoneD)
+#' data(zone1)
+#' glb <- zone1$globals
+#' round(getzoneprops(testzoneC,testzoneD,glb),4)
+getzoneprops <- function(zoneC,zoneD,glb,year=1) { # zoneC=zoneC; zoneD=zoneD; glb=glb; year=1
   numpop <- glb$numpop
   Nclass <- glb$Nclass
-  B0 <- getvar(regC,"B0")
-  ExB0 <- getvar(regC,"ExB0")
-  blml <- getvar(regC,"bLML")
-  msy <- getvar(regC,"MSY")
-  msydepl <- getvar(regC,"MSYDepl")
-  matB <- regD$matureB[year,]
-  ExB <- regD$exploitB[year,]
-  harvestR <- regD$harvestR[year,]
-  catch <- regD$catch[year,]
+  B0 <- getvar(zoneC,"B0")
+  ExB0 <- getvar(zoneC,"ExB0")
+  blml <- getvar(zoneC,"bLML")
+  msy <- getvar(zoneC,"MSY")
+  msydepl <- getvar(zoneC,"MSYDepl")
+  matB <- zoneD$matureB[year,]
+  ExB <- zoneD$exploitB[year,]
+  harvestR <- zoneD$harvestR[year,]
+  catch <- zoneD$catch[year,]
   legalmatB <- numeric(numpop); names(legalmatB) <- 1:numpop
-  lml <- sapply(regC,"[[","LML")[year,]
+  lml <- sapply(zoneC,"[[","LML")[year,]
   for (pop in 1:numpop) { #   pop=1
-    MatWt <- regC[[pop]]$MatWt
+    MatWt <- zoneC[[pop]]$MatWt
     first <- which(glb$midpts >= lml[pop])[1]
-    legalmatB[pop] <- sum(regC[[pop]]$MatWt[first:Nclass] *
-                            regD$Nt[first:Nclass,year,pop])/1000000.0
+    legalmatB[pop] <- sum(zoneC[[pop]]$MatWt[first:Nclass] *
+                            zoneD$Nt[first:Nclass,year,pop])/1000000.0
   }
   deplet <- matB/B0
   depletEx <- ExB/ExB0
@@ -464,52 +431,52 @@ getregionprops <- function(regC,regD,glb,year=1) { # regC=regionC; regD=regionD;
   tot["harvestR"] <- mean(ans["harvestR",])
   tot["catch"] <- sum(ans["catch",])
   ans <- cbind(ans,tot)
-  colnames(ans) <- c(paste0("p",1:numpop),"region")
+  colnames(ans) <- c(paste0("p",1:numpop),"zone")
   return(ans)
-}  # end of getregionprops
+}  # end of getzoneprops
 
 #' @title getvar a replacement for sapply to obtain scalar constants
 #'
 #' @description getvar is a replacement for sapply to obtain scalar
-#'     constants from regionC and is significantly faster. It should
+#'     constants from zoneC and is significantly faster. It should
 #'     be used to obtain things like B0, R0, MSY, popq, etc. Still
 #'     need to use sapply to pull out vectors.
 #'
-#' @param regC the constants object for the region
+#' @param zoneC the constants object for the zone
 #' @param invar a character variable eg. "B0" or "R0"
 #'
-#' @return a numpop vector of the invar constants from regionC
+#' @return a numpop vector of the invar constants from zoneC
 #' @export
 #'
 #' @examples
-#' data(testregC)
-#' getvar(testregC,"MSY")
-#' getvar(testregC,"B0")
-getvar <- function(regC,invar) {
-  npop <- length(regC)
+#' data(testzoneC)
+#' getvar(testzoneC,"MSY")
+#' getvar(testzoneC,"B0")
+getvar <- function(zoneC,invar) {
+  npop <- length(zoneC)
   recs <- numeric(npop)
-  for (i in 1:npop) recs[i] <- regC[[i]][[invar]]
+  for (i in 1:npop) recs[i] <- zoneC[[i]][[invar]]
   return(recs)
 } # end of getvar
 
-#' @title getvect extracts invar from the popdef vector in regionC
+#' @title getvect extracts invar from the popdef vector in zoneC
 #'
 #' @description getvect extracts a numpop vector of invar from the
-#'     popdef vector in regionC. Still need to use sapply to pull out
+#'     popdef vector in zoneC. Still need to use sapply to pull out
 #'     complete vectors such as popdef or maturity etc.
 #'
-#' @param regC the constants object for the region
+#' @param zoneC the constants object for the zone
 #' @param invar a character variable eg. "steeph", "DLMax"
 #'
-#' @return a numpop vector of invar from the numpop popdefs in regionC
+#' @return a numpop vector of invar from the numpop popdefs in zoneC
 #' @export
 #'
 #' @examples
-#' data(testregC)
-#' getvect(testregC,"steeph")
-getvect <- function(regC,invar) {
-  npop <- length(regC)
+#' data(testzoneC)
+#' getvect(testzoneC,"steeph")
+getvect <- function(zoneC,invar) {
+  npop <- length(zoneC)
   ans <- numeric(npop)
-  for (i in 1:npop) ans[i] <- regC[[i]]$popdef[invar]
+  for (i in 1:npop) ans[i] <- zoneC[[i]]$popdef[invar]
   return(ans)
 } # end of getvect

@@ -1,5 +1,5 @@
 
-# rutilsMH::listFunctions("C:/Users/User/Dropbox/rcode2/aMSE/R/inputfiles.R")
+# rutilsMH::listFunctions("C:/Users/User/Dropbox/rcode2/makehtml/R/makehtml_funs.R")
 
 #' @title ctrlfiletemplate generates a template input control file
 #'
@@ -34,15 +34,15 @@ ctrlfiletemplate <- function(indir,filename="control.csv") {
    cat("START \n",file=filename,append=TRUE)
    cat("runlabel, testrun, label for particular run \n",
        file=filename,append=TRUE)
-   cat("regionfile, region1.csv, name of region wide constants \n",
+   cat("zonefile, zone1.csv, name of zone wide constants \n",
        file=filename,append=TRUE)
-   cat("datafile, reg1smu2pop6.csv, name of popdefs file \n",
+   cat("datafile, zone1sau2pop6.csv, name of popdefs file \n",
        file=filename,append=TRUE)
    cat("hcrfile, HCRfile.csv, HCR details file name \n",file=filename,
        append=TRUE)
    cat("\n",file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
-   cat("REGIONCOAST \n",file=filename,append=TRUE)
+   cat("zoneCOAST \n",file=filename,append=TRUE)
    cat("batch,  0, run job interactively or as a batch (0 = FALSE) \n",
        file=filename, append=TRUE)
    cat("replicates,  10, number of replicates, usually 1000  \n",
@@ -63,8 +63,8 @@ ctrlfiletemplate <- function(indir,filename="control.csv") {
 #' @description diagnostics can generates an array of diagnostic plots,
 #'     however, currently it only plots the selectivity
 #'
-#' @param regC the constants for the region simulated
-#' @param regD the dynamic aspects of the region simulated
+#' @param zoneC the constants for the zone simulated
+#' @param zoneD the dynamic aspects of the zone simulated
 #' @param glob the general globals
 #' @param plot plot the output or not; default = TRUE
 #'
@@ -75,8 +75,8 @@ ctrlfiletemplate <- function(indir,filename="control.csv") {
 #' \dontrun{
 #'   print("still to devise an example.")
 #' }
-diagnostics <- function(regC,regD,glob,plot=TRUE) {   # inzone <- testzone
-   useLML <- sapply(regC,"[[","LML") # pulls out vectors
+diagnostics <- function(zoneC,zoneD,glob,plot=TRUE) {   # inzone <- testzone
+   useLML <- sapply(zoneC,"[[","LML") # pulls out vectors
    colLML <- apply(useLML,2,unique)
    valLML <- unique(colLML)
    nLML <- length(valLML)
@@ -87,7 +87,7 @@ diagnostics <- function(regC,regD,glob,plot=TRUE) {   # inzone <- testzone
         ylab="",ylim=c(0,1.025),yaxs="i",panel.first=grid())
    for (i in 1:nLML) {
       pick <- which(colLML == valLML[i])
-      lines(midpts,regC[[pick[1]]]$Select[,1],lwd=2,col=i)
+      lines(midpts,zoneC[[pick[1]]]$Select[,1],lwd=2,col=i)
    }
    title(ylab=list("Selectivity", cex=1.0, font=7),
          xlab=list("Shell Length (mm)", cex=1.0, font=7))
@@ -103,7 +103,7 @@ diagnostics <- function(regC,regD,glob,plot=TRUE) {   # inzone <- testzone
 #'     are sampled to provide the necessary biological constants for
 #'     each population.
 #'
-#' @param numpop the totla number of populations in the region
+#' @param numpop the totla number of populations in the zone
 #' @param indir the directory into which to place the data template
 #' @param filename the name for the generated datafile, a character
 #'     string, defaults to tmpdat.csv
@@ -116,8 +116,8 @@ diagnostics <- function(regC,regD,glob,plot=TRUE) {   # inzone <- testzone
 #' \dontrun{
 #'  yourdir <- tempdir()
 #'  datafiletemplate(numpop=6,yourdir,"tmpdat.csv")
-#'  data(region1)
-#'  glb <- region1$globals
+#'  data(zone1)
+#'  glb <- zone1$globals
 #'  constants <- readdatafile(numpop,yourdir,"tmpdat.csv")
 #'  str(constants,max.level=1)
 #' }
@@ -138,7 +138,7 @@ datafiletemplate <- function(numpop,indir,filename="tmpdat.csv") {
    cat("PDFs,  32   \n",file=filename, append=TRUE)
    cat("popnum,1, 2, 3, 4, 5, 6, the index number for each population \n",
        file=filename, append=TRUE)
-   cat("SMU, 1, 1, 2, 2, 2, 2, define the SMU index for each population \n",
+   cat("SAU, 1, 1, 2, 2, 2, 2, define the SAU index for each population \n",
        file=filename,append=TRUE)
    cat("MaxDL ,",genconst(rep(32,numpop)),", maximum growth increment \n",
        file=filename, append=TRUE)
@@ -287,7 +287,7 @@ readctrlfile <- function(indir,infile="control.csv") {
    indat <- readLines(filename)   # reads the whole file as character strings
    begin <- grep("START",indat) + 1
    runlabel <- getStr(indat[begin],1)
-   regionfile <- getStr(indat[begin+1],1)
+   zonefile <- getStr(indat[begin+1],1)
    datafile <- getStr(indat[begin+2],1)
    hcrfile <- getStr(indat[begin+3],1)
    outdir <- getStr(indat[begin+4],1)
@@ -298,9 +298,9 @@ readctrlfile <- function(indir,infile="control.csv") {
    withsigR <- getsingleNum("withsigR",indat)
    withsigB <- getsingleNum("withsigB",indat)
    withsigCE <- getsingleNum("withsigCE",indat)
-   outctrl <- list(runlabel,regionfile,datafile,hcrfile,outdir,
+   outctrl <- list(runlabel,zonefile,datafile,hcrfile,outdir,
                    batch,reps,initdepl,withsigR,withsigB,withsigCE)
-   names(outctrl) <- c("runlabel","regionfile","datafile","hcrfile",
+   names(outctrl) <- c("runlabel","zonefile","datafile","hcrfile",
                        "outdir","batch","reps","initdepl",
                        "withsigR","withsigB","withsigCE")
    return(outctrl)
@@ -313,7 +313,7 @@ readctrlfile <- function(indir,infile="control.csv") {
 #'     used in the simualtion. These constitute the definition of
 #'     popdefs.
 #'
-#' @param numpop the total number of populations across the region
+#' @param numpop the total number of populations across the zone
 #' @param indir directory in which to find the date file
 #' @param infile character string with filename of the data file
 #'
@@ -323,23 +323,23 @@ readctrlfile <- function(indir,infile="control.csv") {
 #'
 #' @examples
 #' \dontrun{
-#' data(region1)
-#' glb <- region1$globals
+#' data(zone1)
+#' glb <- zone1$globals
 #' glb
 #' data(constants)
 #' constants
 #' ctrlfile <- "control.csv"
 #' ctrl <- readctrlfile(glb$numpop,datadir,ctrlfile)
-#' reg1 <- readregionfile(datadir,ctrl$regionfile)
+#' reg1 <- readzonefile(datadir,ctrl$zonefile)
 #' popdefs <- readdatafile(reg1$globals,datadir,ctrl$datafile)
 #' print(popdefs)
 #' }
-readdatafile <- function(numpop,indir,infile) {  # indir=datadir;infile="reg1smu2pop6.csv";numpop=6
+readdatafile <- function(numpop,indir,infile) {  # indir=datadir;infile="zone1sau2pop6.csv";numpop=6
    filename <- filenametopath(indir,infile)
    indat <- readLines(filename)   # reads the whole file as character strings
    begin <- grep("PDFs",indat)
    npar <- getConst(indat[begin],1)
-   rows <- c("popnum","SMU","DLMax","sMaxDL","L50","sL50","L50inc","sL50inc","SigMax",
+   rows <- c("popnum","SAU","DLMax","sMaxDL","L50","sL50","L50inc","sL50inc","SigMax",
              "sSigMax","LML","Wtb","sWtb","Wtbtoa","sWtbtoa","Me","sMe",
              "AvRec","sAvRec","defsteep","sdefsteep","L50C","sL50C",
              "deltaC","sdeltaC","MaxCEpars","sMaxCEpars","selL50p",
@@ -433,32 +433,32 @@ readhcrfile <- function(infile) {  # infile <- "C:/A_CSIRO/Rcode/AbMSERun/ctrl_w
 } # end of readhcrfile
 
 
-#' @title readregionfile reads in the constants for the region
+#' @title readzonefile reads in the constants for the zone
 #'
-#' @description with the region filename from the control file the
-#'     readregionfile will read the data from a csv file arranged with
+#' @description with the zone filename from the control file the
+#'     readzonefile will read the data from a csv file arranged with
 #'     a standard layout. Once again this uses the utility functions
 #'     for reading and parsing lines of text. This is illustrated by
-#'     the function makeregionfile, which produces an example *.csv
+#'     the function makezonefile, which produces an example *.csv
 #'     file that can then be customized to suit your own simulations.
 #'     Each required section contains a series of constants which are
 #'     read in individually,so their labels are equally important.
 #'
-#' @param indir directory in which to find the region file
-#' @param infile character string with filename of the region file
+#' @param indir directory in which to find the zone file
+#' @param infile character string with filename of the zone file
 #'
 #' @return eight objects, four vectors, 4 numbers, and a list of five
 #'     objects
 #' \itemize{
-#'   \item SMUnames the labels given to each SMU
-#'   \item SMUpop the number of populations in each SMU, in sequence
+#'   \item SAUnames the labels given to each SAU
+#'   \item SAUpop the number of populations in each SAU, in sequence
 #'   \item minc scaler defining the mid point of the smallest size class
 #'   \item cw scaler defining the class width
 #'   \item randomseed used to ensure that each simulation run starts
 #'       in the same place. Could use getseed() to produce this.
 #'   \item outyear a vector of three, with Nyrs, fixyear, and firstyear
 #'   \item projLML the LML expected in each projection year, a vector
-#'   \item globals a list containing numpop, nSMU, midpts, Nclass, and
+#'   \item globals a list containing numpop, nSAU, midpts, Nclass, and
 #'       Nyrs
 #' }
 #' @export
@@ -468,18 +468,18 @@ readhcrfile <- function(infile) {  # infile <- "C:/A_CSIRO/Rcode/AbMSERun/ctrl_w
 #' datadir <- "./../../rcode2/aMSE/data-raw/"
 #' ctrlfile <- "control.csv"
 #' ctrl <- readctrlfile(datadir,ctrlfile)
-#' reg1 <- readregionfile(datadir,ctrl$regionfile)
+#' reg1 <- readzonefile(datadir,ctrl$zonefile)
 #' str(reg1)
 #' }
-readregionfile <- function(indir,infile) {  # infile="region1.csv"; indir=datadir
-   context <- "region file"
+readzonefile <- function(indir,infile) {  # infile="zone1.csv"; indir=datadir
+   context <- "zone_file"
    filename <- filenametopath(indir,infile)
    indat <- readLines(filename)   # reads the whole file as character strings
-   nSMU <-  getsingleNum("nSMU",indat) # number of spatial management units
-   begin <- grep("SMUpop",indat)
-   SMUpop <-  getConst(indat[begin],nSMU) #
-   numpop <- sum(SMUpop)
-   SMUnames <- getStr(indat[begin+1],nSMU)
+   nSAU <-  getsingleNum("nSAU",indat) # number of spatial management units
+   begin <- grep("SAUpop",indat)
+   SAUpop <-  getConst(indat[begin],nSAU) #
+   numpop <- sum(SAUpop)
+   SAUnames <- getStr(indat[begin+1],nSAU)
    minc <-  getsingleNum("minc",indat) # minimum size class
    cw    <- getsingleNum("cw",indat) # class width
    Nclass <- getsingleNum("Nclass",indat) # number of classes
@@ -508,50 +508,50 @@ readregionfile <- function(indir,infile) {  # infile="region1.csv"; indir=datadi
          histLML[i] <- getConst(indat[begin],1)
       }
    }
-   globals <- list(numpop=numpop, nSMU=nSMU, midpts=midpts,
+   globals <- list(numpop=numpop, nSAU=nSAU, midpts=midpts,
                    Nclass=Nclass, Nyrs=Nyrs, larvdisp=larvdisp)
-   totans <- list(SMUnames,SMUpop,minc,cw,larvdisp,randomseed,outyear,
+   totans <- list(SAUnames,SAUpop,minc,cw,larvdisp,randomseed,outyear,
                   projLML,condition,histLML,globals)
-   names(totans) <- c("SMUnames","SMUpop","minc","cw","larvdisp",
+   names(totans) <- c("SAUnames","SAUpop","minc","cw","larvdisp",
                       "randomseed","outyear","projLML","condition",
                       "histLML","globals")
    return(totans)
-}  # end of readregionfile
+}  # end of readzonefile
 
-#' @title regionfiletemplate generates a template region file
+#' @title zonefiletemplate generates a template zone file
 #'
-#' @description regionfiletemplate generates a standardized region file
-#'     template containing constants tha toperate at a regional level.
+#' @description zonefiletemplate generates a standardized zone file
+#'     template containing constants tha toperate at a zoneal level.
 #'     Generate this and then modify the contents to suit
 #'     the system you are attempting to simulate.
 #'
-#' @param indir directory in which to place the region file
-#' @param filename the name for the generated region file, a character
-#'     string that defaults to region1.csv. It is best to include the
+#' @param indir directory in which to place the zone file
+#' @param filename the name for the generated zone file, a character
+#'     string that defaults to zone1.csv. It is best to include the
 #'     complete path
 #'
-#' @return nothing, but it creates a template region file within indir
+#' @return nothing, but it creates a template zone file within indir
 #'
 #' @export
 #'
 #' @examples
 #'  yourdir <- tempdir()
-#'  regionfiletemplate(yourdir,filename="region1.csv")   #
-#'  region1 <- readregionfile(yourdir,"region1.csv")
-#'  str(region1,max.level=1)
-regionfiletemplate <- function(indir,filename="region1.csv") {
+#'  zonefiletemplate(yourdir,filename="zone1.csv")   #
+#'  zone1 <- readzonefile(yourdir,"zone1.csv")
+#'  str(zone1,max.level=1)
+zonefiletemplate <- function(indir,filename="zone1.csv") {
    filename <- filenametopath(indir,filename)
-   cat("region file containing region wide constants for a run \n",
+   cat("zone file containing zone wide constants for a run \n",
        file=filename,append=FALSE)
    cat("Modify the contents to suit your own situation \n",
        file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
-   cat("REGION \n",file=filename,append=TRUE)
-   cat("nSMU, 2, number of spatial management units eg 2 \n",
+   cat("zone \n",file=filename,append=TRUE)
+   cat("nSAU, 2, number of spatial management units eg 2 \n",
        file=filename,append=TRUE)
-   cat("SMUpop, 2, 4, number of populations per SMU in sequence \n",
+   cat("SAUpop, 2, 4, number of populations per SAU in sequence \n",
        file=filename,append=TRUE)
-   cat("SMUnames, block1, block2, labels for each SMU \n",file=filename,
+   cat("SAUnames, block1, block2, labels for each SAU \n",file=filename,
        append=TRUE)
    cat("\n",file=filename,append=TRUE)
    cat("SIZE \n",file=filename,append=TRUE)
@@ -589,7 +589,7 @@ regionfiletemplate <- function(indir,filename="region1.csv") {
    cat("\n",file=filename,append=TRUE)
    cat("HistoricalLML, 0, if >1 then number reflects number of histLML \n",
        file=filename,append=TRUE)
-} # end of regionfiletemplate
+} # end of zonefiletemplate
 
 
 

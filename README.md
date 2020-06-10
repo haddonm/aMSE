@@ -9,12 +9,12 @@
 
 This packages up a new Abalone Management Strategy Evaluation framework.
 It has a novel structure that is based around the spatial ideas of
-populations within spatial management units (SMUs), within a region:
+populations within spatial management units (SAUs), within a zone:
 
-  - region - highest geogrpahical level. Is simply the totality of the
+  - zone - highest geogrpahical level. Is simply the totality of the
     spatial management units.
 
-  - SMU - spatial management units. In Tasmania these would currently be
+  - SAU - spatial assessment units. In Tasmania these would currently be
     the classical statistical blocks.
 
   - population - literally a population. These are the active components
@@ -25,13 +25,13 @@ populations within spatial management units (SMUs), within a region:
 
 This conceptual structure has implications for how the simulations are
 conditioned during the management strategy testing. While it is still
-the case that the general properties of each SMU are used to set the
-scene for each SMU’s component populations, the advent of sufficient GPS
+the case that the general properties of each SAU are used to set the
+scene for each SAU’s component populations, the advent of sufficient GPS
 logger data now allows a more formal definition of the productivity of
 each population. Currently, the modelling assumes that each population
 is linearly arranged around the coastline, and this will allow, where
 available, specific catch/yield data to be used to define the bounds of
-each population within an SMU.
+each population within an SAU.
 
 An important change from previous designs is that larval dispersal is
 implemented explicitly rather than implicitly being held constant. This
@@ -69,52 +69,53 @@ and GitHub at <https://r-pkgs.org/index.html>.
 
 This is a basic example which illustrates the generation of an initial
 equilibrium. It uses built in data-sets but usually you would generate
-regionC (constants) and regionD (the dynamic components) from the
+zoneC (constants) and zoneD (the dynamic components) from the
 conditioning data:
 
 ``` r
 # a minimal example
 starttime <- as.character(Sys.time())
 library(aMSE)
+library(makehtml)
 # Obviously you should modify the resdir to suit your own computer
 resdir <- "./../../rcode2/aMSEUse/out/testrun"
 dirExists(resdir,make=TRUE,verbose=TRUE)
 #> ./../../rcode2/aMSEUse/out/testrun :  exists
-# You now need to ensure that there is a control.csv, reg1smu2pop6.csv
-# and region1.csv file in the data directory
+# You now need to ensure that there is a control.csv, reg1sau2pop6.csv
+# and zone1.csv file in the data directory
 ctrlfiletemplate(resdir)  # puts a template ctrlfile into resdir
-regionfiletemplate(resdir)  # puts a template region file into resdir
-datafiletemplate(6,resdir,filename="reg1smu2pop6.csv") # etc
+zonefiletemplate(resdir)  # puts a template zone file into resdir
+datafiletemplate(6,resdir,filename="zone1sau2pop6.csv") # etc
 ctrl <- checkresdir(resdir) # checks the data files are present
 #> All required files appear to be present
 runname <- ctrl$runlabel    # and reads the control file, if present
-region1 <- readregionfile(resdir,ctrl$regionfile)
-glb <- region1$globals
+zone1 <- readzonefile(resdir,ctrl$zonefile)
+glb <- zone1$globals
 constants <- readdatafile(glb$numpop,resdir,ctrl$datafile)
 
-out <- setupregion(constants, region1) # make operating model 
-regionC <- out$regionC     # constant bits
-regionD <- out$regionD     # dynamics bits
+out <- setupzone(constants, zone1) # make operating model 
+zoneC <- out$zoneC     # constant bits
+zoneD <- out$zoneD     # dynamics bits
 product <- out$product     # all usually saved in resdir, not here
 glb <- out$glb             # now contains the larval movement matrix
   # Are we at equilibrium?
-regDe <- testequil(regionC,regionD,glb) 
+regDe <- testequil(zoneC,zoneD,glb) 
 #> [1] matureB Stable
-#> [1] exploitB varies
+#> [1] exploitB Stable
 #> [1] recruitment Stable
 #> [1] spawning depletion Stable
 
 resfile <- setuphtml(resdir,runname)# prepare to save and log results
 
 plotproductivity(resdir,runname,product,glb)
-biology_plots(resdir, runname, glb, regionC)
-numbersatsize(resdir, runname, glb, regionD)
+biology_plots(resdir, runname, glb, zoneC)
+numbersatsize(resdir, runname, glb, zoneD)
 
 endtime <- as.character(Sys.time())
 
 reportlist <- list(runname=runname,
                    starttime=starttime,endtime=endtime,
-                   regionC=regionC, regionD=regionD, product=product,
+                   zoneC=zoneC, zoneD=zoneD, product=product,
                    glb=glb,constants=constants
 )
 

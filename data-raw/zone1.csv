@@ -1,9 +1,9 @@
 Region wide constants for a gven simulation,,,
 ,,,
 REGION,2,,
-nSMU,2,number of Spatial Management Units  eg  2,
-SMUpop,2,4,"number of populations per SMU, in sequence"
-SMUnames,block1,block2,the labels for each SMU
+nSAU,2,number of Spatial Management Units  eg  2,
+SAUpop,2,4,"number of populations per SAU, in sequence"
+SAUnames,block1,block2,the labels for each SAU
 ,,,
 SIZE,,,
 minc,2, minimum size class  2mm,

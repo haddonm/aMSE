@@ -7,7 +7,7 @@
 oneyear(inpopC, inNt, Nclass, inH, yr)
 }
 \arguments{
-\item{inpopC}{a single population from a regionC, an abpop}
+\item{inpopC}{a single population from a zoneC, an abpop}
 
 \item{inNt}{the numbers at size for the year previous to the year
 of dynamics. These are projected into the active year.}
@@ -28,7 +28,7 @@ a list containing ExploitB, MatureB, Catch, Harvest, Nt,
 }
 \description{
 oneyear do one year's dynamics for one input population.
-   Used to step through populations of a region. Its dynamics are
+   Used to step through populations of a zone. Its dynamics are
    such that it first undergoes growth, then half natural mortality.
    This allows an estimate of exploitable biomass before fishing
    occurs. The remaining dynamics involve the removal of the catch,

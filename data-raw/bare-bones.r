@@ -6,11 +6,11 @@ library(aMSE)
 # Obviously you should modify the resdir to suit your own computer
 resdir <- "./../../rcode2/aMSEUse/out/testrun"
 dirExists(resdir,make=TRUE,verbose=TRUE)
-# You now need to ensure that there is a control.csv, reg1smu2pop6.csv
+# You now need to ensure that there is a control.csv, zone1sm\au2pop6.csv
 # and region1.csv file in the data directory
 ctrlfiletemplate(resdir)
 regionfiletemplate(resdir)
-datafiletemplate(6,resdir,filename="reg1smu2pop6.csv")
+datafiletemplate(6,resdir,filename="zone1sau2pop6.csv")
 ctrl <- checkresdir(resdir)
 runname <- ctrl$runlabel
 region1 <- readregionfile(resdir,ctrl$regionfile)

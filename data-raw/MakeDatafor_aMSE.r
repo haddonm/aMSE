@@ -21,18 +21,18 @@ ctrlfile <- "control.csv"
 #source(filenametopath(datadir,"sourcer.R"))
 
 ctrl <- readctrlfile(datadir,ctrlfile)
-region1 <- readregionfile(datadir,ctrl$regionfile)
-glb <- region1$globals
+zone1 <- readzonefile(datadir,ctrl$zonefile)
+glb <- zone1$globals
 constants <- readdatafile(glb$numpop,datadir,ctrl$datafile)
 
 
 
 save(ctrl,file=paste0(datadir,"ctrl.RData"))
-save(region1,file=paste0(datadir,"region1.RData"))
+save(zone1,file=paste0(datadir,"zone1.RData"))
 save(constants,file=paste0(datadir,"constants.RData"))
 
 
-# Complete region objects---------------------------------------------
+# Complete zone objects---------------------------------------------
 
 library(rutilsMH)
 library(aMSE)
@@ -42,24 +42,24 @@ datadir <- "./../../rcode2/aMSE/data-raw/"
 # read data files ----------------------------------------------------
 resdir <- "./../../rcode2/aMSEUse/out/run1"
 dirExists(resdir,make=TRUE,verbose=TRUE)
-# You now need to ensure that there is a control.csv, reg1smu2pop6.csv
-# and region1.csv file in the data directory
+# You now need to ensure that there is a control.csv, zone1sau2pop6.csv
+# and zone1.csv file in the data directory
 ctrl <- checkresdir(resdir)
 runname <- ctrl$runlabel
-region1 <- readregionfile(resdir,ctrl$regionfile)
-glb <- region1$globals
+zone1 <- readzonefile(resdir,ctrl$zonefile)
+glb <- zone1$globals
 constants <- readdatafile(glb$numpop,resdir,ctrl$datafile)
 
-out <- setupregion(constants, region1)
-regionC <- out$regionC
-regionD <- out$regionD
+out <- setupzone(constants, zone1)
+zoneC <- out$zoneC
+zoneD <- out$zoneD
 product <- out$product
 glb <- out$glb
-testregC <- regionC
-testregD <- regionD
+testzoneC <- zoneC
+testzoneD <- zoneD
 
-save(testregC,file=paste0(datadir,"testregC.RData"))
-save(testregD,file=paste0(datadir,"testregD.RData"))
+save(testzoneC,file=paste0(datadir,"testzoneC.RData"))
+save(testzoneD,file=paste0(datadir,"testzoneD.RData"))
 save(product,file=paste0(datadir,"product.RData"))
 
 

@@ -2,21 +2,21 @@
 % Please edit documentation in R/getfunctions.R
 \name{getsum}
 \alias{getsum}
-\title{getsum sums each of the main dynamics within regionD}
+\title{getsum sums each of the main dynamics within zoneD}
 \usage{
 getsum(inmat, index)
 }
 \arguments{
-\item{inmat}{what matrix within regionD to sum into SMU and region}
+\item{inmat}{what matrix within zoneD to sum into SAU and zone}
 
-\item{index}{a vector containing an index of populations within SMU}
+\item{index}{a vector containing an index of populations within SAU}
 }
 \value{
-an nSMU+1 column matrix summarizing each SMU and the region
+an nSAU+1 column matrix summarizing each SAU and the zone
 }
 \description{
-getsum is used by getsmureg to sum each of the main
-    dynamic variables within regionD
+getsum is used by getsauzone to sum each of the main
+    dynamic variables within zoneD
 }
 \examples{
 print("wait on an example")

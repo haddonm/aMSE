@@ -4,13 +4,13 @@
 \alias{oneyearD}
 \title{oneyearD conducts one year's dynamics in the simulation}
 \usage{
-oneyearD(regionC, regD, Ncl, inHt, year, sigmar, npop, movem)
+oneyearD(zoneC, zoneD, Ncl, inHt, year, sigmar, npop, movem)
 }
 \arguments{
-\item{regionC}{the constant portion of the region with a list of
+\item{zoneC}{the constant portion of the zone with a list of
 properties for each population}
 
-\item{regD}{the dynamics portion of the region, with matrices and
+\item{zoneD}{the dynamics portion of the zone, with matrices and
 arrays for the dynamic variables of the dynamics of the
 operating model}
 
@@ -34,26 +34,26 @@ a list containing a revised dynamics list
 }
 \description{
 onyearD conducts one year's dynamics in the simulation
-    returning the revised regionD, which will have had a single year
-    of activity included in each of its components. This uses regC
+    returning the revised zoneD, which will have had a single year
+    of activity included in each of its components. This uses zoneC
     but always within the environment of another function in which
-    regC (as regionC) can be found. Used in runthreeH, (and hence
+    zoneC (as zoneC) can be found. Used in runthreeH, (and hence
     dodepletion and doproduction) and in testequil
 }
 \examples{
  data(constants)
- data(region1)
- ans <- makeregionC(region1,constants) # classical equilibrium
- regionC <- ans$regionC
+ data(zone1)
+ ans <- makezoneC(zone1,constants) # classical equilibrium
+ zoneC <- ans$zoneC
  glb <- ans$glb
- ans <- makeregion(glb,regionC) # now make regionD
- regionC <- ans$regionC  # region constants used as regC in oneyearD
- regionD <- ans$regionD
+ ans <- makezone(glb,zoneC) # now make zoneD
+ zoneC <- ans$zoneC  # zone constants used as zoneC in oneyearD
+ zoneD <- ans$zoneD
  numpop <- glb$numpop
  harvest <- rep(0.2,numpop) # not exported so needs aMSE:::
- regionD <- aMSE:::oneyearD(regionC=regionC,regD=regionD,
+ zoneD <- aMSE:::oneyearD(zoneC=zoneC,zoneD=zoneD,
                    Ncl=glb$Nclass,inHt=harvest,year=2,sigmar=1e-06,
                    npop=numpop,movem=glb$move)
- str(regionD)
- round(regionD$catchN[60:105,1:5,1],1)
+ str(zoneD)
+ round(zoneD$catchN[60:105,1:5,1],1)
 }

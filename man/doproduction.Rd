@@ -4,12 +4,12 @@
 \alias{doproduction}
 \title{doproduction estimates a production curve for each population}
 \usage{
-doproduction(regionC, regD, glob, lowlim = 0, uplim = 0.35, inc = 0.005)
+doproduction(zoneC, zoneD, glob, lowlim = 0, uplim = 0.35, inc = 0.005)
 }
 \arguments{
-\item{regionC}{the constants components of the simulated region}
+\item{zoneC}{the constants components of the simulated zone}
 
-\item{regD}{the dynamic components of the simulated region}
+\item{zoneD}{the dynamic components of the simulated zone}
 
 \item{glob}{the general global variables}
 
@@ -25,7 +25,7 @@ an array of the six productivity variables by numpop by
 }
 \description{
 doproduction estimates a production curve for each
-    population in the simulated region. It does this by sequentially
+    population in the simulated zone. It does this by sequentially
     applying a series of increasing harvest rates and running the
     populations to equilibrium to discover, empirically, the yield
     and other details, such as exploitable biomass, mature biomass,
@@ -37,7 +37,7 @@ doproduction estimates a production curve for each
     the slower the run. However, the estimates of MSY and related
     statistics are expected to have better accuracy (resolution)
     the finer the harvest rate increments. So when initiating the
-    region it is best to have a long sequence of finely incremented
+    zone it is best to have a long sequence of finely incremented
     harvest rates that take a long time.
 }
 \examples{

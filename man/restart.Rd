@@ -2,12 +2,12 @@
 % Please edit documentation in R/defineZone.R
 \name{restart}
 \alias{restart}
-\title{restart transfers final year values of regD into the first year}
+\title{restart transfers final year values of zoneD into the first year}
 \usage{
-restart(oldregD, nyrs, npop, N, zero = TRUE)
+restart(oldzoneD, nyrs, npop, N, zero = TRUE)
 }
 \arguments{
-\item{oldregD}{the old regionD containing the dynamics as run for
+\item{oldzoneD}{the old zoneD containing the dynamics as run for
 Nyrs.}
 
 \item{nyrs}{The number of years of dynamics, the global Nyrs}
@@ -24,7 +24,7 @@ a list containing a revised dynamics list
 }
 \description{
 restart transfers the final year values from the
-    dynamics part of the region (regionD), into the first year.
+    dynamics part of the zone (zoneD), into the first year.
     This is used, for example, when searching for an equilibrium
     state if there is larval dispersal > 0.0. Of if one sets the
     initial depletion to anything other than 1.0. Contains the

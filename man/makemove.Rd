@@ -29,10 +29,10 @@ makemove produces the movement matrix, which assumes
     half to the other side, but would receive half of their larval
     dispersal each. As larval dispersal is modelled as a proportion
     those populations that produce more larvae will lose more in
-    absolute terms. Those populations at the edges of the region
-    only lose half the larval dispersal into the region and it is
-    assumed that what they lose out of the region will be matched
-    by what will come into the region.
+    absolute terms. Those populations at the edges of the zone
+    only lose half the larval dispersal into the zone and it is
+    assumed that what they lose out of the zone will be matched
+    by what will come into the zone.
 }
 \examples{
 recruits <- c(636146,263878,819189,1112513,285025,671573.9)

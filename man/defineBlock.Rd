@@ -21,7 +21,7 @@ subdivides the defined number of populations into blocks
     in the numbers defined in the constant blkpop read into 'constants'.
     It allocates the populations sequentially to numblk blocks; if
     numblk does not divide into numpop exactly, any remainder is put
-    into the final block. For block can read SMU = spatial management
+    into the final block. For block can read SAU = spatial assessment
     unit.
 }
 \examples{

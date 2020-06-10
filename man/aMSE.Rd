@@ -24,12 +24,12 @@ The aMSE package provides functions to facilitate
   \item{midg}{an abalone tagging data-set from the Actaeons}
   \item{product}{productivity matrix from a 2 MSU 6 population
       example}
-  \item{region1}{the constants common to a region}
+  \item{zone1}{the constants common to a zone}
   \item{tasab}{Abalone maturity data from two sites on the
       south-west of Tasmania.}
-  \item{tasregC}{a region list made up of 6 equilibrium populations}
-  \item{tasregD}{a list of 8 matrices and 2 arrays defining the
-      dynamics of a region}
+  \item{taszoneC}{a zone list made up of 6 equilibrium populations}
+  \item{taszoneD}{a list of 8 matrices and 2 arrays defining the
+      dynamics of a zone}
 }
 }
 

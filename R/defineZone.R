@@ -6,7 +6,7 @@
 #'     in the numbers defined in the constant blkpop read into 'constants'.
 #'     It allocates the populations sequentially to numblk blocks; if
 #'     numblk does not divide into numpop exactly, any remainder is put
-#'     into the final block. For block can read SMU = spatial management
+#'     into the final block. For block can read SAU = spatial assessment
 #'     unit.
 #'
 #' @param numblk number of blocks in the simulated zone, from 'constants'
@@ -50,32 +50,32 @@ defineBlock <- function(numblk,blknum,numpop) {
 #'     contains the definitions of the probability density functions
 #'     used to define each population.
 #'
-#' @param inSMU the number of SMUs defined in the region, a scalar
-#' @param inSMUindex a vector of the block index for each population
+#' @param inSAU the number of SAUs defined in the zone, a scalar
+#' @param inSAUindex a vector of the block index for each population
 #' @param const a matrix with rows containing the PDF parameters for
 #'     each of the biological parameters. The columns of the matrix
 #'     reflect values for each populations from readdatafile
-#' @param glob the globals object from readregionfile
+#' @param glob the globals object from readzonefile
 #'
 #' @return a matrix with a row for each population and whose columns
 #'     are parameters defining the biological parameters for each population.
 #' @export
 #'
 #' @examples
-#'   data(region1)
-#'   glb <- region1$globals
+#'   data(zone1)
+#'   glb <- zone1$globals
 #'   data(constants)
-#'   ans <- makeregionC(region1,constants)
-#'   regionC <- ans$regionC
+#'   ans <- makezoneC(zone1,constants)
+#'   zoneC <- ans$zoneC
 #'   popdefs <- ans$popdefs
 #'   print(popdefs)
-definepops <- function(inSMU,inSMUindex,const,glob) {
-  #  inSMU=nSMU; inSMUindex=SMUindex; const=constants; glob=glb
+definepops <- function(inSAU,inSAUindex,const,glob) {
+  #  inSAU=nSAU; inSAUindex=SAUindex; const=constants; glob=glb
   numpop <- glob$numpop
   Nyrs <- glob$Nyrs
   columns <- c("DLMax","L50","L95","SigMax","SaMa","SaMb","Wta","Wtb","Me",
                "L50C","deltaC","AvRec","SelP1","SelP2","Nyrs","steeph",
-               "MaxCE","L50mat","SMU")
+               "MaxCE","L50mat","SAU")
   popdefs <- matrix(0,nrow=numpop,ncol=length(columns),
                     dimnames=list(1:numpop,columns))
   popdefs[,"Nyrs"] <- rep(Nyrs,numpop) # Num Years - why is this here?
@@ -110,66 +110,66 @@ definepops <- function(inSMU,inSMUindex,const,glob) {
                                    const["sAvRec",pop])
     popdefs[pop,"MaxCE"] <- rnorm(1,mean=const["MaxCEpars",pop],
                                   const["sMaxCEpars",pop])
-    popdefs[pop,"SMU"] <- const["SMU",pop]
+    popdefs[pop,"SAU"] <- const["SAU",pop]
   }
   test <- popdefs[,"L95"] - popdefs[,"L50"]
   if (any(test < 0)) stop("L95 < L50 - adjust the input data file  \n")
   return(popdefs)
 } # end of definepops
 
-#' @title dodepletion resets regionD to an input depletion level
+#' @title dodepletion resets zoneD to an input depletion level
 #'
 #' @description dodepletion resets the depletion level of the whole
-#'     regionand does this by searching for the harvest rate that
+#'     zone and does this by searching for the harvest rate that
 #'     leads to the sum of the mature biomass, across populations,
 #'     divided by the sum of the effective B0 across populations is
 #'     as close as possible to the desired depletion level. This means
 #'     the individual populations will likely vary around the target
-#'     depletion, but across the region it will be correct. The
+#'     depletion, but across the zone it will be correct. The
 #'     depletion is measured relative to the effective B0 as that
 #'     takes account of any larval dispersal. This function uses the
 #'     production curve matrix to search for harvest rates that bound
 #'     the target depletion and then re-searches across those bounds
 #'     using len intervals.
 #'
-#' @param regionC the constants components of the simulated region
-#' @param regD the dynamic components of the simulated region
+#' @param zoneC the constants components of the simulated zone
+#' @param zoneD the dynamic components of the simulated zone
 #' @param glob the general global variables
-#' @param depl the target depletion proportion for the whole region
+#' @param depl the target depletion proportion for the whole zone
 #' @param product the production curve matrix from doproduction
 #' @param len the number of intervals in the trial harvest rates
 #'
-#' @return a revised regionD object
+#' @return a revised zoneD object
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#'   data(region1)
-#'   glb <- region1$globals
+#'   data(zone1)
+#'   glb <- zone1$globals
 #'   data(constants)
-#'   ans <- makeregionC(region1,constants)
-#'   regionC <- ans$regionC
+#'   ans <- makezoneC(zone1,constants)
+#'   zoneC <- ans$zoneC
 #'   glb <- ans$glb  # now contains the move matrix
-#'   ans <- makeregion(glb,regionC)
-#'   regionC <- ans$regionC
-#'   regionD <- ans$regionD
-#'   ans2 <- modregC(regionC,regionD,glb)
-#'   regionC <- ans2$regionC  # now has MSY and deplMSY
+#'   ans <- makezone(glb,zoneC)
+#'   zoneC <- ans$zoneC
+#'   zoneD <- ans$zoneD
+#'   ans2 <- modzoneC(zoneC,zoneD,glb)
+#'   zoneC <- ans2$zoneC  # now has MSY and deplMSY
 #'   product <- ans2$product
-#'   regDD <- dodepletion(regionC,regionD,glb,depl=0.3,product)
-#'   sum((regDD$matureB[1,]/sum(regDD$matureB[1,]))*regDD$deplsB[1,])
-#'   mean(regDD$deplsB[1,])
+#'   zoneDD <- dodepletion(zoneC,zoneD,glb,depl=0.3,product)
+#'   sum((zoneDD$matureB[1,]/sum(zoneDD$matureB[1,]))*zoneDD$deplsB[1,])
+#'   mean(zoneDD$deplsB[1,])
 #' }
-dodepletion <- function(regionC,regD,glob,depl,product,len=15) {
-  #  regC=regionC; regD=regionD; glob=glb;  product=product; depl=0.2;len=15
+dodepletion <- function(zoneC,zoneD,glob,depl,product,len=15) {
+  #  zoneC=zoneC; zoneD=zoneD; glob=glb;  product=product; depl=0.2;len=15
   # use product to find bounds on H around the desired depletion level
   spb <- rowSums(product[,"MatB",])
   initH <- as.numeric(rownames(product))
-  regdyn <- cbind(initH,spb,spb/spb[1])
-  colnames(regdyn) <- c("harv","spb","deplet")
+  zoneDyn <- cbind(initH,spb,spb/spb[1])
+  colnames(zoneDyn) <- c("harv","spb","deplet")
   regB0 <- spb[1]
-  pick <- which.closest(depl,regdyn[,"deplet"])
-  if (abs(regdyn[pick,"deplet"] - depl) > 0.05)
+  pick <- which.closest(depl,zoneDyn[,"deplet"])
+  if (abs(zoneDyn[pick,"deplet"] - depl) > 0.05)
     warning("Resolution of production curves may be insufficient.")
   if (pick == nrow(product)) {
     mssg <- paste0("Initial maximum harvest rate when estimating ",
@@ -180,24 +180,24 @@ dodepletion <- function(regionC,regD,glob,depl,product,len=15) {
   lowl <- initH[pick-1]
   upl <- initH[pick+1]
   dinitH <- seq(lowl,upl,length=len)
-  regdepl <- numeric(len)
+  zoneDepl <- numeric(len)
   numpop <- glob$numpop
   for (harv in 1:len) {
     doharv <- rep(dinitH[harv],numpop)
-    regDD <- runthreeH(regionC=regionC,regD,inHarv=doharv,glob)
-    regdepl[harv] <- sum((regDD$matureB[1,]/sum(regDD$matureB[1,])) *
-                           regDD$deplsB[1,])
+    zoneDD <- runthreeH(zoneC=zoneC,zoneD,inHarv=doharv,glob)
+    zoneDepl[harv] <- sum((zoneDD$matureB[1,]/sum(zoneDD$matureB[1,])) *
+                           zoneDD$deplsB[1,])
   }
-  pick <- which.closest(depl,regdepl)
+  pick <- which.closest(depl,zoneDepl)
   pickharv <- rep(dinitH[pick],numpop)
-  regDD <- runthreeH(regionC=regionC,regD,inHarv=pickharv,glob)
-  return(regDD)
+  zoneDD <- runthreeH(zoneC=zoneC,zoneD,inHarv=pickharv,glob)
+  return(zoneDD)
 } # end of dodepletion
 
 #' @title doproduction estimates a production curve for each population
 #'
 #' @description doproduction estimates a production curve for each
-#'     population in the simulated region. It does this by sequentially
+#'     population in the simulated zone. It does this by sequentially
 #'     applying a series of increasing harvest rates and running the
 #'     populations to equilibrium to discover, empirically, the yield
 #'     and other details, such as exploitable biomass, mature biomass,
@@ -209,11 +209,11 @@ dodepletion <- function(regionC,regD,glob,depl,product,len=15) {
 #'     the slower the run. However, the estimates of MSY and related
 #'     statistics are expected to have better accuracy (resolution)
 #'     the finer the harvest rate increments. So when initiating the
-#'     region it is best to have a long sequence of finely incremented
+#'     zone it is best to have a long sequence of finely incremented
 #'     harvest rates that take a long time.
 #'
-#' @param regionC the constants components of the simulated region
-#' @param regD the dynamic components of the simulated region
+#' @param zoneC the constants components of the simulated zone
+#' @param zoneD the dynamic components of the simulated zone
 #' @param glob the general global variables
 #' @param lowlim the lower limit of harvest rate applied, default=0.0
 #' @param uplim the upper limit of harvest rate applied, default=0.35
@@ -225,7 +225,7 @@ dodepletion <- function(regionC,regD,glob,depl,product,len=15) {
 #'
 #' @examples
 #' print("wait")
-doproduction <- function(regionC,regD,glob,
+doproduction <- function(zoneC,zoneD,glob,
                          lowlim=0.0,uplim=0.35,inc=0.005) {
   numpop <- glob$numpop
   Nclass <- glob$Nclass
@@ -236,14 +236,14 @@ doproduction <- function(regionC,regD,glob,
   columns <- c("ExB","MatB","AnnH","Catch","Deplet","RelCE")
   results <- array(0,dim=c(nH,6,numpop),dimnames=list(initH,columns,1:numpop))
   for (aH in 1:nH) { # aH=1 ; yr=2
-    regD <- runthreeH(regionC=regionC,regD,inHarv=rep(initH[aH],numpop),glob)
-   # regD <- runthreeH(regD,inHarv=rep(initH[aH],numpop),glob)
-    results[aH,"ExB",] <- regD$exploitB[1,]
-    results[aH,"MatB",] <- regD$matureB[1,]
-    results[aH,"AnnH",] <- regD$harvestR[1,]
-    results[aH,"Catch",] <- regD$catch[1,]
-    results[aH,"Deplet",] <- regD$deplsB[1,]
-    results[aH,"RelCE",] <- regD$cpue[1,]
+    zoneD <- runthreeH(zoneC=zoneC,zoneD,inHarv=rep(initH[aH],numpop),glob)
+   # zoneD <- runthreeH(zoneD,inHarv=rep(initH[aH],numpop),glob)
+    results[aH,"ExB",] <- zoneD$exploitB[1,]
+    results[aH,"MatB",] <- zoneD$matureB[1,]
+    results[aH,"AnnH",] <- zoneD$harvestR[1,]
+    results[aH,"Catch",] <- zoneD$catch[1,]
+    results[aH,"Deplet",] <- zoneD$deplsB[1,]
+    results[aH,"RelCE",] <- zoneD$cpue[1,]
   } # end of yr loop
   return(results)
 } # end of doproduction
@@ -309,8 +309,8 @@ driftrec <- function(recs,recp) {
 #'     and basic biological properties: MSY, B0, Average bLML, Average SaM,
 #'     and more details
 #'
-#' @param regC the constnats for the region to be characterized.
-#' @param regD the dynamic parts of the rgion being characterized
+#' @param zoneC the constnats for the zone to be characterized.
+#' @param zoneD the dynamic parts of the rgion being characterized
 #' @param prod the production object from doproduction
 #'
 #' @return A list of 10 objects containing the properties of the zone;
@@ -334,15 +334,15 @@ driftrec <- function(recs,recp) {
 #' @examples
 #' # needs summaryPop and summaryZone
 #' txt2 <- 'always use examples rather than example'
-fillzoneDef <- function(regC,regD,prod) {  # inzone=zone; prod=production
+fillzoneDef <- function(zoneC,zoneD,prod) {  # inzone=zone; prod=production
    defNames <- c("production","defpop","struct","nBlock","numpop",
                  "summaryPop","summaryZone","blockProp","date")
    zDef <- vector("list",length(defNames))
    names(zDef) <- defNames
-   numpop <- length(regC)
+   numpop <- length(zoneC)
    pops <- seq(1,numpop,1)
-   popdefs <- t(sapply(regC,"[[","popdef"))
-   blockI <- popdefs[,"SMU"]
+   popdefs <- t(sapply(zoneC,"[[","popdef"))
+   blockI <- popdefs[,"SAU"]
    nblock <- length(unique(blockI))
    struct <- matrix(0,nrow=numpop,ncol=3,
                     dimnames=list(pops,c("Blocks","Population","Hexagon")))
@@ -406,7 +406,7 @@ findF1 <- function(product) {
 
 #' @title findmsy identifies the closest productivity value to MSY
 #'
-#' @description findmsy for each population in the region, identifies
+#' @description findmsy for each population in the zone, identifies
 #'     the closest productivity value to MSY and returns the vector
 #'     of productivity values for the selected harvest rate. The Catch
 #'     in each populaiton = MSY and the other variables relate to the
@@ -420,17 +420,17 @@ findF1 <- function(product) {
 #'
 #' @examples
 #' \dontrun{  # takes far too long
-#'   data(region1)
-#'   glb <- region1$globals
+#'   data(zone1)
+#'   glb <- zone1$globals
 #'   data(constants)
-#'   ans <- makeregionC(region1,constants)
-#'   regionC <- ans$regionC
+#'   ans <- makezoneC(zone1,constants)
+#'   zoneC <- ans$zoneC
 #'   glb <- ans$glb
-#'   ans <- makeregion(glb,regionC)
-#'   regionC <- ans$regionC
-#'   regionD <- ans$regionD
-#'   ans2 <- modregC(regionC,regionD,glb)
-#'   regionC <- ans2$regionC  # region constants
+#'   ans <- makezone(glb,zoneC)
+#'   zoneC <- ans$zoneC
+#'   zoneD <- ans$zoneD
+#'   ans2 <- modzoneC(zoneC,zoneD,glb)
+#'   zoneC <- ans2$zoneC  # zone constants
 #'   product <- ans2$product
 #'   approxMSY <- findmsy(product)
 #'   print(approxMSY)
@@ -493,9 +493,9 @@ logistic <- function(inL50,delta,lens,knifeedge=0) {
 #' @description makeabpop generates the full population structure in an
 #'    unfished state. The structure is pre-determined: Me R0 B0 effB0
 #'    ExB0, effExB0 MSY MSYDepl bLML popq SaM popdef (vector of constants)
-#'    LML G Maturity WtL Emergent Select SelWt MatWt SMUname. See the
-#'    AbMSE documentation to see the full definition of a region, made
-#'    up of a regionC and a regionD. Notice the presence of effB0 and
+#'    LML G Maturity WtL Emergent Select SelWt MatWt SAUname. See the
+#'    AbMSE documentation to see the full definition of a zone, made
+#'    up of a zoneC and a zoneD. Notice the presence of effB0 and
 #'    effExB0, these relate to the influence of larval dispersal on each
 #'    populations productivity. The effective B0 relates to the unfished
 #'    mature biomass after larval dispersal occurs and the population
@@ -505,14 +505,14 @@ logistic <- function(inL50,delta,lens,knifeedge=0) {
 #'     the specific properties of this population. Obtained from
 #'     popdefs, which is produced by definepops
 #' @param midpts the center values of the size classes dervied from
-#'     the region data file
+#'     the zone data file
 #' @param projLML the LML expected in the projection years 2 - Nyrs;
-#'     a vector obtained from the regiondatafile
+#'     a vector obtained from the zonedatafile
 #'
 #' @return a list of numpop lists of 19 objects as detailed above.
 #'
 #' @examples
-#' print("See the code for makeregionC to see usage of makeabpop")
+#' print("See the code for makezoneC to see usage of makeabpop")
 makeabpop <- function(popparam,midpts,projLML) {  #popparam=popdef;midpts=midpts;projLML=projLML
   #(DLMax,L50,L95,SigMax,SaMa,SaMb,Wta,Wtb,Me,L50C,L95C,R0 SelP[1],SelP[2],Nyrs,steeph,MaxCE,L50Mat block
   #   1    2   3    4      5    6   7   8   9 10   11   12  13     14      15   16     17    18     19
@@ -545,12 +545,12 @@ makeabpop <- function(popparam,midpts,projLML) {  #popparam=popdef;midpts=midpts
   MSY <- 0
   MSYDepl <- 0
   bLML <- 0
-  SMU <- 0
+  SAU <- 0
   ans <- list(Me,AvRec,B0,ExB0,MSY,MSYDepl,bLML,catq,SaM,popparam,
-              zLML,G,mature,WtL,emergent,zSelect,zSelWt,MatWt,SMU)
+              zLML,G,mature,WtL,emergent,zSelect,zSelWt,MatWt,SAU)
   names(ans) <- c("Me","R0","B0","ExB0","MSY","MSYDepl","bLML","popq",
                   "SaM","popdef","LML","G","Maturity","WtL","Emergent",
-                  "Select","SelWt","MatWt","SMU")
+                  "Select","SelWt","MatWt","SAU")
   class(ans) <- "abpop"
   return(ans)
 } # End of makeabpop
@@ -563,10 +563,10 @@ makeabpop <- function(popparam,midpts,projLML) {  #popparam=popdef;midpts=midpts
 #'     half to the other side, but would receive half of their larval
 #'     dispersal each. As larval dispersal is modelled as a proportion
 #'     those populations that produce more larvae will lose more in
-#'     absolute terms. Those populations at the edges of the region
-#'     only lose half the larval dispersal into the region and it is
-#'     assumed that what they lose out of the region will be matched
-#'     by what will come into the region.
+#'     absolute terms. Those populations at the edges of the zone
+#'     only lose half the larval dispersal into the zone and it is
+#'     assumed that what they lose out of the zone will be matched
+#'     by what will come into the zone.
 #'
 #' @param npop the number of populations
 #' @param recs the original unfished recruitment levels estimated for
@@ -595,91 +595,91 @@ makemove <- function(npop,recs,ld,sigmove=0.0) {
   return(move)
 } # end of makemove
 
-#' @title makeregionC makes the constant part of the simulation
+#' @title makezoneC makes the constant part of the simulation
 #'
-#' @description makeregionC makes the constant part of the simulated
-#'     region. Once defined this does not change throughout the
-#'     simulation. Once made it still requires makeregion to be run
+#' @description makezoneC makes the constant part of the simulated
+#'     zone. Once defined this does not change throughout the
+#'     simulation. Once made it still requires makezone to be run
 #'     to fill in the B0, ExBo, MSY, MSYDepl, and the popq values, and
-#'     to produce regionD, the dynamic part of the new region
+#'     to produce zoneD, the dynamic part of the new zone
 #'
-#' @param region the object derived from the readregionfile function
+#' @param zone the object derived from the readzonefile function
 #' @param const the object derived from teh readdatafile function
 #'
-#' @return a list containing the constant part of the simulated region
+#' @return a list containing the constant part of the simulated zone
 #' @export
 #'
 #' @examples
-#' data(region1)
+#' data(zone1)
 #' data(constants)
-#' ans <- makeregionC(region=region1,const=constants)
-#' regionC <- ans$regionC
+#' ans <- makezoneC(zone=zone1,const=constants)
+#' zoneC <- ans$zoneC
 #' popdefs <- ans$popdefs
-#' str(regionC,max.level=1)
-#' str(regionC[[1]])  # not complete at this stage
+#' str(zoneC,max.level=1)
+#' str(zoneC[[1]])  # not complete at this stage
 #' print(popdefs)
-makeregionC <- function(region,const) { # region=region1; const=constants
-  glb <- region$globals
-  nSMU <- glb$nSMU
+makezoneC <- function(zone,const) { # zone=zone1; const=constants
+  glb <- zone$globals
+  nSAU <- glb$nSAU
   numpop <- glb$numpop
   midpts <- glb$midpts
-  blkdef <- region$SMUpop
-  SMUindex <- defineBlock(nSMU,blkdef,numpop)
-  SMU <- as.numeric(const["SMU",])
-  if (region$randomseed > 0) set.seed(region$randomseed)
-  projectionLML <- region$projLML
-  historicalLML <- region$histLML
-  if (region$condition)
+  blkdef <- zone$SAUpop
+  SAUindex <- defineBlock(nSAU,blkdef,numpop)
+  SAU <- as.numeric(const["SAU",])
+  if (zone$randomseed > 0) set.seed(zone$randomseed)
+  projectionLML <- zone$projLML
+  historicalLML <- zone$histLML
+  if (zone$condition)
     projLML <- historicalLML else projLML <- projectionLML
   #pops <- trunc(const["popnum",])
-  popdefs <- definepops(nSMU,SMUindex,const,glob=glb) # define pops
-  regionC <- vector("list",numpop)
+  popdefs <- definepops(nSAU,SAUindex,const,glob=glb) # define pops
+  zoneC <- vector("list",numpop)
   for (pop in 1:numpop) {      # pop <- 1
     popdef <- popdefs[pop,]
-    regionC[[pop]] <- makeabpop(popdef,midpts,projLML)
-    tmpL <- oneyrgrowth(regionC[[pop]],regionC[[pop]]$SaM)
-    regionC[[pop]]$bLML <- oneyrgrowth(regionC[[pop]],tmpL)
-    regionC[[pop]]$SMU <- SMU[pop]
+    zoneC[[pop]] <- makeabpop(popdef,midpts,projLML)
+    tmpL <- oneyrgrowth(zoneC[[pop]],zoneC[[pop]]$SaM)
+    zoneC[[pop]]$bLML <- oneyrgrowth(zoneC[[pop]],tmpL)
+    zoneC[[pop]]$SAU <- SAU[pop]
   }
-  recs <- getvar(regionC,"R0") #sapply(regionC,"[[","R0")
+  recs <- getvar(zoneC,"R0") #sapply(zoneC,"[[","R0")
   larvdisp <- glb$larvdisp
   move <- makemove(numpop,recs,larvdisp)
   glb$move <- move
-  class(regionC) <- "regionC"
-  ans <- list(regionC=regionC,glb=glb,popdefs=popdefs)
+  class(zoneC) <- "zoneC"
+  ans <- list(zoneC=zoneC,glb=glb,popdefs=popdefs)
   return(ans)
-}  # End of makeregionC
+}  # End of makezoneC
 
 
-#' @title makeregion generates the parts of the simulated region
+#' @title makezone generates the parts of the simulated zone
 #'
-#' @description makeregion generates the dynamics components of the
-#'     simulated region and completes the constant components of the
-#'     simulated region. The term 'region' refers to the upper level
+#' @description makezone generates the dynamics components of the
+#'     simulated zone and completes the constant components of the
+#'     simulated zone. The term 'zone' refers to the upper level
 #'     of geographical detail that is used. Thus, for example, in
 #'     Tasmania we might simulate a number of statistical blocks with
 #'     multiple populations. In combination, we refer to the total as
-#'     a region. The matrices are Nyrs x numpop and the two
+#'     a zone. The matrices are Nyrs x numpop and the two
 #'     arrays are N x Nyrs x numpop.
 #'
 #' @param glob the global constants defined for the current simulation.
 #'     These include numpop, nblock, midptsd, Nclass, and Nyrs
-#' @param regC the regionC object from makeregionC
+#' @param zoneC the zoneC object from makezoneC
 #'
 #' @return a list of the dynamics and the constant components of the
 #'     simulation
 #' @export
 #'
 #' @examples
-#'   data(region1)
-#'   glb <- region1$globals
+#'   data(zone1)
+#'   glb <- zone1$globals
 #'   data(constants)
-#'   ans <- makeregionC(region1,constants)
-#'   regionC <- ans$regionC
+#'   ans <- makezoneC(zone1,constants)
+#'   zoneC <- ans$zoneC
 #'   glb <- ans$glb
-#'   ans2 <- makeregion(glb,regionC)
+#'   ans2 <- makezone(glb,zoneC)
 #'   str(ans2,max.level=2)
-makeregion <- function(glob,regC) { #glob=glb; regC=regionC;
+makezone <- function(glob,zoneC) { #glob=glb; zoneC=zoneC;
   Nyrs <- glob$Nyrs
   numpop <- glob$numpop
   N <- glob$Nclass
@@ -693,35 +693,35 @@ makeregion <- function(glob,regC) { #glob=glb; regC=regionC;
   Recruit <- matrix(0,nrow=Nyrs,ncol=numpop)
   CatchN <- array(data=0,dim=c(N,Nyrs,numpop))
   Nt <- array(data=0,dim=c(N,Nyrs,numpop))
-  SMU <- getvar(regC,"SMU") #as.numeric(sapply(regC,"[[","SMU"))
-  recs <- getvar(regC,"R0") #sapply(regC,"[[","R0")
+  SAU <- getvar(zoneC,"SAU") #as.numeric(sapply(zoneC,"[[","SAU"))
+  recs <- getvar(zoneC,"R0") #sapply(zoneC,"[[","R0")
   move <- glob$move
   newrecs <- move %*% recs
   for (pop in 1:numpop) {  # pop=1
-    SurvE <- exp(-regC[[pop]]$Me)
-    hSurv <- exp(-regC[[pop]]$Me/2.0)
+    SurvE <- exp(-zoneC[[pop]]$Me)
+    hSurv <- exp(-zoneC[[pop]]$Me/2.0)
     recr <- rep(0,N)
     recr[1] <- newrecs[pop]  # change this once I have imported move
     UnitM <- matrix(0,nrow=N,ncol=N)
     diag(UnitM) <- 1.0
-    G <- regC[[pop]]$G
+    G <- zoneC[[pop]]$G
     Minv <- solve(UnitM - (SurvE * G ))
     Nt[,1,pop] <- Minv %*% recr # initial unfished numbers-at-size
-    MatB[1,pop] <- sum(regC[[pop]]$MatWt*Nt[,1,pop])/1e06
-    regC[[pop]]$B0 <- MatB[1,pop] # mature biomass at start of year
-    ExplB[1,pop] <- sum(regC[[pop]]$SelWt[,1]*Nt[,1,pop])/1e06
-    regC[[pop]]$ExB0 <- ExplB[1,pop]
-    deplExB[1,pop] <- 1.0  # no depletion when first generating regions
+    MatB[1,pop] <- sum(zoneC[[pop]]$MatWt*Nt[,1,pop])/1e06
+    zoneC[[pop]]$B0 <- MatB[1,pop] # mature biomass at start of year
+    ExplB[1,pop] <- sum(zoneC[[pop]]$SelWt[,1]*Nt[,1,pop])/1e06
+    zoneC[[pop]]$ExB0 <- ExplB[1,pop]
+    deplExB[1,pop] <- 1.0  # no depletion when first generating zones
     deplSpB[1,pop] <- 1.0
     Recruit[1,pop] <- recr[1]
-    regC[[pop]]$popq <- as.numeric(regC[[pop]]$popdef["MaxCE"]/ExplB[1,pop])
-    cpue[1,pop] <- 1000.0 * regC[[pop]]$popq * ExplB[1,pop]
+    zoneC[[pop]]$popq <- as.numeric(zoneC[[pop]]$popdef["MaxCE"]/ExplB[1,pop])
+    cpue[1,pop] <- 1000.0 * zoneC[[pop]]$popq * ExplB[1,pop]
   }
-  ans <- list(SMU=SMU,matureB=MatB,exploitB=ExplB,catch=Catch,
+  ans <- list(SAU=SAU,matureB=MatB,exploitB=ExplB,catch=Catch,
               harvestR=Harvest,cpue=cpue,recruit=Recruit,
               deplsB=deplSpB,depleB=deplExB,catchN=CatchN,Nt=Nt)
-  return(list(regionD=ans,regionC=regC))
-} # end of makeregion
+  return(list(zoneD=ans,zoneC=zoneC))
+} # end of makezone
 
 
 
@@ -750,54 +750,54 @@ maturity <- function(ina,inb,lens) {
    return(ans)
 } # end of maturity
 
-#' @title modregC runs the region 3 x Nyrs to equilibrium
+#' @title modzoneC runs the zone 3 x Nyrs to equilibrium
 #'
-#' @description modregC runs the doproduction function so it can then
+#' @description modzoneC runs the doproduction function so it can then
 #'     appropriately fill in each population's MSY and MSYDepl values.
-#'     It outputs both the finalized regC and the prodution array.
-#'     Hence we need to push copies of both regionC and regionD into
-#'     modregC
+#'     It outputs both the finalized zoneC and the prodution array.
+#'     Hence we need to push copies of both zoneC and zoneD into
+#'     modzoneC
 #'
-#' @param regC the constant components of the simulated region
-#' @param regD the dynamic components of the simulated region
+#' @param zoneC the constant components of the simulated zone
+#' @param zoneD the dynamic components of the simulated zone
 #' @param glob the general global variables
 #' @param lowlim the lower limit of harvest rate applied, default=0.0
 #' @param uplim the upper limit of harvest rate applied, default=0.4
 #' @param inc the harvest rate increment at each step, default=0.005
 #'
-#' @return a list containing the updated regionC and product
+#' @return a list containing the updated zoneC and product
 #' @export
 #'
 #' @examples
 #' \dontrun{  # the doproduction part takes too long to run
-#'   data(region1)
-#'   glb <- region1$globals
+#'   data(zone1)
+#'   glb <- zone1$globals
 #'   data(constants)
-#'   ans <- makeregionC(region1,constants)
-#'   regionC <- ans$regionC
-#'   ans <- makeregion(glb,regionC)
-#'   regionC <- ans$regionC
-#'   regionD <- ans$regionD
-#'   ans2 <- modregC(regionC,regionD,glb)
+#'   ans <- makezoneC(zone1,constants)
+#'   zoneC <- ans$zoneC
+#'   ans <- makezone(glb,zoneC)
+#'   zoneC <- ans$zoneC
+#'   zoneD <- ans$zoneD
+#'   ans2 <- modzoneC(zoneC,zoneD,glb)
 #'   str(ans2,max.level=2)
-#' }   # regionC=regionC; regD=regionD; glob=glb; lowlim=0.0;uplim=0.4;inc=0.005
-modregC <- function(regC,regD,glob,lowlim=0.0,uplim=0.4,inc=0.005) {
+#' }   # zoneC=zoneC; zoneD=zoneD; glob=glb; lowlim=0.0;uplim=0.4;inc=0.005
+modzoneC <- function(zoneC,zoneD,glob,lowlim=0.0,uplim=0.4,inc=0.005) {
   numpop <- glob$numpop
-  production <- doproduction(regionC=regC,regD=regD,glob=glob,
+  production <- doproduction(zoneC=zoneC,zoneD=zoneD,glob=glob,
                              lowlim=lowlim,uplim=uplim,inc=inc)
   xval <- findmsy(production)
   for (pop in 1:numpop) {
-    regC[[pop]]$MSY <- xval[pop,"Catch"]
-    regC[[pop]]$MSYDepl <- xval[pop,"Deplet"]
+    zoneC[[pop]]$MSY <- xval[pop,"Catch"]
+    zoneC[[pop]]$MSYDepl <- xval[pop,"Deplet"]
   }
-  return(list(regionC=regC,product=production))
-} # end of modregC
+  return(list(zoneC=zoneC,product=production))
+} # end of modzoneC
 
 
 #' @title oneyear one year's harvest dynamics for one abpop
 #'
 #' @description oneyear do one year's dynamics for one input population.
-#'    Used to step through populations of a region. Its dynamics are
+#'    Used to step through populations of a zone. Its dynamics are
 #'    such that it first undergoes growth, then half natural mortality.
 #'    This allows an estimate of exploitable biomass before fishing
 #'    occurs. The remaining dynamics involve the removal of the catch,
@@ -807,7 +807,7 @@ modregC <- function(regC,regD,glob,lowlim=0.0,uplim=0.4,inc=0.005) {
 #'    that larval dispersal can be accounted for. oneyear is not used
 #'    independently of oneyearD.
 #'
-#' @param inpopC a single population from a regionC, an abpop
+#' @param inpopC a single population from a zoneC, an abpop
 #' @param inNt the numbers at size for the year previous to the year
 #'     of dynamics. These are projected into the active year.
 #' @param Nclass the number of size classes used to describe growth.
@@ -825,7 +825,7 @@ modregC <- function(regC,regD,glob,lowlim=0.0,uplim=0.4,inc=0.005) {
 #' @examples
 #' print("need to wait on built in data sets")
 oneyear <- function(inpopC,inNt,Nclass,inH,yr) {  #
-  # yr=2; pop=2; inpopC=regC[[pop]]; inNt=regD$Nt[,yr-1,pop];
+  # yr=2; pop=2; inpopC=zoneC[[pop]]; inNt=zoneD$Nt[,yr-1,pop];
   # Nclass=glb$Nclass; inH=0.05;
   MatWt <- inpopC$MatWt/1e06
   SelectWt <- inpopC$SelWt[,yr]/1e06
@@ -857,7 +857,7 @@ oneyear <- function(inpopC,inNt,Nclass,inH,yr) {  #
 #' @description oneyear does one year's dynamics for one input
 #'     population. Where the fishing is based on a given catch per
 #'     population, which would be determined by any harvest control
-#'     rule. It is used to step through populations of a region.
+#'     rule. It is used to step through populations of a zone.
 #'     Its dynamics are such that each population first undergoes
 #'     growth, then half natural mortality. This allows an estimate of
 #'     exploitable biomass before fishing occurs. The remaining
@@ -871,13 +871,13 @@ oneyear <- function(inpopC,inNt,Nclass,inH,yr) {  #
 #'     be accounted for. oneyearcat is not used independently of
 #'     oneyearD.
 #'
-#' @param inpopC a single population from a regionC, an abpop
+#' @param inpopC a single population from a zoneC, an abpop
 #' @param inNt the numbers at size for the year previous to the year
 #'     of dynamics. These are projected into the active year.
 #' @param Nclass the number of size classes used to describe growth.
 #'     used to define vectors
 #' @param incat the literal annual catch from the population. Derived
-#'     from teh harvest control rule for each SMU, then allocated to
+#'     from teh harvest control rule for each SAU, then allocated to
 #'     each population with respect to its relative catching
 #'     performance.
 #' @param yr the year in the dynamics being worked on. The first year
@@ -890,7 +890,7 @@ oneyear <- function(inpopC,inNt,Nclass,inH,yr) {  #
 #' @examples
 #' print("need to wait on built in data sets")
 oneyearcat <- function(inpopC,inNt,Nclass,incat,yr) {  #
-  # yr=2; pop=2; inpopC=regC[[pop]]; inNt=regD$Nt[,yr-1,pop];
+  # yr=2; pop=2; inpopC=zoneC[[pop]]; inNt=zoneD$Nt[,yr-1,pop];
   # Nclass=glb$Nclass; inH=0.05;
   MatWt <- inpopC$MatWt/1e06
   SelectWt <- inpopC$SelWt[,yr]/1e06
@@ -922,12 +922,12 @@ oneyearcat <- function(inpopC,inNt,Nclass,incat,yr) {  #
 #' @description oneyearD conducts one year's dynamics in the simulation
 #'     using catches rather than harvest rates. The harvest rates are
 #'     estimated after first estimating the exploitable biomass.
-#'     returning the revised regionD, which will have had a single year
+#'     returning the revised zoneD, which will have had a single year
 #'     of activity included in each of its components.
 #'
-#' @param regC the constant portion of the region with a list of
+#' @param zoneC the constant portion of the zone with a list of
 #'     properties for each population
-#' @param regD the dynamics portion of the region, with matrices and
+#' @param zoneD the dynamics portion of the zone, with matrices and
 #'     arrays for the dynamic variables of the dynamics of the
 #'     operating model
 #' @param Ncl the number of size classes used to describe size
@@ -945,66 +945,66 @@ oneyearcat <- function(inpopC,inNt,Nclass,incat,yr) {  #
 #'
 #' @examples
 #'  data(constants)
-#'  data(region1)
-#'  ans <- makeregionC(region1,constants) # classical equilibrium
-#'  regionC <- ans$regionC
+#'  data(zone1)
+#'  ans <- makezoneC(zone1,constants) # classical equilibrium
+#'  zoneC <- ans$zoneC
 #'  glb <- ans$glb
-#'  ans <- makeregion(glb,regionC) # now make regionD
-#'  regionC <- ans$regionC  # region constants
-#'  regionD <- ans$regionD
+#'  ans <- makezone(glb,zoneC) # now make zoneD
+#'  zoneC <- ans$zoneC  # zone constants
+#'  zoneD <- ans$zoneD
 #'  npop <- glb$numpop
 #'  Nc <- glb$Nclass
 #'  nyrs <- glb$Nyrs
 #'  catch <- 360.0 # larger than total MSY ~ 310t
-#'  B0 <- getvar(regionC,"B0")
+#'  B0 <- getvar(zoneC,"B0")
 #'  totB0 <- sum(B0)
 #'  prop <- B0/totB0
 #'  catchpop <- catch * prop
 #'  for (yr in 2:nyrs)
-#'    regionD <- oneyearC(regC=regionC,regD=regionD,Ncl=Nc,
+#'    zoneD <- oneyearC(zoneC=zoneC,zoneD=zoneD,Ncl=Nc,
 #'                    catchp=catchpop,year=yr,sigmar=1e-08,npop=npop,
 #'                    movem=glb$move)
-#'  str(regionD)
-#'  round(regionD$catchN[60:105,1:5,1],1)
-oneyearC <- function(regC,regD,Ncl,catchp,year,sigmar,npop,movem) {
+#'  str(zoneD)
+#'  round(zoneD$catchN[60:105,1:5,1],1)
+oneyearC <- function(zoneC,zoneD,Ncl,catchp,year,sigmar,npop,movem) {
   matb <- numeric(npop)
   for (popn in 1:npop) {  # year=2
-    out <- oneyearcat(inpopC=regC[[popn]],inNt=regD$Nt[,year-1,popn],
+    out <- oneyearcat(inpopC=zoneC[[popn]],inNt=zoneD$Nt[,year-1,popn],
                       Nclass=Ncl,incat=catchp[popn],yr=year)
-    regD$exploitB[year,popn] <- out$ExploitB
-    regD$matureB[year,popn] <- out$MatureB
-    regD$catch[year,popn] <- out$Catch
-    regD$harvestR[year,popn] <- out$Harvest
-    regD$cpue[year,popn] <- out$ce
-    regD$Nt[,year,popn] <- out$Nt
-    regD$catchN[,year,popn] <- out$CatchN
+    zoneD$exploitB[year,popn] <- out$ExploitB
+    zoneD$matureB[year,popn] <- out$MatureB
+    zoneD$catch[year,popn] <- out$Catch
+    zoneD$harvestR[year,popn] <- out$Harvest
+    zoneD$cpue[year,popn] <- out$ce
+    zoneD$Nt[,year,popn] <- out$Nt
+    zoneD$catchN[,year,popn] <- out$CatchN
     matb[popn] <- out$MatureB
   }
-  steep <- getvect(regC,"steeph") #sapply(regC,"[[","popdef")["steeph",]
-  r0 <- getvar(regC,"R0") #sapply(regC,"[[","R0")
-  b0 <- getvar(regC,"B0") #sapply(regC,"[[","B0")
+  steep <- getvect(zoneC,"steeph") #sapply(zoneC,"[[","popdef")["steeph",]
+  r0 <- getvar(zoneC,"R0") #sapply(zoneC,"[[","R0")
+  b0 <- getvar(zoneC,"B0") #sapply(zoneC,"[[","B0")
   recs <- oneyearrec(steep,r0,b0,matb,sigR=sigmar)
   newrecs <- movem %*% recs
-  regD$recruit[year,] <- newrecs
-  regD$Nt[1,year,] <- newrecs
-  regD$deplsB[year,] <- regD$matureB[year,]/b0
-  regD$depleB[year,] <- regD$exploitB[year,]/getvar(regC,"ExB0")
-  return(regD)
+  zoneD$recruit[year,] <- newrecs
+  zoneD$Nt[1,year,] <- newrecs
+  zoneD$deplsB[year,] <- zoneD$matureB[year,]/b0
+  zoneD$depleB[year,] <- zoneD$exploitB[year,]/getvar(zoneC,"ExB0")
+  return(zoneD)
 } # end of oneyearC
 
 
 #' @title oneyearD conducts one year's dynamics in the simulation
 #'
 #' @description onyearD conducts one year's dynamics in the simulation
-#'     returning the revised regionD, which will have had a single year
-#'     of activity included in each of its components. This uses regC
+#'     returning the revised zoneD, which will have had a single year
+#'     of activity included in each of its components. This uses zoneC
 #'     but always within the environment of another function in which
-#'     regC (as regionC) can be found. Used in runthreeH, (and hence
+#'     zoneC (as zoneC) can be found. Used in runthreeH, (and hence
 #'     dodepletion and doproduction) and in testequil
 #'
-#' @param regionC the constant portion of the region with a list of
+#' @param zoneC the constant portion of the zone with a list of
 #'     properties for each population
-#' @param regD the dynamics portion of the region, with matrices and
+#' @param zoneD the dynamics portion of the zone, with matrices and
 #'     arrays for the dynamic variables of the dynamics of the
 #'     operating model
 #' @param Ncl the number of size classes used to describe size
@@ -1021,45 +1021,45 @@ oneyearC <- function(regC,regD,Ncl,catchp,year,sigmar,npop,movem) {
 #'
 #' @examples
 #'  data(constants)
-#'  data(region1)
-#'  ans <- makeregionC(region1,constants) # classical equilibrium
-#'  regionC <- ans$regionC
+#'  data(zone1)
+#'  ans <- makezoneC(zone1,constants) # classical equilibrium
+#'  zoneC <- ans$zoneC
 #'  glb <- ans$glb
-#'  ans <- makeregion(glb,regionC) # now make regionD
-#'  regionC <- ans$regionC  # region constants used as regC in oneyearD
-#'  regionD <- ans$regionD
+#'  ans <- makezone(glb,zoneC) # now make zoneD
+#'  zoneC <- ans$zoneC  # zone constants used as zoneC in oneyearD
+#'  zoneD <- ans$zoneD
 #'  numpop <- glb$numpop
 #'  harvest <- rep(0.2,numpop) # not exported so needs aMSE:::
-#'  regionD <- aMSE:::oneyearD(regionC=regionC,regD=regionD,
+#'  zoneD <- aMSE:::oneyearD(zoneC=zoneC,zoneD=zoneD,
 #'                    Ncl=glb$Nclass,inHt=harvest,year=2,sigmar=1e-06,
 #'                    npop=numpop,movem=glb$move)
-#'  str(regionD)
-#'  round(regionD$catchN[60:105,1:5,1],1)
-oneyearD <- function(regionC,regD,Ncl,inHt,year,sigmar,npop,movem) {
+#'  str(zoneD)
+#'  round(zoneD$catchN[60:105,1:5,1],1)
+oneyearD <- function(zoneC,zoneD,Ncl,inHt,year,sigmar,npop,movem) {
   matb <- numeric(npop)
   for (popn in 1:npop) {  # year=2
-    out <- oneyear(inpopC=regionC[[popn]],inNt=regD$Nt[,year-1,popn],
+    out <- oneyear(inpopC=zoneC[[popn]],inNt=zoneD$Nt[,year-1,popn],
                    Nclass=Ncl,inH=inHt[popn],yr=year)
-    regD$exploitB[year,popn] <- out$ExploitB
-    regD$matureB[year,popn] <- out$MatureB
-    regD$catch[year,popn] <- out$Catch
-    regD$harvestR[year,popn] <- out$Harvest
-    regD$cpue[year,popn] <- out$ce
-    regD$Nt[,year,popn] <- out$Nt
-    regD$catchN[,year,popn] <- out$CatchN
+    zoneD$exploitB[year,popn] <- out$ExploitB
+    zoneD$matureB[year,popn] <- out$MatureB
+    zoneD$catch[year,popn] <- out$Catch
+    zoneD$harvestR[year,popn] <- out$Harvest
+    zoneD$cpue[year,popn] <- out$ce
+    zoneD$Nt[,year,popn] <- out$Nt
+    zoneD$catchN[,year,popn] <- out$CatchN
     matb[popn] <- out$MatureB
   }
-  steep <- getvect(regionC,"steeph") #sapply(regC,"[[","popdef")["steeph",]
-  r0 <- getvar(regionC,"R0") #sapply(regC,"[[","R0")
-  b0 <- getvar(regionC,"B0") #sapply(regC,"[[","B0")
+  steep <- getvect(zoneC,"steeph") #sapply(zoneC,"[[","popdef")["steeph",]
+  r0 <- getvar(zoneC,"R0") #sapply(zoneC,"[[","R0")
+  b0 <- getvar(zoneC,"B0") #sapply(zoneC,"[[","B0")
   recs <- oneyearrec(steep,r0,b0,matb,sigR=sigmar)
   newrecs <- movem %*% recs
-  regD$recruit[year,] <- newrecs
-  regD$Nt[1,year,] <- newrecs
-  regD$deplsB[year,] <- regD$matureB[year,]/b0
-  regD$depleB[year,] <- regD$exploitB[year,]/getvar(regionC,"ExB0")
-  return(regD)
-} # end of oneyearD   round(regD$Nt[,year,])
+  zoneD$recruit[year,] <- newrecs
+  zoneD$Nt[1,year,] <- newrecs
+  zoneD$deplsB[year,] <- zoneD$matureB[year,]/b0
+  zoneD$depleB[year,] <- zoneD$exploitB[year,]/getvar(zoneC,"ExB0")
+  return(zoneD)
+} # end of oneyearD   round(zoneD$Nt[,year,])
 
 
 #' @title oneyearrec calculates the Beverton-Holt recruitment
@@ -1228,17 +1228,17 @@ resetLML <- function(inzone,inLML,inyear,glob) {
   return(inzone)
 }  # end of resetLML
 
-#' @title restart transfers final year values of regD into the first year
+#' @title restart transfers final year values of zoneD into the first year
 #'
 #' @description restart transfers the final year values from the
-#'     dynamics part of the region (regionD), into the first year.
+#'     dynamics part of the zone (zoneD), into the first year.
 #'     This is used, for example, when searching for an equilibrium
 #'     state if there is larval dispersal > 0.0. Of if one sets the
 #'     initial depletion to anything other than 1.0. Contains the
 #'     option of setting every other cell to zero, which is the
 #'     default.
 #'
-#' @param oldregD the old regionD containing the dynamics as run for
+#' @param oldzoneD the old zoneD containing the dynamics as run for
 #'     Nyrs.
 #' @param nyrs The number of years of dynamics, the global Nyrs
 #' @param npop The number of populations, the global numpop
@@ -1251,7 +1251,7 @@ resetLML <- function(inzone,inLML,inyear,glob) {
 #'
 #' @examples
 #' print("wait for built in data sets")
-restart <- function(oldregD,nyrs,npop,N,zero=TRUE) { # oldregD=regionD; nyrs=Nyrs; npop=npop; N=Nclass
+restart <- function(oldzoneD,nyrs,npop,N,zero=TRUE) { # oldzoneD=zoneD; nyrs=Nyrs; npop=npop; N=Nclass
   ExplB <- matrix(0,nrow=nyrs,ncol=npop)
   MatB <- matrix(0,nrow=nyrs,ncol=npop)
   Catch <- matrix(0,nrow=nyrs,ncol=npop)
@@ -1262,21 +1262,21 @@ restart <- function(oldregD,nyrs,npop,N,zero=TRUE) { # oldregD=regionD; nyrs=Nyr
   Recruit <- matrix(0,nrow=nyrs,ncol=npop)
   CatchN <- array(data=0,dim=c(N,nyrs,npop))
   Nt <- array(data=0,dim=c(N,nyrs,npop))
-  regD <- list(SMU=oldregD$SMU,matureB=MatB,exploitB=ExplB,
+  zoneD <- list(SAU=oldzoneD$SAU,matureB=MatB,exploitB=ExplB,
                catch=Catch,harvestR=Harvest,cpue=cpue,recruit=Recruit,
                deplsB=deplSpB,depleB=deplExB,catchN=CatchN,Nt=Nt)
-  if (!zero) regD <- oldregD
-  regD$matureB[1,] <- oldregD$matureB[nyrs,]
-  regD$exploitB[1,] <- oldregD$exploitB[nyrs,]
-  regD$catch[1,] <- oldregD$catch[nyrs,]
-  regD$harvestR[1,] <- oldregD$harvestR[nyrs,]
-  regD$cpue[1,] <- oldregD$cpue[nyrs,]
-  regD$recruit[1,] <- oldregD$recruit[nyrs,]
-  regD$deplsB[1,] <- oldregD$deplsB[nyrs,]
-  regD$depleB[1,] <- oldregD$depleB[nyrs,]
-  regD$catchN[,1,] <- oldregD$catchN[,nyrs,]
-  regD$Nt[,1,] <- oldregD$Nt[,nyrs,]
-  return(regD)
+  if (!zero) zoneD <- oldzoneD
+  zoneD$matureB[1,] <- oldzoneD$matureB[nyrs,]
+  zoneD$exploitB[1,] <- oldzoneD$exploitB[nyrs,]
+  zoneD$catch[1,] <- oldzoneD$catch[nyrs,]
+  zoneD$harvestR[1,] <- oldzoneD$harvestR[nyrs,]
+  zoneD$cpue[1,] <- oldzoneD$cpue[nyrs,]
+  zoneD$recruit[1,] <- oldzoneD$recruit[nyrs,]
+  zoneD$deplsB[1,] <- oldzoneD$deplsB[nyrs,]
+  zoneD$depleB[1,] <- oldzoneD$depleB[nyrs,]
+  zoneD$catchN[,1,] <- oldzoneD$catchN[,nyrs,]
+  zoneD$Nt[,1,] <- oldzoneD$Nt[,nyrs,]
+  return(zoneD)
 } # end of restart
 
 #' @title runthree conducts the dynamics with constant catch 3 times
@@ -1285,72 +1285,72 @@ restart <- function(oldregD,nyrs,npop,N,zero=TRUE) { # oldregD=regionD; nyrs=Nyr
 #'     equilibrium and it conducts the Nyrs dynamics three times, each
 #'     time through it replaces year 1 with year Nyrs. Thus if Nyrs is
 #'     40 it conducts 3 * 39 years of dynamics (117 years). This is
-#'     not exported. It uses regionC but always it does this inside
-#'     the environment of another function where regionC can be found
+#'     not exported. It uses zoneC but always it does this inside
+#'     the environment of another function where zoneC can be found
 #'     Used inside dodepletion and doproduction
 #'
-#' @param regionC the constants components of the simulated region
-#' @param regD the dynamics portion of the region, with matrices and
+#' @param zoneC the constants components of the simulated zone
+#' @param zoneD the dynamics portion of the zone, with matrices and
 #'     arrays for the dynamic variables of the dynamics of the
 #'     operating model
-#' @param glob the globals variable from readregionfile
+#' @param glob the globals variable from readzonefile
 #' @param inHarv a vector of annual harvest rates to be held constant
 #'     across all years.
 #'
-#' @return a list containing a revised dynamics list, regionD
+#' @return a list containing a revised dynamics list, zoneD
 #'
 #' @examples
 #' print("wait on built in data sets")
-#' # regionC=regionC; regD=regionD; glob=glb; inHarv=rep(0.3,numpop)
-runthreeH <- function(regionC,regD,inHarv,glob) {
+#' # zoneC=zoneC; zoneD=zoneD; glob=glb; inHarv=rep(0.3,numpop)
+runthreeH <- function(zoneC,zoneD,inHarv,glob) {
   npop <- glob$numpop
   Nclass <- glob$Nclass
   Nyrs <- glob$Nyrs
   larvdisp <- glob$larvdisp
   for (iter in 1:3) { # iter=1; yr=2
     for (yr in 2:Nyrs)
-      regD <- oneyearD(regionC=regionC,regD=regD,Ncl=Nclass,
+      zoneD <- oneyearD(zoneC=zoneC,zoneD=zoneD,Ncl=Nclass,
                        inHt=inHarv,year=yr,sigmar=1e-08,npop=npop,
                        movem=glob$move)
-    regD <- restart(oldregD=regD,nyrs=Nyrs,npop=npop,N=Nclass,zero=TRUE)
+    zoneD <- restart(oldzoneD=zoneD,nyrs=Nyrs,npop=npop,N=Nclass,zero=TRUE)
   }
-  return(regD)
+  return(zoneD)
 } # end of runthree
 
-#' @title setupregion makes region's constant, dynamic, and productivity parts
+#' @title setupzone makes zone's constant, dynamic, and productivity parts
 #'
-#' @description setupregion makes the region's constant, dynamic, and
+#' @description setupzone makes the zone's constant, dynamic, and
 #'     productivity parts returning them, along with glb, in a list.
 #'
 #' @param constants the population constants derived from readdatafile
-#' @param region1 the regional constants
+#' @param zone1 the zoneal constants
 #'
-#' @return a list of regionC, regionD, product, and glb the main
-#'     components of the region
+#' @return a list of zoneC, zoneD, product, and glb the main
+#'     components of the zone
 #' @export
 #'
 #' @examples
 #' data(constants)
-#' data(region1)
-#' out <- setupregion(constants,region1)
-#' regionC <- out$regionC
+#' data(zone1)
+#' out <- setupzone(constants,zone1)
+#' zoneC <- out$zoneC
 #' glb <- out$glb
-#' str(regionC[[1]])
+#' str(zoneC[[1]])
 #' str(glb)
-setupregion <- function(constants,region1) { # constants=constants; region1=region1
-  ans <- makeregionC(region1,constants) # classical equilibrium
-  regionC <- ans$regionC
+setupzone <- function(constants,zone1) { # constants=constants; zone1=zone1
+  ans <- makezoneC(zone1,constants) # classical equilibrium
+  zoneC <- ans$zoneC
   glb <- ans$glb
-  ans <- makeregion(glob=glb,regC=regionC) # now make regionD
-  regionC <- ans$regionC  # region constants
-  regionD <- ans$regionD  # region dynamics
-  ans <- modregC(regC=regionC,regD=regionD,glob=glb)
-  regionC <- ans$regionC  # region constants
+  ans <- makezone(glob=glb,zoneC=zoneC) # now make zoneD
+  zoneC <- ans$zoneC  # zone constants
+  zoneD <- ans$zoneD  # zone dynamics
+  ans <- modzoneC(zoneC=zoneC,zoneD=zoneD,glob=glb)
+  zoneC <- ans$zoneC  # zone constants
   product <- ans$product  # productivity by population
-  out <- list(regionC=regionC, regionD=regionD, product=product,
+  out <- list(zoneC=zoneC, zoneD=zoneD, product=product,
               glb=glb)
   return(out)
-} # end of setupregion
+} # end of setupzone
 
 
 #' @title STM Generates the Size Transition Matrix for Inverse Logistic
@@ -1405,16 +1405,16 @@ STM <- function(p,mids) { #    # p <- popparam[1:4]; mids <- midpts
    return(G)
 } # end of STM
 
-#' @title testequil runs a region Nyrs and determines stability
+#' @title testequil runs a zone Nyrs and determines stability
 #'
-#' @description testequil runs a given region for Nyrs at the given
+#' @description testequil runs a given zone for Nyrs at the given
 #'     harvest rate, and then tests that the last values of matureB,
 #'     exploitB, recruitment, and spawning biomass depletion are the
 #'     same as the first (to three decimal places). It reports this
 #'     to the console if verbose=TRUE
 #'
-#' @param regionC the constants components of the simulated region
-#' @param regD the dynamic components of the simulated region
+#' @param zoneC the constants components of the simulated zone
+#' @param zoneD the dynamic components of the simulated zone
 #' @param glb the global variables
 #' @param inH a vector of numpop harvest rates
 #' @param verbose should results go to the console, default=TRUE
@@ -1423,53 +1423,53 @@ STM <- function(p,mids) { #    # p <- popparam[1:4]; mids <- midpts
 #' @export
 #'
 #' @examples
-#' \dontrun{  # modregC takes too long to run because of doproduction
+#' \dontrun{  # modzoneC takes too long to run because of doproduction
 #'  data(ctrl)
-#'  data(region1)
-#'  glb <- region1$globals
+#'  data(zone1)
+#'  glb <- zone1$globals
 #'  data(constants)
-#'  ans <- makeregionC(region1,constants)
-#'  regionC <- ans$regionC
+#'  ans <- makezoneC(zone1,constants)
+#'  zoneC <- ans$zoneC
 #'  glb <- ans$glb # now contains movement matrix
-#'  ans <- makeregion(glb,regionC)
-#'  regionC <- ans$regionC  # region constants
-#'  regionD <- ans$regionD
-#'  ans <- modregC(regionC,regionD,glb)
-#'  regionC <- ans$regionC  # region constants
-#'  regDe <- testequil(regC=regionC,regD=regionD,glob=glb)
-#' }    #regC=testregC; regD=testregD; glob=glb; inH=0.0; verbose=TRUE
-testequil <- function(regionC,regD,glb,inH=0.0,verbose=TRUE) {
+#'  ans <- makezone(glb,zoneC)
+#'  zoneC <- ans$zoneC  # zone constants
+#'  zoneD <- ans$zoneD
+#'  ans <- modzoneC(zoneC,zoneD,glb)
+#'  zoneC <- ans$zoneC  # zone constants
+#'  zoneDe <- testequil(zoneC=zoneC,zoneD=zoneD,glob=glb)
+#' }    #zoneC=testzoneC; zoneD=testzoneD; glob=glb; inH=0.0; verbose=TRUE
+testequil <- function(zoneC,zoneD,glb,inH=0.0,verbose=TRUE) {
   Nyrs <- glb$Nyrs
   Nclass <- glb$Nclass
   npop <- glb$numpop
   inHarv <- rep(inH,npop)
   for (yr in 2:Nyrs)
-    regD <- oneyearD(regionC=regionC,regD=regD,Ncl=Nclass,
+    zoneD <- oneyearD(zoneC=zoneC,zoneD=zoneD,Ncl=Nclass,
                      inHt=inHarv,year=yr,sigmar=1e-08,npop=npop,
                      movem=glb$move)
   if (verbose) {
-    if (all(trunc(regD$matureB[1,],3) == trunc(regD$matureB[Nyrs,],3))) {
+    if (all(trunc(zoneD$matureB[1,],3) == trunc(zoneD$matureB[Nyrs,],3))) {
       print("matureB Stable",quote=FALSE)
     } else {
       print("matureB varies",quote=FALSE)
     }
-    if (all(trunc(regD$exploitB[1,],3) == trunc(regD$exploitB[Nyrs,],3))) {
+    if (all(trunc(zoneD$exploitB[1,],3) == trunc(zoneD$exploitB[Nyrs,],3))) {
       print("exploitB Stable",quote=FALSE)
     } else {
       print("exploitB varies",quote=FALSE)
     }
-    if (all(trunc(regD$recruit[1,],3) == trunc(regD$recruit[Nyrs,],3))) {
+    if (all(trunc(zoneD$recruit[1,],3) == trunc(zoneD$recruit[Nyrs,],3))) {
       print("recruitment Stable",quote=FALSE)
     } else {
       print("recruitment varies",quote=FALSE)
     }
-    if (all(round(regD$deplsB[1,],3) == round(regD$deplsB[Nyrs,],3))) {
+    if (all(round(zoneD$deplsB[1,],3) == round(zoneD$deplsB[Nyrs,],3))) {
       print("spawning depletion Stable",quote=FALSE)
     } else {
       print("spawning depletion varies",quote=FALSE)
     }
   }
-  return(regD)
+  return(zoneD)
 } # end of testequil
 
 

@@ -7,7 +7,7 @@
 readdatafile(numpop, indir, infile)
 }
 \arguments{
-\item{numpop}{the total number of populations across the region}
+\item{numpop}{the total number of populations across the zone}
 
 \item{indir}{directory in which to find the date file}
 
@@ -25,14 +25,14 @@ readdatafile expects a matrix of probability density
 }
 \examples{
 \dontrun{
-data(region1)
-glb <- region1$globals
+data(zone1)
+glb <- zone1$globals
 glb
 data(constants)
 constants
 ctrlfile <- "control.csv"
 ctrl <- readctrlfile(glb$numpop,datadir,ctrlfile)
-reg1 <- readregionfile(datadir,ctrl$regionfile)
+reg1 <- readzonefile(datadir,ctrl$zonefile)
 popdefs <- readdatafile(reg1$globals,datadir,ctrl$datafile)
 print(popdefs)
 }

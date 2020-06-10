@@ -2,37 +2,38 @@
 starttime <- as.character(Sys.time())
 library(rutilsMH)
 library(aMSE)
+library(makehtml)
 library(microbenchmark)
 
 #Rprof()
 # read data files ----------------------------------------------------
  resdir <- "./../../rcode2/aMSEUse/out/run1"
  dirExists(resdir,make=TRUE,verbose=TRUE)
- # You now need to ensure that there is a control.csv, reg1smu2pop6.csv
- # and region1.csv file in the data directory
+ # You now need to ensure that there is a control.csv, zone1sau2pop6.csv
+ # and zone1.csv file in the data directory
  ctrl <- checkresdir(resdir)
  runname <- ctrl$runlabel
- region1 <- readregionfile(resdir,ctrl$regionfile)
- glb <- region1$globals
+ zone1 <- readzonefile(resdir,ctrl$zonefile)
+ glb <- zone1$globals
  constants <- readdatafile(glb$numpop,resdir,ctrl$datafile)
 
- out <- setupregion(constants, region1)
- regionC <- out$regionC
- regionD <- out$regionD
+ out <- setupzone(constants, zone1)
+ zoneC <- out$zoneC
+ zoneD <- out$zoneD
  product <- out$product
  glb <- out$glb
- str(regionD)
+ str(zoneD)
 # Rprof(NULL)
 # outprof <- summaryRprof()
 # outprof
 # save the primary ojects to the resdir
 resfile <- setuphtml(resdir,runname)
 
-unfishedD <- regionD # save a copy of the unfished state
+unfishedD <- zoneD # save a copy of the unfished state
 save(ctrl,file=filenametopath(resdir,"ctrl.RData"))
 save(glb,file=filenametopath(resdir,"glb.RData"))
 save(product,file=filenametopath(resdir,"product.RData"))
-save(regionC,file=filenametopath(resdir,"regionC.RData"))
+save(zoneC,file=filenametopath(resdir,"zoneC.RData"))
 save(unfishedD,file=filenametopath(resdir,"unfishedD.RData"))
 
 # testing the equilibrium --------------------------------------------
@@ -40,46 +41,46 @@ save(unfishedD,file=filenametopath(resdir,"unfishedD.RData"))
 # larval dispersal rate (from globals), and negligible recruitment
 # variation and expects the calculated components to remain constant
 # within three decimal places.
- regDe <- testequil(regionC=regionC,regionD,glb)
- #  str(regDe)
+ zoneDe <- testequil(zoneC=zoneC,zoneD,glb)
+ #  str(zoneDe)
 
 # characterize productivity and unfished biology ---------------------
 plotproductivity(resdir,runname,product,glb)
-biology_plots(resdir, runname, glb, regionC)
-numbersatsize(resdir, runname, glb, regionD)
+biology_plots(resdir, runname, glb, zoneC)
+numbersatsize(resdir, runname, glb, zoneD)
 
 # store the initial properties
-unfishprops <- getregionprops(regC=regionC,regD=unfishedD,glb=glb,year=1)
+unfishprops <- getzoneprops(zoneC=zoneC,zoneD=unfishedD,glb=glb,year=1)
 filename <- filenametopath(resdir,"unfishprops.csv")
 write.table(round(unfishprops,4),file = filename,sep=",")
 #  or use tmp <- read.csv(file=filename,header=TRUE,row.names=1)
 caption <- paste0("The unfished equilibrium properties of the ",
-              "populations and region before any initial depletion.")
+              "populations and zone before any initial depletion.")
 logfilename(filename,resfile=resfile,"Tables",caption=caption)
 
 ctrl$initdepl <-  0.40
 
 if (ctrl$initdepl < 1.0) {
-  regionD <- dodepletion(regionC=regionC, unfishedD, glb,
+  zoneD <- dodepletion(zoneC=zoneC, unfishedD, glb,
                          depl=ctrl$initdepl, product)
   # store the initial properties after depletion
-  initprops <- getregionprops(regC=regionC,regD=regionD,glb=glb,year=1)
+  initprops <- getzoneprops(zoneC=zoneC,zoneD=zoneD,glb=glb,year=1)
   filename <- filenametopath(resdir,"initprops.csv")
   write.table(round(initprops,4),file = filename,sep=",")
    #  or use tmp <- read.csv(file=filename,header=TRUE,row.names=1)
   caption <- paste0("The equilibrium properties of the populations ",
-                "and region after the initial depletion.")
+                "and zone after the initial depletion.")
   logfilename(filename,resfile=resfile,"Tables",caption=caption)
 }
-save(regionD,file=filenametopath(resdir,"regionD.RData"))
+save(zoneD,file=filenametopath(resdir,"zoneD.RData"))
 
 # compare the numbers-at-size for unfished and depleted
-unfN <- getnas(unfishedD,yr=1,glb,region1)
-depN <- getnas(regionD,yr=1,glb,region1)
+unfN <- getnas(unfishedD,yr=1,glb,zone1)
+depN <- getnas(zoneD,yr=1,glb,zone1)
 
-deplev <- round(initprops["SpBDepl","region"],4)
-filen <- compregionN(unfN,depN,glb,yr=1,depl=deplev,LML=132,resdir=resdir)
-caption <- paste0("Comparison of regional Numbers-at-Size before and ",
+deplev <- round(initprops["SpBDepl","zone"],4)
+filen <- compzoneN(unfN,depN,glb,yr=1,depl=deplev,LML=132,resdir=resdir)
+caption <- paste0("Comparison of zoneal Numbers-at-Size before and ",
                   "after depletion.")
 logfilename(filen,resfile=resfile,"NumSize",caption=caption)
 
@@ -89,13 +90,13 @@ endtime <- as.character(Sys.time())
  reportlist <- list(
    runname=runname,
    starttime=starttime,endtime=endtime,
-   regionC=regionC, regionD=regionD, product=product,
+   zoneC=zoneC, zoneD=zoneD, product=product,
    glb=glb,constants=constants
  )
  str(reportlist,max.level = 1)
 
- runnotes <- paste0("The results presented here relate to the included data-sets testregC, ",
-                    "testregD, and product. They are for a region made up of 2 SMU and 6 population. ",
+ runnotes <- paste0("The results presented here relate to the included data-sets testzoneC, ",
+                    "testzoneD, and product. They are for a zone made up of 2 SAU and 6 population. ",
                     "These results are currently under development and there are many more needed yet.")
 
 #  source(filenametopath(sourcedir,"sourcer.R"))
@@ -117,38 +118,38 @@ round(head(depN,20))
 # outline a real run--------------------------------------------------
 
 
- storeregC <- regionC
- storeregD <- regionD
+ storezoneC <- zoneC
+ storezoneD <- zoneD
 
- regionC <- storeregC
- regionD <- storeregD
+ zoneC <- storezoneC
+ zoneD <- storezoneD
  npop <- glb$numpop
  Nc <- glb$Nclass
  nyrs <- glb$Nyrs
  larvdisp <- glb$larvdisp
  catch <- 340.0
- B0 <- getvar(regionC,"B0") #sapply(regionC,"[[","B0")
+ B0 <- getvar(zoneC,"B0") #sapply(zoneC,"[[","B0")
  totB0 <- sum(B0)
  prop <- B0/totB0
  catchpop <- catch * prop
 
  for (yr in 2:nyrs) {
-       regionD <- oneyearC(regC=regionC,regD=regionD,Ncl=Nc,
+       zoneD <- oneyearC(zoneC=zoneC,zoneD=zoneD,Ncl=Nc,
                         catchp=catchpop,year=yr,sigmar=1e-08,npop=npop,
                         movem=glb$move)
-       catchpop <- catch* (regionD$cpue[yr,]/sum(regionD$cpue[yr,]))
+       catchpop <- catch* (zoneD$cpue[yr,]/sum(zoneD$cpue[yr,]))
  }
 
- regionD$catch
- regionD$cpue
- regionD$harvestR
-summreg <- getsmureg(regionD)
-summreg$catch
-summreg$harvestR
+ zoneD$catch
+ zoneD$cpue
+ zoneD$harvestR
+summzone <- getsauzone(zoneD)
+summzone$catch
+summzone$harvestR
 
 
-catch <- summreg$catch
-cpue <- summreg$cpue
+catch <- summzone$catch
+cpue <- summzone$cpue
 nyrs=nrow(catch)
 plotprep(width=7,height=5,newdev=FALSE)
 parset(plots=c(2,1))
@@ -164,7 +165,7 @@ lines(1:nyrs,catch[,2],lwd=2,col=2)
 
 
 
-Nt <- regionD$Nt
+Nt <- zoneD$Nt
 mids <- glb$midpts
 plotprep(width=8, height=9,newdev=FALSE)
 parset(plots=c(3,2),margin=c(0.3,0.3,0.05,0.05),outmargin=c(1,1,0,0))
@@ -177,10 +178,10 @@ for (pop in 1:numpop) {
 }
 
  # Some summaries ----------------------------------------------------
- getvar(regionC,"MSY") #sapply(regionC,"[[","MSY")           # msy by population
- sum(getvar(regionC,"MSY"))      # total msy
- sum(getvar(regionC,"B0"))       # total B0
- sum(getvar(regionC,"ExB0"))     # total exploitable B0
+ getvar(zoneC,"MSY") #sapply(zoneC,"[[","MSY")           # msy by population
+ sum(getvar(zoneC,"MSY"))      # total msy
+ sum(getvar(zoneC,"B0"))       # total B0
+ sum(getvar(zoneC,"ExB0"))     # total exploitable B0
 
 
 
@@ -201,20 +202,20 @@ for (pop in 1:numpop) {
 # barebones ----------------------------------------------------------
 
  data(constants)
- data(region1)
- ans <- makeregionC(region1,constants) # classical equilibrium
- regionC <- ans$regionC
+ data(zone1)
+ ans <- makezoneC(zone1,constants) # classical equilibrium
+ zoneC <- ans$zoneC
  glb <- ans$glb
- ans <- makeregion(glb,regionC) # now make regionD
- regionC <- ans$regionC  # region constants used as regC in oneyearD
- regionD <- ans$regionD
+ ans <- makezone(glb,zoneC) # now make zoneD
+ zoneC <- ans$zoneC  # zone constants used as zoneC in oneyearD
+ zoneD <- ans$zoneD
  numpop <- glb$numpop
  harvest <- rep(0.2,numpop)
- regionD <- aMSE:::oneyearD(regionC=regionC,regD=regionD,Ncl=glb$Nclass,
+ zoneD <- aMSE:::oneyearD(zoneC=zoneC,zoneD=zoneD,Ncl=glb$Nclass,
                      inHt=harvest,year=2,sigmar=1e-06,npop=numpop,
                      movem=glb$move)
- str(regionD)
- round(regionD$catchN[60:105,1:5,1],1)
+ str(zoneD)
+ round(zoneD$catchN[60:105,1:5,1],1)
 
  # end barebones------------------------------------------------------
 

@@ -34,8 +34,8 @@ NULL
 #' @description constants is a data.frame of parameters for blacklip
 #'     abalone (\emph{Haliotis rubra}) used to condition the
 #'     operating model as an example when running the aMSE function
-#'     examples. It describes a region containing two hypothetical
-#'     Tasmanian blocks (the level of SMU) with a total of six
+#'     examples. It describes a zone containing two hypothetical
+#'     Tasmanian blocks (the level of SAU) with a total of six
 #'     populations. If this were a data-set in a CSV file it would
 #'     require the readdatafile function to read the file. The function
 #'     datafiletemplate will generate a template of the required
@@ -50,7 +50,7 @@ NULL
 #' @section contents:
 #' \itemize{
 #'   \item popnum the index to the population
-#'   \item SMU the spatial management unit number = blocks in Tasmania
+#'   \item SAU the spatial management unit number = blocks in Tasmania
 #'   \item DLMax maximum growth increment used in the inverse logistic
 #'   \item sMAxDL the sd variability of DLMax, Normal variation
 #'   \item L50  the shell length at 50% of maximum growth increment
@@ -76,13 +76,13 @@ NULL
 #' @section contents:
 #' \itemize{
 #'   \item runlabel  the identifying name for the run
-#'   \item regionfile  filename containing the region data, see region1
+#'   \item zonefile  filename containing the zone data, see zone1
 #'   \item datafile  filename containing the population defintions, see constants
 #'   \item hcrfile  filename continaing the details of the HCR used
 #'   \item outdir  the output directory, containing a results subdir
 #'   \item reps  how many replicates in this instance, usually 1000
-#'   \item initdepl  the initial depletion level for the region
-#'   \item assessinterval  how often should the region be assessed
+#'   \item initdepl  the initial depletion level for the zone
+#'   \item assessinterval  how often should the zone be assessed
 #'   \item withsigR  the level of recruitment variability
 #'   \item withsigB  the level of noise on biomass estimates
 #'   \item withsigce  the level of noise on cpue estimates
@@ -139,10 +139,10 @@ NULL
 #' @title product is the productivity curve matrix from doproduction
 #'
 #' @description product is the productivity curve matrix from
-#'     doproduction when the example region is generated using the
-#'     inbuilt datasets ctrl, region1, and constants. The slowest
+#'     doproduction when the example zone is generated using the
+#'     inbuilt datasets ctrl, zone1, and constants. The slowest
 #'     part of building the whole is to use the modregC function
-#'     to adjust the regionC and generate the production array. To
+#'     to adjust the zoneC and generate the production array. To
 #'     save that time in the examples (to avoid time limits on
 #'     examples should this package go to CRAN), then this dataset can
 #'     be used instead. This is a three dimensional array of
@@ -165,20 +165,20 @@ NULL
 NULL
 
 
-#' @title region1 the constants common to a region
+#' @title zone1 the constants common to a zone
 #'
-#' @description region1 contains the constants relating to the whole
-#'     region rather than th epopulations. See th elisting below.
+#' @description zone1 contains the constants relating to the whole
+#'     zone rather than th epopulations. See th elisting below.
 #'
-#' @name region1
+#' @name zone1
 #'
 #' @docType data
 #'
 #' @format A list of constants that are uniform across all populations
-#'     in a region
+#'     in a zone
 #' \describe{
-#'   \item{SMUnames}{the names of each SMU}
-#'   \item{SMUpop}{a vector of how many populations in each SMU}
+#'   \item{SAUnames}{the names of each SAU}
+#'   \item{SAUpop}{a vector of how many populations in each SAU}
 #'   \item{minc}{the mid-point of the minimum size class}
 #'   \item{cw}{the size-class width in mm}
 #'   \item{larvdisp}{the rate of larval dispersal as a proportion}
@@ -188,12 +188,12 @@ NULL
 #'   \item{histLML}{time series of LML if conditioning the model prior
 #'       to projections}
 #'   \item{globals}{a list of global constants, containing numpop,
-#'       nSMU, midpts, Nclass, Nyrs, and larvdisp}
+#'       nSAU, midpts, Nclass, Nyrs, and larvdisp}
 #' }
 #'
 #' @examples
-#'  data(region1)
-#'  print(region1)
+#'  data(zone1)
+#'  print(zone1)
 NULL
 
 #' @title tasab is a matrix of abalone maturity-at-length data
@@ -236,70 +236,70 @@ NULL
 NULL
 
 
-#' @title testregC is a region list made up of 6 equilibrium populations
+#' @title testzoneC is a zone list made up of 6 equilibrium populations
 #'
-#' @description testregC is a region list made up of 6 equilibrium
+#' @description testzoneC is a zone list made up of 6 equilibrium
 #'     populations. These have been run with a laral dispersal rate of
 #'     0.03 so the change from B0 to effB0 is not great, but still
 #'     required for an initial equilibrium. This is here to simplify
 #'     the internal testing of funcitons that require a completed
-#'     region starting at equilibrium. Its name is to avoid conflict
-#'     with any actual use of regionC. use str(testregC, max.level=1)
-#'     to see its format. It can be expected to be used with testregD
+#'     zone starting at equilibrium. Its name is to avoid conflict
+#'     with any actual use of zoneC. use str(testzoneC, max.level=1)
+#'     to see its format. It can be expected to be used with testzoneD
 #'
-#' @name testregC
+#' @name testzoneC
 #'
 #' @docType data
 #'
 #' @section Subjects:
 #'  \itemize{
-#'    \item testing of functions that require a full region
+#'    \item testing of functions that require a full zone
 #'    \item initial equilibrium
 #'  }
 #'  @export
 #'
 #' @examples
-#'  data(testregC)
-#'  data(testregD)
-#'  data(region1)
-#'  glb <- region1$globals
-#'  r0 <- getvar(testregC,"R0")
+#'  data(testzoneC)
+#'  data(testzoneD)
+#'  data(zone1)
+#'  glb <- zone1$globals
+#'  r0 <- getvar(testzoneC,"R0")
 #'  move <- makemove(glb$numpop,r0,glb$larvdisp)
 #'  glb$move <- move
-#'  ans <- testequil(testregC, testregD, glb)
-#'  str(testregC[[1]])
+#'  ans <- testequil(testzoneC, testzoneD, glb)
+#'  str(testzoneC[[1]])
 NULL
 
-#' @title testregD is a list of 8 matrices and 2 arrays defining the dynamics of a region
+#' @title testzoneD is a list of 8 matrices and 2 arrays defining the dynamics of a zone
 #'
-#' @description testregD is a list of 8 matrices and 2 arrays defining
-#'     the dynamics of a region. These have been run with a larval
+#' @description testzoneD is a list of 8 matrices and 2 arrays defining
+#'     the dynamics of a zone. These have been run with a larval
 #'     dispersal rate of 0.03 to achieve an initial equilibrium. This
 #'     is here to simplify the internal testing of functions that
-#'     require a completed region starting at equilibrium. Its name is
-#'     to avoid conflict with any actual use of regionD. use
-#'     str(testregD, max.level=1) to see its format. It can be
-#'     expected to be used with testregC.
+#'     require a completed zone starting at equilibrium. Its name is
+#'     to avoid conflict with any actual use of zoneD. use
+#'     str(testzoneD, max.level=1) to see its format. It can be
+#'     expected to be used with testzoneC.
 #'
-#' @name testregD
+#' @name testzoneD
 #'
 #' @docType data
 #'
 #' @section Subjects:
 #'  \itemize{
-#'    \item testing of functions that require a full region
+#'    \item testing of functions that require a full zone
 #'    \item initial equilibrium
 #'  }
 #'  @export
 #'
 #' @examples
-#'  data(testregC)
-#'  data(testregD)
-#'  data(region1)
-#'  glb <- region1$globals
-#'  r0 <- getvar(testregC,"R0")
+#'  data(testzoneC)
+#'  data(testzoneD)
+#'  data(zone1)
+#'  glb <- zone1$globals
+#'  r0 <- getvar(testzoneC,"R0")
 #'  move <- makemove(glb$numpop,r0,glb$larvdisp)
 #'  glb$move <- move
-#'  ans <- testequil(testregC, testregD, glb)
-#'  str(testregD)
+#'  ans <- testequil(testzoneC, testzoneD, glb)
+#'  str(testzoneD)
 NULL

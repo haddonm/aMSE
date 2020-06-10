@@ -3,7 +3,7 @@ Define the populations in the same sequence in which they occur along the coast 
 ,,,,,,,,,
 PDFs,32,,,,,,,,
 popnum,1,2,3,4,5,6, the index number for each population ,,
-SMU,1,1,2,2,2,2, define the SMU index for each population ,,
+SAU,1,1,2,2,2,2, define the SAU index for each population ,,
 MaxDL ,32,32,32,32,32,32, maximum growth increment ,,
 sMaxDL ,2.5,2.5,2.5,2.5,2.5,2.5, variation of MaxDL ,,
 L50 ,123,123,123,123,123,123, Length at 50% MaxDL ,,

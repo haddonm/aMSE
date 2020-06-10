@@ -21,6 +21,6 @@ getgrad1 calculates the one year gradient score for a
 data(blockE13)
 nyr <- length(blockE13$year)
 grad1 <- getgrad1(blockE13$cpue)
-score1 <- getscore1(grad1)
+score1 <- getscore(grad1)
 cbind(blockE13$year[2:nyr],grad1,score1)
 }

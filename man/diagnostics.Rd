@@ -4,12 +4,12 @@
 \alias{diagnostics}
 \title{diagnostics generates an array of diagnostic plots}
 \usage{
-diagnostics(regC, regD, glob, plot = TRUE)
+diagnostics(zoneC, zoneD, glob, plot = TRUE)
 }
 \arguments{
-\item{regC}{the constants for the region simulated}
+\item{zoneC}{the constants for the zone simulated}
 
-\item{regD}{the dynamic aspects of the region simulated}
+\item{zoneD}{the dynamic aspects of the zone simulated}
 
 \item{glob}{the general globals}
 

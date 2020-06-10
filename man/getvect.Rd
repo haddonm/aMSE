@@ -2,24 +2,24 @@
 % Please edit documentation in R/getfunctions.R
 \name{getvect}
 \alias{getvect}
-\title{getvect extracts invar from the popdef vector in regionC}
+\title{getvect extracts invar from the popdef vector in zoneC}
 \usage{
-getvect(regC, invar)
+getvect(zoneC, invar)
 }
 \arguments{
-\item{regC}{the constants object for the region}
+\item{zoneC}{the constants object for the zone}
 
 \item{invar}{a character variable eg. "steeph", "DLMax"}
 }
 \value{
-a numpop vector of invar from the numpop popdefs in regionC
+a numpop vector of invar from the numpop popdefs in zoneC
 }
 \description{
 getvect extracts a numpop vector of invar from the
-    popdef vector in regionC. Still need to use sapply to pull out
+    popdef vector in zoneC. Still need to use sapply to pull out
     complete vectors such as popdef or maturity etc.
 }
 \examples{
-data(testregC)
-getvect(testregC,"steeph")
+data(testzoneC)
+getvect(testzoneC,"steeph")
 }

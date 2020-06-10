@@ -4,7 +4,7 @@
 \alias{numbersatsize}
 \title{numbersatsize plots details of the numbers-at-size}
 \usage{
-numbersatsize(resdir, runlabel, glb, regD)
+numbersatsize(resdir, runlabel, glb, zoneD)
 }
 \arguments{
 \item{resdir}{the results directory}
@@ -13,7 +13,7 @@ numbersatsize(resdir, runlabel, glb, regD)
 
 \item{glb}{the globals list}
 
-\item{regD}{the dynamic part of the region, regionD}
+\item{zoneD}{the dynamic part of the zone, zoneD}
 }
 \value{
 nothing but it does add one plot to the results directory

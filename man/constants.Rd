@@ -8,8 +8,8 @@
 constants is a data.frame of parameters for blacklip
     abalone (\emph{Haliotis rubra}) used to condition the
     operating model as an example when running the aMSE function
-    examples. It describes a region containing two hypothetical
-    Tasmanian blocks (the level of SMU) with a total of six
+    examples. It describes a zone containing two hypothetical
+    Tasmanian blocks (the level of SAU) with a total of six
     populations. If this were a data-set in a CSV file it would
     require the readdatafile function to read the file. The function
     datafiletemplate will generate a template of the required
@@ -21,7 +21,7 @@ constants is a data.frame of parameters for blacklip
 
 \itemize{
   \item popnum the index to the population
-  \item SMU the spatial management unit number = blocks in Tasmania
+  \item SAU the spatial management unit number = blocks in Tasmania
   \item DLMax maximum growth increment used in the inverse logistic
   \item sMAxDL the sd variability of DLMax, Normal variation
   \item L50  the shell length at 50% of maximum growth increment

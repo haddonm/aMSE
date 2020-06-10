@@ -20,14 +20,14 @@ the control list for the run
 \description{
 checkresdir checks resdir contains the required csv
     files including the named control file, which then contains
-    the names of the region data file, and the population data
+    the names of the zone data file, and the population data
     file. The run stops if any are not present or are misnamed.
 }
 \examples{
 resdir <- tempdir()
 ctrlfiletemplate(resdir)
-regionfiletemplate(resdir)
-datafiletemplate(6,resdir,filename="reg1smu2pop6.csv")
+zonefiletemplate(resdir)
+datafiletemplate(6,resdir,filename="zone1sau2pop6.csv")
 ctrl <- checkresdir(resdir)
 ctrl
 }

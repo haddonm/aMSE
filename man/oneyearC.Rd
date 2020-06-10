@@ -4,13 +4,13 @@
 \alias{oneyearC}
 \title{oneyearC conducts one year's dynamics using catch not harvest}
 \usage{
-oneyearC(regC, regD, Ncl, catchp, year, sigmar, npop, movem)
+oneyearC(zoneC, zoneD, Ncl, catchp, year, sigmar, npop, movem)
 }
 \arguments{
-\item{regC}{the constant portion of the region with a list of
+\item{zoneC}{the constant portion of the zone with a list of
 properties for each population}
 
-\item{regD}{the dynamics portion of the region, with matrices and
+\item{zoneD}{the dynamics portion of the zone, with matrices and
 arrays for the dynamic variables of the dynamics of the
 operating model}
 
@@ -36,30 +36,30 @@ a list containing a revised dynamics list
 oneyearD conducts one year's dynamics in the simulation
     using catches rather than harvest rates. The harvest rates are
     estimated after first estimating the exploitable biomass.
-    returning the revised regionD, which will have had a single year
+    returning the revised zoneD, which will have had a single year
     of activity included in each of its components.
 }
 \examples{
  data(constants)
- data(region1)
- ans <- makeregionC(region1,constants) # classical equilibrium
- regionC <- ans$regionC
+ data(zone1)
+ ans <- makezoneC(zone1,constants) # classical equilibrium
+ zoneC <- ans$zoneC
  glb <- ans$glb
- ans <- makeregion(glb,regionC) # now make regionD
- regionC <- ans$regionC  # region constants
- regionD <- ans$regionD
+ ans <- makezone(glb,zoneC) # now make zoneD
+ zoneC <- ans$zoneC  # zone constants
+ zoneD <- ans$zoneD
  npop <- glb$numpop
  Nc <- glb$Nclass
  nyrs <- glb$Nyrs
  catch <- 360.0 # larger than total MSY ~ 310t
- B0 <- getvar(regionC,"B0")
+ B0 <- getvar(zoneC,"B0")
  totB0 <- sum(B0)
  prop <- B0/totB0
  catchpop <- catch * prop
  for (yr in 2:nyrs)
-   regionD <- oneyearC(regC=regionC,regD=regionD,Ncl=Nc,
+   zoneD <- oneyearC(zoneC=zoneC,zoneD=zoneD,Ncl=Nc,
                    catchp=catchpop,year=yr,sigmar=1e-08,npop=npop,
                    movem=glb$move)
- str(regionD)
- round(regionD$catchN[60:105,1:5,1],1)
+ str(zoneD)
+ round(zoneD$catchN[60:105,1:5,1],1)
 }

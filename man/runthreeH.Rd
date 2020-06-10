@@ -4,33 +4,33 @@
 \alias{runthreeH}
 \title{runthree conducts the dynamics with constant catch 3 times}
 \usage{
-runthreeH(regionC, regD, inHarv, glob)
+runthreeH(zoneC, zoneD, inHarv, glob)
 }
 \arguments{
-\item{regionC}{the constants components of the simulated region}
+\item{zoneC}{the constants components of the simulated zone}
 
-\item{regD}{the dynamics portion of the region, with matrices and
+\item{zoneD}{the dynamics portion of the zone, with matrices and
 arrays for the dynamic variables of the dynamics of the
 operating model}
 
 \item{inHarv}{a vector of annual harvest rates to be held constant
 across all years.}
 
-\item{glob}{the globals variable from readregionfile}
+\item{glob}{the globals variable from readzonefile}
 }
 \value{
-a list containing a revised dynamics list, regionD
+a list containing a revised dynamics list, zoneD
 }
 \description{
 runthree is used when searching numerically for an
     equilibrium and it conducts the Nyrs dynamics three times, each
     time through it replaces year 1 with year Nyrs. Thus if Nyrs is
     40 it conducts 3 * 39 years of dynamics (117 years). This is
-    not exported. It uses regionC but always it does this inside
-    the environment of another function where regionC can be found
+    not exported. It uses zoneC but always it does this inside
+    the environment of another function where zoneC can be found
     Used inside dodepletion and doproduction
 }
 \examples{
 print("wait on built in data sets")
-# regionC=regionC; regD=regionD; glob=glb; inHarv=rep(0.3,numpop)
+# zoneC=zoneC; zoneD=zoneD; glob=glb; inHarv=rep(0.3,numpop)
 }

@@ -2,12 +2,12 @@
 % Please edit documentation in R/getfunctions.R
 \name{getlistvar}
 \alias{getlistvar}
-\title{getlistvar extracts a vector or matrix from regionC}
+\title{getlistvar extracts a vector or matrix from zoneC}
 \usage{
-getlistvar(regC, indexvar, indexvar2 = "")
+getlistvar(zoneC, indexvar, indexvar2 = "")
 }
 \arguments{
-\item{regC}{the constants components of the simulated region}
+\item{zoneC}{the constants components of the simulated zone}
 
 \item{indexvar}{the name of the variable to be extracted; character}
 
@@ -17,21 +17,21 @@ getlistvar(regC, indexvar, indexvar2 = "")
 either a vector or matrix of values depending on variable
 }
 \description{
-getlistvar extracts a vector or matrix from regionC.
+getlistvar extracts a vector or matrix from zoneC.
    If a vector of scalars, the names relate to populations, if a
    matrix the columns relate to populations. Only Me, R0, B0, effB0,
-   ExB0, effExB0, MSY, MSYDepl, bLML, popq, SaM, SMU, popdef,
+   ExB0, effExB0, MSY, MSYDepl, bLML, popq, SaM, SAU, popdef,
    LML, Maturity, WtL, Emergent, and MatWt are currently valid
    choices. The indexvar = popdef would generate a listing of all
    the constants. If you only want a single constant from popdefs
    then use indexvar2.
 }
 \examples{
- data(region1)
+ data(zone1)
  data(constants)
- ans <- makeregionC(region=region1,const=constants)
- regionC <- ans$regionC
- getlistvar(regionC,"MSY")
- getlistvar(regionC,"B0")
- getlistvar(regionC,"popdef","AvRec")
+ ans <- makezoneC(zone=zone1,const=constants)
+ zoneC <- ans$zoneC
+ getlistvar(zoneC,"MSY")
+ getlistvar(zoneC,"B0")
+ getlistvar(zoneC,"popdef","AvRec")
 }

@@ -120,13 +120,13 @@ kable(ab,digits=c(0,4,4,4,4,3,3,1))
 
 ### Gradient1
 
-Gradient1 is simply the proportional change in cpue from one year to the next. This implies that with a time-series of 28 years (as in the blockE13 data-set) we can obtain 27 comparisons. Formally, where $CE_{b,t}$ is the cpue in block/SMU $b$ in year $t$, then the Gradient1 for block/SMU $b$ is:
+Gradient1 is simply the proportional change in cpue from one year to the next. This implies that with a time-series of 28 years (as in the blockE13 data-set) we can obtain 27 comparisons. Formally, where $CE_{b,t}$ is the cpue in block/SAU $b$ in year $t$, then the Gradient1 for block/SAU $b$ is:
 
 $$Grad1_b=\left (\frac{CE_{b,t}}{CE_{b,t-1}} - 1 \right )$$
 
 The central idea for the Gradient1 (and Gradient4) performance measure is that the gradient obtained in each year can be converted into a score between 0 and 10, cenrted on a score of 5 for a gradient of 0.0.
 
-In __aMSE__ we have the function _getgrad1_ to calculate the gradient. The function requires the input of a vector of cpue values (a minimum of two values) and it will output a vector of length one less than the input vector. If we input the vector _ab$cpue_ from teh blockE13 data-set we obtain Gradient1 values for 1993 - 2019, which have a range from -0.208 to 0.286, which is obviously asymmetric around the zero value.
+In __aMSE__ we have the function _getgrad1_ to calculate the gradient. The function requires the input of a vector of cpue values (a minimum of two values) and it will output a vector of length one less than the input vector. If we input the vector _ab$cpue_ from the blockE13 data-set we obtain Gradient1 values for 1993 - 2019, which have a range from -0.208 to 0.286, which is obviously asymmetric around the zero value.
 
 ```{r echo=TRUE}
 grad1 <- getgrad1(ab$cpue)

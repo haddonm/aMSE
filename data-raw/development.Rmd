@@ -51,13 +51,13 @@ setpalette("R4")
 
 * How best to define each population in a sequential manner reflective of their relative productivity? Need to keep the option of random allocation of properties. See section.
 
-* The region is simply to container for all the SMU (there may only be one). The notion is that the variation of population properties within an SMU can differ, but conditioning the populations is a whole subject for discussion in itself.
+* The zone is simply to container for all the SAU (there may only be one). The notion is that the variation of population properties within an SAU can differ, but conditioning the populations is a whole subject for discussion in itself.
 
-* Running the MSE once conditioned should be simple, the difficult part is conditioning the model to represent a particular region, there is a need to include the option of having larval dispersal.
+* Running the MSE once conditioned should be simple, the difficult part is conditioning the model to represent a particular zone, there is a need to include the option of having larval dispersal.
 
-* Currently using a control.csv file to identify conditioning files, HCR files, and related. There is a region file containnig the strucutre of the simulated region, and a datafile containing the conditioning data. 
+* Currently using a control.csv file to identify conditioning files, HCR files, and related. There is a zone file containnig the strucutre of the simulated zone, and a datafile containing the conditioning data. 
 
-* When constructing a region the constant parts are kept in regionC and the dynamic parts in regionD. Is the constant part always separate from the global part? Certainly not having to move such large objects around all the time should speed things along.
+* When constructing a zone the constant parts are kept in zoneC and the dynamic parts in zoneD. Is the constant part always separate from the global part? Certainly not having to move such large objects around all the time should speed things along.
 
 ## Design Principles
 
@@ -65,11 +65,11 @@ setpalette("R4")
 
 * Each run will be able to generate an html review of all output (see makehtml_utils.R)
 
-* Currently using a spatial hierarchy region/SMU/population instead of zone/block/population, so this is now more general than only Tasmanian terminology. Stick to this hierarchy throughout the code. Consistency.
+* Currently using a spatial hierarchy zone/SAU/population instead of zone/block/population, so this is now more general than only Tasmanian terminology. Stick to this hierarchy throughout the code. Consistency.
 
 * Naming things is always a complex issue, the LML term is still being used, the other States each appear to use different terms: eg. MLL and other three letter acronyms, so stick with LML.
 
-* Once a particular run is constructed, but before the run proceeds, generate a series of plots and tables to characterize the simulated region.
+* Once a particular run is constructed, but before the run proceeds, generate a series of plots and tables to characterize the simulated zone.
 
 * All plots should be generated as .png files and stored in the 'plots' directory of each runs directory. In addition, any tables should be saved in the same place as csv files (for matrices) or RData files (for more complex objects) ready to be read in for printing in the html output. Each plot and table will have a unique name that will include the run's name. This will nbe necessary to automate the html output and later for any .Rmd output.
 
@@ -96,9 +96,9 @@ The dispersal matrix could be initially defined as a matrix and that can be test
 
 ## Highest Level Outline of Abalone MSE
 
-1) Initiate simulated region - use a ctrl file to define details of data-file, HCR function, and other initial conditions. May involve setting an initial depletion level.
+1) Initiate simulated zone - use a ctrl file to define details of data-file, HCR function, and other initial conditions. May involve setting an initial depletion level.
 
-2) conduct assessment of region status at start of each year (option for partial year?)
+2) conduct assessment of zone status at start of each year (option for partial year?)
 
 3) Using selected HCR set catches for subsequent year(s), and allocate among populations using model fleet dynamics.
 
@@ -112,7 +112,7 @@ The dispersal matrix could be initially defined as a matrix and that can be test
 
 1) A data-file that contains details for each population
 
-* SMUname    - eg block1, block2
+* SAUname    - eg block1, block2
 * popnum - population index   1, 2, 3, etc
 * MaxDL      - maximum growth increment  eg 32
 * sMaxDL     - variation of maxDL  eg  2.5
@@ -145,14 +145,14 @@ The dispersal matrix could be initially defined as a matrix and that can be test
 * sL50Mat                                   4.0
 * larvalD - larval drift                    0.02  = 2% 
 
-2) A data-file containing details relating to the whole region
+2) A data-file containing details relating to the whole zone
 
 * numpop - number of populations
 * PDFS   - The number of parameters with probability density functions
 * minc   - minimum size class  2mm
 * cw     - class width         2mm 
 * Nclass - number of size classes 105
-* nSMU   - number of Spatial Management Units  eg  2
+* nSAU   - number of Spatial Management Units  eg  2
 * LML    - current Legal Minimum Length (LML, MLL, MLS, etc) e.g. 140
 * randomseed - for repeatability of results - use a different one for each simulation
 * Nyrs   - number of years for each simulation   eg 40
@@ -163,7 +163,7 @@ The dispersal matrix could be initially defined as a matrix and that can be test
 3) A control-file containing details of each run
 
 * label for run
-* region file name
+* zone file name
 * datafile name
 * HCR details file
 * replicates
@@ -175,12 +175,12 @@ The dispersal matrix could be initially defined as a matrix and that can be test
 
 ### The Initial Equilibrium
 
-The unfished equilibrium is a classical starting point for any model, even if a decision is made to begin any simulations at some lower depletion level. We are using a one-year time-step but the dynamics occurs within each year. The dynamic part of the region has the following structure:
+The unfished equilibrium is a classical starting point for any model, even if a decision is made to begin any simulations at some lower depletion level. We are using a one-year time-step but the dynamics occurs within each year. The dynamic part of the zone has the following structure:
 
 
-regionD - the dynamic part of hte regional structure
+zoneD - the dynamic part of the zonal structure
 
-* SMU     : num [1:6] 1 1 2 2 2 2
+* SAU     : num [1:6] 1 1 2 2 2 2
 * matureB : num [1:40, 1:6] 782 0 0 0 0 ...
 * exploitB: num [1:40, 1:6] 892 0 0 0 0 ...
 * catch   : num [1:40, 1:6] 0 0 0 0 0 0 0 0 0 0 ...
@@ -192,7 +192,7 @@ regionD - the dynamic part of hte regional structure
 * catchN  : num [1:105, 1:40, 1:6] 0 0 0 0 0 0 0 0 0 0 ...
 * Nt      : num [1:105, 1:40, 1:6] 6.31e+05 2.34e-06 4.31e-05 ...
 
-This represents the dynamics before any simulations have occurred, the unfished equilibrium state. Similarly, the constant part of the region, made up of a list for each population, has the following structure:
+This represents the dynamics before any simulations have occurred, the unfished equilibrium state. Similarly, the constant part of the zone, made up of a list for each population, has the following structure:
 
 * Me      : num 0.198
 * R0      : num 636147
@@ -214,14 +214,14 @@ This represents the dynamics before any simulations have occurred, the unfished 
 * Select  : num [1:105, 1:40] 2.87e-127 2.61e-125 2.37e-123 2.16e-121 1.96e-119 ...
 * SelWt   : num [1:105, 1:40] 1.01e-130 8.97e-128 3.10e-125 7.28e-123 1.38e-120 ...
 * MatWt   : num [1:105] 4.97e-11 6.13e-10 2.93e-09 9.53e-09 2.50e-08 ...
-* SMU     : num 1
+* SAU     : num 1
 
 
-In the code (_setupregion_) the sequence is:
+In the code (_setupzone_) the sequence is:
 
-1. first generate regionC from the constants and region1. At that point each population structure contains everything except those things relating to productivity: B0, ExB0, MSY, MSYDepl and popq. makeregionC also updates glb by including the move matrix.
-2. running the _makeregion_ updates B0, ExB0, and popq in regionC and generates the initial equilibrium for regionD. As this is the unfished equilibrium the catch, harvestR, and catchN matrices are empty.
-3. The final run of _moderegC_ internally runs _doproductivity_ which allows regionC's MSY and MSYDepl entries to be updated for each population, as well as producing the product matrix.
+1. first generate zoneC from the constants and zone1. At that point each population structure contains everything except those things relating to productivity: B0, ExB0, MSY, MSYDepl and popq. makezoneC also updates glb by including the move matrix.
+2. running the _makezone_ updates B0, ExB0, and popq in zoneC and generates the initial equilibrium for zoneD. As this is the unfished equilibrium the catch, harvestR, and catchN matrices are empty.
+3. The final run of _moderegC_ internally runs _doproductivity_ which allows zoneC's MSY and MSYDepl entries to be updated for each population, as well as producing the product matrix.
 
 
-In the regionD matrices, the numbers-at-size are the numbers at the start of the year, similarly, the matureB is the mature biomass at the start of the year. The ExB0 is the exploitable biomass implied by the initial numbers-at-size, which means to calcualte it we need to apply half of natural mortality and growth before multiplyiung by selectivity and weight-at-length.
+In the zoneD matrices, the numbers-at-size are the numbers at the start of the year, similarly, the matureB is the mature biomass at the start of the year. The ExB0 is the exploitable biomass implied by the initial numbers-at-size, which means to calcualte it we need to apply half of natural mortality and growth before multiplyiung by selectivity and weight-at-length.

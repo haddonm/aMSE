@@ -4,18 +4,18 @@
 \alias{definepops}
 \title{definepops makes a parameter vector, popdef, for each population}
 \usage{
-definepops(inSMU, inSMUindex, const, glob)
+definepops(inSAU, inSAUindex, const, glob)
 }
 \arguments{
-\item{inSMU}{the number of SMUs defined in the region, a scalar}
+\item{inSAU}{the number of SAUs defined in the zone, a scalar}
 
-\item{inSMUindex}{a vector of the block index for each population}
+\item{inSAUindex}{a vector of the block index for each population}
 
 \item{const}{a matrix with rows containing the PDF parameters for
 each of the biological parameters. The columns of the matrix
 reflect values for each populations from readdatafile}
 
-\item{glob}{the globals object from readregionfile}
+\item{glob}{the globals object from readzonefile}
 }
 \value{
 a matrix with a row for each population and whose columns
@@ -31,11 +31,11 @@ definepops makes a parameter vector, popdef, for each
     used to define each population.
 }
 \examples{
-  data(region1)
-  glb <- region1$globals
+  data(zone1)
+  glb <- zone1$globals
   data(constants)
-  ans <- makeregionC(region1,constants)
-  regionC <- ans$regionC
+  ans <- makezoneC(zone1,constants)
+  zoneC <- ans$zoneC
   popdefs <- ans$popdefs
   print(popdefs)
 }

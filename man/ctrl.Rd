@@ -13,13 +13,13 @@ crtl contains the information required to conduct a
 
 \itemize{
   \item runlabel  the identifying name for the run
-  \item regionfile  filename containing the region data, see region1
+  \item zonefile  filename containing the zone data, see zone1
   \item datafile  filename containing the population defintions, see constants
   \item hcrfile  filename continaing the details of the HCR used
   \item outdir  the output directory, containing a results subdir
   \item reps  how many replicates in this instance, usually 1000
-  \item initdepl  the initial depletion level for the region
-  \item assessinterval  how often should the region be assessed
+  \item initdepl  the initial depletion level for the zone
+  \item assessinterval  how often should the zone be assessed
   \item withsigR  the level of recruitment variability
   \item withsigB  the level of noise on biomass estimates
   \item withsigce  the level of noise on cpue estimates

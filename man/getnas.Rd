@@ -4,29 +4,29 @@
 \alias{getnas}
 \title{getnas gets the numbers-at-size for all spatial scales}
 \usage{
-getnas(regD, yr, glob, region)
+getnas(zoneD, yr, glob, zone)
 }
 \arguments{
-\item{regD}{the dynamic portion of the region}
+\item{zoneD}{the dynamic portion of the zone}
 
 \item{yr}{which yr from the range available should be summarized}
 
 \item{glob}{the global variables object}
 
-\item{region}{the region constants}
+\item{zone}{the zone constants}
 }
 \value{
-a matrix of numpop + nSMU + 1 columns of numbers-at-size
+a matrix of numpop + nSAU + 1 columns of numbers-at-size
 }
 \description{
 getnas extracts numbers-at-size for all populations,
-    SMUs, and the region. There will therefore be numpop + nSMU + 1
+    SAUs, and the zone. There will therefore be numpop + nSAU + 1
     columns of numbers-at-size fr the particular year given.
 }
 \examples{
-data(region1)
-glb <- region1$globals
-data(testregD)
-nas <- getnas(testregD,yr=1,glob=glb,region=region1)
+data(zone1)
+glb <- zone1$globals
+data(testzoneD)
+nas <- getnas(testzoneD,yr=1,glob=glb,zone=zone1)
 round(nas[1:30,],1)
 }

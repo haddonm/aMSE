@@ -4,7 +4,7 @@
 \alias{biology_plots}
 \title{biology_plots generates a series of stored plots and tables}
 \usage{
-biology_plots(resdir, runlabel, glb, regC)
+biology_plots(resdir, runlabel, glb, zoneC)
 }
 \arguments{
 \item{resdir}{the results directory}
@@ -13,7 +13,7 @@ biology_plots(resdir, runlabel, glb, regC)
 
 \item{glb}{the globals list}
 
-\item{regC}{the regional constants by population, regionC}
+\item{zoneC}{the zonal constants by population, zoneC}
 }
 \value{
 nothing but it does plot 3 plots and put one table into
@@ -23,7 +23,7 @@ nothing but it does plot 3 plots and put one table into
 biology_plots generates the yield vs spawning biomass,
     weight-at-lenght, and emergence plots for all populations. In
     addition, it also tabulates the biological properties of each
-    population and SMU and the total region
+    population and SAU and the total zone
 }
 \examples{
 print("this will be quite long when I get to it")

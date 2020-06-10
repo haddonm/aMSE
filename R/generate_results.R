@@ -1,4 +1,4 @@
-  # These plots use both regionC and regionD
+  # These plots use both zoneC and zoneD
   # characterize productivity ----------------------------------------
 
 
@@ -7,12 +7,12 @@
 #' @description biology_plots generates the yield vs spawning biomass,
 #'     weight-at-lenght, and emergence plots for all populations. In
 #'     addition, it also tabulates the biological properties of each
-#'     population and SMU and the total region
+#'     population and SAU and the total zone
 #'
 #' @param resdir the results directory
 #' @param runlabel the runlabel, ideally from the ctrl object
 #' @param glb the globals list
-#' @param regC the regional constants by population, regionC
+#' @param zoneC the zonal constants by population, zoneC
 #'
 #' @return nothing but it does plot 3 plots and put one table into
 #'     resdir
@@ -20,15 +20,15 @@
 #'
 #' @examples
 #' print("this will be quite long when I get to it")
-biology_plots <- function(resdir, runlabel, glb, regC) {
-  #      resdir=resdir; regC=regionC; regD=regionD; product=product; glb=glb; runlabel=ctrl$runlabel
+biology_plots <- function(resdir, runlabel, glb, zoneC) {
+  #      resdir=resdir; zoneC=zoneC; zoneD=zoneD; product=product; glb=glb; runlabel=ctrl$runlabel
   # some globals
   mids <- glb$midpts
   numpop <- glb$numpop
   resfile <- paste0(resdir,"/resultTable_",runlabel,".csv")
   # Yield vs Spawning biomass-----------------------
-  # maturation uses regC
-  matur <- getlistvar(regC,"Maturity")
+  # maturation uses zoneC
+  matur <- getlistvar(zoneC,"Maturity")
   rownames(matur) <- mids
   file <- paste0("maturity_v_Length_",runlabel,".png")
   filename <- filenametopath(resdir,file)  #  filename=""
@@ -43,8 +43,8 @@ biology_plots <- function(resdir, runlabel, glb, regC) {
   caption <- "The maturity vs length for each population."
   logfilename(filename,resfile=resfile,"Biology",caption)
 
-  # weight-at-length using regC--------------------------------------
-  WtL <- getlistvar(regC,"WtL")
+  # weight-at-length using zoneC--------------------------------------
+  WtL <- getlistvar(zoneC,"WtL")
   rownames(WtL) <- mids
   file <- paste0("Weight_at_Length_",runlabel,".png")
   filename <- filenametopath(resdir,file)  #  filename=""
@@ -60,8 +60,8 @@ biology_plots <- function(resdir, runlabel, glb, regC) {
                       "The x-axis is constrained to encompass legal sizes.")
   logfilename(filename,resfile=resfile,"Biology",caption)
 
-  # emergence uses regC----------------------------------------------
-  emerg <- getlistvar(regC,"Emergent")
+  # emergence uses zoneC----------------------------------------------
+  emerg <- getlistvar(zoneC,"Emergent")
   rownames(emerg) <- mids
   file <- paste0("Emergence_at_Length_",runlabel,".png")
   filename <- filenametopath(resdir,file)  #  filename=""
@@ -78,43 +78,43 @@ biology_plots <- function(resdir, runlabel, glb, regC) {
   logfilename(filename,resfile=resfile,"Biology",caption)
 
 
-  # Tabulate biological properties uses regC-------------------------
-  getvar <- function(indexvar,reg=regC) { # indexvar="B0"; regC=regionC
-    smu <- getlistvar(regC,"SMU")
-    nSMU <- length(unique(smu))
-    smures <- numeric(nSMU)
-    invar <- getlistvar(reg,indexvar)
-    for (mu in 1:nSMU) {
-      pickcol <- which(smu == mu)
-      smures[mu] <- sum(invar[pickcol])
+  # Tabulate biological properties uses zoneC-------------------------
+  getvar <- function(indexvar,zone=zoneC) { # indexvar="B0"; zoneC=zoneC
+    sau <- getlistvar(zone,"SAU")
+    nSAU <- length(unique(sau))
+    saures <- numeric(nSAU)
+    invar <- getlistvar(zone,indexvar)
+    for (mu in 1:nSAU) {
+      pickcol <- which(sau == mu)
+      saures[mu] <- sum(invar[pickcol])
     }
-    ans <- c(invar,smures,sum(invar))
+    ans <- c(invar,saures,sum(invar))
     return(ans)
   }
-  rows <- c("SMU","M","R0","B0","ExB0","MSY","MSYDepl","bLML")
-  smu <- getlistvar(regC,"SMU")
-  nSMU <- length(unique(smu))
+  rows <- c("SAU","M","R0","B0","ExB0","MSY","MSYDepl","bLML")
+  sau <- getlistvar(zoneC,"SAU")
+  nSAU <- length(unique(sau))
   columns <- c(paste0("p",1:numpop),
-               paste0("smu",1:nSMU),"region")
+               paste0("sau",1:nSAU),"zone")
   numrow <- length(rows)
   numcol <- length(columns)
   results <- matrix(0,nrow=numrow,ncol=numcol,
                                   dimnames=list(rows,columns))
-  results["SMU",] <- c(getlistvar(regC,"SMU"),(1:nSMU),0) # no total
+  results["SAU",] <- c(getlistvar(zoneC,"SAU"),(1:nSAU),0) # no total
   results["B0",] <- as.numeric(getvar("B0"))
-  M <- getlistvar(regC,"Me")
-  wtr <- (results["B0",1:numpop]/results["B0",(numpop+nSMU+1)])
+  M <- getlistvar(zoneC,"Me")
+  wtr <- (results["B0",1:numpop]/results["B0",(numpop+nSAU+1)])
 
   results["M",] <- c(M,0,0,sum(M*wtr))
   results["R0",] <- getvar("R0")
   results["ExB0",] <- getvar("ExB0")
   results["MSY",] <- getvar("MSY")
-  MSYD <- getlistvar(regC,"MSYDepl")
+  MSYD <- getlistvar(zoneC,"MSYDepl")
   results["MSYDepl",] <- c(MSYD,0,0,sum(MSYD * wtr))
-  bLML <- getlistvar(regC,"bLML")
+  bLML <- getlistvar(zoneC,"bLML")
   results["bLML",] <- c(bLML,0,0,sum(bLML * wtr))
-  for (mu in 1:nSMU) { # mu = 2
-    pickcol <- which(smu == mu)
+  for (mu in 1:nSAU) { # mu = 2
+    pickcol <- which(sau == mu)
     wtmu <- length(pickcol)
     wtmu <- results["B0",pickcol]/results["B0",(numpop + mu)]
     results["M",(numpop + mu)] <- sum(M[pickcol]*wtmu)
@@ -122,12 +122,12 @@ biology_plots <- function(resdir, runlabel, glb, regC) {
     results["bLML",(numpop + mu)] <- sum(bLML[pickcol]*wtmu)
   }
   res <- round(results,3)
-  filen <- paste0("regionbiology_",runlabel,".csv")
+  filen <- paste0("zonebiology_",runlabel,".csv")
   filename <- filenametopath(resdir,filen)
   write.table(res,file = filename,sep=",")
-  caption <- paste0("Population SMU and Regional Biological Properties. ",
-              "For 'M' 'MSYDepl' and 'bLML' SMU and total is an average ",
-              "weighted relative to the proportion of SMU or total B0.")
+  caption <- paste0("Population SAU and Zonal Biological Properties. ",
+              "For 'M' 'MSYDepl' and 'bLML' SAU and total is an average ",
+              "weighted relative to the proportion of SAU or total B0.")
   logfilename(filename,resfile=resfile,"Tables",caption)
 
 
@@ -143,22 +143,22 @@ biology_plots <- function(resdir, runlabel, glb, regC) {
 #' @param resdir the results directory
 #' @param runlabel the runlabel, ideally from the ctrl object
 #' @param glb the globals list
-#' @param regD the dynamic part of the region, regionD
+#' @param zoneD the dynamic part of the zone, zoneD
 #'
 #' @return nothing but it does add one plot to the results directory
 #' @export
 #'
 #' @examples
 #' print("this will be quite long when I get to it")
-numbersatsize <- function(resdir, runlabel, glb, regD) {
-  #      resdir=resdir; regD=regionD; glb=glb; runlabel=ctrl$runlabel
+numbersatsize <- function(resdir, runlabel, glb, zoneD) {
+  #      resdir=resdir; zoneD=zoneD; glb=glb; runlabel=ctrl$runlabel
   # some globals
   mids <- glb$midpts
   numpop <- glb$numpop
   resfile <- paste0(resdir,"/resultTable_",runlabel,".csv")
-  # initial numbers-at-size uses regD--------------------------------
-  Nt <- regD$Nt[,1,]/1000.0
-  Ntt <- rowSums(regD$Nt[,1,])/1000.0  # totals
+  # initial numbers-at-size uses zoneD--------------------------------
+  Nt <- zoneD$Nt[,1,]/1000.0
+  Ntt <- rowSums(zoneD$Nt[,1,])/1000.0  # totals
   file <- paste0("Total_Initial_Numbers-at-Size_",runlabel,".png")
   filename <- filenametopath(resdir,file)  #  filename=""
   plotprep(width=7,height=6,newdev=FALSE,filename=filename,cex=0.9,verbose=FALSE)
@@ -173,19 +173,19 @@ numbersatsize <- function(resdir, runlabel, glb, regD) {
   legend("topright",paste0("P",1:numpop),lwd=3,col=c(1:numpop),bty="n",
          cex=1.2)
   if (nchar(filename) > 0) dev.off()
-    caption <- "The numbers-at-size for the whole region and for each population separately. The recruitment numbers are omitted for clarity."
+    caption <- "The numbers-at-size for the whole zone and for each population separately. The recruitment numbers are omitted for clarity."
   logfilename(filename,resfile=resfile,"NumSize",caption)
 
 } # end of numbersatsize
 
 
-#' @title compregionN compares numbers-at-size before/after depletion
+#' @title compzoneN compares numbers-at-size before/after depletion
 #'
-#' @description compregionN generates a plot comparing the unfished
+#' @description compzoneN generates a plot comparing the unfished
 #'     numbers-at-size with those for a given level of depletion.
 #'
-#' @param unfN the unfished numbers-at-size from getregionprops
-#' @param curN the current numbers-at-size from getregionprops
+#' @param unfN the unfished numbers-at-size from getzoneprops
+#' @param curN the current numbers-at-size from getzoneprops
 #' @param glb the global object
 #' @param yr the year of the dynamics
 #' @param depl the depletion level of the current n-a-s
@@ -199,29 +199,29 @@ numbersatsize <- function(resdir, runlabel, glb, regD) {
 #' @examples
 #' print("still to be developed")
 #' # unfN=unfN; curN=depN;glb=glb; yr=1; depl=0.3993; LML=132; resdir=resdir
-compregionN <- function(unfN,curN,glb,yr,depl,LML=0,resdir="") {
+compzoneN <- function(unfN,curN,glb,yr,depl,LML=0,resdir="") {
   usecl=5:glb$Nclass
   mids <- glb$midpts
   filen <- ""
   if (nchar(resdir) > 0) {
-    filen <- paste0("regional_numbers-at-size_yr",yr,".png")
+    filen <- paste0("zone_numbers-at-size_yr",yr,".png")
     filen <- filenametopath(resdir,filen)
   }
   plotprep(width=7, height=4.5, filename=filen,verbose=FALSE)
-  plot(mids[usecl],unfN[usecl,"region"]/1000.0,type="l",lwd=2,
+  plot(mids[usecl],unfN[usecl,"zone"]/1000.0,type="l",lwd=2,
        panel.first=grid(),xlab="Shell Length (mm)",
        ylab="Numbers-at-Size '000s")
-  lines(mids[usecl],curN[usecl,"region"]/1000.0,lwd=2,col=2)
+  lines(mids[usecl],curN[usecl,"zone"]/1000.0,lwd=2,col=2)
   if (LML > 0) abline(v=LML,col=1,lty=2)
   legend("topright",c("Unfished",depl),col=c(1,2),lwd=3,bty="n")
   if (nchar(filen) > 0) dev.off()
   return(invisible(filen))
-} # end of compregionN
+} # end of compzoneN
 
 #' @title plotproductivity characterizes each population's yield curve
 #'
 #' @description plotproductivity characterizes each population's yield
-#'     curve, it also describes the total productivity of the region.
+#'     curve, it also describes the total productivity of the zone.
 #'
 #' @param resdir the results directory
 #' @param runlabel the runlabel, ideally from the ctrl object
@@ -329,7 +329,7 @@ plotproductivity <- function(resdir,runlabel,product,glb) {
   abline(h=depletMSY[pickmsy],col=2,lwd=2)
   abline(v=Ht[pickmsy],col=2,lwd=2)
   if (nchar(filename) > 0) dev.off()
-  caption <- paste0("The production curves for the region. Also the ",
+  caption <- paste0("The production curves for the zone. Also the ",
               "relationships between spawning biomass depletion and ",
               "harvest rate.")
   logfilename(filename,resfile=resfile,"Production",caption)

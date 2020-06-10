@@ -112,12 +112,12 @@ gradblockHCR <- function(incpueBlock, maxGradient=maxGrad4) {
 } # end of gradblockHCR
 
 
-#' @title targceHCR - calculates SMU scores for the targetCE
+#' @title targceHCR - calculates SAU scores for the targetCE
 #'
-#' @description targceHCR - calculates SMU scores for the targetCE
+#' @description targceHCR - calculates SAU scores for the targetCE
 #'
-#' @param incpueSMU the matrix of cpue by SMU by year
-#' @param targetCE - a vector of the targetCE for each of the SMUs
+#' @param incpueSAU the matrix of cpue by SAU by year
+#' @param targetCE - a vector of the targetCE for each of the SAUs
 #' @param modifyTarg - the constant that sets the range of CPUE in the
 #'    scoring function
 #'
@@ -126,9 +126,9 @@ gradblockHCR <- function(incpueBlock, maxGradient=maxGrad4) {
 #'
 #' @examples
 #'  print("Need to use a dataset for an example")
-targceHCR <- function(incpueBlock, targetCE, modifyTarg=deltaCE) {
+targceHCR <- function(incpueSAU, targetCE, modifyTarg=deltaCE) {
   delCE <- 5.0/modifyTarg
-  score <- (delCE * incpueBlock) + 5.0 - (delCE * targetCE)
+  score <- (delCE * incpueSAU) + 5.0 - (delCE * targetCE)
   score[score > 10.0] <- 10.0
   score[score < 0.0] <- 0.0
   return(score)  # not yet an integer

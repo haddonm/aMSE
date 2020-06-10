@@ -4,24 +4,24 @@
 \alias{getvar}
 \title{getvar a replacement for sapply to obtain scalar constants}
 \usage{
-getvar(regC, invar)
+getvar(zoneC, invar)
 }
 \arguments{
-\item{regC}{the constants object for the region}
+\item{zoneC}{the constants object for the zone}
 
 \item{invar}{a character variable eg. "B0" or "R0"}
 }
 \value{
-a numpop vector of the invar constants from regionC
+a numpop vector of the invar constants from zoneC
 }
 \description{
 getvar is a replacement for sapply to obtain scalar
-    constants from regionC and is significantly faster. It should
+    constants from zoneC and is significantly faster. It should
     be used to obtain things like B0, R0, MSY, popq, etc. Still
     need to use sapply to pull out vectors.
 }
 \examples{
-data(testregC)
-getvar(testregC,"MSY")
-getvar(testregC,"B0")
+data(testzoneC)
+getvar(testzoneC,"MSY")
+getvar(testzoneC,"B0")
 }

@@ -2,14 +2,14 @@
 % Please edit documentation in R/defineZone.R
 \name{testequil}
 \alias{testequil}
-\title{testequil runs a region Nyrs and determines stability}
+\title{testequil runs a zone Nyrs and determines stability}
 \usage{
-testequil(regionC, regD, glb, inH = 0, verbose = TRUE)
+testequil(zoneC, zoneD, glb, inH = 0, verbose = TRUE)
 }
 \arguments{
-\item{regionC}{the constants components of the simulated region}
+\item{zoneC}{the constants components of the simulated zone}
 
-\item{regD}{the dynamic components of the simulated region}
+\item{zoneD}{the dynamic components of the simulated zone}
 
 \item{glb}{the global variables}
 
@@ -21,26 +21,26 @@ testequil(regionC, regD, glb, inH = 0, verbose = TRUE)
 the dynamics component with Nyrs of dynamics
 }
 \description{
-testequil runs a given region for Nyrs at the given
+testequil runs a given zone for Nyrs at the given
     harvest rate, and then tests that the last values of matureB,
     exploitB, recruitment, and spawning biomass depletion are the
     same as the first (to three decimal places). It reports this
     to the console if verbose=TRUE
 }
 \examples{
-\dontrun{  # modregC takes too long to run because of doproduction
+\dontrun{  # modzoneC takes too long to run because of doproduction
  data(ctrl)
- data(region1)
- glb <- region1$globals
+ data(zone1)
+ glb <- zone1$globals
  data(constants)
- ans <- makeregionC(region1,constants)
- regionC <- ans$regionC
+ ans <- makezoneC(zone1,constants)
+ zoneC <- ans$zoneC
  glb <- ans$glb # now contains movement matrix
- ans <- makeregion(glb,regionC)
- regionC <- ans$regionC  # region constants
- regionD <- ans$regionD
- ans <- modregC(regionC,regionD,glb)
- regionC <- ans$regionC  # region constants
- regDe <- testequil(regC=regionC,regD=regionD,glob=glb)
-}    #regC=testregC; regD=testregD; glob=glb; inH=0.0; verbose=TRUE
+ ans <- makezone(glb,zoneC)
+ zoneC <- ans$zoneC  # zone constants
+ zoneD <- ans$zoneD
+ ans <- modzoneC(zoneC,zoneD,glb)
+ zoneC <- ans$zoneC  # zone constants
+ zoneDe <- testequil(zoneC=zoneC,zoneD=zoneD,glob=glb)
+}    #zoneC=testzoneC; zoneD=testzoneD; glob=glb; inH=0.0; verbose=TRUE
 }

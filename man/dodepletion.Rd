@@ -2,34 +2,34 @@
 % Please edit documentation in R/defineZone.R
 \name{dodepletion}
 \alias{dodepletion}
-\title{dodepletion resets regionD to an input depletion level}
+\title{dodepletion resets zoneD to an input depletion level}
 \usage{
-dodepletion(regionC, regD, glob, depl, product, len = 15)
+dodepletion(zoneC, zoneD, glob, depl, product, len = 15)
 }
 \arguments{
-\item{regionC}{the constants components of the simulated region}
+\item{zoneC}{the constants components of the simulated zone}
 
-\item{regD}{the dynamic components of the simulated region}
+\item{zoneD}{the dynamic components of the simulated zone}
 
 \item{glob}{the general global variables}
 
-\item{depl}{the target depletion proportion for the whole region}
+\item{depl}{the target depletion proportion for the whole zone}
 
 \item{product}{the production curve matrix from doproduction}
 
 \item{len}{the number of intervals in the trial harvest rates}
 }
 \value{
-a revised regionD object
+a revised zoneD object
 }
 \description{
 dodepletion resets the depletion level of the whole
-    regionand does this by searching for the harvest rate that
+    zone and does this by searching for the harvest rate that
     leads to the sum of the mature biomass, across populations,
     divided by the sum of the effective B0 across populations is
     as close as possible to the desired depletion level. This means
     the individual populations will likely vary around the target
-    depletion, but across the region it will be correct. The
+    depletion, but across the zone it will be correct. The
     depletion is measured relative to the effective B0 as that
     takes account of any larval dispersal. This function uses the
     production curve matrix to search for harvest rates that bound
@@ -38,20 +38,20 @@ dodepletion resets the depletion level of the whole
 }
 \examples{
 \dontrun{
-  data(region1)
-  glb <- region1$globals
+  data(zone1)
+  glb <- zone1$globals
   data(constants)
-  ans <- makeregionC(region1,constants)
-  regionC <- ans$regionC
+  ans <- makezoneC(zone1,constants)
+  zoneC <- ans$zoneC
   glb <- ans$glb  # now contains the move matrix
-  ans <- makeregion(glb,regionC)
-  regionC <- ans$regionC
-  regionD <- ans$regionD
-  ans2 <- modregC(regionC,regionD,glb)
-  regionC <- ans2$regionC  # now has MSY and deplMSY
+  ans <- makezone(glb,zoneC)
+  zoneC <- ans$zoneC
+  zoneD <- ans$zoneD
+  ans2 <- modzoneC(zoneC,zoneD,glb)
+  zoneC <- ans2$zoneC  # now has MSY and deplMSY
   product <- ans2$product
-  regDD <- dodepletion(regionC,regionD,glb,depl=0.3,product)
-  sum((regDD$matureB[1,]/sum(regDD$matureB[1,]))*regDD$deplsB[1,])
-  mean(regDD$deplsB[1,])
+  zoneDD <- dodepletion(zoneC,zoneD,glb,depl=0.3,product)
+  sum((zoneDD$matureB[1,]/sum(zoneDD$matureB[1,]))*zoneDD$deplsB[1,])
+  mean(zoneDD$deplsB[1,])
 }
 }

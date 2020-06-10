@@ -7,7 +7,7 @@
 datafiletemplate(numpop, indir, filename = "tmpdat.csv")
 }
 \arguments{
-\item{numpop}{the totla number of populations in the region}
+\item{numpop}{the totla number of populations in the zone}
 
 \item{indir}{the directory into which to place the data template}
 
@@ -29,8 +29,8 @@ datafiletemplate generates a standard input datafile
 \dontrun{
  yourdir <- tempdir()
  datafiletemplate(numpop=6,yourdir,"tmpdat.csv")
- data(region1)
- glb <- region1$globals
+ data(zone1)
+ glb <- zone1$globals
  constants <- readdatafile(numpop,yourdir,"tmpdat.csv")
  str(constants,max.level=1)
 }
