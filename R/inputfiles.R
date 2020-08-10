@@ -103,7 +103,7 @@ diagnostics <- function(zoneC,zoneD,glob,plot=TRUE) {   # inzone <- testzone
 #'     are sampled to provide the necessary biological constants for
 #'     each population.
 #'
-#' @param numpop the totla number of populations in the zone
+#' @param numpop the total number of populations in the zone
 #' @param indir the directory into which to place the data template
 #' @param filename the name for the generated datafile, a character
 #'     string, defaults to tmpdat.csv

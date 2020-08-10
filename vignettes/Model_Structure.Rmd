@@ -1,10 +1,10 @@
 ---
-title: "Model Structure Details"
+title: "Model Structure"
 author: "Malcolm Haddon"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Model_Structure}
+  %\VignetteIndexEntry{Model Structure}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -55,17 +55,17 @@ MathJax.Hub.Config({
 
 ### Management Strategy Evaluation
 
-Comparing the relative effectiveness of alternative harvest strategies for particular fisheries generally requires the use of Management Strategy Evaluation (Haddon, 2007; Punt _et al_. 2016). As stated by Punt _et al_. (2016, p303). 
+Comparing the relative effectiveness of alternative harvest strategies for particular fisheries generally requires the use of Management Strategy Evaluation (Haddon, 2007; Punt _et al_. 2016). As stated by Punt _et al_. (2016, p303): 
 
 "Management strategy evaluation (MSE) involves using simulation to compare the relative effectiveness for achieving management objectives of different combinations of data collection schemes, methods of analysis and subsequent processes leading to management actions. MSE can be used to identify a ‘best’ management strategy among a set of candidate strategies, or to determine how well an existing strategy performs. The ability of MSE to facilitate fisheries management achieving its aims depends on how well uncertainty is represented, and how effectively the results of simulations are summarized and presented to the decision-makers. Key challenges for effective use of MSE therefore include characterizing objectives and uncertainty, assigning plausibility ranks to the trials considered, and working with decision makers to interpret and implement the results of the MSE." 
 
-The simulations referred to involve simulating the biological and fishery/fleet dynamics of the fishery being considered. This simulation model, usually termed the _Operating Model_ is either fitted to a real fishery or conditioned to reflect the observed properties of a real fishery. EXPAND Once conditioned, the operating model is taken to represent reality and is used to simulate the dynamics of a fishery as it would operate under the different harvest strategies (HS).  
+The simulations referred to involve simulating the biological and fishery/fleet dynamics of the fishery being considered. This simulation model, usually termed the _Operating Model_ is either fitted to a real fishery or conditioned to reflect the observed properties of a real fishery. Once conditioned, the operating model is taken to represent reality and is used to simulate the dynamics of a fishery as it would operate under the different harvest strategies (HS).  
 
-The essential aspect of the simulation that makes an MSE differ from a standard forward projection of a stock assessment (a classical risk assessment; Francis, 1992) is the built in feedback of the regular management advice. The complete dynamics of the stock and fishery are simulated each year, the HS (data sampling, assessment/analysis, and harvest control rule) is applied however often the HS dictates, and the outcome of the simulated HS is fed back into the operating model, which could be expected to alter the path of the expected dynamics. In this way different HS can be expected to have different simulation outcomes over a set number of years.
+The essential aspect of the simulation that makes an MSE differ from a standard forward projection of a stock assessment (a classical risk assessment; Francis, 1992) is the built in feedback of the regular management advice. The complete dynamics of the stock and fishery are simulated each year, the HS (data sampling, assessment/analysis, and harvest control rule) is applied however often the HS dictates, and the outcome of the simulated HS is fed back into the operating model, which could be expected to alter the path of the expected dynamics (this constitutes the feedback loop). In this way different HS can be expected to have different simulation outcomes over a set number of years.
 
 ### Simpler is Not Necessarily Better
 
-MSE is often represented in an overly simplistic fashion leading to un-realistic expectations. It is important to remember that, as with any model, if an operating model does not include a particular feature in its dynamics (e.g. does not include depensation in its recruitment dynamics, or non-linearity in the relationship between stock biomass and CPUE) then those features can never be expressed in the simulations. The structure of an operating model needs to be well documented and its limitations understood so that the limitations of the MSE testing of each HS are known. This is especially important to understand because harvest strategies that have been MSE tested are generally held in relatively high regard. However, the MSE testing will always be constrained to the dynamics described by the operating model, so care in its design is required and that design needs to be defensible.
+MSE is often represented in an overly simplistic fashion leading to un-realistic expectations. It is important to remember that, as with any model, if an operating model does not include a particular feature in its dynamics (e.g. does not include depensation in its recruitment dynamics, or non-linearity in the relationship between stock biomass and CPUE) then those features can, obviously, never be expressed in the simulations. The structure of an operating model needs to be well documented and its limitations understood so that the domain of the MSE testing for each HS are known. This is especially important to understand because harvest strategies that have been MSE tested are generally held in relatively high regard. However, the MSE testing will always be constrained to the dynamics described by the operating model, so care in its design is required and that design needs to be defensible.
 
 ### Harvest Strategies
 
@@ -81,21 +81,21 @@ Each of the three components can be varied in multiple ways and each such combin
 
 ### Management Strategy Evaluation of Abalone Fisheries
 
-There have been attempts to conduct management strategy evaluation (MSE) of alternative harvest strategies for abalone fisheries (Haddon _et al_., 2011; Haddon and Mundy, 2016; Haddon and Helidoniotis, 2013), and a recent R package __aMSE__ has been developed and has evolved following on from those attempts. 
+There have been previous attempts to conduct management strategy evaluation (MSE) of alternative harvest strategies for abalone fisheries (Haddon _et al_., 2011; Haddon and Mundy, 2016; Haddon and Helidoniotis, 2013), and, in the current project, a fully documented R package __aMSE__ has been developed, and has evolved, following on from those attempts. 
 
-The R code in the __aMSE__ package is the start of a translation of the Abalone MSE code developed and used in Haddon _et al_ (2013), which was developed further in Haddon and Mundy (2016). The essential equations describing the operating model dynamics were formally published in Haddon and Helidoniotis (2013). Those dynamics have since been found to be overly complex in that they used separate vectors of numbers-at-length to describe the cryptic and emergent components of each abalone population. Other unpublished work demonstrated that this separation has no real advantages but does have computational disadvantages. The new __aMSE__ package reflects this by translating the previous code into using a single vector of numbers-at-length to contain the dynamics. In addition, other methods are being incrementally implemented with the intent of speeding the computations, which previously could take many hours to appropriately explore even a single HS.
+The R code in the __aMSE__ package is the start of a translation of the Abalone MSE code developed and used in Haddon _et al_ (2013), which was developed further in Haddon and Mundy (2016). The essential equations describing the operating model dynamics used in those earlier projects were formally published in Haddon and Helidoniotis (2013). Those dynamics have since been found to be overly complex in that they used separate vectors of numbers-at-length to describe the cryptic and emergent components of each of the many abalone populations simulated. Other unpublished work demonstrated that this separation has no real advantages but does have computational disadvantages. The new __aMSE__ package reflects this by evolving the previous code into using a single vector of numbers-at-length to contain the dynamics. In addition, other methods are being incrementally implemented with the intent of speeding the computations, which previously could take many hours to appropriately explore even a single HS.
 
-The underlying objective in the current R package is to enable the simulations and MSE testing of different HS to proceed by users familiar with R, but without months of introductory training with the software and concepts involved. This vignette is a first attempt to provide the background required for others to successfully run the software. While writing this vignette sections will be borrowed freely from both Haddon _et al_ (2013) and Haddon and Mundy (2016) wherever it is appropriate. These two original projects in which the abalone MSE code was first developed did not provide sufficient time or resources to generate a more user-friendly code-base for the software. The lack of such more user-friendly software greatly reduces the capacity to apply these methods to more stocks or new HS currently being developed. By making the new R package freely available the intent and hope is that more people will find the methods workable. By being made open source software this also allows for future developments of the package by others should they wish. One primary objective is to allow users to write their own functions describing any new harvest strategy they might develop. How difficult arranging such an open interface will be has yet to be discovered.  
+The underlying objective in the current R package is to enable the simulations and MSE testing of different HS to proceed by users familiar with R, but without months of introductory training with the software and concepts involved. This vignette is a first attempt to provide the background required for others to successfully run the software. While writing this vignette sections will be borrowed freely from both Haddon _et al_ (2013) and Haddon and Mundy (2016) wherever it is appropriate. These two original projects in which abalone MSE code was first developed did not provide sufficient time or resources to generate a more user-friendly code-base for the software. The lack of such more user-friendly software greatly reduces the capacity to apply these methods to more stocks or new HS currently being developed. By making the new R package freely available and fully documented the intent and hope is that more people will find the methods workable. By being made open source software this also allows for future developments of the package by others should they wish. One primary objective is to allow users to write their own functions describing any new harvest strategy they might develop.  
 
 ### Difficulties Inherent with MSE Testing Abalone HS
 
-The phrase 'abalone stock' sounds meaningful and most would consider this to refer to the standard notion of populations of a species having sufficient genetic homogeneity to represent a reproductively connected whole. However, as demonstrated by Miller _et al_ (2009; 2014), genetic studies indicate that abalone populations (at least of blacklip and greenlip abalone) are made up of what might be termed micro-stocks. In effect, the management units used to set total allowable catches (TACs) and minimum legal sizes (MLS) are indeed just spatial management units (SAUs). The solution adopted in Haddon _et al_ (2013) and Haddon and Mundy (2016) was to generate an operating model made up of numerous relatively small populations of abalone, each with their own set of biological properties and fishery productivity that reflected properties observed within real fisheries. One disadvantage of this approach was that there was no chance of fitting this model to a real fishery as no real fishery has sufficient data available concerning differences in growth, size-at-maturity, and other matters relating to productivity. This meant that one could only attempt to condition the operating model to have outputs and properties that closely matched a real fishery. Of course, as those properties were defined at a large geographical scale there would be no single or unique way of setting up a large number of individual populations to mimic such emergent or sum-of-the-parts properties. 
+The phrase 'abalone stock' sounds meaningful and most would consider this to refer to the standard notion of populations of a species having sufficient genetic homogeneity to represent a reproductively connected whole. However, as demonstrated by Miller _et al_ (2009; 2014), genetic studies indicate that abalone populations (at least of blacklip and greenlip abalone) are made up of multiple, what might be termed, micro-stocks. In effect, the management units used to set total allowable catches (TACs) and minimum legal sizes (MLS) are indeed just spatially recognizable areas or zones. The solution adopted in Haddon _et al_ (2013) and Haddon and Mundy (2016) was to generate an operating model made up of numerous relatively small populations of abalone, each with their own set of biological properties and fishery productivity that reflected properties observed within real fisheries. One disadvantage of this approach was that there was no chance of fitting this model to a real fishery as no real fishery has sufficient data available concerning differences in growth, size-at-maturity, and other matters relating to productivity. This meant that one could only attempt to condition the operating model to have outputs and properties that closely matched a real fishery. Of course, as those properties were defined at a large geographical scale there would be no single or unique way of setting up a large number of individual populations to mimic such emergent or sum-of-the-parts properties. 
 
-One time-consuming option to counter this problem would be to set-up the operating models underlying populations in a number of ways to determine whether each different arrangement leads to the same outcome. While this would be time-consuming it is currently the only way available of characterizing the full uncertainty relating to the spatial dynamics. There is the possibility that the use and collection of the GPS data-logger data will assist with the conditioning of the operating model, but such a process remains to be developed. Now there are seven years of data in Tasmania this now is suitable for exploring these possibilities.
+One time-consuming option to counter this problem would be to set-up the operating models underlying populations in a number of ways to determine whether each different arrangement leads, effectively, to the same outcome. While this would be time-consuming it is currently the only way available of characterizing the full uncertainty relating to the spatial dynamics. There is now, however, the possibility that the use and collection of the GPS data-logger data will assist with the conditioning of the operating model, by allowing populations at a smaller scale than statistical reporting blocks within quota zones, to be characterized. Now there are eight years of data in Tasmania this now is suitable for exploring how to do this.
 
 ### Applications in Victoria
 
-During the project described in Haddon and Mundy (2016), an opportunity arose to apply the abalone MSE to some particular reefs within Western Victoria to examine how their recovery might proceed under different harvest strategies following the viral destruction brought about by the AVG virus (Haddon & Helidoniotis, 2014). This differed from the applications in Tasmania as being focussed solely on one reef complex, known as _The Crags_. While the operating model was still only conditioned on reality using the biological properties known for the abalone on The Crags, more time could be spent improving the comparison of the length composition and historical performance of the fishery. This could be done by selecting combinations of simulated populations whose combined dynamics more closely followed trends in catches and size-composition through time. However, this process was very time-consuming so the objectives of each study need to be made clear and explicit before embarking on such detailed conditioning.
+During the project described in Haddon and Mundy (2016), an opportunity arose to apply that abalone MSE to some particular reefs within Western Victoria to examine how their recovery might proceed under different harvest strategies following the viral destruction brought about by the AVG virus (Haddon & Helidoniotis, 2014). This differed from the applications in Tasmania as being focussed solely on one reef complex, known as _The Crags_. While the operating model was still only conditioned on reality using the biological properties known for the abalone on The Crags, more time could be spent improving the comparison of the length composition and historical performance of the fishery. This could be done by selecting combinations of simulated populations whose combined dynamics more closely followed trends in catches and size-composition through time. However, this process was very time-consuming so the objectives of each study need to be made clear and explicit before embarking on such detailed conditioning.
 
 ### Why is the Code so Specialized
 
@@ -157,7 +157,7 @@ points(coords[,1],coords[,2],cex=1.0,pch=1)
 
 <br><br>
 
-Developing and using such a complex software framework entailed specialized expertise. The disadvantage of this is that it constrains the application and limits future developments. This is the primary reason for attempting to translate the MSE code into a a self-documented R package. If more people can more easily take on the application of using the management strategy evaluation framework to explore management options for abalone stocks this should increase the chances of improvements in management.  
+Developing and using such a complex software framework entailed specialized expertise. The disadvantage of this is that it constrains the application to real fisheries and limits future developments. This is the primary reason for attempting to translate the MSE code into a self-documented R package. If more people can more easily take on the application of using the management strategy evaluation framework to explore management options for abalone stocks this should increase the chances of improvements in management.  
 
 ## Some Background on the Operating Model Structure
 
@@ -165,7 +165,7 @@ The operating model (OM) requires conditioning on a selected abalone fishery bec
 
 The original abalone MSE (Haddon _et al_, 2013) was designed for use with the Tasmanian blacklip abalone stocks. Spatially this was structured as statistical blocks within quota zones. Zones were introduced from 2000 onward whereas the statistical blocks have been extant since before 1980. Biological data was available from many sites around Tasmania although it tended to be summarized at a block level. Each statistical block could be simulated as containing multiple populations, and each population has its own set of properties with many such properties relating to the productivity. To attempt to capture some of the between block variations in biological properties each block simulated was given its own set of properties, which included, for many of the properties, a definition of a statistical distribution to describe the expected distribution of values for such things as the growth parameters, the parameters relating to maturity-at-size, and details of the stock recruitment relation. Thus, each sub-set of populations (in Tasmania representing a statistical block but elsewhere they might represent any spatial management unit), was sampled from selected distributions that had been conditioned on what is known about the fishery being simulated. 
 
-Unfortunately, in fisheries management in general, and abalone fisheries in particular, the terminology used to describe different details and concepts is not standardized across jurisdictions. Thus, while the term _Zone_ is used widely to describe a geographical area over which a particular quota may be taken, the names given to sub-zones within zones differs between jurisdictions. The statistical _block_ from Tasmania is not equivalent to the _reef-code_ from Victoria, or _spatial management unit_ from South Australia. Similarly, in Tasmania, the phrase the _Legal Minimum Length_ (LML) is used to define the legal size limits, which is equivalent to the _Minimum Legal Length_, and other such abbreviations from other jurisdictions.
+Unfortunately, in fisheries management in general, and abalone fisheries in particular, the terminology used to describe different details and concepts is not standardized across jurisdictions. Thus, while the term _Zone_ is used widely to describe a geographical area over which a particular quota/TAC may be taken, the names given to sub-zones within zones differs between jurisdictions. The statistical _block_ from Tasmania is not equivalent to the _reef-code_ from Victoria, or _spatial assessment unit_ from South Australia. Similarly, in Tasmania, the phrase the _Legal Minimum Length_ (LML) is used to define the legal size limits, which is equivalent to the _Minimum Legal Length_, and other such abbreviations from other jurisdictions.
 
 ```{r fig.width=6.9, fig.height=3, echo=FALSE}
 canvas(xstart=3,xfinish=88,ystart=55,yfinish=91)
@@ -189,7 +189,7 @@ text(33.25,79,"Population",cex=1.0,pos=4)
 text(62.25,79,"Population",cex=1.0,pos=4)
 ```
 
-`r fig_nums("a2", caption=" A diagrammatic representation of a simulated zone made up of a number of spatial management units (SAUs) each made up of a number of separate populations, each with its own properties. In an operational simulated zone there would likely be more SAUs and more populations in at least some of those SAUs and the populations are likely to be of very different sizes, each population with its own particular properties. Redrawn from Haddon et al, 2013.")`
+`r fig_nums("a2", caption=" A diagrammatic representation of a simulated zone made up of a number of spatial assessment units (SAUs) each made up of a number of separate populations, each with its own properties. In an operational simulated zone there would likely be more SAUs and more populations in at least some of those SAUs and the populations are likely to be of very different sizes, each population with its own particular properties. Redrawn from Haddon et al, 2013.")`
 
 
 #####
@@ -248,7 +248,7 @@ The object generated by _makeZone_ contains three objects, the first is a comple
 
 Descriptions of each of the parameters and the details of the strategy used to generate the OM zone are described in the appendix. Here we will proceed by generating a description of the properties of this example zone. 
 
-Firstly, the populations within the simulated zone making up the Operating Model (OM) all have somewhat different properties. These particular values derive from the array of probability density functions (PDFs) defined in the _constnats_ within _condDat_. These parameters can be seen in detail by using the function _writeConstants_ which takes as input the _condDat_ object. Each population is given different properties through random samples being taken from the PDFs. The variation between populations is most noticeable in the growth parameters, the size-at-maturity, and the average recruitment.
+Firstly, the populations within the simulated zone making up the Operating Model (OM) all have somewhat different properties. These particular values derive from the array of probability density functions (PDFs) defined in the _constants_ within _condDat_. These parameters can be seen in detail by using the function _writeConstants_ which takes as input the _condDat_ object. Each population is given different properties through random samples being taken from the PDFs. The variation between populations is most noticeable in the growth parameters, the size-at-maturity, and the average recruitment.
 
 `r tab_nums("a1", caption=" The constants used to define the six populations that make up the example zone implied by the built in data set condDat. The variable Mc is now redundant, Some parameters appear to be zero because of rounding.")`
 
@@ -308,17 +308,19 @@ Smith, A.D.M. (1997) Quantification of objectives, strategies and performance cr
 
 The model dynamics follows the numbers-at-size through time as they are affected by natural mortality, somatic growth, fishing mortality, and recruitment. The model developed in Haddon _et al_. (2013) and Haddon and Helidoniotis (2013) used separate vectors of numbers-at-size to describe the cryptic and emergent components of each population. Here the model is simplified through the cryptic and emergent components of the population being contained in the single vector $N_t$, where $N_t$ is assumed to be the numbers-at-size (length) at the start of each year $t$. This simplifies the equations and speeds the calculations although with this approach the effect of emergence needs to be included explicitly in some of the equations describing the dynamics. 
 
-The model structure adopted has half of the survivorship from natural mortality occurring followed by individual growth, then survivorship from fishing mortality, followed by the remaining survivorship from natural mortality. Finally any recruitment in that year is added to the first few size classes of population vector.  If natural mortality is implemented as half natural mortality, that is $\textbf{S}_{h} = e^{-M/2}$, twice a year, with other dynamics between the natural mortality events then the dynamics for the numbers-at-size can be represented in matrix notation as:
+The model structure adopted has half of the survivorship from natural mortality occurring followed by individual growth, then survivorship from fishing mortality, followed by the remaining survivorship from natural mortality. Finally any recruitment in that year is added to the first few size classes of population vector.  If natural mortality is implemented as half natural mortality, that is $\bf{S}_{h} = e^{-M/2}$, twice a year, with other dynamics between the natural mortality events then the dynamics for the numbers-at-size can be represented in matrix notation as:
 
 $${\bf{N}_{t+1}}={\bf{S}_{h}{AGS}_{h}{N}_{t}+ {R}}$$
 
+where $\bf{A}$ is the annual survivorship following any fishing mortality (which includes selectivity), $\bf{G}$ is the growth transition matrix (see below), $\bf{S_h}$ is half of the natural survivorship, and $\bf{R}$ is the annual recruitment derived from a Beverton-Holt stock recruitment model (see below). 
+
 ## Model Initiation
 
-Consequently, at equilibrium in the absence of fishing mortality (i.e. survivorship from the annual harvest rate, $\textbf{A}$, = 1.0):
+At equilibrium, in the absence of fishing mortality (i.e. survivorship from the annual harvest rate, $\textbf{A} = 1.0$):
 
-$${\bf{N}^{*}={S}_{h}{AGS}_{h}{N}^{*}+ {R}}$$
+$${\bf{N}^{*}={S}_{h}{GS}_{h}{N}^{*}+ {R}}$$
 
-$${\bf{N}^{*}-{S}_{h}{AGS}_{h}{N}^{*} = {N}^{*}({I-}{S}_{h}{GS}_{h})= {R}}$$
+$${\bf{N}^{*}-{S}_{h}{GS}_{h}{N}^{*} = {N}^{*}({I-}{S}_{h}{GS}_{h})= {R}}$$
 
 which, finally, implies:
 
@@ -340,10 +342,10 @@ $${\bf{N}^{*}=\left ({I}-{S}_{h}{AGS}_{h} \right )^{-1} {R}}$$
 
 ### Emergence
 
-A logistic curve (Haddon, 2011) can be used to describe the transition from the cryptic to the emergent component of the population, but this only becomes influential if natural mortality differs between the two components or if the emergence logistic overlaps with the selectivity curve, and or the Legal Minimum Length (LML).
+A logistic curve (Haddon, 2011) can be used to describe the transition from the cryptic to the emergent component of the population, but this could only become influential on the dynamics if natural mortality differs between the two components or if the emergence logistic overlaps with the selectivity curve, and or the Legal Minimum Length (LML).
 
 
-$$E_L=\frac{1}{1+e^{-\text{Ln}(19)(L-L_E50)/(L_E95-L_E50)}}=\frac{1}{1+e^{-\text{Ln}(19)(L-L_E50)/\delta}}$$
+$$E_L=\frac{1}{1+e^{-{log}(19)(L-L_E50)/(L_E95-L_E50)}}=\frac{1}{1+e^{-{log}(19)(L-L_E50)/\delta}}$$
 
 
 where $E_L$ is the proportion of size-class $L$ that are emergent, and $L_E50$ and $L_E95$ are the usual logistic parameters defining the lengths at which 50% and 95% are emergent. The term $\delta$ is the constant $(L_E95-L_E50)$. Emergence from crypsis only becomes an issue for the dynamics of the model if they are considered to have different natural mortality rates and/or when the emergence curve overlaps with the selectivity curve (which it can do when the LML is low, e.g. 127mm early on in Tasmania, especially on the west coast). Where the selectivity and emergence curves overlap then the proportion remaining in crypsis would act as a refuge, effectively reducing the fishing mortality on those size classes.
@@ -360,24 +362,25 @@ $$\begin{align}
  & \begin{matrix}
    {{G}_{i,j}}=\int\limits_{{{L}_{i}}-\frac{LW}{2}}^{{{L}_{i}}+\frac{LW}{2}}{\frac{1}{\sqrt{2\pi }{{\sigma }_{j}}}\exp \left( -\left[ \frac{{{L}_{i}}-{{{\bar{L}}}_{j}}}{2{{({{\sigma }_{j}})}^{2}}} \right] \right)}dL & {{L}_{Min}}<{{L}_{i}}\le {{L}_{Max}}  \\
 \end{matrix} \\ 
-\end{align}$$
+\end{align}
+$$
 
-where $G_{i,j}$ is the probability of growing from size class $j$ into size class $i$, $LW$ is the size-class width, $$j is the standard deviation of the normal curve describing the growth increments of animals starting in size class $j$, $L_i$ is the length of size class $i$, and $\bar{L}_{j}$ is the mean growth increment of animals starting from the mean of size-class $j$. $L_{Min}$ and $L_{Max}$ are the minimum and maximum size-classes, with the maximum being treated as a plus group. To ensure that all columns sum to 1.0 (to prevent growth implying losses of its own), and to make $L_{Max}$ a plus group, the final row of the matrix is modified for each column $j$ as:
+where $G_{i,j}$ is the probability of growing from size class $j$ into size class $i$, $LW$ is the size-class width, $\sigma_j$ is the standard deviation of the normal curve describing the growth increments of animals starting in size class $j$, $L_i$ is the length of size class $i$, and $\bar{L}_{j}$ is the mean growth increment of animals starting from the mean of size-class $j$. $L_{Min}$ and $L_{Max}$ are the minimum and maximum size-classes, with the maximum being treated as a plus group. To ensure that all columns sum to 1.0 (to prevent growth implying losses of its own), and to make $L_{Max}$ a plus group, the final row of the matrix is modified for each column $j$ as:
 
 
 $${{G}_{{L}_{Max,j}}}={{G}_{{L}_{Max,j}}}+\left( 1-\sum\limits_{i={{L}_{1}}}^{{{L}_{Max}}}{{{G}_{i,j}}} \right)$$
 
 The expected mean growth increment for each size-class $i$ is defined using an inverse logistic growth curve that has been found to describe blacklip abalone growth well (Haddon et al. 2008; Helidoniotis et al., 2011):
 
-$${\bar{L}}_{i,j}={{L}_{j}}+\frac{Max\Delta L}{1+{{e}^{\text{Ln}\left( 19 \right)\left( {{L}_{j}}-{{L}_{g}}50 \right)/\left( {{L}_{g}}95-{{L}_{g}}50 \right)}}}+{{\varepsilon }_{{{L}_{j}}}}$$
+$${\bar{L}}_{i,j}={{L}_{j}}+\frac{Max\Delta L}{1+{{e}^{{log}\left( 19 \right)\left( {{L}_{j}}-{{L}_{g}}50 \right)/\left( {{L}_{g}}95-{{L}_{g}}50 \right)}}}+{{\varepsilon }_{{{L}_{j}}}}$$
 
-$Max \Delta L$ is the maximum growth increment for the population, $L_m50$ and $L_m95$ are the usual logistic parameters defining the lengths at which 50% and 5% of the maximum growth increment are expressed. The ${\varepsilon}_{{L}_{i}}$ is the 
-Variation around the mean expected growth increment. It is assumed to be normally distributed with a standard deviation that varies with the growth increment (Haddon et al. 2008):
+$Max \Delta L$ is the maximum growth increment for the population, $L_{50}$ and $L_{95}$ are the usual logistic parameters defining the lengths at which 50% and 5% of the maximum growth increment are expressed.
+Note that the $log(19)$ is positive, which inverts the logistic curve (compare with the equation for emergence). The ${\varepsilon}_{{L}_{j}}$ is the Variation around the mean expected growth increment. It is assumed to be normally distributed with a standard deviation that varies with the growth increment (Haddon et al. 2008):
 
 
-$${{\sigma }_{{{L}_{j}}}}=\frac{Max{{\sigma }_{L}}}{1+{{e}^{\text{Ln}\left( 19 \right)\left( {{L}_{j}}-{{L}_{g}}95 \right)/\left( L_{Max}-{{L}_{g}}95 \right)}}}$$
+$${{\sigma }_{{{L}_{j}}}}=\frac{Max{{\sigma }_{L}}}{1+{{e}^{{log}\left( 19 \right)\left( {{L}_{j}}-{L_{95}} \right)/\left( L_{Max}-{{L}_{95}} \right)}}}$$
 
-The $\left( L_{Max}-{{L}_{g}}95 \right)$ remains a constant and can be parameterized as such ($\delta_g$).
+The $\left( L_{Max}-{{L}_{95}} \right)$ remains a constant and can be parameterized as such ($\delta_j$).
 
 ### Weight-at-Length
 
@@ -386,13 +389,16 @@ The weight-at-length, $W_L$, relationship involves two constants:
 
 $$W_L=aL^b$$
 
+Although when the conditioning the operating model an observed relationship between $a$ and $b$ might be used. 
+
 ### Maturity-at-Length
 
-
-Maturity at size, $m_L$,  uses an alternative logistic curve, again with two parameters, only this time $L_{50}\% = -{\alpha}/{\beta}$ and the inter-quartile distance is $2{\text{Ln}}3 \beta$.
+Maturity at size, $m_L$,  uses an alternative logistic curve, again with two parameters, only this time $L_{m50} = -{\alpha}/{\beta}$ and the inter-quartile distance is $2{{log}}3 \beta = 2.197225 \beta$.
 
 
 $$m_L=\frac{exp(\alpha + \beta L)}{1+exp(\alpha + \beta L)}=\frac{1}{1+\left(exp(\alpha + \beta L)  \right)^{-1}}$$
+
+such curves are generally fitted using a Generalized Linear Model that uses binomial residual errors (see the associated R package __biology__).
 
 ### Selectivity
 
@@ -400,7 +406,7 @@ Selectivity, $S_{L,t}$ for length $L$ in year $t$ needs to be defined by year to
 
 
 
-$$S_{L,t}=\frac{1}{1+{exp \left [ {-\text{Ln}(19)( L-{L_{s}}50)/{\delta}} \right ] }}$$
+$$S_{L,t}=\frac{1}{1+{exp \left [ {-{log}(19)( L-{L_{s}}50)/{\delta}} \right ] }}$$
 
 where $\delta=L_s95-L_s50$. 
 

@@ -30,3 +30,4 @@
 
 * 10-06-2020 0.0.0.8000 Altered all cases of region and reg into zone. Also altered all cases of SMU and smu to SAU and sau. So the data files have been altered accordingly.
 
+* 10/08/2020 0.0.0.7950 Added to some of the vignettes and made minor improvements to some functions.

@@ -1,0 +1,396 @@
+---
+title: "Conditioning the aMSE Operating Model"
+author: "Malcolm Haddon"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Conditioning the aMSE Operating Model}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+<style type="text/css">
+  body, td {
+     font-size: 15px;
+  }
+  code.r{
+    font-size: 15px;
+  }
+  pre {
+    font-size: 8px
+  }
+</style>
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: { 
+      equationNumbers: { 
+            autoNumber: "all",
+            formatNumber: function (n) {return '3.'+n}
+      } 
+  }
+});
+</script>
+
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
+
+options(knitr.kable.NA = "",
+        knitr.table.format = "pandoc")
+
+options("show.signif.stars"=FALSE,
+        "stringsAsFactors"=FALSE,
+        "max.print"=50000,
+        "width"=240)
+
+library(aMSE)
+library(knitr)
+library(captioner)
+library(diagrams)
+
+tab_nums <- captioner(prefix = "Table")
+fig_nums <- captioner(prefix = "Figure")
+pgwid=75     
+```
+
+
+# Introduction
+
+The final intent to develop the MSE code base to the point where it should be possible to produce the data files, the control file, and a harvest control file and set multiple batch jobs running. It is assumed that even with maximum code optimization each MSE run would take too long to be run in an interactive manner. Hence, there is a requirement to be able to set off multiple jobs at once, taking advantage of modern computers having multiple CPU cores. Batch jobs are an ideal way to handle this.
+
+However, during the development of the MSE framework it is expected that this will proceed in a sequential, although multi-faceted, fashion and many of the details of each run will need to be apparent to the development team. This document is to assist with that process. Once the MSE project is nearing completion a different 'How to Run an MSE' document will be needed. But for now, a document with many more details is required, nnot just for the developers but for those who may work to maintain and possibly further develop the code after this project finishes.
+
+Despite this being more of a development document than a final document it remains important to install from the beginning the underlying requirements of the final batch running environment. The details of these requirements may change through the project development but the fundamental structures should remain the same.
+
+## The Underlying Spatial Structure and Population Dynamics
+
+The spatial complexity of abalone fisheries is the main reason that structurally simple stock assessment models fail to capture the dynamics of abalone fisheries. Hence, an explicit spatial structure is required for the operating model. Here, the upper geographical scale being used is that of a zone, which is the scale at which quota or TACs are set. In Tasmania this is equivalent to the quota zone. Within the single zone, there will be (can be) multiple spatial management units (SAUs) for which aspirational catches are set (which sum to the TAC; in Tasmania these are equivalent to the statistical blocks), and within each SAU there can be multiple populations (sub-areas) of abalone, each with their own set of biological properties, which reflect, to some extent, the average properties for the SAU.
+
+Within each population the population dynamics are described using difference equations operating at an annual time-step with the biological processes of growth, mortality, and recruitment occurring in a modelled sequence. The dynamics in this size-based model are described by following the fate of the numbers-at-size. In each year the dynamics begin with the numbers-at-asize at the start of each year. The first process undergone is that growth occurs, then half natural mortality is applied. At that point the exploitable biomass can be calculated from the numbers-at-size before fishing occurs. The remaining dynamics involve the removal of the catch, the application of the last half of natural mortality and the addition of recruits, at that point larval dispersal occurs (if it is > 0.0), which produces the numbers-at-size at the start of the next year.
+
+
+## The Input File Requirements
+
+To implement a run using the __aMSE__ R package one currently needs to install both __aMSE__ and __rutilsMH__, both of which can be downloaded or installed from the GitHub sites:  
+
+https://github.com/haddonm/aMSE and https://github.com/haddonm/rutilsMH 
+
+Instructions for how to make those downloads are included in the _ReadMe.md_ files for each package, but as an example one could use:
+
+```{r echo=TRUE, eval=FALSE}
+if (!require(devtools)){install.packages("devtools")}
+
+devtools::install_github("https://github.com/haddonm/aMSE",build_vignettes=TRUE)
+
+```
+
+### Package Dependency
+
+Apart from __rutilsMH__, the __aMSE__ package now uses the new package __makehtml__ that contains functions that allow for the rapid local website generation of results from a particular run. It is thus necessary to also install that package.
+
+Apart from installing the R packages __aMSE__, __rutilsMH__, and __makehtml__, for each run of the MSE you will need to identify and name a directory somewhere on your computer, here we will refer to it as the _resdir_, which will contain all the results. You will need such a _resdir_ for each separate MSE run that is made. Each such result directory will be the focus for all the stored results from each particular run. The idea is that given the _resdir_ it will be possible to access all the plots, tables, and other results generated from the given run (indeed it should be possible to repeat the entire run if required). Later functions will be written that will take a set of such run directories and summarize and compare the results found within.
+
+In the 'resdir' directory there needs to be at least four .csv files:
+
+1. A control file that identifies ideally, a unique run name, the other input file names, the number of replicates, and other details of a particular MSE run, such as which harvest control rule (HCR) to use.
+
+2. A zonefile, which contains a set of constants that relate to the whole zone. this includes the definition of the spatial structure, constants relating to the size structure, and a set of global constants used throughout the modelling.
+
+3. A file of biological constants for each population making up the zone, including details of growth, maturity, weight-at-length, natural mortality, recruitment, emergence, selectivity and expected initial unfished catch rates.
+
+4. A harvest control-rule file containing any constants or values used within the HCR.
+
+Functions are provided within __aMSE__ for writing out template versions of the first three files. These mimic the worked example we will use below and have been used to generate some of the built-in data-sets within __aMSE__, which are used to illustrate the operation of the various R functions that have been developed for conducting the simulations. In practice, one would run the _ctrlfiletemplate_, the _datafiletemplate_, and the _zonefiletemplate_ R functions to produce such files and then use them after editing the contents to suit your own fishery and particular run details (such editing would constitute much of the conditioning of the operating model. 
+
+You should not be surprised to find that just as there are _xxxxfiletemplate_ functions there are _readctrlfile_, _readdatafile_, and _readzonefile_ R functions (though eventually these may be hidden within more all encompassing functions). The intent (hope) is that most users should eventually not need to know such details.
+
+The 'resdir' directory (referred to in the R code as _resdir_) is the repository for all the plots and tables that are produced by __aMSE__ for a particular run. When the directories for a particular run are setup and checked (using _setuphtml_), a 'resultTable_runname.csv' file is also created. After that, if desired, each plot or table that are generated can be stored as a '.png' or '.csv' file in the _resdir_, and the filename of each result logged by adding it to the 'resultTable_runname.csv' (the function _logfilename_ is used to add the filename to the list). Actually, now it is best to use the functions _addtable_ and _addplot_ to do thge work for you. At the same time one should add a category (productivity, catches, etc.) and caption (see the help page for _logfilename_, _addplot_, and _addtable_). At any stage in the run, it is then possible to call the function _make_html_ and this will produce a local webpage inside the resdir and one can open it in a local browser (or it can open automatically). This provides for a quick way to visualize the results from a run and allow for the planning of later comparisons.
+
+## A Possible Workflow
+
+There are thus a number of steps involved when running __aMSE__: 
+
+1. Initial decisions on the run directory, the runname, filenames for the zone, data, and HCR files, the spatial structure to be simulated, the zone wide properties (such as larval dispersal rate), the number of simulations to run, the number of years to project the simulation, and other aspects relating to the details of a particular run (see the details of the _ctrl_ and _zone_ objects and data files).
+
+2. Condition the operating model on a fishery using biological characteristics taken from the fishery, or, alternatively, use a hypothetical set of characters as a testbed (see the details of the _constants_ R object).
+
+3. The initiation of the operating model sets up the dynamics in an unfished state at equilibrium. Once that is achieved the properties of the unfished 'fishery' are characterized. This characterization includes a summary of the basic biological properties for each population including the selectivity, maturation, growth, and productivity at all spatial scales (population, SAU, zone). This characterization results in a series of plots and tables all of which are stored in _resdir_ and logged in _resfile_.
+
+4. If the initial depletion for the run is < 1.0, then one uses _dodepletion_ to achieve the desired depletion for the zone. This zone-wide depletion level is found by searching for the harvest rate that, when applied to all populations, depletes the zone to close to the desired initial level. This means that the depletion within each population may differ (the example code within the _getzoneprops_ function illustrates this). 
+
+5. Once again one can characterize the properties of the zone and populations to contrast the fished state with the unfished.
+
+6. Once all this has been achieved then one can move to conducting projections under the control to the selected harvest control rule.
+
+## Initial Decisions
+
+When conducting a management strategy evaluation to compare a set of harvest strategies running such simulations requires a number of decisions about how to condition the model to reflect a particular fishery. The following questions require an answer:
+
+1. How many Spatial Assessment Units are going to be included in the simulated zone?
+
+2. How many separate populations will make up each SAU? 
+
+3. How will the biological properties of each population be allocated? Will they be characterized as if they are linearly arranged along the simulated coast, or will their properties be allocated randomly? Without detailed spatial information about productivity such allocation can be difficult.
+
+4. Will larval dispersal among the populations be set at zero, or will a particular proportion of larval production be allocated to dispersal to adjacent populations.
+
+These questions are important because they determine the spatial structure imposed on the operating model of the fisheries dynamics (see the vignette on MSE for explanations of the components that make up the MSE model). 
+
+The first question about the number of SAUs will depend upon how management is arranged. For example, in Tasmania, a total allowable catch is allocated to each quota zone. But spatial management is taken further by allocating intended catch levels to each statistical block to avoid excessive fishing in any single block should abalone become available in greater numbers than usual (__`r fig_nums("f1",display="cite")`__). Elsewhere, however, it may be the case that management decisions are made at the level of each SAU and the spread of effort or catch among its component populations is decided each year by the industry members. Such possible variation can be accommodated by __aMSE__ by changing the number of SAU and associated populations.
+
+<br>
+
+```{r pressure, echo=FALSE, fig.cap="A caption", out.width = '65%'}
+knitr::include_graphics("C:/Users/User/Dropbox/rcode2/aMSEUse/figures/Tas_Abalone_Zones.png")
+```
+
+`r fig_nums("f1", caption=" A schematic map of the Tasmanian quota zones and associated legal minimum lengths. A trimmed version of the figure on page 189 of Mundy and McAllister (2019).")`
+
+<br>
+
+The number of populations making up each SAU is also an important decision, which is fundamental to the level of detail to which it is possible to take the model's conditioning. The expectation is that, within Tasmania, using the GPS-logger data it will be possible to characterize smaller more homogeneous areas within each statistical block (SAU). These may be characterized using their average relative productivity through the available time-series, or by any other form of data available for the selected  area. In answer to the third question, it should also be possible, using the GPS-logger data, to characterize such populations in terms of relative productivity in sequence around the coastline, which can then be mimicked within the simulation model. If such detailed data are not available then conditioning the operating model might involve randomly allocating biological properties across populations repeatedly until a schema arises that generates data with strong similarities to the observed history of the fishery.
+
+The fourth question about larval dispersal will be influenced by the area and the species being considered. With blacklip abalone in Tasmania mostly larval settlement occurs locally with only minor levels of larval dispersal to populations no large distance away (Miller _et al_., 2008). But even low levels of larval dispersal (the example we will use below has a dispersal rate of 3% - 0.03) have an influence on equilibrium conditions and potential yields, especially when large productive populations lie next to less productive smaller populations.
+
+## Conditioning on Biological Characteristics
+
+An array of biological characteristics are required for each population (see the contents of _data(constants)_). These relate to maturity and growth, and other aspects of productivity such as unfished recruitment levels. Translating the biological data that has been collected from the various fisheries through time into these parameters is a large part of what is entailed in conditioning the operating model. The full requirements will become clear when we discuss the format and contents of the various files required to conduct a model run.
+
+## A Worked Example
+
+We have already gone through quite a few details, much of which will easily have been forgotten, so now we will examine setting up a model in practice and getting it operational, which will include displaying the initial results. In this example, we will be creating directories on your hard-drive. At that point in the code you may wish to change the names of the directory structure so that the example does not upset your, no doubt, neat and tidy 'C:' drive directory layout. Throughout the worked example, we will be calling numerous R functions. 
+
+I recommend that you examine the help page for each of these (for example using _?setupdirs_). To see the code for each function just type the name of the function into the console but without brackets. Finally, to see what arguments each function have you can use _args(function_name)_ or _formals(function_name)_.
+
+```{r echo=TRUE}
+# much of these details should be hidden within high level functions
+# once the code development is complete. 
+starttime <- as.character(Sys.time()) # When did the run start?
+library(aMSE)  # you might check out the help pages for each function
+library(makehtml)
+ # Obviously you should change the resdir to something that suits you!
+ resdir <- "C:/Users/User/Dropbox/rcode2/aMSEUse/out/run1"
+ dirExists(resdir,make=TRUE,verbose=TRUE)
+ # You now need to ensure that there is a control.csv, zone1sau2pop6.csv
+ # and zone1.csv file in the data directory
+ctrlfiletemplate(resdir)
+zonefiletemplate(resdir)
+datafiletemplate(6,resdir,filename="zone1sau2pop6.csv")
+
+ctrl <- checkresdir(resdir)
+runname <- ctrl$runlabel
+zone1 <- readzonefile(resdir,ctrl$zonefile)
+glb <- zone1$globals
+constants <- readdatafile(glb$numpop,resdir,ctrl$datafile)
+
+out <- setupzone(constants, zone1)  # can take a few seconds
+zoneC <- out$zoneC  # the constant part
+zoneD <- out$zoneD  # the dynamic part
+product <- out$product  # the productivity defined
+glb <- out$glb
+
+resfile <- setuphtml(resdir,runname) #needed to formalize the outputs
+ # store the initial objects
+save(ctrl,file=filenametopath(resdir,"ctrl.RData"))
+save(glb,file=filenametopath(resdir,"glb.RData"))
+save(product,file=filenametopath(resdir,"product.RData"))
+save(zoneC,file=filenametopath(resdir,"zoneC.RData"))
+save(zoneD,file=filenametopath(resdir,"zoneD.RData"))
+
+```
+
+<br>
+
+Assuming you got this far then you have successfully generated template files, and we will assume that lots of changes have been made to them to customize them to a particular fishery (see the vignette on conditioning the model). Then you will have read them back into the R environment (in sequence because each depends on its predecessor). Of course, once edited the _ctrl..._, _zone..._, and _datafiletemplate_ function calls will need to be deleted or hashed into comments, otherwise if you run the task again you will over-write your edits. 
+
+### The zone Structure
+
+With all the inputs in the system the next thing to do is to generate the simulated zone. This largest of spatial scales is made up of two components. The first contains the constants relating to the zone and this large object is a list of _numpop_ populations, each of which is a list of all the properties that will not change through the run (see its structure just below). Then there is the dynamic part of the zone, which is a list of matrices and arrays that contain the dynamics, the things that change through time. We will describe the structure of each in some detail once they have been generated. The generation is a two step process, initially an analytical solution to unfished equilibrium conditions is used and then we use the function _findunfished_ to numerically find the equilibrium when there is larval dispersal present in the zone.
+
+```{r}
+# Is there an equilibrium even with larval dispersal?
+zoneDe <- testequil(zoneC,zoneD,glb)
+```
+
+<br>
+
+Generating the zone entails the production of what we have called _zoneC_, _zoneD_, and _product_. Now we can examine their individual structure and components. If we first consider the structure of _product_ this is the simplest of the R objects being a 3-D array of harvest rates vs population statistic vs population.
+
+```{r}
+str(product)
+```
+
+<br> 
+
+Essentially it is a matrix of of _numpop_ matrices with the exploitable biomass, the mature biomass, the effective harvest rate, the catch or yield, the depletion level, and the relative cpue. Each row of values is obtained by running the dynamics with each constant harvest rate (listed in the rownames) until an equilibrium is reached. Thus, by searching for the maximum equilibrium or sustainable yield one can characterize what is required to obtain the $MSY$, the $B_{MSY}$, the $H_{MSY}$ and what lelve of stock depletion will be expected to provide the circumstances that can lead to the maximum sustainable yields.
+
+These values are searched for and then included into each population list within the  _zoneC_ object, which is why generatig that object takes two steps.
+
+
+```{r }
+ # the structure of only one zone is shown
+str(zoneC[[1]],width=pgwid,strict.width="cut")
+```
+
+<br>
+
+The structure of each of the lists within the _zoneC_ object has the constant scalars come first followed by the vectors and matrices. The _Select_ matrix has as many columns as there will be years in the forward projection, which allows for any changes that might occur in the LML during the MSE run. The vector _MatWt_ is simply a shortcut to avoid having to multiple the maturity-at-length vector by the weight-at-length each time the mature or spawning biomass is calculated. Similarly, _SelWt_ is a matrix of selectivity-at-length by weight-at-length to avoid having to repeatedly calculate this every time the exploitable biomass is calculated. Once setup, none of these constants should change through the period of the particular run being made.
+
+The dynamic part of the zone is derived within the _makezone_ function using the constant part. It is more simply a list of matrices and arrays. Thus, the mature biomass, exploitable biomass, catch, and other _Nyrs_ x _numpop_ matrices provide repositories for the projection of each variable. The two arrays, _catchN_ and _Nt_ have dimensions of length-class x year x population, so the complete dynamics is captured within these. Both of these objects _zoneC_ and _zoneD_ will be saved in _resdir_.
+
+```{r}
+str(zoneD,width=pgwid,strict.width="cut")
+```
+
+* for each population, _matureB_ = mature biomass, _exploitB_ = exploitable biomass, _catch_ = catch in tonnes, _harvestR_ = annual harvest rate, _cpue_ is the expected cpue, _recruit_ = recruitment in each year, _deplsB_ = depletion of mature biomass, _depleB_ = depletion of exploitable biomass, _catchN_ = numbers-at-length in the catch each year, and finally, _Nt_ is the population numbers-at-length each year.
+
+<br>
+
+The properties of each population and the zone can be tabulated using the function _getzoneprops_.
+
+```{r}
+unfishprops <- getzoneprops(zoneC=zoneC,zoneD=zoneD,glb=glb,year=1)
+# check out the help for getzoneprops
+```
+
+As well as printing out them out we would want to save the unfished zone properties for later reference. We can do that using the usual _write.table_ function but also by logging the filename used into _resfile_ defined earlier. 
+
+```{r }
+# Use a unique file name and put it into the resdir
+filename <- filenametopath(resdir,"unfishprops.csv")
+write.table(unfishprops,file = filename,sep=",")
+# make up a caption for use when the table is printed
+caption <- paste("The unfished equilibrium properties of the populations ",
+                 "and zone, before any initial depletion.",collapse=" ")
+# The category names the tab in local website where the table would be found 
+logfilename(filename,resfile=resfile,category="Tables",caption)
+```
+
+Here we print out the table to see the typical contents
+
+`r tab_nums("t1", caption=" The summary of a zone's properties for the unfished newly generated zone.")`
+
+```{r echo=FALSE}
+suppressMessages(kable(unfishprops,digits=c(4,4,4,4,4,4,4)))
+
+```
+
+
+## Starting at a Depletion < 1.0
+
+During the comparisons of different harvest strategies it will be necessary to determine how well each HS performs starting from different initial depletion levels. This would be answering questions such as 'How well does the HS allow for stock recovery from a depleted stock?'. The intended initial depletion is included as an entry in the _ctrl_ file. And a function, _dodepletion_ is provided to impose fishing mortality onto the stock so that the zone is depleted until it is close to the intended level. The zoneal depletion is determined from a weighted mean depletion across all populations, where the weighting factor is the relative unfished mature biomass predicted for each population (see the equations describing the operating model). If, for example, we wanted to deplete our initial zone to a level close to 20% unfished mature biomass we would implement the following code (see the function's help page for a description of the six arguments.
+
+```{r}
+zoneDD <- dodepletion(zoneC=zoneC,zoneD=zoneD,glob=glb,depl=0.20,
+                        product=product)
+str(zoneDD,width=pgwid,strict.width="cut")
+```
+
+<br>
+
+If we now run the _getzoneprops_ function, of course we would expect a different set of answers for the depletion of mature and exploitable biomass.
+
+
+```{r}
+initprops <- getzoneprops(zoneC=zoneC,zoneD=zoneDD,glb=glb,year=1)
+# check out the help for getzoneprops
+filename <- filenametopath(resdir,"initprops.csv")
+write.table(initprops,file = filename,sep=",")
+#  or use tmp <- read.csv(file=filename,header=TRUE,row.names=1)
+caption <- paste("The properties of the populations and zone after ",
+                 "the zone has been depleted to its starting point.",collapse=" ")
+logfilename(filename,resfile=resfile,"Tables",caption)
+```
+
+`r tab_nums("t2", caption=" The summary of a zone's properties for the zone once it has been depleted to approximately 0.20B0.")`
+
+```{r echo=FALSE}
+kable(initprops,digits=c(4,4,4,4,4,4,4))
+```
+
+<br>
+
+Notice that while the spawning biomass (=mature biomass = SpbDepl) is 0.1967 (almost 20%B0), the values for each of the populations varies between 0.14 and 0.27, which reflects the effects of the same fishing mortality on the different productivity levels of each population.
+
+
+
+## Fleet Dynamics
+
+The application of any harvest control rule in this complex spatial model will entail the translation of SAU level aspirational catches (which should sum to the zone's TAC), into catches appied to each individual population within each SAU. Of course, the aspirational catches per SAU derived from the harvest control rules (HCR) within each harvest strategy will not be taken exactly, The overall TAC will eventually constrain total catches, but some SAU will experience larger catches than expected, and others will experience smaller catches. SO the applicaiton of catches to populations requires two steps.
+
+The first step is to include variation into the aspirational catches from the HCR and then scale them until their sum equals the original TAC. The second step requires that each SAU's actual catch is distributed across their component populations in some  manner that reflects plausible fleet dynamics.
+
+If $C_{u,HCR}$ is the aspiration catch for each SAU $u$ from the HCR, then the first step on the way to setting the actual SAU catch is to include Normal variation:
+
+$$C_{u}^*=N(C_{u,HCR},\sigma_u)$$
+
+where $C_{u}^*$ is the SAU catch before re-scaling to the TAC, and $\sigma_u$ is the standard deviation of the variation that occurs between the aspiration and the actual catches within SAU's. We need to find a scaling factor $\lambda$ to re-scale the total SAU catches to sum to the agreed TAC:
+
+$$\lambda=\frac{\sum\limits_{u=1}^{nSAU}C_{u}^*}{TAC}$$
+
+Thus, the actual SAU catches, $C_u$, after including variation and re-scaling are:
+
+$$C_u=\frac{C_{u}^*}{\lambda}$$
+
+Each SAU will have various numbers of component populations, so now the problem becomes how to allocate a proportion of the actual SAU catch, $C_u$, to each of those populations. 
+
+At least in the Tasmanian blacklip abalone fishery the relationship between catch-rates and catches is usually observed to be a linear, hence the relation between catches and effort is also linear. Because of this catch-rates are assumed to have at least some influence over the distribution of catches among areas. Observed catch-rates (cpue)
+would naturally be expected to be variable through time and across areas and so are modelled as:
+
+$$I_{t,p}={q_p}\left(B_{t,p}^E\right)^{\lambda}{e^{N(0,\sigma_q)}}$$
+
+where $I_{t,p}$ is the cpue in year $t$ for area $p$, $q_p$ is the catchability coefficient within area $p$, ${B_{t,p}^E}$ is the exploitable biomass in year $t$ and area $p$, with a non-linearity coefficient of $\lambda$, and ${e^{N(0,\sigma_q)}}$ is a Log-Normal random deviate, with $\sigma_p$ being the standard deviation of the catchability coefficient $q_p$. If $\lambda = 1.0$ then the relationship between cpue and exploitble biomass is linear, values other than $\lambda = 1.0$ lead to non-linear relationships. Given how important the use of cpue is in all Australian abalone harvest strategies, this is one assumption whose influence is in need of testing. We are using $p$ as a sub-script for area, because in the conditioning each population within each Spatial Assessment Unit corresponds to a particular area within that SAU. Effectively, area and population are the same thing in the model.
+
+In the operating model, given a total allowable catch (TAC) or quota, if the harvest strategy selected does not allocated the desired level of catch among the different populations (sub-areas) in any given year then some fleet dynamics process will need to be adopted to make that distribution. Given the previous reasoning about cpue, then previous catch rates across the different populations may be considered able to serve as a guide to where to fish in subsequent years. This is a reasonable assumption if the fishery regularly leaves behind a significant proportion of the legal sized animals. However, catch-rates in one year do not give any indication of the availability of undersized abalone that are expected to grow into the fishery. In fisheries that are being fully exploited the advent of new recruits will be an important component of each year’s fishery. Fortunately, the abalone fishery depends on divers literally handling their catch and this automatically provides them an opportunity to identify visually those areas that would be expected to be productive in the next year and also those areas that would be expected to become less productive. Their own observations
+would be made with some error and discussions among divers would also rarely be precise. Such diver expectations provide an indication of exploitable biomass and this can thus be used in an algorithm for distributing catches by area:
+
+$$C_{t,p}=TAC \frac{B_{t,p}^E{e^{N(0,\sigma_d)}}}{\sum\limits_{p=1}^{n}{B_{t,p}^{E}{{e}^{N(0,\sigma_d)}}}}$$
+
+where $C_{t,p}$ is the expected catch in area $p$ in year $t$, $TAC$ is the total allowable catch, and $\sigma_d$ is the standard deviation of the catchability interpreted as the diver’s observations on available biomass in the $n$ areas assessed within the year in question.
+
+This approach reflects a system adopted in Dichmont et al (1999) and by Dichmont and Brown (2010) for distributing a TAC among areas. Their approach was related directly to catch-rates rather than exploitable biomass (despite their equation implying a catchability coefficient of 1.0). However, here the exploitable biomass is directly related to catch-rates (even if not always linearly) and so, especially with the random noise added to the biomass values, this can adequately drive the distribution of catches.
+
+As these proxies are for the diver perception of relative abundance they automatically include their knowledge of catches and catch rates from previous years. It would be expected that as $\sigma_d$ increased the ability of divers to appropriately distribute catches between areas within SAUs would decline, which would, in turn, be expected to lead to poor outcomes for the fishery in terms of depletion levels within SAUs.
+
+In practice, in Tasmania, each SAU is considered separately and an aspirational catch is allocated. After all SAUs within a zone have been considered, the individual predicted catches are summed and the whole is then proposed as a TAC for the following year. Alternatively, a formal harvest strategy developed in Tasmania proposes aspirational catches for each SAU (statistical block) based on a multi-criteria decision analysis founded on different but related fishery performance measures.   
+
+
+# References
+
+Miller, K.J., Maynard, B.T. and C.N. Mundy (2008) Genetic diversity and gene flow in
+collapsed and healthy abalone fisheries. _Molecular Ecology_ __18__:200-211.
+
+Mundy, C. and J. McAllister (2019) _Tasmanian abalone fishery assessment 2018_, Institute of Marine and Antarctic Studies, University of Tasmania. 190p.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -7,7 +7,7 @@
 datafiletemplate(numpop, indir, filename = "tmpdat.csv")
 }
 \arguments{
-\item{numpop}{the totla number of populations in the zone}
+\item{numpop}{the total number of populations in the zone}
 
 \item{indir}{the directory into which to place the data template}
 
