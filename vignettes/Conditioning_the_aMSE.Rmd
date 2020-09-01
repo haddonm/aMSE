@@ -149,7 +149,7 @@ The first question about the number of SAUs will depend upon how management is a
 <br>
 
 ```{r pressure, echo=FALSE, fig.cap="A caption", out.width = '65%'}
-knitr::include_graphics("C:/Users/User/Dropbox/rcode2/aMSEUse/figures/Tas_Abalone_Zones.png")
+knitr::include_graphics("C:/Users/User/Dropbox/A_code/aMSEUse/figures/Tas_Abalone_Zones.png")
 ```
 
 `r fig_nums("f1", caption=" A schematic map of the Tasmanian quota zones and associated legal minimum lengths. A trimmed version of the figure on page 189 of Mundy and McAllister (2019).")`
@@ -177,7 +177,7 @@ starttime <- as.character(Sys.time()) # When did the run start?
 library(aMSE)  # you might check out the help pages for each function
 library(makehtml)
  # Obviously you should change the resdir to something that suits you!
- resdir <- "C:/Users/User/Dropbox/rcode2/aMSEUse/out/run1"
+ resdir <- "C:/Users/User/Dropbox/A_code/aMSEUse/out/run1"
  dirExists(resdir,make=TRUE,verbose=TRUE)
  # You now need to ensure that there is a control.csv, zone1sau2pop6.csv
  # and zone1.csv file in the data directory

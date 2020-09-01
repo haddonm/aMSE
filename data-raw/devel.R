@@ -325,10 +325,7 @@ plot(ab$year,ab$catch,type="l",lwd=2,panel.first=grid(),ylim=c(0,ymax))
 
 
 
-
-
-
-
+# summarize zoneprod ------------------------------------------------------
 
 
 

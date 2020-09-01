@@ -16,7 +16,7 @@ an nSAU+1 column matrix summarizing each SAU and the zone
 }
 \description{
 getsum is used by getsauzone to sum each of the main
-    dynamic variables within zoneD
+    dynamic variables within zoneD, and hence is not exported.
 }
 \examples{
 print("wait on an example")

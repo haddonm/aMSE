@@ -723,8 +723,6 @@ makezone <- function(glob,zoneC) { #glob=glb; zoneC=zoneC;
   return(list(zoneD=ans,zoneC=zoneC))
 } # end of makezone
 
-
-
 #' @title maturity Logistic maturity curve
 #'
 #' @description maturity this uses the logistic function:

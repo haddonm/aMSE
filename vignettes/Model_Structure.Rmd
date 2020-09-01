@@ -2,7 +2,8 @@
 title: "Model Structure"
 author: "Malcolm Haddon"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output: 
+   html_vignette
 vignette: >
   %\VignetteIndexEntry{Model Structure}
   %\VignetteEngine{knitr::rmarkdown}
@@ -48,7 +49,6 @@ MathJax.Hub.Config({
   }
 });
 </script>
-
 
 
 # Introduction
@@ -306,17 +306,17 @@ Smith, A.D.M. (1997) Quantification of objectives, strategies and performance cr
 
 ### Model Dynamics
 
-The model dynamics follows the numbers-at-size through time as they are affected by natural mortality, somatic growth, fishing mortality, and recruitment. The model developed in Haddon _et al_. (2013) and Haddon and Helidoniotis (2013) used separate vectors of numbers-at-size to describe the cryptic and emergent components of each population. Here the model is simplified through the cryptic and emergent components of the population being contained in the single vector $N_t$, where $N_t$ is assumed to be the numbers-at-size (length) at the start of each year $t$. This simplifies the equations and speeds the calculations although with this approach the effect of emergence needs to be included explicitly in some of the equations describing the dynamics. 
+The model dynamics follows the numbers-at-size through time as they are affected by natural mortality, somatic growth, fishing mortality, and recruitment. The model developed in Haddon _et al_. (2013) and Haddon and Helidoniotis (2013) used separate vectors of numbers-at-size to describe the cryptic and emergent components of each population. Here the model is somewhat simplified through the cryptic and emergent components of the population being contained in the single vector $N_t$, where $N_t$ is assumed to be the numbers-at-size (length) at the start of each year $t$. This simplifies the equations and helps speed the calculations although with this approach the effect of emergence needs to be included explicitly in some of the equations relating to mature and exploitable biomass included in the dynamics. 
 
-The model structure adopted has half of the survivorship from natural mortality occurring followed by individual growth, then survivorship from fishing mortality, followed by the remaining survivorship from natural mortality. Finally any recruitment in that year is added to the first few size classes of population vector.  If natural mortality is implemented as half natural mortality, that is $\bf{S}_{h} = e^{-M/2}$, twice a year, with other dynamics between the natural mortality events then the dynamics for the numbers-at-size can be represented in matrix notation as:
+Being based upon difference equations, the operating model implies some within-year dynamics. The model structure adopted has half of the survivorship from natural mortality occurring followed by individual growth, then survivorship from fishing mortality, followed by the remaining survivorship from natural mortality. Finally any recruitment in that year is added to the first few size classes of population vector.  If natural mortality is implemented as half natural mortality, that is $\bf{S_{h}} = e^{-M/2}$, twice a year, with other dynamics between the natural mortality events then the dynamics for the numbers-at-size can be represented in matrix notation as:
 
 $${\bf{N}_{t+1}}={\bf{S}_{h}{AGS}_{h}{N}_{t}+ {R}}$$
 
-where $\bf{A}$ is the annual survivorship following any fishing mortality (which includes selectivity), $\bf{G}$ is the growth transition matrix (see below), $\bf{S_h}$ is half of the natural survivorship, and $\bf{R}$ is the annual recruitment derived from a Beverton-Holt stock recruitment model (see below). 
+where $\bf{A}$ is the annual survivorship following any fishing mortality (which includes selectivity, which includes emergence, see below), $\bf{G}$ is the growth transition matrix (see below), $\bf{S_h}$ is half of the natural survivorship, and $\bf{R}$ is the annual recruitment derived from a Beverton-Holt stock recruitment model (see below). 
 
 ## Model Initiation
 
-At equilibrium, in the absence of fishing mortality (i.e. survivorship from the annual harvest rate, $\textbf{A} = 1.0$):
+At equilibrium, ${\bf{N}^{*}}$, in the absence of fishing mortality (i.e. survivorship from the annual harvest rate, $\textbf{A} = 1.0$, which can therefore be omitted from the initiation):
 
 $${\bf{N}^{*}={S}_{h}{GS}_{h}{N}^{*}+ {R}}$$
 
@@ -349,6 +349,21 @@ $$E_L=\frac{1}{1+e^{-{log}(19)(L-L_E50)/(L_E95-L_E50)}}=\frac{1}{1+e^{-{log}(19)
 
 
 where $E_L$ is the proportion of size-class $L$ that are emergent, and $L_E50$ and $L_E95$ are the usual logistic parameters defining the lengths at which 50% and 95% are emergent. The term $\delta$ is the constant $(L_E95-L_E50)$. Emergence from crypsis only becomes an issue for the dynamics of the model if they are considered to have different natural mortality rates and/or when the emergence curve overlaps with the selectivity curve (which it can do when the LML is low, e.g. 127mm early on in Tasmania, especially on the west coast). Where the selectivity and emergence curves overlap then the proportion remaining in crypsis would act as a refuge, effectively reducing the fishing mortality on those size classes.
+
+### Selectivity
+
+Selectivity, $S_{L,t}$ for length $L$ in year $t$ needs to be defined by year to permit changes in the LML to be reflected in the selectivity by divers. This implies that rather than a single vector of values, a matrix of selectivity values will be required, one column per year. Each year's selectivity is defined as:
+
+
+$$S_{L,t}=\frac{1}{1+{exp \left [ {-{log}(19)( L-{L_{s}}50)/{\delta}} \right ] }}$$
+
+where $\delta=L_s95-L_s50$. 
+
+Strictly, in case the emergence curve overlaps the selectivity curve, to define selectivity we should multiply the selectivity-at-length by the emergence-at-length. That way, if there is overlap it will alter the selectivity appropriately, and if there is no overlap then selectivity will not be affected:
+
+$$S_{L,t}=S_{L,t} \times E_L$$
+
+Example plots:
 
 ### Growth
 
@@ -400,16 +415,6 @@ $$m_L=\frac{exp(\alpha + \beta L)}{1+exp(\alpha + \beta L)}=\frac{1}{1+\left(exp
 
 such curves are generally fitted using a Generalized Linear Model that uses binomial residual errors (see the associated R package __biology__).
 
-### Selectivity
-
-Selectivity, $S_{L,t}$ for length $L$ in year $t$ needs to be defined by year to permit changes in the LML to be reflected in the selectivity by divers. This implies that rather than a single vector of values, a matrix of selectivity values will be required, one column per year. Each year's selectivity is defined as:
-
-
-
-$$S_{L,t}=\frac{1}{1+{exp \left [ {-{log}(19)( L-{L_{s}}50)/{\delta}} \right ] }}$$
-
-where $\delta=L_s95-L_s50$. 
-
 ### Spawning and Exploitable Biomass 
 
 Mature or spawning biomass needs to include numbers-at-size by maturity-at-size and weight-at-size:
@@ -435,7 +440,7 @@ where $N_{L,t}$ is the numbers-at-size $L$ at the start of year $t$.
 Catchability in a stock assessment model can be estimated analytically as:
 
 
-$$q=\exp \left[ \sum\limits_{t=1}^{n}{Ln\left( {{I}_{t}}/B_{t}^{E} \right)}/n \right]$$
+$$q=\exp \left[ \sum\limits_{t=1}^{n}{log\left( {{I}_{t}}/B_{t}^{E} \right)}/n \right]$$
 
 where $n$ is the number of years across which the observed catch rates, $I_t$, and predicted exploitable biomass are considered. In the simulation/operating model a maximum catch rate, $CE_{Max}$ was used to scale the unfished exploitable biomass to generate a catchability value for each population. The maximum catch rates were randomly selected from a pre-specified distribution, and then the following equation used:
 

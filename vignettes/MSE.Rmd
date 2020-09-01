@@ -4,7 +4,7 @@ author: "Malcolm Haddon"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{MSE}
+  %\VignetteIndexEntry{Management Strategy Evaluation}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

@@ -274,7 +274,7 @@ getStr <- function(inline,nb) {
 #' @title getsum sums each of the main dynamics within zoneD
 #'
 #' @description getsum is used by getsauzone to sum each of the main
-#'     dynamic variables within zoneD
+#'     dynamic variables within zoneD, and hence is not exported.
 #'
 #' @param inmat what matrix within zoneD to sum into SAU and zone
 #' @param index a vector containing an index of populations within SAU
@@ -364,6 +364,42 @@ getunFished <- function(inzone,glb) {  # inzone=zone
   nofished[[numpop+1]] <- zoneT
   return(nofished)
 }  # End of getUnfished
+
+
+#' @title getzoneprod zone scale summary of product matrix from doproduction
+#'
+#' @description getzoneprod takes in the product matrix from doproduction and
+#'     sums the mature and exploitable biomassand the total catches. Then it
+#'     recalculates, for the zone, the approximate annual harvest rate, the
+#'     depletion level, and the relative catch rate. The annual harvest rate and
+#'     relative catch rate are simply the arithmetic mean of the values for all
+#'     populations, which the depletion is the column of mature biomass divided
+#'     by the first value = B0
+#'
+#' @param product The productivity array from doproduction containing the
+#'     range of imposed harvest rates, and the resulting outputs for each
+#'     population
+#'
+#' @return a matrix containing the approximate productivity matrix for the zone
+#' @export
+#'
+#' @examples
+#' data(product)
+#' zoneprod <- getzoneprod(product)
+#' head(zoneprod,20)
+getzoneprod <- function(product) {
+  numrow <- dim(product)[1]
+  rows <- rownames(product[,,1])
+  columns <- colnames(product[,,1])
+  numpop <- dim(product)[3]
+  zoneprod <- matrix(0,nrow=numrow,ncol=numpop,dimnames=list(rows,columns))
+  for (i in 1:numpop) zoneprod <- zoneprod + product[,,i]
+  head(zoneprod,20)
+  zoneprod[,"AnnH"] <- apply(product[,"AnnH",],1,mean,na.rm=TRUE)
+  zoneprod[,"Deplet"] <- zoneprod[,"MatB"]/zoneprod[1,"MatB"]
+  zoneprod[,"RelCE"] <- apply(product[,"RelCE",],1,mean,na.rm=TRUE)
+  return(zoneprod)
+} # end of getzoneprod
 
 #' @title getzoneprops extracts the depletion level for a given year
 #'
