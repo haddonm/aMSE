@@ -1,21 +1,7 @@
+#include <stdlib.h> // for NULL
+#include <R_ext/Rdynload.h>
 #include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
-
-//' @title mvC matrix vector product using RcppArmadillo
-//'
-//' @description mvC multiple the vector rhs by the matrix lhs, which
-//'     is used all the time in a length-based stock assessment model.
-//'     mvC appears to be 25 percent faster than R's inmat X invect
-//'     when used in a length-based model context.
-//'
-//' @param inmat the matrix, usualy the growth transition matrix
-//' @param invect the vector to be multiplied. Usually the numbers-at-
-//'     size in a length based model
-//' @export
-// [[Rcpp::export("mvC")]]
-arma::vec mvC(const arma::mat& inmat, const arma::vec& invect) {
-  return inmat * invect;
-}
 
 //' @title invC matrix inversion using RcppArmadillo
 //'
@@ -31,6 +17,22 @@ arma::mat invC(const arma::mat& x) {
   arma::mat y;
   y=arma::inv(x);
   return(y);
+}
+
+//' @title mvC matrix vector product using RcppArmadillo
+//'
+//' @description mvC multiple the vector rhs by the matrix lhs, which
+//'     is used all the time in a length-based stock assessment model.
+//'     mvC appears to be 25 percent faster than R's inmat X invect
+//'     when used in a length-based model context.
+//'
+//' @param inmat the matrix, usualy the growth transition matrix
+//' @param invect the vector to be multiplied. Usually the numbers-at-
+//'     size in a length based model
+//' @export
+// [[Rcpp::export("mvC")]]
+arma::vec mvC(const arma::mat& inmat, const arma::vec& invect) {
+  return inmat * invect;
 }
 
 //' @title svvC sum of two multiplied vectors using RcppArmadillo

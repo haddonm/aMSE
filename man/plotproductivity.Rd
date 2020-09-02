@@ -16,11 +16,11 @@ plotproductivity(resdir, runlabel, product, glb)
 \item{glb}{the globals list}
 }
 \value{
-nothing but it does place a number of png files into resdir
+nothing but it does place five png files into resdir
 }
 \description{
-plotproductivity characterizes each population's yield
-    curve, it also describes the total productivity of the zone.
+plotproductivity characterizes each population's yield curve, it
+  also describes the total productivity of the zone.
 }
 \examples{
 print("this will be quite long when I get to it")

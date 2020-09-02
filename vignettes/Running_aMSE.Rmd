@@ -132,13 +132,13 @@ There are thus a number of steps involved when running __aMSE__:
 
 ## Initial Decisions
 
-When conducting a management strategy evaluation to compare a set of harvest strategies running such simulations requires a number of decisions about how to condition the model to reflect a particular fishery. The following questions require an answer:
+When conducting a management strategy evaluation to compare a set of harvest strategies, running such simulations requires a number of decisions about how to condition the model to reflect a particular fishery. The following questions require an answer:
 
 1. How many Spatial Assessment Units are going to be included in the simulated zone?
 
 2. How many separate populations will make up each SAU? 
 
-3. How will the biological properties of each population be allocated? Will they be characterized as if they are linearly arranged along the simulated coast, or will their properties be allocated randomly? Without detailed spatial information about productivity such allocation can be difficult.
+3. How will the biological properties of each population be allocated? Will they be characterized as if they are linearly arranged along the simulated coast, or will their properties be allocated randomly? Without detailed spatial information about productivity and yield such allocation when mimicking a real fishery can take a lot of trial and error.
 
 4. Will larval dispersal among the populations be set at zero, or will a particular proportion of larval production be allocated to dispersal to adjacent populations.
 

@@ -95,13 +95,11 @@ getlistvar <- function(zoneC,indexvar,indexvar2="") {
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#'  # Not exported, prefix with AbMSE:::
+#'  # Not exported, prefix with aMSE:::
 #'  txtline <- "Depleted, TRUE"
-#'  AbMSE:::getLogical(txtline,nb=1)
+#'  aMSE:::getLogical(txtline,nb=1)
 #'  txtline2 <- "calcthis, TRUE, FALSE"
-#'  AbMSE:::getLogical(txtline2,nb=2)
-#' }
+#'  aMSE:::getLogical(txtline2,nb=2)
 getLogical <- function(inline,nb) {  #inline <- txtline; nb=2
   tmp <- unlist(strsplit(inline,","))
   tmp <- removeEmpty(tmp)

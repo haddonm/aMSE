@@ -21,63 +21,50 @@
 #' @examples
 #' print("this will be quite long when I get to it")
 biology_plots <- function(resdir, runlabel, glb, zoneC) {
-  #      resdir=resdir; zoneC=zoneC; zoneD=zoneD; product=product; glb=glb; runlabel=ctrl$runlabel
   # some globals
   mids <- glb$midpts
   numpop <- glb$numpop
-  resfile <- paste0(resdir,"/resultTable_",runlabel,".csv")
   # Yield vs Spawning biomass-----------------------
   # maturation uses zoneC
   matur <- getlistvar(zoneC,"Maturity")
   rownames(matur) <- mids
-  file <- paste0("maturity_v_Length_",runlabel,".png")
-  filename <- filenametopath(resdir,file)  #  filename=""
-  plotprep(width=7,height=4,newdev=FALSE,filename=filename,cex=0.9,
+  filen <- paste0("maturity_v_Length_",runlabel,".png")
+  plotprep(width=7,height=4,newdev=FALSE,filename=filen,cex=0.9,
            verbose=FALSE)
   plot(mids,matur[,1],type="l",lwd=2,xlab="Shell Length mm",
        ylab="Proportion Mature",panel.first=grid(),xlim=c(50,210))
   for (pop in 2:numpop) lines(mids,matur[,pop],lwd=2,col=pop)
   legend("topright",paste0("P",1:numpop),lwd=3,col=c(1:numpop),bty="n",
          cex=1.2)
-  if (nchar(filename) > 0) dev.off()
   caption <- "The maturity vs length for each population."
-  logfilename(filename,resfile=resfile,"Biology",caption)
+  addplot(filen,resdir=resdir,category="Biology",caption)
 
   # weight-at-length using zoneC--------------------------------------
   WtL <- getlistvar(zoneC,"WtL")
   rownames(WtL) <- mids
-  file <- paste0("Weight_at_Length_",runlabel,".png")
-  filename <- filenametopath(resdir,file)  #  filename=""
-  plotprep(width=7,height=4,newdev=FALSE,filename=filename,cex=0.9,
+  filen <- paste0("Weight_at_Length_",runlabel,".png")
+  plotprep(width=7,height=4,newdev=FALSE,filename=filen,cex=0.9,
            verbose=FALSE)
   plot(mids,WtL[,1],type="l",lwd=2,xlab="Shell Length mm",
        ylab="Weight Kg",panel.first=grid(),xlim=c(110,210))
   for (pop in 2:numpop) lines(mids,WtL[,pop],lwd=2,col=pop)
-  legend("topleft",paste0("P",1:numpop),lwd=3,col=c(1:numpop),bty="n",
-         cex=1.2)
-  if (nchar(filename) > 0) dev.off()
-    caption <- paste0("The weight-at-length for each population. ",
+  legend("topleft",paste0("P",1:numpop),lwd=3,col=c(1:numpop),bty="n",cex=1.2)
+  caption <- paste0("The weight-at-length for each population. ",
                       "The x-axis is constrained to encompass legal sizes.")
-  logfilename(filename,resfile=resfile,"Biology",caption)
+  addplot(filen,resdir=resdir,category="Biology",caption)
 
   # emergence uses zoneC----------------------------------------------
   emerg <- getlistvar(zoneC,"Emergent")
   rownames(emerg) <- mids
-  file <- paste0("Emergence_at_Length_",runlabel,".png")
-  filename <- filenametopath(resdir,file)  #  filename=""
-  plotprep(width=7,height=4,newdev=FALSE,filename=filename,cex=0.9,
+  filen <- paste0("Emergence_at_Length_",runlabel,".png")
+  plotprep(width=7,height=4,newdev=FALSE,filename=filen,cex=0.9,
            verbose=FALSE)
   plot(mids,emerg[,1],type="l",lwd=2,xlab="Shell Length mm",
        ylab="Weight Kg",panel.first=grid(),xlim=c(110,145))
   for (pop in 2:numpop) lines(mids,emerg[,pop],lwd=2,col=pop)
-  legend("topleft",paste0("P",1:numpop),lwd=3,col=c(1:numpop),bty="n",
-         cex=1.2)
-  if (nchar(filename) > 0) dev.off()
-
+  legend("topleft",paste0("P",1:numpop),lwd=3,col=c(1:numpop),bty="n",cex=1.2)
   caption <- "The emergence-at-length for each population. The x-axis is constrained to emphasize differences."
-  logfilename(filename,resfile=resfile,"Biology",caption)
-
-
+  addplot(filen,resdir=resdir,category="Biology",caption)
   # Tabulate biological properties uses zoneC-------------------------
   getvar <- function(indexvar,zone=zoneC) { # indexvar="B0"; zoneC=zoneC
     sau <- getlistvar(zone,"SAU")
@@ -123,14 +110,10 @@ biology_plots <- function(resdir, runlabel, glb, zoneC) {
   }
   res <- round(results,3)
   filen <- paste0("zonebiology_",runlabel,".csv")
-  filename <- filenametopath(resdir,filen)
-  write.table(res,file = filename,sep=",")
   caption <- paste0("Population SAU and Zonal Biological Properties. ",
               "For 'M' 'MSYDepl' and 'bLML' SAU and total is an average ",
               "weighted relative to the proportion of SAU or total B0.")
-  logfilename(filename,resfile=resfile,"Tables",caption)
-
-
+  addtable(res,filen,resdir=resdir,category="Tables",caption)
 } # end of biology_plots
 
 
@@ -151,17 +134,14 @@ biology_plots <- function(resdir, runlabel, glb, zoneC) {
 #' @examples
 #' print("this will be quite long when I get to it")
 numbersatsize <- function(resdir, runlabel, glb, zoneD) {
-  #      resdir=resdir; zoneD=zoneD; glb=glb; runlabel=ctrl$runlabel
   # some globals
   mids <- glb$midpts
   numpop <- glb$numpop
-  resfile <- paste0(resdir,"/resultTable_",runlabel,".csv")
   # initial numbers-at-size uses zoneD--------------------------------
   Nt <- zoneD$Nt[,1,]/1000.0
   Ntt <- rowSums(zoneD$Nt[,1,])/1000.0  # totals
-  file <- paste0("Total_Initial_Numbers-at-Size_",runlabel,".png")
-  filename <- filenametopath(resdir,file)  #  filename=""
-  plotprep(width=7,height=6,newdev=FALSE,filename=filename,cex=0.9,verbose=FALSE)
+  filen <- paste0("Initial_N-at-Size_",runlabel,".png")
+  plotprep(width=7,height=6,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
   parset(plots=c(2,1))
   plot(mids[5:105],Ntt[5:105],type="l",lwd=2,xlab="Shell Length mm (5 - 210mm)",
        ylab="Numbers-at_size '000s",panel.first=grid())
@@ -172,12 +152,10 @@ numbersatsize <- function(resdir, runlabel, glb, zoneD) {
   abline(h=0.0,col="darkgrey")
   legend("topright",paste0("P",1:numpop),lwd=3,col=c(1:numpop),bty="n",
          cex=1.2)
-  if (nchar(filename) > 0) dev.off()
     caption <- "The numbers-at-size for the whole zone and for each population separately. The recruitment numbers are omitted for clarity."
-  logfilename(filename,resfile=resfile,"NumSize",caption)
+  addplot(filen,resdir=resdir,category="NumSize",caption)
 
 } # end of numbersatsize
-
 
 #' @title compzoneN compares numbers-at-size before/after depletion
 #'
@@ -204,7 +182,7 @@ compzoneN <- function(unfN,curN,glb,yr,depl,LML=0,resdir="") {
   mids <- glb$midpts
   filen <- ""
   if (nchar(resdir) > 0) {
-    filen <- paste0("zone_numbers-at-size_yr",yr,".png")
+    filen <- paste0("zone_n-at-size_yr",yr,".png")
     filen <- filenametopath(resdir,filen)
   }
   plotprep(width=7, height=4.5, filename=filen,verbose=FALSE)
@@ -220,70 +198,63 @@ compzoneN <- function(unfN,curN,glb,yr,depl,LML=0,resdir="") {
 
 #' @title plotproductivity characterizes each population's yield curve
 #'
-#' @description plotproductivity characterizes each population's yield
-#'     curve, it also describes the total productivity of the zone.
+#' @description plotproductivity characterizes each population's yield curve, it
+#'   also describes the total productivity of the zone.
 #'
 #' @param resdir the results directory
 #' @param runlabel the runlabel, ideally from the ctrl object
 #' @param product the productivity 3-D array
 #' @param glb the globals list
 #'
-#' @return nothing but it does place a number of png files into resdir
+#' @return nothing but it does place five png files into resdir
 #' @export
 #'
 #' @examples
 #' print("this will be quite long when I get to it")
 plotproductivity <- function(resdir,runlabel,product,glb) {
-  #   product=product; glb=glb; runlabel=ctrl$runlabel; resdir=resdir
   # All these plots only use the product array
   xval <- findmsy(product)
   numpop <- glb$numpop
-  resfile <- paste0(resdir,"/resultTable_",runlabel,".csv")
   # Yield vs Spawning biomass --------
-  file <- paste0("production_SpB_",runlabel,".png")
-  filename <- filenametopath(resdir,file)  #  filename=""
+  filen <- paste0("production_SpB_",runlabel,".png")
   plotprod(product,xname="MatB",xlab="Spawning Biomass t",
-           ylab="Production t",filename = filename)
+           ylab="Production t",filename = filen,devoff=FALSE)
   caption <- paste0("The production curve relative to each population's ",
                     "spawning biomass. The vertical lines identify the ",
                     "Bmsy values.")
-  logfilename(filename,resfile=resfile,"Production",caption)
+  addplot(filen,resdir=resdir,category="Production",caption)
 
   # Yield vs Annual Harvest Rate
-  file <- paste0("production_AnnH_",runlabel,".png")
-  filename <- filenametopath(resdir,file)  #  filename=""
-  plotprod(product,xname="AnnH",xlab="Annual Harvest Rate",filename = filename)
+  filen <- paste0("production_AnnH_",runlabel,".png")
+  plotprod(product,xname="AnnH",xlab="Annual Harvest Rate",filename = filen,
+           devoff=FALSE)
   caption <- paste0("The production curve relative to the Annual ",
                     "Harvest Rate applied to each population. The ",
                     "vertical lines identify the Hmsy values.")
-  logfilename(filename,resfile=resfile,"Production",caption)
+  addplot(filen,resdir=resdir,category="Production",caption)
 
   # plot of Yield vs population depletion
-  file <- paste0("production_Deplet_",runlabel,".png")
-  filename <- filenametopath(resdir,file)
+  filen <- paste0("production_Deplet_",runlabel,".png")
   plotprod(product,xname="Deplet",xlab="Population Depletion Level",
-           filename = filename,devoff=FALSE)
+           filename = filen,devoff=FALSE)
   for (pop in 1:numpop) abline(v=xval[pop,"Deplet"],lwd=2,col=pop)
-  if (nchar(filename) > 0) dev.off()
   caption <- paste0("The production curve relative to the depletion ",
               "level of each population. The vertical lines identify ",
               "the Depletion level giving rise to the MSY.")
-  logfilename(filename,resfile=resfile,"Production",caption)
+  addplot(filen,resdir=resdir,category="Production",caption)
 
   # plot of Yield vs population depletion but constrained to within
   # 0.2 and 0.35 levels, to illustrate nearly flat rpoduction curve
   # and more clearly identify the population depletion at MSY
-  file <- paste0("production_Deplet_0.2_0.35_",runlabel,".png")
-  filename <- filenametopath(resdir,file)
+  filen <- paste0("production_Deplet_0.2_0.35_",runlabel,".png")
   plotprod(product,xname="Deplet",xlab="Population Depletion Level",
-           xlimit=c(0.2,0.35),filename = filename,devoff=FALSE)
+           xlimit=c(0.2,0.35),filename = filen,devoff=FALSE)
   for (pop in 1:numpop) abline(v=xval[pop,"Deplet"],lwd=2,col=pop)
-  if (nchar(filename) > 0) dev.off()
   caption <- paste0("The production curve relative to the depletion ",
                     "level of each population. Here the x-axis is ",
                     "shortened to clarify the flatness of the production ",
                     "curve about the MSY points.")
-  logfilename(filename,resfile=resfile,"Production",caption)
+  addplot(filen,resdir=resdir,category="Production",caption)
 
   # Now do total production --------------------------------------------
   yield <- rowSums(product[,"Catch",])
@@ -293,9 +264,8 @@ plotproductivity <- function(resdir,runlabel,product,glb) {
   pickmsy <- which.max(yield)
   maxy <- getmax(yield)
 
-  file <- paste0("production_SpB_Total_",runlabel,".png")
-  filename <- filenametopath(resdir,file)  #  filename=""
-  plotprep(width=7,height=6,newdev=FALSE,filename=filename,verbose=FALSE)
+  filen <- paste0("production_SpB_Total_",runlabel,".png")
+  plotprep(width=7,height=6,newdev=FALSE,filename=filen,verbose=FALSE)
   parset(plots=c(3,2),cex=0.9)
   plot(spb,yield,type="l",lwd=2,col=1,xlab="Spawning Biomass t",
        ylab="Production t",panel.first = grid(),
@@ -328,11 +298,8 @@ plotproductivity <- function(resdir,runlabel,product,glb) {
        ylim=c(0,1.05),yaxs="i")
   abline(h=depletMSY[pickmsy],col=2,lwd=2)
   abline(v=Ht[pickmsy],col=2,lwd=2)
-  if (nchar(filename) > 0) dev.off()
   caption <- paste0("The production curves for the zone. Also the ",
               "relationships between spawning biomass depletion and ",
               "harvest rate.")
-  logfilename(filename,resfile=resfile,"Production",caption)
-
-
+  addplot(filen,resdir=resdir,category="Production",caption)
 } # end of plotproductivity

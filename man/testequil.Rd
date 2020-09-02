@@ -41,6 +41,6 @@ testequil runs a given zone for Nyrs at the given
  zoneD <- ans$zoneD
  ans <- modzoneC(zoneC,zoneD,glb)
  zoneC <- ans$zoneC  # zone constants
- zoneDe <- testequil(zoneC=zoneC,zoneD=zoneD,glob=glb)
-}    #zoneC=testzoneC; zoneD=testzoneD; glob=glb; inH=0.0; verbose=TRUE
+ zoneDe <- testequil(zoneC=zoneC,zoneD=zoneD,glb=glb)
+}    #zoneC=zoneC; zoneD=zoneD; glb=glb; inH=0.0; verbose=TRUE
 }

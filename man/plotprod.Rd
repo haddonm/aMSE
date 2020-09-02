@@ -13,7 +13,7 @@ plotprod(
   ylab = "Production t",
   font = 7,
   filename = "",
-  devoff = TRUE
+  devoff = FALSE
 )
 }
 \arguments{

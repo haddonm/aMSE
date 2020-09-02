@@ -35,7 +35,7 @@
 #' abline(v=stat[,"MatB"],col=1:6,lwd=2)
 plotprod <- function(product,xname="MatB",yname="Catch",xlimit=NA,
                      xlab="Mature Biomass t",ylab="Production t",
-                     font=7,filename="",devoff=TRUE) {
+                     font=7,filename="",devoff=FALSE) {
   x <- product[,xname,]
   y <- product[,yname,]
   numpop <- ncol(x)

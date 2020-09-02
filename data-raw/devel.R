@@ -7,10 +7,14 @@ library(microbenchmark)
 
 #Rprof()
 # read data files ----------------------------------------------------
- resdir <- "./../../rcode2/aMSEUse/out/run1"
+ resdir <- "./../../A_code/aMSEUse/out/run1"
  dirExists(resdir,make=TRUE,verbose=TRUE)
  # You now need to ensure that there is a control.csv, zone1sau2pop6.csv
  # and zone1.csv file in the data directory
+ ctrlfiletemplate(resdir)
+ zonefiletemplate(resdir)
+ datafiletemplate(6,resdir,filename="zone1sau2pop6.csv")
+
  ctrl <- checkresdir(resdir)
  runname <- ctrl$runlabel
  zone1 <- readzonefile(resdir,ctrl$zonefile)

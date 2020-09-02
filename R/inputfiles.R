@@ -40,6 +40,8 @@ ctrlfiletemplate <- function(indir,filename="control.csv") {
        file=filename,append=TRUE)
    cat("hcrfile, HCRfile.csv, HCR details file name \n",file=filename,
        append=TRUE)
+   cat("project, 0, project model or condition (0 = FALSE = condition) \n",
+       file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
    cat("zoneCOAST \n",file=filename,append=TRUE)
@@ -291,6 +293,7 @@ readctrlfile <- function(indir,infile="control.csv") {
    datafile <- getStr(indat[begin+2],1)
    hcrfile <- getStr(indat[begin+3],1)
    outdir <- getStr(indat[begin+4],1)
+   project <- getsingleNum("project",indat)
 
    batch <- getsingleNum("batch",indat)
    reps <- getsingleNum("replicates",indat)
@@ -298,10 +301,10 @@ readctrlfile <- function(indir,infile="control.csv") {
    withsigR <- getsingleNum("withsigR",indat)
    withsigB <- getsingleNum("withsigB",indat)
    withsigCE <- getsingleNum("withsigCE",indat)
-   outctrl <- list(runlabel,zonefile,datafile,hcrfile,outdir,
+   outctrl <- list(runlabel,zonefile,datafile,hcrfile,outdir,project,
                    batch,reps,initdepl,withsigR,withsigB,withsigCE)
    names(outctrl) <- c("runlabel","zonefile","datafile","hcrfile",
-                       "outdir","batch","reps","initdepl",
+                       "outdir","project","batch","reps","initdepl",
                        "withsigR","withsigB","withsigCE")
    return(outctrl)
 } # end of readctrlfile

@@ -3,40 +3,43 @@
 # a minimal example
 starttime <- as.character(Sys.time())
 library(aMSE)
+library(rutilsMH)
+library(makehtml)
 # Obviously you should modify the resdir to suit your own computer
-resdir <- "./../../rcode2/aMSEUse/out/testrun"
+resdir <- "./../../A_code/aMSEUse/out/run1"
 dirExists(resdir,make=TRUE,verbose=TRUE)
 # You now need to ensure that there is a control.csv, zone1sm\au2pop6.csv
 # and region1.csv file in the data directory
 ctrlfiletemplate(resdir)
-regionfiletemplate(resdir)
+zonefiletemplate(resdir)
 datafiletemplate(6,resdir,filename="zone1sau2pop6.csv")
+
 ctrl <- checkresdir(resdir)
 runname <- ctrl$runlabel
-region1 <- readregionfile(resdir,ctrl$regionfile)
-glb <- region1$globals
+zone1 <- readzonefile(resdir,ctrl$zonefile)
+glb <- zone1$globals     # glb without the movement matrix
 constants <- readdatafile(glb$numpop,resdir,ctrl$datafile)
 
-out <- setupregion(constants, glb, region1) # make operating model
-regionC <- out$regionC
-regionD <- out$regionD
+out <- setupzone(constants,zone1) # make operating model
+zoneC <- out$zoneC
+zoneD <- out$zoneD
+glb <- out$glb        # glb now has the movement matrix
 product <- out$product     # important bits usually saved in resdir
           # did the larval dispersal level disturb the equilibrium?
-regDe <- testequil(regionC,regionD,glb)
+regDe <- testequil(zoneC,zoneD,glb)
 
 resfile <- setuphtml(resdir,runname)# prepare to save and log results
 
 plotproductivity(resdir,runname,product,glb)
-biology_plots(resdir, runname, glb, regionC)
-numbersatsize(resdir, runname, glb, regionD)
+biology_plots(resdir, runname, glb, zoneC)
+numbersatsize(resdir, runname, glb, zoneD)
 
 endtime <- as.character(Sys.time())
 
 reportlist <- list(runname=runname,
                    starttime=starttime,endtime=endtime,
-                   regionC=regionC, regionD=regionD, product=product,
-                   glb=glb,constants=constants
-)
+                   zoneC=zoneC, zoneD=zoneD, product=product,
+                   glb=glb,constants=constants)
 
 runnotes <- "This is a bare-bones example."
 # If you unhash this component it will generate a local website inside

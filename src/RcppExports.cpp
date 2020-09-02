@@ -6,6 +6,17 @@
 
 using namespace Rcpp;
 
+// invC
+arma::mat invC(const arma::mat& x);
+RcppExport SEXP _aMSE_invC(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(invC(x));
+    return rcpp_result_gen;
+END_RCPP
+}
 // mvC
 arma::vec mvC(const arma::mat& inmat, const arma::vec& invect);
 RcppExport SEXP _aMSE_mvC(SEXP inmatSEXP, SEXP invectSEXP) {
@@ -15,17 +26,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::mat& >::type inmat(inmatSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type invect(invectSEXP);
     rcpp_result_gen = Rcpp::wrap(mvC(inmat, invect));
-    return rcpp_result_gen;
-END_RCPP
-}
-// invC
-arma::mat invC(const arma::mat& x);
-RcppExport SEXP _aMSE_invC(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::mat& >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(invC(x));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -43,8 +43,8 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_aMSE_mvC", (DL_FUNC) &_aMSE_mvC, 2},
     {"_aMSE_invC", (DL_FUNC) &_aMSE_invC, 1},
+    {"_aMSE_mvC", (DL_FUNC) &_aMSE_mvC, 2},
     {"_aMSE_svvC", (DL_FUNC) &_aMSE_svvC, 2},
     {NULL, NULL, 0}
 };

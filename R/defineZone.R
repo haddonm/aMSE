@@ -1434,8 +1434,8 @@ STM <- function(p,mids) { #    # p <- popparam[1:4]; mids <- midpts
 #'  zoneD <- ans$zoneD
 #'  ans <- modzoneC(zoneC,zoneD,glb)
 #'  zoneC <- ans$zoneC  # zone constants
-#'  zoneDe <- testequil(zoneC=zoneC,zoneD=zoneD,glob=glb)
-#' }    #zoneC=testzoneC; zoneD=testzoneD; glob=glb; inH=0.0; verbose=TRUE
+#'  zoneDe <- testequil(zoneC=zoneC,zoneD=zoneD,glb=glb)
+#' }    #zoneC=zoneC; zoneD=zoneD; glb=glb; inH=0.0; verbose=TRUE
 testequil <- function(zoneC,zoneD,glb,inH=0.0,verbose=TRUE) {
   Nyrs <- glb$Nyrs
   Nclass <- glb$Nclass

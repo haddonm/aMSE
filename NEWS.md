@@ -33,3 +33,5 @@
 * 10/08/2020 0.0.0.7950 Added to some of the vignettes and made minor improvements to some functions.
 
 * 01/09/2020 0.0.0.7900 Added more to the Running the MSE vignette, which included the addition of a getzoneprod to summarize the productivity of the whole zone.
+
+* 02/09/2020 0.0.0.7850 Modified generate_results.r bare-bones.r, devel.r, and README.Rmd to reflect changes I have made both in makehtml and in aMSE.

@@ -19,11 +19,9 @@ a vector of length nb
 getLogical obtains nb logicals from an input line
 }
 \examples{
-\dontrun{
- # Not exported, prefix with AbMSE:::
+ # Not exported, prefix with aMSE:::
  txtline <- "Depleted, TRUE"
- AbMSE:::getLogical(txtline,nb=1)
+ aMSE:::getLogical(txtline,nb=1)
  txtline2 <- "calcthis, TRUE, FALSE"
- AbMSE:::getLogical(txtline2,nb=2)
-}
+ aMSE:::getLogical(txtline2,nb=2)
 }
