@@ -79,9 +79,9 @@ library(aMSE)
 library(rutilsMH)
 library(makehtml)
 # Obviously you should modify the resdir to suit your own computer
-resdir <- "./../../A_code/aMSEUse/out/testrun"
+resdir <- "./../../A_code/aMSEUse/out/run1"
 dirExists(resdir,make=TRUE,verbose=TRUE)
-#> ./../../A_code/aMSEUse/out/testrun :  exists
+#> ./../../A_code/aMSEUse/out/run1 :  exists
 # The following function calls will ensure that there is a control.csv,
 # a zone1sm\au2pop6.csv
 # and region1.csv file in the data directory
@@ -108,11 +108,11 @@ regDe <- testequil(zoneC,zoneD,glb)
 #> [1] recruitment Stable
 #> [1] spawning depletion Stable
 
-resfile <- setuphtml(resdir,runname)# prepare to save and log results
+resfile <- setuphtml(resdir)# prepare to save and log results
 
-plotproductivity(resdir,runname,product,glb)
-biology_plots(resdir, runname, glb, zoneC)
-numbersatsize(resdir, runname, glb, zoneD)
+plotproductivity(resdir,product,glb)
+biology_plots(resdir, glb, zoneC)
+numbersatsize(resdir, glb, zoneD)
 
 endtime <- as.character(Sys.time())
 
@@ -126,7 +126,7 @@ runnotes <- "This is a bare-bones example."
 # inside resdir and open it so you can see the results so far.
 # make_html(replist=reportlist,resdir=resdir,width=500,
 #          openfile=TRUE,runnotes=runnotes,verbose=FALSE,
-#          packagename="aMSE",analysis="aMSE")
+#          packagename="aMSE",htmlname="testrun")
 ```
 
 See the vignette Running\_aMSE.Rmd for a more detailed example.

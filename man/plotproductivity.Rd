@@ -4,12 +4,10 @@
 \alias{plotproductivity}
 \title{plotproductivity characterizes each population's yield curve}
 \usage{
-plotproductivity(resdir, runlabel, product, glb)
+plotproductivity(resdir, product, glb)
 }
 \arguments{
 \item{resdir}{the results directory}
-
-\item{runlabel}{the runlabel, ideally from the ctrl object}
 
 \item{product}{the productivity 3-D array}
 

@@ -197,7 +197,7 @@ zoneD <- out$zoneD  # the dynamic part
 product <- out$product  # the productivity defined
 glb <- out$glb
 
-resfile <- setuphtml(resdir,runname) #needed to formalize the outputs
+resfile <- setuphtml(resdir) #needed to formalize the outputs
  # store the initial objects
 save(ctrl,file=filenametopath(resdir,"ctrl.RData"))
 save(glb,file=filenametopath(resdir,"glb.RData"))
@@ -265,13 +265,13 @@ As well as printing out them out we would want to save the unfished zone propert
 
 ```{r }
 # Use a unique file name and put it into the resdir
-filename <- filenametopath(resdir,"unfishprops.csv")
+filename <- "unfishprops.csv"
 write.table(unfishprops,file = filename,sep=",")
 # make up a caption for use when the table is printed
 caption <- paste("The unfished equilibrium properties of the populations ",
                  "and zone, before any initial depletion.",collapse=" ")
 # The category names the tab in local website where the table would be found 
-logfilename(filename,resfile=resfile,category="Tables",caption)
+addtable(unfishprops,filen=filename,resdir=resdir,category="Tables",caption)
 ```
 
 Here we print out the table to see the typical contents
@@ -302,12 +302,12 @@ If we now run the _getzoneprops_ function, of course we would expect a different
 ```{r}
 initprops <- getzoneprops(zoneC=zoneC,zoneD=zoneDD,glb=glb,year=1)
 # check out the help for getzoneprops
-filename <- filenametopath(resdir,"initprops.csv")
+filename <- "initprops.csv"
 write.table(initprops,file = filename,sep=",")
 #  or use tmp <- read.csv(file=filename,header=TRUE,row.names=1)
 caption <- paste("The properties of the populations and zone after ",
                  "the zone has been depleted to its starting point.",collapse=" ")
-logfilename(filename,resfile=resfile,"Tables",caption)
+addtable(initprops,filen=filename,resdir=resdir,"Tables",caption)
 ```
 
 `r tab_nums("t2", caption=" The summary of a zone's properties for the zone once it has been depleted to approximately 0.20B0.")`

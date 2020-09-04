@@ -4,12 +4,10 @@
 \alias{numbersatsize}
 \title{numbersatsize plots details of the numbers-at-size}
 \usage{
-numbersatsize(resdir, runlabel, glb, zoneD)
+numbersatsize(resdir, glb, zoneD)
 }
 \arguments{
 \item{resdir}{the results directory}
-
-\item{runlabel}{the runlabel, ideally from the ctrl object}
 
 \item{glb}{the globals list}
 

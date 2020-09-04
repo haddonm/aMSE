@@ -15,7 +15,6 @@ zonefiletemplate(resdir)
 datafiletemplate(6,resdir,filename="zone1sau2pop6.csv")
 
 ctrl <- checkresdir(resdir)
-runname <- ctrl$runlabel
 zone1 <- readzonefile(resdir,ctrl$zonefile)
 glb <- zone1$globals     # glb without the movement matrix
 constants <- readdatafile(glb$numpop,resdir,ctrl$datafile)
@@ -28,16 +27,15 @@ product <- out$product     # important bits usually saved in resdir
           # did the larval dispersal level disturb the equilibrium?
 regDe <- testequil(zoneC,zoneD,glb)
 
-resfile <- setuphtml(resdir,runname)# prepare to save and log results
+resfile <- setuphtml(resdir)# prepare to save and log results
 
-plotproductivity(resdir,runname,product,glb)
-biology_plots(resdir, runname, glb, zoneC)
-numbersatsize(resdir, runname, glb, zoneD)
+plotproductivity(resdir,product,glb)
+biology_plots(resdir, glb, zoneC)
+numbersatsize(resdir, glb, zoneD)
 
 endtime <- as.character(Sys.time())
 
-reportlist <- list(runname=runname,
-                   starttime=starttime,endtime=endtime,
+reportlist <- list(starttime=starttime,endtime=endtime,
                    zoneC=zoneC, zoneD=zoneD, product=product,
                    glb=glb,constants=constants)
 
@@ -45,5 +43,6 @@ runnotes <- "This is a bare-bones example."
 # If you unhash this component it will generate a local website inside
 # resdir and open it so you can see the results so far.
  make_html(replist=reportlist,resdir=resdir,width=500,
-          openfile=TRUE,runnotes=runnotes,verbose=FALSE)
+          openfile=TRUE,runnotes=runnotes,verbose=FALSE,
+          packagename = "aMSE",htmlname="testrun")
 

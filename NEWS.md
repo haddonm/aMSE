@@ -35,3 +35,5 @@
 * 01/09/2020 0.0.0.7900 Added more to the Running the MSE vignette, which included the addition of a getzoneprod to summarize the productivity of the whole zone.
 
 * 02/09/2020 0.0.0.7850 Modified generate_results.r bare-bones.r, devel.r, and README.Rmd to reflect changes I have made both in makehtml and in aMSE.
+
+* 04/09/2020 0.0.0.7800 Have now stabilized makehtml and the places in aMSE where it is used (generate_results.R). Now it behaves as it should and it will be simple to add further plots and tables to the characterization.
