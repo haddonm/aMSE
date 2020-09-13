@@ -26,7 +26,6 @@ options("show.signif.stars"=FALSE,
         "max.print"=50000,
         "width"=240)
 
-library(diagrams)
 library(aMSE)
 library(knitr)
 library(captioner)
@@ -104,54 +103,9 @@ To date, one reason that running an MSE remains relatively specialized and esote
 
 <br>
 
-```{r fig.width=6.9, fig.height=4, echo=FALSE}
-canvas(xstart=1,xfinish=95,ystart=58,yfinish=93.5)
-# top row
-makerect(left=2,xinc=27,top=90,yinc=6)
-text(4,88,"Implementation of",cex=1.2,pos=4)
-text(2,86,"Management Options",cex=1.2,pos=4)
-makerect(left=40,xinc=55,top=93,yinc=10.5)
-text(52,91.5,"Operating Model",cex=1.4,pos=4)
-makerect(left=43,xinc=15,top=90,yinc=6)
-text(42.5,88,"Exploitation",cex=1.2,pos=4)
-text(45,86,"Fishery",cex=1.2,pos=4)
-makerect(left=68,xinc=25,top=90,yinc=6)
-text(69.5,88,"Spatial Structure",cex=1.2,pos=4)
-text(68,86,"and other dynamics",cex=1.2,pos=4)
-arrows(x0=29,y0=87,x1=43,y1=87,length=0.1,angle=30,lwd=4)
-arrows(x0=60,y0=88.5,x1=66,y1=88.5,length=0.1,angle=30,lwd=3)
-arrows(x0=66,y0=86,x1=60,y1=86,length=0.1,angle=30,lwd=3)
-# middle row
-text(23,76,"FeedBack",cex=1.2,pos=4)
-text(25,74,"Loop",cex=1.2,pos=4)
-makerect(left=43,xinc=15,top=78,yinc=6)
-text(43,76,"Simulated",cex=1.2,pos=4)
-text(42,74,"Fishery Data",cex=1.2,pos=4)
-makerect(left=70,xinc=20,top=78,yinc=6)
-text(72,76,"Biological",cex=1.2,pos=4)
-text(70,74,"Characteristics",cex=1.2,pos=4)
-arrows(x0=50,y0=84,x1=50,y1=78,length=0.1,angle=30,lwd=3)
-arrows(x0=80,y0=78,x1=80,y1=84,length=0.1,angle=30,lwd=3)
-arrows(x0=38,y0=77,x1=38,y1=73,length=0.1,angle=30,lwd=2)
-arrows(x0=21,y0=73,x1=21,y1=77,length=0.1,angle=30,lwd=2)
-arrows(x0=27.5,y0=80,x1=32.5,y1=80,length=0.1,angle=30,lwd=2)
-arrows(x0=32.5,y0=70,x1=27.5,y1=70,length=0.1,angle=30,lwd=2)
-# third row
-makerect(left=2,xinc=65,top=68,yinc=10.5)
-text(12,59,"Harvest Strategy",cex=1.4,pos=4)
-makerect(left=38,xinc=28,top=67,yinc=8.5)
-text(40,65,"Stock Assessment:",cex=1.2,pos=4)
-text(41,62.5,"Calculation of",cex=1.2,pos=4)
-text(38,60,"performance measures",cex=1.2,pos=4)
-makerect(left=3,xinc=27,top=64,yinc=3)
-text(3,62.5,"Harvest Control Rule",cex=1.2,pos=4)
-arrows(x0=50,y0=72,x1=50,y1=67,length=0.1,angle=30,lwd=3)
-arrows(x0=38,y0=62.5,x1=30,y1=62.5,length=0.1,angle=30,lwd=3)
-arrows(x0=18,y0=64,x1=18,y1=84,length=0.1,angle=30,lwd=3)
-t <- seq(0,2*pi,length=50) 
-coords <- t(rbind( 29+sin(t)*12, 75+cos(t)*(1-35.5/101)*12)) 
-points(coords[,1],coords[,2],cex=1.0,pch=1)
 
+```{r  echo=FALSE, out.width = '80%'}
+knitr::include_graphics("C:/Users/User/Dropbox/A_Code/aMSEUse/figures/structure_of_MSE.png")
 ```
 
 `r fig_nums("a1", caption=" A diagrammatic representation of the main components of an MSE simulation framework, such as used with abalone, and how the feedback cycle operates during the simulations. Redrawn from Haddon et al, 2013.")`
@@ -168,26 +122,9 @@ The original abalone MSE (Haddon _et al_, 2013) was designed for use with the Ta
 
 Unfortunately, in fisheries management in general, and abalone fisheries in particular, the terminology used to describe different details and concepts is not standardized across jurisdictions. Thus, while the term _Zone_ is used widely to describe a geographical area over which a particular quota may be taken, the names given to sub-zones within zones differs between jurisdictions. The statistical _block_ from Tasmania is not equivalent to the _reef-code_ from Victoria, or _spatial management unit_ from South Australia. Similarly, in Tasmania, the phrase the _Legal Minimum Length_ (LML) is used to define the legal size limits, which is equivalent to the _Minimum Legal Length_, and other such abbreviations from other jurisdictions.
 
-```{r fig.width=6.9, fig.height=3, echo=FALSE}
-canvas(xstart=3,xfinish=88,ystart=55,yfinish=91)
-# top row
-makerect(left=2,xinc=87,top=90,yinc=35)
-text(3,88,"zone",cex=1.6,pos=4)
-makerect(left=4,xinc=25,top=85,yinc=28)
-makerect(left=33,xinc=25,top=85,yinc=28)
-makerect(left=62,xinc=25,top=85,yinc=28)
-text(4,83,"SAU",cex=1.4,pos=4)
-text(33,83,"SAU",cex=1.4,pos=4)
-text(62,83,"SAU",cex=1.4,pos=4)
-makerect(5,11,81,11); makerect(17,11,81,11)
-makerect(5,11,69,11); makerect(17,11,69,11)
-makerect(34,11,81,11); #makerect(46,11,81,11)
-makerect(34,11,69,11); makerect(46,11,69,11)
-makerect(63,11,81,11); makerect(75,11,81,11)
-makerect(63,11,69,11); #makerect(75,11,69,11)
-text(4.25,79,"Population",cex=1.0,pos=4)
-text(33.25,79,"Population",cex=1.0,pos=4)
-text(62.25,79,"Population",cex=1.0,pos=4)
+
+```{r  echo=FALSE, out.width = '80%'}
+knitr::include_graphics("C:/Users/User/Dropbox/A_Code/aMSEUse/figures/structure_of_zone.png")
 ```
 
 `r fig_nums("a2", caption=" A diagrammatic representation of a simulated zone made up of a number of spatial management units (SAUs) each made up of a number of separate populations, each with its own properties. In an operational simulated zone there would likely be more SAUs and more populations in at least some of those SAUs and the populations are likely to be of very different sizes, each population with its own particular properties. Redrawn from Haddon et al, 2013.")`

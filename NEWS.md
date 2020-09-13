@@ -37,3 +37,6 @@
 * 02/09/2020 0.0.0.7850 Modified generate_results.r bare-bones.r, devel.r, and README.Rmd to reflect changes I have made both in makehtml and in aMSE.
 
 * 04/09/2020 0.0.0.7800 Have now stabilized makehtml and the places in aMSE where it is used (generate_results.R). Now it behaves as it should and it will be simple to add further plots and tables to the characterization.
+
+* 13/09/2020 0.0.0.7750 Have removed 'diagrams' from the requirements of running the MSE and started adding functions and data-sets to faciliate the full blown operating model conditioning.
+

@@ -264,6 +264,49 @@ makeLabel <- function(invect,insep="_") {
    return(ans)
 }  # end of makeLabel
 
+#' @title read_conddata reads datasets used to condition the operating model
+#'
+#' @description read_conddata facilitates the reading of dataset used to
+#'     condition the operating model. It is used in all aspects of conditioning,
+#'     including attempting to model the productivity of each SAU using either
+#'     production models or size-structured models. Once conditioned the catches
+#'     can also be used to generate the initial depletion of the operating
+#'     model, for scenarios which attempt to closely simulate the dynamics of an
+#'     actual fishery. Currently, the function only reads in time-series of
+#'     catches for each SAU across the years of the fishery. The current format
+#'     for the input csv file should have the fishery name in the first line,
+#'     then a heading NYRS with the number of years following that, separated by
+#'     a comma, then another heading YEARS, sau1, sau2, sau3,...,saulast,
+#'     followed by nyrs lines containing the year and catches for each SAU
+#'
+#' @param filename the filename of the text file containing the data to be used
+#'     in the conditioning.
+#'
+#' @return a matrix of reported catches for years vs SAU
+#' @export
+#'
+#' @examples
+#' print("set up a csv file with the format given in the description")
+#' print("then call condat <- read_conddata("yourname.csv")) to read the data")
+read_conddata <- function(filename) {
+   filename <- filen
+   dat <- readLines(filename)
+   sps <- gsub(",","",removeEmpty(dat[1]))
+   nyrs <- getsingleNum("NYRS",dat)
+   loccat <- grep("YEARS",dat)
+   first <- dat[loccat]
+   columns <- removeEmpty(unlist(strsplit(first,",")))
+   columns[1] <- "year"
+   numcol=length(columns)
+   catches <- matrix(0,nrow=nyrs,ncol=numcol,dimnames=list(1:nyrs,columns))
+   for (i in 1:nyrs) { # i=1
+      txt <- dat[(loccat + i)]
+      catches[i,] <- as.numeric(unlist(strsplit(txt,",")))
+   }
+   # Need to enter the LML by year and block
+   return(catches)
+} # end of read_condata
+
 #' @title readctrlfile reads a csv file for controlling aMSE
 #'
 #' @description readctrlfile complements the readdatafile. The MSE requires

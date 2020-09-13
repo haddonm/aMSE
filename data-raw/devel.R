@@ -328,8 +328,257 @@ ymax <- getmax(ab$catch)
 plot(ab$year,ab$catch,type="l",lwd=2,panel.first=grid(),ylim=c(0,ymax))
 
 
+# HISTORICAL catch data ------------------------------------------------------
+library(rutilsMH)
+library(aMSE)
 
-# summarize zoneprod ------------------------------------------------------
+filen <- "C:/Users/User/Dropbox/A_Code/aMSE/data-raw/WZ_cbb.csv"
+
+condat <- read_conddata(filen)
+head(condat,12)
+
+plotprep(width=7, height=9, newdev=FALSE)
+parset(plots=c(4,2),margin = c(0.25,0.25,0.05,0.05),outmargin = c(1,1,0,0))
+yrs <- condat[,"year"]
+label <- colnames(condat)
+for (sau in 2:9) {
+  ymax <- getmax(condat[,sau])
+  plot(yrs,condat[,sau],type="l",lwd=2,xlab="",ylab="",ylim=c(0,ymax),
+       panel.first=grid())
+  mtext(label[sau],side=3,line=-1.2,outer=FALSE,cex=1.25)
+}
+mtext("Year",side=1,outer=TRUE,cex=1.0)
+mtext("Catches (t)",side=2,outer=TRUE,cex=1.0)
+
+
+
+plotprep(width=7, height=4, newdev=FALSE)
+parset()
+yrs <- condat[,"year"]
+catches <- rowSums(condat[,2:9],na.rm=TRUE)
+ymax <- getmax(catches)
+plot(yrs,catches,type="l",lwd=2,xlab="Year",ylab="Catches (t)",ylim=c(0,ymax),
+     panel.first=grid())
+abline(v=1991.5,col=3)
+
+# l ------------------------------------------------------------------------
+# SIZE Composition Data------------------------------------------------------
+
+library(rutilsMH)
+library(aMSE)
+library(makehtml)
+library(microbenchmark)
+
+datadir <- "C:/Users/User/Dropbox/A_Code/aMSE/data-raw/"
+
+comp <- readRDS(paste0(datadir,"compiledMM.df.final.rds"))
+
+properties(comp)
+
+blks <- unique(comp$blockno)
+
+# clean up blockno -----------------------------------------------------------
+pick <- which(comp$blockno == "3,1")
+comp$blockno[pick] <- "1,3"
+pick <- which(comp$blockno == "48,5")
+comp$blockno[pick] <- "5,48"
+pick <- which(comp$blockno == "7,6")
+comp$blockno[pick] <- "6,7"
+pick <- which(comp$blockno == "12,9")
+comp$blockno[pick] <- "9,12"
+pick <- which(comp$blockno == "10,7")
+comp$blockno[pick] <- "7,10"
+pick <- which(comp$blockno == "10,9")
+comp$blockno[pick] <- "9,10"
+pick <- which(comp$blockno == "11,10")
+comp$blockno[pick] <- "10,11"
+pick <- which(comp$blockno == "12,10")
+comp$blockno[pick] <- "10,12"
+pick <- which(comp$blockno == "12,11")
+comp$blockno[pick] <- "11,12"
+pick <- which(comp$blockno == "13,12")
+comp$blockno[pick] <- "12,13"
+pick <- which(comp$blockno == "14,13")
+comp$blockno[pick] <- "13,14"
+pick <- which(comp$blockno == "16,14")
+comp$blockno[pick] <- "14,16"
+pick <- which(comp$blockno == "19,17")
+comp$blockno[pick] <- "17,19"
+pick <- which(comp$blockno == "20,17")
+comp$blockno[pick] <- "17,20"
+pick <- which(comp$blockno == "23,22")
+comp$blockno[pick] <- "22,23"
+pick <- which(comp$blockno == "24,23")
+comp$blockno[pick] <- "23,24"
+pick <- which(comp$blockno == "27,25")
+comp$blockno[pick] <- "25,27"
+pick <- which(comp$blockno == "39,31")
+comp$blockno[pick] <- "31,39"
+pick <- which(comp$blockno == "38,37")
+comp$blockno[pick] <- "37,38"
+pick <- which(comp$blockno == "49,48")
+comp$blockno[pick] <- "48,49"
+
+pick <- which(comp$blockno == "12,7,6")
+comp$blockno[pick] <- "6,7,12"
+pick <- which(comp$blockno == "12,10,11")
+comp$blockno[pick] <- "10,11,12"
+pick <- which(comp$blockno == "11,10,12")
+comp$blockno[pick] <- "10,11,12"
+pick <- which(comp$blockno == "16,13,14")
+comp$blockno[pick] <- "13,14,16"
+pick <- which(comp$blockno == "13,16,14")
+comp$blockno[pick] <- "13,14,16"
+
+# add month to comp ------------------------------------------------------------
+comp$month <- NA
+comp$month <- substr(as.character(comp[,"msr.date"]),6,7)
+pick <- which(is.na(comp$month))
+length(pick)
+nodate <- droplevels(comp[pick,])
+properties(nodate)
+table(nodate$blockno,nodate$fishyear)
+
+blks <- unique(comp$blockno)
+sort(blks)
+
+sort(blks[which(nchar(blks) > 3)])
+
+getblkno <- function(txt) {
+  return(as.numeric(unlist(strsplit(txt,","))))
+}
+
+getblkno(blks)
+
+# get the western zone --------------------------------------------------------
+pick <- which(comp$newzone == "W")
+wz <- droplevels(comp[pick,])
+
+blkn <- table(wz$blockno)
+table(wz$blockno,wz$fishyear)
+table(wz$blockno,wz$month)
+
+pick <- which(wz$blockno %in% c("6","7","8","9","10","11","12","13"))
+wzl <- droplevels(wz[pick,])
+nrow(wz)-nrow(wzl)
+
+table(wzl$blockno,wzl$fishyear)
+table(wzl$blockno,wzl$month)
+
+picky <- which(wzl$blockno == "12")
+table(wzl$fishyear[picky],wzl$month[picky])
+
+
+
+pick <- which((wzl$blockno == "12") & (wzl$fishyear == 2012))
+length(pick)
+table(wzl[picky,"month"])
+byr <- droplevels(wzl[pick,])
+
+
+plotprep(width=9,height=7,newdev=FALSE)
+parset(plots=c(3,4),margin=c(0.3,0.3,0.05,0.05),outmargin = c(1,1,0.05,0.05),
+       byrow=FALSE)
+for (mth in 1:12) { # mth=1
+  pickm <- which(as.numeric(byr$month) == mth)
+  hist(byr[pickm,"shell.length"],col=2,breaks=seq(130,225,5),main="",
+       xlab="",ylab="")
+  label <- paste0(mth,"_",length(pickm))
+  mtext(label,side=3,line=-1.1,adj=0.5,cex=1.1)
+}
+mtext("Shell Length (mm)",side=1,outer=TRUE,cex=1.1)
+mtext("Frequency",side=2,outer=TRUE,cex=1.1)
+
+
+doplot <- function(byr,season,bins,label) { # season=autumn
+  pickm <- which(as.numeric(byr$month) %in% season)
+  if (length(pickm) > 0) {
+    out1 <- hist(byr[pickm,"shell.length"],col=2,breaks=bins,main="",
+                 xlab="",ylab="")
+    mlabel <- paste0(label,"_",length(pickm))
+    mtext(mlabel,side=3,line=-1.1,adj=1,cex=1.1)
+    meanl <- mean(byr[pickm,"shell.length"],na.rm=TRUE)
+    sdl <- sd(byr[pickm,"shell.length"],na.rm=TRUE)
+    mtext(round(meanl,2),side=3,line=-2.5,adj=1,cex=1.1)
+    mtext(round(sdl,2),side=3,line=-4,adj=1,cex=1.1)
+  } else {
+    meanl <- NULL
+    sdl <- NULL
+    plotnull("No Data")
+  }
+  return(invisible(list(out1=out1,meanl=meanl,sdl=sdl)))
+}
+
+summer <- c(1,2,12)
+spring <- c(9,10,11)
+winter <- c(6,7,8)
+autumn <- c(3,4,5)
+bins=seq(100,252,2)
+
+pick <- which((wzl$blockno == "12") & (wzl$fishyear == 2020))
+length(pick)
+table(wzl[pick,"month"])
+byr <- droplevels(wzl[pick,])
+range(byr$shell.length)
+
+plotprep(width=5,height=8,newdev=FALSE)
+parset(plots=c(4,1),margin=c(0.3,0.3,0.05,0.05),outmargin = c(1,1,0.05,0.05),
+       byrow=FALSE)
+out1 <- doplot(byr,summer,bins=bins,"summer")
+out2 <- doplot(byr,autumn,bins=bins,"autumn")
+out3 <- doplot(byr,winter,bins=bins,"winter")
+out4 <- doplot(byr,spring,bins=bins,"spring")
+
+
+
+
+
+
+
+
+b12 <- droplevels(wz[pick,])
+model <- lm(log(b12$whole.weight) ~ log(b12$shell.length), data=b12)
+abline(model,lwd=2,col=4)
+summary(model)
+coef(model)
+x <- 138:195
+y <- exp(coef(model))[1] * (x ^ coef(model)[2])
+
+
+
+plotprep(width=7,height=5,newdev=FALSE)
+plot1((b12$shell.length),(b12$whole.weight),type="p",pch=1,xlab="Shell Length mm",
+      ylab="Total Weight",col=(b12$fishyear - 2018),defpar=FALSE)
+lines(x,y,lwd=2,col=4)
+
+
+# which records have weights?
+
+pick <- which(wz$whole.weight > 0)
+length(pick)
+
+table(wz[pick,"blockno"])
+
+
+
+pick <- which((wz$blockno == "6"))# & (wz$whole.weight > 0) &
+                # (wz$whole.weight < 2000) & (wz$shell.length > 136) &
+                # (wz$whole.weight > 380) & (wz$fishyear == 2020))
+length(pick)
+table(wz[pick,"msr.date"])
+
+
+
+
+
+plotprep(width=7,height=5,newdev=FALSE)
+plot1(wz[pick,"shell.length"],wz[pick,"whole.weight"],type="p",pch=1,
+      xlab="Shell Length mm",
+      ylab="Total Weight",col=(b12$fishyear - 2018),defpar=FALSE)
+
+
+
+
 
 
 

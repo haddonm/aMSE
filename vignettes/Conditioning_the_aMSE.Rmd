@@ -54,7 +54,7 @@ options("show.signif.stars"=FALSE,
 library(aMSE)
 library(knitr)
 library(captioner)
-library(diagrams)
+#library(diagrams)
 
 tab_nums <- captioner(prefix = "Table")
 fig_nums <- captioner(prefix = "Figure")
