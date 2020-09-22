@@ -13,23 +13,22 @@
 #' @param glb the globals list
 #' @param zoneC the zonal constants by population, zoneC
 #'
-#' @return nothing but it does plot 3 plots and put one table into
-#'     resdir
+#' @return invisibly returns the biological properties of the populations
 #' @export
 #'
 #' @examples
 #' print("this will be quite long when I get to it")
 biology_plots <- function(resdir, glb, zoneC) {
-  # some globals
   mids <- glb$midpts
   numpop <- glb$numpop
   popdef <- getlistvar(zoneC,"popdef")
-  nSAU <- length(unique(popdef["SAU",]))
+  SAU <- unique(popdef["SAU",])
+  nSAU <- length(SAU)
   # Yield vs Spawning biomass-----------------------
   # maturation uses zoneC
   matur <- getlistvar(zoneC,"Maturity")
   rownames(matur) <- mids
-  filen <- filenametopath(resdir,"maturity_v_Length.png")
+  filen <- filenametopath(resdir,"maturity_v_Length_pop.png")
   plotprep(width=7,height=4,newdev=FALSE,filename=filen,cex=0.9,
            verbose=FALSE)
   plot(mids,matur[,1],type="l",lwd=2,xlab="Shell Length mm",
@@ -43,7 +42,7 @@ biology_plots <- function(resdir, glb, zoneC) {
   # weight-at-length using zoneC--------------------------------------
   WtL <- getlistvar(zoneC,"WtL")
   rownames(WtL) <- mids
-  filen <- filenametopath(resdir,"Weight_at_Length.png")
+  filen <- filenametopath(resdir,"Weight_at_Length_pop.png")
   plotprep(width=7,height=4,newdev=FALSE,filename=filen,cex=0.9,
            verbose=FALSE)
   plot(mids,WtL[,1],type="l",lwd=2,xlab="Shell Length mm",
@@ -57,7 +56,7 @@ biology_plots <- function(resdir, glb, zoneC) {
   # emergence uses zoneC----------------------------------------------
   emerg <- getlistvar(zoneC,"Emergent")
   rownames(emerg) <- mids
-  filen <- filenametopath(resdir,"Emergence_at_Length.png")
+  filen <- filenametopath(resdir,"Emergence_at_Length_pop.png")
   plotprep(width=7,height=4,newdev=FALSE,filename=filen,cex=0.9,
            verbose=FALSE)
   plot(mids,emerg[,1],type="l",lwd=2,xlab="Shell Length mm",
@@ -67,62 +66,89 @@ biology_plots <- function(resdir, glb, zoneC) {
   caption <- "The emergence-at-length for each population. The x-axis is constrained to emphasize differences."
   addplot(filen,resdir=resdir,category="Biology",caption)
   # Tabulate biological properties uses zoneC-------------------------
-  getvar <- function(indexvar,zone=zoneC) { # indexvar="B0"; zoneC=zoneC
-    sau <- getlistvar(zoneC,"SAU")
-    nSAU <- length(unique(sau))
-    saures <- numeric(nSAU)
-    invar <- getlistvar(zone,indexvar)
-    for (mu in 1:nSAU) {
-      pickcol <- which(sau == mu)
-      saures[mu] <- sum(invar[pickcol])
-    }
-    ans <- c(invar,saures,sum(invar))
-    return(ans)
-  }
+  # getvar <- function(indexvar,zone=zoneC) { # indexvar="B0"; zone=zoneC
+  #   sau <- getlistvar(zoneC,"SAU")
+  #   nSAU <- length(unique(sau))
+  #   saures <- numeric(nSAU)
+  #   invar <- getlistvar(zone,indexvar)
+  #   for (mu in 1:nSAU) saures[mu] <- sum(invar[mu])
+  #   ans <- c(invar,saures,sum(invar))
+  #   return(ans)
+  # }
   rows <- c("SAU","M","R0","B0","ExB0","MSY","MSYDepl","bLML",
             "MaxDL","L50","L95","AvRec","steep")
   sau <- getlistvar(zoneC,"SAU")
   nSAU <- length(unique(sau))
-  columns <- c(paste0("p",1:numpop),
-               paste0("sau",1:nSAU),"zone")
+  columns <- paste0("p",1:numpop)
   numrow <- length(rows)
   numcol <- length(columns)
-  results <- matrix(0,nrow=numrow,ncol=numcol,
+  resultpop <- matrix(0,nrow=numrow,ncol=numpop,
                                   dimnames=list(rows,columns))
-  results["SAU",] <- c(getlistvar(zoneC,"SAU"),(1:nSAU),0) # no total
-  results["B0",] <- as.numeric(getvar("B0"))
-  M <- getlistvar(zoneC,"Me")
-  wtr <- (results["B0",1:numpop]/results["B0",(numpop+nSAU+1)])
-  results["M",] <- c(M,0,0,sum(M*wtr))
-  results["R0",] <- getvar("R0")
-  results["ExB0",] <- getvar("ExB0")
-  results["MSY",] <- getvar("MSY")
-  MSYD <- getlistvar(zoneC,"MSYDepl")
-  results["MSYDepl",] <- c(MSYD,0,0,sum(MSYD * wtr))
-  bLML <- getlistvar(zoneC,"bLML")
-  results["bLML",] <- c(bLML,0,0,sum(bLML * wtr))
-  popdef <- getlistvar(zoneC,"popdef")
-  results["MaxDL",] <- c(popdef["DLMax",],0,0,0)
-  results["L50",] <- c(popdef["L50",],0,0,0)
-  results["L95",] <- c(popdef["L95",],0,0,0)
-  results["AvRec",] <- round(c(popdef["AvRec",],0,0,0))
-  results["steep",] <- c(popdef["steeph",],0,0,0)
-  for (mu in 1:nSAU) { # mu = 2
-    pickcol <- which(sau == mu)
-    wtmu <- length(pickcol)
-    wtmu <- results["B0",pickcol]/results["B0",(numpop + mu)]
-    results["M",(numpop + mu)] <- sum(M[pickcol]*wtmu)
-    results["MSYDepl",(numpop + mu)] <- sum(MSYD[pickcol]*wtmu)
-    results["bLML",(numpop + mu)] <- sum(bLML[pickcol]*wtmu)
-  }
-  res <- round(results,3)
+  resultpop["SAU",] <- getlistvar(zoneC,"SAU") # no total
+  resultpop["B0",] <- as.numeric(getlistvar(zoneC,"B0"))
+ # wtr <- (results["B0",1:numpop]/results["B0",(numpop+nSAU+1)])
+  resultpop["M",] <- getlistvar(zoneC,"Me")
+  resultpop["R0",] <- getlistvar(zoneC,"R0")
+  resultpop["ExB0",] <- getlistvar(zoneC,"ExB0")
+  resultpop["MSY",] <- getlistvar(zoneC,"MSY")
+  resultpop["MSYDepl",] <- getlistvar(zoneC,"MSYDepl")
+  resultpop["bLML",] <- getlistvar(zoneC,"bLML")
+  popdefs <- getlistvar(zoneC,"popdef")
+  resultpop["MaxDL",] <- popdefs["DLMax",]
+  resultpop["L50",] <- popdefs["L50",]
+  resultpop["L95",] <- popdefs["L95",]
+  resultpop["AvRec",] <- round(popdefs["AvRec",])
+  resultpop["steep",] <- popdefs["steeph",]
+  # for (mu in 1:nSAU) { # mu = 2
+  #   pickcol <- which(sau == mu)
+  #   wtmu <- length(pickcol)
+  #   wtmu <- results["B0",pickcol]/results["B0",(numpop + mu)]
+  #   results["M",(numpop + mu)] <- sum(M[pickcol]*wtmu)
+  #   results["MSYDepl",(numpop + mu)] <- sum(MSYD[pickcol]*wtmu)
+  #   results["bLML",(numpop + mu)] <- sum(bLML[pickcol]*wtmu)
+  # }
+  res <- round(resultpop,3)
   filen <- paste0("zonebiology.csv")
-  caption <- paste0("Population SAU and Zonal Biological Properties. ",
-              "For 'M' 'MSYDepl' and 'bLML' SAU and total is an average ",
-              "weighted relative to the proportion of SAU or total B0.")
+  caption <- "Population Biological Properties."
   addtable(res,filen,resdir=resdir,category="Tables",caption)
+  return(invisible(resultpop))
 } # end of biology_plots
 
+#' @title compzoneN compares numbers-at-size before/after depletion
+#'
+#' @description compzoneN generates a plot comparing the unfished
+#'     numbers-at-size with those for a given level of depletion.
+#'
+#' @param unfN the unfished numbers-at-size from getzoneprops
+#' @param curN the current numbers-at-size from getzoneprops
+#' @param glb the global object
+#' @param yr the year of the dynamics
+#' @param depl the depletion level of the current n-a-s
+#' @param LML the legal minimum length in teh comparison year
+#' @param resdir the results directory, default = "" leading to no
+#'     .png file, just a plot to the screen.
+#'
+#' @return invisibly the filename ready for logfilename
+#' @export
+#'
+#' @examples
+#' print("still to be developed")
+#' # unfN=unfN; curN=depN;glb=glb; yr=1; depl=0.3993; LML=132; resdir=resdir
+compzoneN <- function(unfN,curN,glb,yr,depl,LML=0,resdir="") {
+  usecl=5:glb$Nclass
+  mids <- glb$midpts
+  filen <- paste0("zone_n-at-size_yr",yr,".png")
+  filen <- filenametopath(resdir,filen)
+  plotprep(width=7, height=4.5, filename=filen,verbose=FALSE)
+  plot(mids[usecl],unfN[usecl,"zone"]/1000.0,type="l",lwd=2,
+       panel.first=grid(),xlab="Shell Length (mm)",
+       ylab="Numbers-at-Size '000s")
+  lines(mids[usecl],curN[usecl,"zone"]/1000.0,lwd=2,col=2)
+  if (LML > 0) abline(v=LML,col=1,lty=2)
+  legend("topright",c("Unfished",depl),col=c(1,2),lwd=3,bty="n")
+  if (nchar(filen) > 0) dev.off()
+  return(invisible(filen))
+} # end of compzoneN
 
 #' @title numbersatsize plots details of the numbers-at-size
 #'
@@ -163,41 +189,101 @@ numbersatsize <- function(resdir, glb, zoneD) {
 
 } # end of numbersatsize
 
-#' @title compzoneN compares numbers-at-size before/after depletion
+#' @title plothistcatch plots the historical catches used for conditioning
 #'
-#' @description compzoneN generates a plot comparing the unfished
-#'     numbers-at-size with those for a given level of depletion.
+#' @description plothistcatch provides a visual representation of the catches
+#'     taken in each SAU/population used in the conditioning of the
+#'     Operating Model.
 #'
-#' @param unfN the unfished numbers-at-size from getzoneprops
-#' @param curN the current numbers-at-size from getzoneprops
-#' @param glb the global object
-#' @param yr the year of the dynamics
-#' @param depl the depletion level of the current n-a-s
-#' @param LML the legal minimum length in teh comparison year
-#' @param resdir the results directory, default = "" leading to no
-#'     .png file, just a plot to the screen.
+#' @param zone1 The zonewide properties as in readzonefile(indir,ctrl$zonefile)
+#' @param pops default = NULL. The plot can be restricted to a specific set
+#'     of populations by providing the indices of the populations to be
+#'     included. Thus if there were 8 populations the pops=c(1,2,3,8), would
+#'     plot the first three and the last population.
+#' @param resdir the results directory used by makehtml to store plots and
+#'     tables.
 #'
-#' @return invisibly the filename ready for logfilename
+#' @return nothing, it adds a plot into resdir and modifies resultTable.csv
 #' @export
 #'
 #' @examples
-#' print("still to be developed")
-#' # unfN=unfN; curN=depN;glb=glb; yr=1; depl=0.3993; LML=132; resdir=resdir
-compzoneN <- function(unfN,curN,glb,yr,depl,LML=0,resdir="") {
-  usecl=5:glb$Nclass
-  mids <- glb$midpts
-  filen <- paste0("zone_n-at-size_yr",yr,".png")
-  filen <- filenametopath(resdir,filen)
-  plotprep(width=7, height=4.5, filename=filen,verbose=FALSE)
-  plot(mids[usecl],unfN[usecl,"zone"]/1000.0,type="l",lwd=2,
-       panel.first=grid(),xlab="Shell Length (mm)",
-       ylab="Numbers-at-Size '000s")
-  lines(mids[usecl],curN[usecl,"zone"]/1000.0,lwd=2,col=2)
-  if (LML > 0) abline(v=LML,col=1,lty=2)
-  legend("topright",c("Unfished",depl),col=c(1,2),lwd=3,bty="n")
-  if (nchar(filen) > 0) dev.off()
-  return(invisible(filen))
-} # end of compzoneN
+#' print("wait until I have altered the internals data sets")
+plothistcatch <- function(zone1,pops=NULL,resdir="") {
+  # zone1=zone1; pops=c(4,5,6,7)
+  glb <- zone1$globals
+  numpop <- glb$numpop
+  if (length(pops) > 0) {
+    histcatch <- zone1$histCatch[,pops]
+    numpop <- length(pops)
+    addlab <- paste0(pops,"_",collapse="")
+  } else {
+    histcatch <- zone1$histCatch
+    addlab <- "all"
+  }
+  histyr <- zone1$histyr
+  yearCE <- zone1$yearCE
+  yearC <- histyr[,"year"]
+  pngfile <- paste0("Historical_Catches_",addlab,".png")
+  filen <- filenametopath(resdir,pngfile)
+  plotprep(width=7,height=4,newdev=FALSE,filename=filen,cex=0.9,
+           verbose=FALSE)
+  ymax <- getmax(histcatch)
+  plot(yearC,histcatch[,1],type="l",lwd=2,xlab="Year",
+       ylab="Catch (t)",panel.first=grid(),ylim=c(0,ymax))
+  if (numpop > 1) for (pop in 2:numpop)
+    lines(yearC,histcatch[,pop],lwd=2,col=pop)
+  label <- colnames(histcatch)
+  legend("topright",label,lwd=3,col=c(1:numpop),bty="n",cex=1.2)
+  caption <- "The historical catch used for conditioning for each population."
+  addplot(filen,resdir=resdir,category="history",caption)
+} # end of plothistcatch
+
+#' @title plothistCE plots the historical cpue used for conditioning
+#'
+#' @description plothistCE provides a visual representation of the cpue
+#'     taken in each SAU used in the conditioning of the
+#'     Operating Model.
+#'
+#' @param zone1 The zonewide properties as in readzonefile(indir,ctrl$zonefile)
+#' @param pops default = NULL. The plot can be restricted to a specific set
+#'     of populations by providing the indices of the populations to be
+#'     included. Thus if there were 8 populations the pops=c(1,2,3,8), would
+#'     plot the first three and the last population.
+#' @param resdir the results directory used by makehtml to store plots and
+#'     tables.
+#'
+#' @return nothing, it adds a plot into resdir and modifies resultTable.csv
+#' @export
+#'
+#' @examples
+#' print("wait until I have altered the internals data sets")
+plothistCE <- function(zone1,pops=NULL,resdir="") {
+  # zone1=zone1; pops=c(1,2,3,8);
+  glb <- zone1$globals
+  numpop <- glb$numpop
+  if (length(pops) > 0) {
+    histCE <- zone1$histCE[,pops]
+    numpop <- length(pops)
+    addlab <- paste0(pops,"_",collapse="")
+  } else {
+    histCE <- zone1$histCE
+    addlab="all"
+  }
+  yearCE <- zone1$yearCE
+  pngfile <- paste0("Historical_CPUE_",addlab,".png")
+  filen <- filenametopath(resdir,pngfile)
+  plotprep(width=7,height=4,newdev=FALSE,filename=filen,cex=0.9,
+           verbose=FALSE)
+  ymax <- getmax(histCE)
+  plot(yearCE,histCE[,1],type="l",lwd=2,xlab="Year",
+       ylab="Standardized CPUE",panel.first=grid(),ylim=c(0,ymax))
+  if (numpop > 1) for (pop in 2:numpop)
+    lines(yearCE,histCE[,pop],lwd=2,col=pop)
+  label <- colnames(histCE)
+  legend("topright",label,lwd=3,col=c(1:numpop),bty="n",cex=1.2)
+  caption <- "The historical CPUE used for conditioning for each population."
+  addplot(filen,resdir=resdir,category="history",caption)
+} # end of plothistCE
 
 #' @title plotproductivity characterizes each population's yield curve
 #'

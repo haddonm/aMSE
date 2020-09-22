@@ -2,7 +2,7 @@
 % Please edit documentation in R/getfunctions.R
 \name{getsingleNum}
 \alias{getsingleNum}
-\title{getsingleNum extracts a single number from an input line of text}
+\title{getsingleNum find a line of text and extracts a single number}
 \usage{
 getsingleNum(varname, intxt, context = "")
 }
@@ -18,17 +18,19 @@ being used, defaults to empty string}
 a single number
 }
 \description{
-getsingleNum obtains a number from an input line. The
-    variable context is the a variable declared in each function within
-    which getsingleNum is to be called. This cvan then be used in a
-    the stop function.
+getsingleNum uses grep to fine an input line. The
+    variable 'context' is used to identify within which function
+    getsingleNum is being called. This can then be used in a
+    the stop function if grep fails to find the 'varname' inside the
+    'intxt', which is usually obtained using readLines.
 }
 \examples{
 \dontrun{
  # Not exported, prefix with aMSE:::
  context = "Function Example"
- txtline <- "replicates, 100"
- aMSE:::getsingleNum("replicates",txtline,context=context)
- aMSE:::getsingleNum("eeplicates",txtline,context=context)
+ txtlines <- c("replicates, 100","Some_other_text, 52")
+ getsingleNum("replicates",txtlines,context=context)
+ getsingleNum("eeplicates",txtlines,context=context)
+ getsingleNum("other",txtlines,context=context)
 }
 }

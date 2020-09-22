@@ -510,10 +510,12 @@ logistic <- function(inL50,delta,lens,knifeedge=0) {
 #'     a vector obtained from the zonedatafile
 #'
 #' @return a list of numpop lists of 19 objects as detailed above.
+#' @export
 #'
 #' @examples
 #' print("See the code for makezoneC to see usage of makeabpop")
-makeabpop <- function(popparam,midpts,projLML) {  #popparam=popdef;midpts=midpts;projLML=projLML
+makeabpop <- function(popparam,midpts,projLML) {
+  #  popparam=popdef;midpts=midpts;projLML=projLML
   #(DLMax,L50,L95,SigMax,SaMa,SaMb,Wta,Wtb,Me,L50C,L95C,R0 SelP[1],SelP[2],Nyrs,steeph,MaxCE,L50Mat block
   #   1    2   3    4      5    6   7   8   9 10   11   12  13     14      15   16     17    18     19
   numYr <- popparam["Nyrs"]
@@ -628,7 +630,7 @@ makezoneC <- function(zone,const) { # zone=zone1; const=constants
   SAU <- as.numeric(const["SAU",])
   if (zone$randomseed > 0) set.seed(zone$randomseed)
   projectionLML <- zone$projLML
-  historicalLML <- zone$histLML
+  historicalLML <- zone$histyr[,"histLML"]
   if (zone$condition)
     projLML <- historicalLML else projLML <- projectionLML
   #pops <- trunc(const["popnum",])

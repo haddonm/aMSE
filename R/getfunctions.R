@@ -173,12 +173,13 @@ getzoneLF <- function(zoneD,glb) { # need to define years
 
 
 
-#' @title getsingleNum extracts a single number from an input line of text
+#' @title getsingleNum find a line of text and extracts a single number
 #'
-#' @description getsingleNum obtains a number from an input line. The
-#'     variable context is the a variable declared in each function within
-#'     which getsingleNum is to be called. This cvan then be used in a
-#'     the stop function.
+#' @description getsingleNum uses grep to fine an input line. The
+#'     variable 'context' is used to identify within which function
+#'     getsingleNum is being called. This can then be used in a
+#'     the stop function if grep fails to find the 'varname' inside the
+#'     'intxt', which is usually obtained using readLines.
 #'
 #' @param varname the name of the variable to get from intxt
 #' @param intxt text to be parsed, usually obtained using readLines
@@ -192,9 +193,10 @@ getzoneLF <- function(zoneD,glb) { # need to define years
 #' \dontrun{
 #'  # Not exported, prefix with aMSE:::
 #'  context = "Function Example"
-#'  txtline <- "replicates, 100"
-#'  aMSE:::getsingleNum("replicates",txtline,context=context)
-#'  aMSE:::getsingleNum("eeplicates",txtline,context=context)
+#'  txtlines <- c("replicates, 100","Some_other_text, 52")
+#'  getsingleNum("replicates",txtlines,context=context)
+#'  getsingleNum("eeplicates",txtlines,context=context)
+#'  getsingleNum("other",txtlines,context=context)
 #' }
 getsingleNum <- function(varname,intxt,context="") {
   begin <- grep(varname,intxt)
@@ -390,9 +392,10 @@ getzoneprod <- function(product) {
   rows <- rownames(product[,,1])
   columns <- colnames(product[,,1])
   numpop <- dim(product)[3]
-  zoneprod <- matrix(0,nrow=numrow,ncol=numpop,dimnames=list(rows,columns))
+  zoneprod <- matrix(0,nrow=numrow,ncol=length(columns),
+                     dimnames=list(rows,columns))
   for (i in 1:numpop) zoneprod <- zoneprod + product[,,i]
-  head(zoneprod,20)
+  #head(zoneprod,20)
   zoneprod[,"AnnH"] <- apply(product[,"AnnH",],1,mean,na.rm=TRUE)
   zoneprod[,"Deplet"] <- zoneprod[,"MatB"]/zoneprod[1,"MatB"]
   zoneprod[,"RelCE"] <- apply(product[,"RelCE",],1,mean,na.rm=TRUE)

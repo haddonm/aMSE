@@ -138,9 +138,9 @@ datafiletemplate <- function(numpop,indir,filename="tmpdat.csv") {
        file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
    cat("PDFs,  32   \n",file=filename, append=TRUE)
-   cat("popnum,1, 2, 3, 4, 5, 6, the index number for each population \n",
+   cat("popnum",paste0(", ",1:numpop,collapse = ""),", the index number for each population \n",
        file=filename, append=TRUE)
-   cat("SAU, 1, 1, 2, 2, 2, 2, define the SAU index for each population \n",
+   cat("SAU",paste0(", ",1:numpop,collapse = ""),", define the SAU index for each population \n",
        file=filename,append=TRUE)
    cat("MaxDL ,",genconst(rep(32,numpop)),", maximum growth increment \n",
        file=filename, append=TRUE)
@@ -288,8 +288,7 @@ makeLabel <- function(invect,insep="_") {
 #' @examples
 #' print("set up a csv file with the format given in the description")
 #' print("then call condat <- read_conddata("yourname.csv")) to read the data")
-read_conddata <- function(filename) {
-   filename <- filen
+read_conddata <- function(filename) {  # filename=filen
    dat <- readLines(filename)
    sps <- gsub(",","",removeEmpty(dat[1]))
    nyrs <- getsingleNum("NYRS",dat)
@@ -303,8 +302,20 @@ read_conddata <- function(filename) {
       txt <- dat[(loccat + i)]
       catches[i,] <- as.numeric(unlist(strsplit(txt,",")))
    }
+   ceyrs <- getsingleNum("CEYRS",dat)
+   if ((is.null(ceyrs)) | (is.na(ceyrs))) stop("CPUE data missing")
+   locce <- grep("CPUE",dat)
+   columns <- removeEmpty(unlist(strsplit(dat[locce],",")))
+   columns[1] <- "year"
+   numcol=length(columns)
+   cpue <- matrix(0,nrow=ceyrs,ncol=numcol,dimnames=list(1:ceyrs,columns))
+   for (i in 1:ceyrs) { # i=1
+      txt <- dat[(locce + i)]
+      cpue[i,] <- as.numeric(unlist(strsplit(txt,",")))
+   }
    # Need to enter the LML by year and block
-   return(catches)
+   ans <- list(catches=catches,cpue=cpue)
+   return(ans)
 } # end of read_condata
 
 #' @title readctrlfile reads a csv file for controlling aMSE
@@ -340,14 +351,14 @@ readctrlfile <- function(indir,infile="control.csv") {
 
    batch <- getsingleNum("batch",indat)
    reps <- getsingleNum("replicates",indat)
-   initdepl <- getsingleNum("initdepl",indat)
+ #  initdepl <- getsingleNum("initdepl",indat)
    withsigR <- getsingleNum("withsigR",indat)
    withsigB <- getsingleNum("withsigB",indat)
    withsigCE <- getsingleNum("withsigCE",indat)
    outctrl <- list(runlabel,zonefile,datafile,hcrfile,outdir,project,
-                   batch,reps,initdepl,withsigR,withsigB,withsigCE)
+                   batch,reps,withsigR,withsigB,withsigCE)
    names(outctrl) <- c("runlabel","zonefile","datafile","hcrfile",
-                       "outdir","project","batch","reps","initdepl",
+                       "outdir","project","batch","reps",
                        "withsigR","withsigB","withsigCE")
    return(outctrl)
 } # end of readctrlfile
@@ -389,7 +400,7 @@ readdatafile <- function(numpop,indir,infile) {  # indir=datadir;infile="zone1sa
              "sSigMax","LML","Wtb","sWtb","Wtbtoa","sWtbtoa","Me","sMe",
              "AvRec","sAvRec","defsteep","sdefsteep","L50C","sL50C",
              "deltaC","sdeltaC","MaxCEpars","sMaxCEpars","selL50p",
-             "selL95p","SaMa","L50Mat","sL50Mat")
+             "selL95p","SaMa","L50Mat","sL50Mat","initdepl")
    ans <- matrix(0,nrow=length(rows),ncol=numpop)
    begin <- begin + 1
    for (i in 1:npar) {
@@ -517,7 +528,7 @@ readhcrfile <- function(infile) {  # infile <- "C:/A_CSIRO/Rcode/AbMSERun/ctrl_w
 #' reg1 <- readzonefile(datadir,ctrl$zonefile)
 #' str(reg1)
 #' }
-readzonefile <- function(indir,infile) {  # infile="zone1.csv"; indir=datadir
+readzonefile <- function(indir,infile) {  # infile="westzone1.csv"; indir=resdir
    context <- "zone_file"
    filename <- filenametopath(indir,infile)
    indat <- readLines(filename)   # reads the whole file as character strings
@@ -542,25 +553,47 @@ readzonefile <- function(indir,infile) {  # infile="zone1.csv"; indir=datadir
       from <- begin + 1
       projLML[i] <- getConst(indat[from],1)
    }
-   begin <- grep("CONDITION",indat)
-   condition <- getConst(indat[begin],1)
-   histLML <- NA
+   condition <- getsingleNum("CONDITION",indat)
    if (condition > 0) {
-      begin <- grep("HistoricalLML",indat)
-      ncond <- getConst(indat[begin],1)
-      histLML <- numeric(ncond)
-      for (i in 1:ncond) {
-         begin <- begin+1
-         histLML[i] <- getConst(indat[begin],1)
+      Nyrs <- condition
+      begin <- grep("CondYears",indat)
+      histCatch <- matrix(0,nrow=condition,ncol=nSAU)
+      colnames(histCatch) <- SAUnames
+      histyr <- matrix(0,nrow=condition,ncol=2)
+      colnames(histyr) <- c("year","histLML")
+      for (i in 1:condition) {
+         begin <- begin + 1
+         asnum <- as.numeric(unlist(strsplit(indat[begin],",")))
+         histyr[i,] <- asnum[1:2]
+         histCatch[i,] <- asnum[3:(nSAU+2)]
       }
+      rownames(histCatch) <- histyr[,1]
+      rownames(histyr) <- histyr[,1]
+      yrce <- getsingleNum("CEYRS",indat)
+      begin <- grep("CPUE",indat)
+      histCE <- matrix(NA,nrow=yrce,ncol=nSAU)
+      yearCE <- numeric(yrce)
+      colnames(histCE) <- SAUnames
+      for (i in 1:yrce) {
+         begin <- begin + 1
+         cenum <- as.numeric(unlist(strsplit(indat[begin],",")))
+         yearCE[i] <- cenum[1]
+         histCE[i,] <- cenum[2:(nSAU+1)]
+      }
+      rownames(histCE) <- yearCE
+   } else {
+      histCatch <- NULL
+      histyr <- NULL
+      histCE <- NULL
+      yearCE <- NULL
    }
    globals <- list(numpop=numpop, nSAU=nSAU, midpts=midpts,
                    Nclass=Nclass, Nyrs=Nyrs, larvdisp=larvdisp)
    totans <- list(SAUnames,SAUpop,minc,cw,larvdisp,randomseed,outyear,
-                  projLML,condition,histLML,globals)
+                  projLML,condition,histCatch,histyr,histCE,yearCE,globals)
    names(totans) <- c("SAUnames","SAUpop","minc","cw","larvdisp",
                       "randomseed","outyear","projLML","condition",
-                      "histLML","globals")
+                      "histCatch","histyr","histCE","yearCE","globals")
    return(totans)
 }  # end of readzonefile
 

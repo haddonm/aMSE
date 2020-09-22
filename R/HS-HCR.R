@@ -47,6 +47,7 @@ getgrad1 <- function(vectce) {
   return(grad1)
 } # end of getgrad1
 
+
 #' @title getgrad4 applies a linear regression in steps of wid to input
 #'
 #' @description getgrad4 takes an input vector of cpue and, in chunks
@@ -116,3 +117,28 @@ getscore <- function(grad14) {
   score[pickg0] <- grad14[pickg0]*vars2[2] + vars2[1]
   return(score)
 } # end of getscore
+
+#' @title targblockHCR - calculates the block scores for the targetCE
+#'
+#' @description targblockHCR - calculates the block scores for the
+#'     targetCE
+#'
+#' @param incpueBlock the matrix of cpue by Block by year
+#' @param targetCE - a vector of the targetCE for each of the blocks
+#' @param modifyTarg - the constant that sets the range of CPUE in the
+#'    scoring function
+#'
+#' @return a vector of scores relating to the targetCE PM; used in
+#'    blockMCDA
+#' @export targblockHCR
+#'
+#' @examples
+#' print("Need to use a dataset for an example")
+targblockHCR <- function(incpueBlock,targetCE,modifyTarg=deltaCE) {
+  delCE <- 5.0/modifyTarg
+  score <- (delCE * incpueBlock) + 5.0 - (delCE * targetCE)
+  score[score > 10.0] <- 10.0
+  score[score < 0.0] <- 0.0
+  return(score)  # not yet an integer
+}  # end of targblockHCR
+

@@ -14,8 +14,7 @@ biology_plots(resdir, glb, zoneC)
 \item{zoneC}{the zonal constants by population, zoneC}
 }
 \value{
-nothing but it does plot 3 plots and put one table into
-    resdir
+invisibly returns the biological properties of the populations
 }
 \description{
 biology_plots generates the yield vs spawning biomass,
