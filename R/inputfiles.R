@@ -287,7 +287,7 @@ makeLabel <- function(invect,insep="_") {
 #'
 #' @examples
 #' print("set up a csv file with the format given in the description")
-#' print("then call condat <- read_conddata("yourname.csv")) to read the data")
+#' print("then call condat <- read_conddata('yourname.csv')) to read the data")
 read_conddata <- function(filename) {  # filename=filen
    dat <- readLines(filename)
    sps <- gsub(",","",removeEmpty(dat[1]))
@@ -345,7 +345,7 @@ readctrlfile <- function(indir,infile="control.csv") {
    runlabel <- getStr(indat[begin],1)
    zonefile <- getStr(indat[begin+1],1)
    datafile <- getStr(indat[begin+2],1)
-   hcrfile <- getStr(indat[begin+3],1)
+   hcrname <- getStr(indat[begin+3],1)
    outdir <- getStr(indat[begin+4],1)
    project <- getsingleNum("project",indat)
 
@@ -355,9 +355,9 @@ readctrlfile <- function(indir,infile="control.csv") {
    withsigR <- getsingleNum("withsigR",indat)
    withsigB <- getsingleNum("withsigB",indat)
    withsigCE <- getsingleNum("withsigCE",indat)
-   outctrl <- list(runlabel,zonefile,datafile,hcrfile,outdir,project,
+   outctrl <- list(runlabel,zonefile,datafile,hcrname,outdir,project,
                    batch,reps,withsigR,withsigB,withsigCE)
-   names(outctrl) <- c("runlabel","zonefile","datafile","hcrfile",
+   names(outctrl) <- c("runlabel","zonefile","datafile","hcrname",
                        "outdir","project","batch","reps",
                        "withsigR","withsigB","withsigCE")
    return(outctrl)
@@ -528,7 +528,7 @@ readhcrfile <- function(infile) {  # infile <- "C:/A_CSIRO/Rcode/AbMSERun/ctrl_w
 #' reg1 <- readzonefile(datadir,ctrl$zonefile)
 #' str(reg1)
 #' }
-readzonefile <- function(indir,infile) {  # infile="westzone1.csv"; indir=resdir
+readzonefile <- function(indir,infile) {  # infile="westzone1.csv"; indir=datdir
    context <- "zone_file"
    filename <- filenametopath(indir,infile)
    indat <- readLines(filename)   # reads the whole file as character strings
@@ -572,7 +572,7 @@ readzonefile <- function(indir,infile) {  # infile="westzone1.csv"; indir=resdir
       yrce <- getsingleNum("CEYRS",indat)
       begin <- grep("CPUE",indat)
       histCE <- matrix(NA,nrow=yrce,ncol=nSAU)
-      yearCE <- numeric(yrce)
+      yearCE <- numeric(yrce) # of same length as nSAU
       colnames(histCE) <- SAUnames
       for (i in 1:yrce) {
          begin <- begin + 1
@@ -581,19 +581,34 @@ readzonefile <- function(indir,infile) {  # infile="westzone1.csv"; indir=resdir
          histCE[i,] <- cenum[2:(nSAU+1)]
       }
       rownames(histCE) <- yearCE
+      sizecomp <- getsingleNum("SIZECOMP",indat)
+      if (sizecomp > 0) {
+         lffiles <- NULL
+         locsizecomp <- grep("SIZECOMP",indat)
+         for (i in 1:sizecomp)
+            lffiles <- c(lffiles,getStr(indat[locsizecomp+i],1))
+         compdat <- vector("list",sizecomp)
+         for (i in 1:sizecomp) {
+            filename <- filenametopath(indir,lffiles[i])
+            compdat[[i]] <- read.csv(file=filename,header=TRUE)
+         }
+      }
    } else {
       histCatch <- NULL
       histyr <- NULL
       histCE <- NULL
       yearCE <- NULL
+      compdat=NULL
    }
    globals <- list(numpop=numpop, nSAU=nSAU, midpts=midpts,
                    Nclass=Nclass, Nyrs=Nyrs, larvdisp=larvdisp)
    totans <- list(SAUnames,SAUpop,minc,cw,larvdisp,randomseed,outyear,
-                  projLML,condition,histCatch,histyr,histCE,yearCE,globals)
+                  projLML,condition,histCatch,histyr,histCE,yearCE,compdat,
+                  globals)
    names(totans) <- c("SAUnames","SAUpop","minc","cw","larvdisp",
                       "randomseed","outyear","projLML","condition",
-                      "histCatch","histyr","histCE","yearCE","globals")
+                      "histCatch","histyr","histCE","yearCE","compdat",
+                      "globals")
    return(totans)
 }  # end of readzonefile
 

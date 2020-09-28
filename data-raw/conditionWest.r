@@ -1,6 +1,7 @@
-# An initial attempt at conditioning the model on the west coast.
+# An initial attempt at full conditioning the model on the west coast.
+# this includes reading in all available conditioning data
 
-# a minimal example
+# Generate a website------------------------------------------------------------
 starttime <- as.character(Sys.time())
 library(aMSE)
 library(rutilsMH)
@@ -9,13 +10,10 @@ library(makehtml)  # use as needed.
 datdir <- "c:/Users/User/DropBox/A_code/aMSEUse/conddata/sspmrun"
 resdir <- "c:/Users/User/DropBox/A_code/aMSEUse/conddata/sspm"
 dirExists(datdir,make=TRUE,verbose=TRUE)
-# You now need to ensure that there is a control.csv, zone1sm\au2pop6.csv
-# and region1.csv file in the data directory
-# ctrlfiletemplate(resdir)
-# zonefiletemplate(resdir)
-# datafiletemplate(6,resdir,filename="zone1sau2pop6.csv")
+# You now need to ensure that there is a control.csv, zone1.csv
+# and region1.csv file in the data directory plus some data .csv files
 
-ctrl <- checkresdir(datdir)
+ctrl <- checkctrldat(datdir,ctrlfile="control.csv")
 zone1 <- readzonefile(datdir,ctrl$zonefile)
 glb <- zone1$globals     # glb without the movement matrix
 constants <- readdatafile(glb$numpop,datdir,ctrl$datafile)
@@ -57,3 +55,27 @@ runnotes <- "This is the first conditioning on the west coast."
           openfile=TRUE,runnotes=runnotes,verbose=FALSE,
           packagename = "aMSE",htmlname="testrun")
 
+
+
+# Apply historical Catches -----------------------------------------------------
+ library(aMSE)
+ library(rutilsMH)
+ library(makehtml)  # use as needed.
+
+ datdir <- "c:/Users/User/DropBox/A_code/aMSEUse/conddata/sspmrun"
+ resdir <- "c:/Users/User/DropBox/A_code/aMSEUse/conddata/sspm"
+ dirExists(datdir,make=TRUE,verbose=TRUE)
+ # You now need to ensure that there is a control.csv, zone1.csv
+ # and region1.csv file in the data directory plus some data .csv files
+ ctrl <- checkctrldat(datdir,ctrlfile="control.csv")
+ zone1 <- readzonefile(datdir,ctrl$zonefile)
+ glb <- zone1$globals     # glb without the movement matrix
+ constants <- readdatafile(glb$numpop,datdir,ctrl$datafile)
+
+ out <- setupzone(constants,zone1) # make operating model
+ zoneC <- out$zoneC
+ zoneD <- out$zoneD
+ glb <- out$glb        # glb now has the movement matrix
+ product <- out$product     # important bits usually saved in resdir
+ # did the larval dispersal level disturb the equilibrium?
+ regDe <- testequil(zoneC,zoneD,glb)

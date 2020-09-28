@@ -423,74 +423,61 @@ library(microbenchmark)
 
 datadir <- "C:/Users/User/Dropbox/A_Code/aMSEUse/conddata/"
 
-comp <- readRDS(paste0(datadir,"compiledMM.df.final.rds"))
 
-properties(comp)
+pcomp <- readRDS(paste0(datadir,"compiledMM.df.final.rds"))
+
+properties(pcomp)
 novel <- c("docket","date","procnum","procname","numprocs","proclist","newzone",
            "numdays","daylist","daylist_max","datediff","numblocks","blocklist",
            "numsubblocks","subblocklist","catch","length","n","meanSL","minSL",
            "species","weight","datasource","block","subblock","year",
            "blocklist_1","blocklist_2","blocklist_3","blocklist_4","blocklist_5",
            "id","region1","region2","region3","region4","region5","same.region")
-colnames(comp) <- novel
+colnames(pcomp) <- novel
+properties(pcomp)
+pickcols <- c(1,2,3,7,8,9,12,16,17,18,21,22,24,26)
+comp <- droplevels(pcomp[,pickcols])
 properties(comp)
-pickcols <- c(1,2,3,)
-
 
 blks <- unique(comp$block)
-
+nzone <- unique(comp$newzone)
 # clean up blockno -----------------------------------------------------------
-pick <- which(comp$block == "3,1")
-comp$block[pick] <- "1,3"
-pick <- which(comp$block == "48,5")
-comp$block[pick] <- "5,48"
-pick <- which(comp$block == "7,6")
-comp$block[pick] <- "6,7"
-pick <- which(comp$block == "12,9")
-comp$block[pick] <- "9,12"
-pick <- which(comp$block == "10,7")
-comp$block[pick] <- "7,10"
-pick <- which(comp$block == "10,9")
-comp$block[pick] <- "9,10"
-pick <- which(comp$block == "11,10")
-comp$block[pick] <- "10,11"
-pick <- which(comp$block == "12,10")
-comp$block[pick] <- "10,12"
-pick <- which(comp$block == "12,11")
-comp$block[pick] <- "11,12"
-pick <- which(comp$block == "13,12")
-comp$block[pick] <- "12,13"
-pick <- which(comp$block == "14,13")
-comp$block[pick] <- "13,14"
-pick <- which(comp$block == "16,14")
-comp$block[pick] <- "14,16"
-pick <- which(comp$block == "19,17")
-comp$block[pick] <- "17,19"
-pick <- which(comp$block == "20,17")
-comp$block[pick] <- "17,20"
-pick <- which(comp$block == "23,22")
-comp$block[pick] <- "22,23"
-pick <- which(comp$block == "24,23")
-comp$block[pick] <- "23,24"
-pick <- which(comp$block == "27,25")
-comp$block[pick] <- "25,27"
-pick <- which(comp$block == "39,31")
-comp$block[pick] <- "31,39"
-pick <- which(comp$block == "38,37")
-comp$block[pick] <- "37,38"
-pick <- which(comp$block == "49,48")
-comp$block[pick] <- "48,49"
+changeblk <- function(compdat,inb,outb) {
+  pick <- which(compdat$block == inb)
+  compdat$block[pick] <- outb
+  return(compdat)
+}
 
-pick <- which(comp$block == "12,7,6")
-comp$block[pick] <- "6,7,12"
-pick <- which(comp$block == "12,10,11")
-comp$block[pick] <- "10,11,12"
-pick <- which(comp$block == "11,10,12")
-comp$block[pick] <- "10,11,12"
-pick <- which(comp$block == "16,13,14")
-comp$block[pick] <- "13,14,16"
-pick <- which(comp$block == "13,16,14")
-comp$block[pick] <- "13,14,16"
+sort(unique(comp$block))
+
+comp <- changeblk(comp,"3,1","1,3")
+comp <- changeblk(comp,"48,5","5,48")
+comp <- changeblk(comp,"7,6","6,7")
+comp <- changeblk(comp,"12,9","9,12")
+comp <- changeblk(comp,"10,7","7,10")
+comp <- changeblk(comp,"10,9","9,10")
+comp <- changeblk(comp,"11,10","10,11")
+comp <- changeblk(comp,"12,10","10,12")
+comp <- changeblk(comp,"12,11","11,12")
+comp <- changeblk(comp,"13,12","12,13")
+comp <- changeblk(comp,"14,13","13,14")
+comp <- changeblk(comp,"16,14","14,16")
+comp <- changeblk(comp,"19,17","17,19")
+comp <- changeblk(comp,"20,17","17,20")
+comp <- changeblk(comp,"23,20","20,23")
+comp <- changeblk(comp,"24,23","23,24")
+comp <- changeblk(comp,"27,25","25,27")
+comp <- changeblk(comp,"39,31","31,39")
+comp <- changeblk(comp,"38,37","37,38")
+comp <- changeblk(comp,"49,48","48,49")
+comp <- changeblk(comp,"12,7,6","6,7,12")
+comp <- changeblk(comp,"12,10,11","10,11,12")
+comp <- changeblk(comp,"11,10,12","10,11,12")
+comp <- changeblk(comp,"16,13,14","13,14,16")
+comp <- changeblk(comp,"13,16,14","13,14,16")
+
+sort(unique(comp$block))
+
 
 # add month to comp ------------------------------------------------------------
 comp$month <- NA
@@ -500,6 +487,7 @@ length(pick)
 nodate <- droplevels(comp[pick,])
 properties(nodate)
 table(nodate$block,nodate$year)
+
 
 blks <- unique(comp$block)
 sort(blks)
@@ -522,10 +510,14 @@ table(wz$block,wz$month)
 
 pick <- which(wz$block %in% c("6","7","8","9","10","11","12","13"))
 wzl <- droplevels(wz[pick,])
-nrow(wz)-nrow(wzl)
+nrow(wz)-nrow(wzl)  # number of records lost
+pickE <- which((wzl[,"length"] < 120) | (wzl[,"length"] > 230))
+extreme <- droplevels(wzl[pickE,])
+wzl <- wzl[-pickE,]
 
 table(wzl$year,wzl$block)
 table(wzl$block,wzl$month)
+table(wzl$year,wzl$month)
 
 picky <- which(wzl$block == "12")
 table(wzl$year[picky],wzl$month[picky])
@@ -575,21 +567,150 @@ summer <- c(1,2,12)
 spring <- c(9,10,11)
 winter <- c(6,7,8)
 autumn <- c(3,4,5)
-bins=seq(130,230,2)
+all <- c(1:12)
+bins=seq(120,230,2)
 
-pick <- which((wzl$block == "12") & (wzl$year == 2013))
-length(pick)
-table(wzl[pick,"month"])
-byr <- droplevels(wzl[pick,])
-range(byr$length)
 
-plotprep(width=5,height=8,newdev=FALSE)
-parset(plots=c(4,1),margin=c(0.3,0.3,0.05,0.05),outmargin = c(1,1,0.05,0.05),
-       byrow=FALSE)
-out1 <- doplot(byr,summer,bins=bins,"summer")
-out2 <- doplot(byr,autumn,bins=bins,"autumn")
-out3 <- doplot(byr,winter,bins=bins,"winter")
-out4 <- doplot(byr,spring,bins=bins,"spring")
+plotcomp <- function(blk,year,bins,filen="",resdir="") {
+  pick <- which((wzl$block == blk) & (wzl$year == year))
+  records <- length(pick)
+  table(wzl[pick,"month"])
+  byr <- droplevels(wzl[pick,])
+  if(records > 0) {
+    if ((nchar(filen) > 0) & (nchar(resdir) > 0)) {
+      filename <- filenametopath(resdir,filen)
+    } else { filename <-  "" }
+    plotprep(width=7,height=9,newdev=FALSE,filename=filename,verbose=FALSE)
+    parset(plots=c(5,1),margin=c(0.3,0.3,0.05,0.05),outmargin = c(1,1,0.05,0.05),
+           byrow=FALSE)
+    out1 <- doplot(byr,summer,bins=bins,"summer")
+    out2 <- doplot(byr,autumn,bins=bins,"autumn")
+    out3 <- doplot(byr,winter,bins=bins,"winter")
+    out4 <- doplot(byr,spring,bins=bins,"spring")
+    out5 <- doplot(byr,all,bins=bins,"year")
+    mtext(paste0("Shell Length - Block ",blk," year ",year),side=1,outer=TRUE,
+          line=-0.2,cex=1.0)
+    if (nchar(filename) > 0) {
+      addlab <- paste0(blk,"_",year)
+      caption <- paste0("Size composition for block-year ",addlab)
+      addplot(filename,resdir=resdir,category=blk,caption)
+    }
+    ans <- list(summer=out1,autumn=out2,winter=out3,spring=out4,all=out5)
+    return(invisible(ans))
+  }
+} # end of plotcomp
+
+plotyearcomp <- function(dat,blk,year,bins,filen="",resdir="") {
+  pick <- which((dat$block == blk) & (dat$year == year))
+  records <- length(pick)
+  byr <- droplevels(dat[pick,])
+  if(records > 0) {
+    if ((nchar(filen) > 0) & (nchar(resdir) > 0)) {
+      filename <- filenametopath(resdir,filen)
+    } else { filename <-  "" }
+    plotprep(width=7,height=4,newdev=FALSE,filename=filename,verbose=FALSE)
+    parset(plots=c(1,1))
+    out5 <- doplot(byr,season=c(1:12),bins=bins,"year")
+    mtext(paste0("Shell Length - Block ",blk," year ",year),side=1,outer=TRUE,
+          line=-0.2,cex=1.0)
+    if (nchar(filename) > 0) {
+      addlab <- paste0(blk,"_",year)
+      caption <- paste0("Size composition for block-year ",addlab)
+      addplot(filename,resdir=resdir,category=blk,caption)
+    }
+    return(invisible(out5))
+  }
+} # end of plotyearcomp
+
+
+
+
+resdir <- "C:/Users/User/Dropbox/A_Code/aMSEUse/conddata/yrcomp"
+dirExists(resdir)
+setuphtml(resdir=resdir,cleanslate = TRUE)
+starttime <- as.character(Sys.time())
+for (blk in c("6","7","8","9","10","11","12","13")) { # blk="6"
+  pick <- which((wzl$block == blk))
+  yrs <- sort(unique(wzl$year[pick]))
+  nyrs <- length(yrs)
+  yrblk <- as.matrix(table(wzl$year[pick],wzl$month[pick]))
+  columns <- c(colnames(yrblk),"total")
+  yrblkt <- cbind(yrblk,rowSums(yrblk,na.rm=TRUE))
+  colnames(yrblkt) <- columns
+  tfilen <- paste0("year_blk_",blk,".csv")
+  addtable(yrblkt,tfilen,resdir,category=blk,caption="Records by year x month")
+  for (yr in 1:nyrs) {
+    year <- yrs[yr]
+    filen <- paste0("length_comp_",blk,"_",year,".png")
+    plotyearcomp(wzl,blk,year,bins=seq(120,230,2),filen,resdir)
+  }
+}
+endtime <- as.character(Sys.time())
+
+reportlist <- list(starttime=starttime,endtime=endtime,runname="Length_Comp")
+
+runnotes <- "This is the first conditioning on the west coast."
+# If you unhash this component it will generate a local website inside
+# resdir and open it so you can see the results so far.
+make_html(replist=reportlist,resdir=resdir,width=500,
+          openfile=TRUE,runnotes=runnotes,verbose=FALSE,
+          packagename = "aMSE",htmlname="yearlencomp")
+
+
+
+
+pick <- which((wzl$year == 1976)) # & (wzl$block == "8"))
+
+counts <- as.matrix(table(wzl$length[pick]))
+x <- cbind(as.numeric(rownames(counts)),counts)
+plotprep(width=7,height=4,newdev=FALSE)
+inthist(x,col="orange",border=4,width=1,inc=5)
+
+
+#select data for OM ------------------------------------------------------------
+
+pickY <- which((wzl$year > 1980) & (wzl$length < 227))
+
+records <- as.matrix(table(wzl$year[pickY],wzl$block[pickY]))
+blks <- sort(as.numeric(colnames(records)))
+nblk <- length(blks)
+
+early <- droplevels(wzl[pickY,c(2,8,9,13,14)])
+head(early,20)
+
+dim(early)
+
+early[,"block"] <- as.numeric(early[,"block"])
+
+early <- early[order(early[,"block"]),]
+early$len2 <- NA
+early$len2 <- round(early$length/2)*2
+
+ans <- table(early$len2,early$year,early$block)
+str(ans)
+lens <- seq(120,224,2)
+lengths <- rep(lens,8)
+blocknam <- c(6,7,8,9,10,11,12,13)
+blocks <- c(rep(6,53),rep(7,53),rep(8,53),rep(9,53),
+            rep(10,53),rep(11,53),rep(12,53),rep(13,53))
+years <- as.numeric(dimnames(ans)[[2]])
+
+dimnames(ans)
+result <- matrix(0,nrow=424,ncol=34,dimnames=list(lengths,c("block",years)))
+result[,"block"] <- blocks
+begin <- 1
+for (i in 1:8) {
+  result[begin:(begin+52),2:34] <- ans[,,i]
+  begin <- begin+53
+}
+
+filename <- "C:/Users/User/Dropbox/A_Code/aMSEUse/conddata/lateLF-84-20.csv"
+write.csv(result,file=filename)
+
+lateLF <- read.csv(file=filename,header=TRUE)
+
+
+
 
 # extent of weight measurements ------------------------------------------------
 
@@ -661,16 +782,101 @@ plot1(wz[pick,"length"],wz[pick,"weight"],type="p",pch=1,
       ylab="Total Weight",col=1,defpar=FALSE)
 
 
+# auto-documentation ---------------------------------------------------------
+
+listFunctions <- function(infile,verbose=TRUE) { # infile=filepath; verbose=TRUE
+  content <- readLines(con=infile)
+  funLines <- grep("function",content)
+  nLine <- length(funLines)
+  delF <- NULL
+  for (i in 1:nLine) {
+    tmpLine <- gsub(" ","",content[funLines[i]])
+    if ((length(grep("function\\(",tmpLine)) == 0) |
+        (substr(tmpLine,1,2) == "#'") |
+        (length(grep("<-function",tmpLine)) == 0) |
+        (length(grep("} #",tmpLine)) > 0)) delF <- c(delF,i)
+  }
+  ndelF <- length(delF)
+  if (ndelF > 0) funLines <- funLines[-delF]
+  if (ndelF == nLine) {
+    txt <- paste0(infile,"  contained no recognizable functions")
+    warning(cat(txt,"\n"))
+    out=txt
+    funnames=NULL
+    funLines=NULL
+  } else {
+    outlines <- sort(c(funLines))
+    out <- content[outlines]
+    funnames <- out
+    n <- length(out)
+    for (i in 1:n) {  # i=1
+      out[i] <- unlist(strsplit(out[i],"#"))[1]
+      funnames[i] <- removeEmpty(unlist(strsplit(out[i],"<-"))[1])
+    }
+    if (verbose) {
+      cat("\n",infile,"contained: \n")
+      for (i in 1:n) {
+        if (nchar(out[i]) == 2) {
+          cat("\n")
+        } else {
+          cat(outlines[i],out[i],"\n")
+        }
+      }
+      cat("\n")
+    }
+  }
+  return(invisible(list(functions=out,funnames=funnames,funlines=funLines)))
+} # end of listFunctions
 
 
 
 
+fundocs <- function(package=".",verbose=TRUE) {
+#  package="."; verbose=FALSE
+  rfiles <- dir(paste0(package,"/R/"))
+  rinfo <- file.info(paste0(package,"/R/",rfiles))
+  rinfo <- rinfo[,-c(2,3,7)]
+  nrfile <- length(rfiles)
+  contents <- vector(mode="list",nrfile)
+  names(contents) <- rfiles
+  funnames <- NULL
+  for (i in 1:nrfile) { # i = 1
+    filepath <- paste0(package,"/R/",rfiles[i])
+    out1 <- listFunctions(filepath,verbose=verbose)
+    if (is.null(out1$funnames)) {
+      detail <- out1$functions
+    } else {
+      nfun <- length(out1$funnames)
+      columns <- c("name","linen","syntax")
+      detail <- as.data.frame(matrix("",nrow=nfun,ncol=length(columns),
+                           dimnames=list(out1$funnames,columns)))
+      funnames <- c(funnames,out1$funnames)
+      detail$name <- out1$funnames
+      detail$linen <- out1$funlines
+      ans <- strsplit(out1$functions,"<-")
+      syn <- character(nfun)
+      for (j in 1:nfun) syn[j] <- ans[[j]][2]
+      syn <- gsub(" ","",syn)
+      detail$syntax <- substr(syn,9,(nchar(syn)-1))
+    }
+    contents[[i]] <- detail
+  }
+  return(list(contents=contents,funnames=sort(funnames)))
+} # end of fundocs
+
+out <- fundocs(package="C:/Users/User/Dropbox/A_Code/aMSE",verbose=TRUE)
+str(out,max.level = 1)
 
 
 
 
+str(contents)
 
 
+out <- tryCatch((is.function(scaletoone)),
+                error=function(cond) print("not a function"))
+
+# apply historical catches------------------------------------------------------
 
 
 

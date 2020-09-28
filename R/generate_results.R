@@ -66,15 +66,6 @@ biology_plots <- function(resdir, glb, zoneC) {
   caption <- "The emergence-at-length for each population. The x-axis is constrained to emphasize differences."
   addplot(filen,resdir=resdir,category="Biology",caption)
   # Tabulate biological properties uses zoneC-------------------------
-  # getvar <- function(indexvar,zone=zoneC) { # indexvar="B0"; zone=zoneC
-  #   sau <- getlistvar(zoneC,"SAU")
-  #   nSAU <- length(unique(sau))
-  #   saures <- numeric(nSAU)
-  #   invar <- getlistvar(zone,indexvar)
-  #   for (mu in 1:nSAU) saures[mu] <- sum(invar[mu])
-  #   ans <- c(invar,saures,sum(invar))
-  #   return(ans)
-  # }
   rows <- c("SAU","M","R0","B0","ExB0","MSY","MSYDepl","bLML",
             "MaxDL","L50","L95","AvRec","steep")
   sau <- getlistvar(zoneC,"SAU")

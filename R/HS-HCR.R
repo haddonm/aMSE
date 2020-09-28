@@ -126,7 +126,7 @@ getscore <- function(grad14) {
 #' @param incpueBlock the matrix of cpue by Block by year
 #' @param targetCE - a vector of the targetCE for each of the blocks
 #' @param modifyTarg - the constant that sets the range of CPUE in the
-#'    scoring function
+#'    scoring function, default=1.0
 #'
 #' @return a vector of scores relating to the targetCE PM; used in
 #'    blockMCDA
@@ -134,7 +134,7 @@ getscore <- function(grad14) {
 #'
 #' @examples
 #' print("Need to use a dataset for an example")
-targblockHCR <- function(incpueBlock,targetCE,modifyTarg=deltaCE) {
+targblockHCR <- function(incpueBlock,targetCE,modifyTarg=1.0) {
   delCE <- 5.0/modifyTarg
   score <- (delCE * incpueBlock) + 5.0 - (delCE * targetCE)
   score[score > 10.0] <- 10.0

@@ -29,5 +29,5 @@ read_conddata facilitates the reading of dataset used to
 }
 \examples{
 print("set up a csv file with the format given in the description")
-print("then call condat <- read_conddata("yourname.csv")) to read the data")
+print("then call condat <- read_conddata('yourname.csv')) to read the data")
 }

@@ -4,7 +4,7 @@
 \alias{targblockHCR}
 \title{targblockHCR - calculates the block scores for the targetCE}
 \usage{
-targblockHCR(incpueBlock, targetCE, modifyTarg = deltaCE)
+targblockHCR(incpueBlock, targetCE, modifyTarg = 1)
 }
 \arguments{
 \item{incpueBlock}{the matrix of cpue by Block by year}
@@ -12,7 +12,7 @@ targblockHCR(incpueBlock, targetCE, modifyTarg = deltaCE)
 \item{targetCE}{- a vector of the targetCE for each of the blocks}
 
 \item{modifyTarg}{- the constant that sets the range of CPUE in the
-scoring function}
+scoring function, default=1.0}
 }
 \value{
 a vector of scores relating to the targetCE PM; used in

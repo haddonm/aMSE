@@ -816,7 +816,7 @@ modzoneC <- function(zoneC,zoneD,glob,lowlim=0.0,uplim=0.4,inc=0.005) {
 #'     removed as catch during the year, a scalar
 #' @param yr the year in the dynamics being worked on. The first year
 #'     is generated when the zone is defined or when it is initially
-#'     depleted. All dynamics are appllied from year 2 - Nyrs; scalar
+#'     depleted. All dynamics are applied from year 2 - Nyrs; scalar
 #'
 #' @return a list containing ExploitB, MatureB, Catch, Harvest, Nt,
 #'     ce, and CatchN used to update the given pop in yr + 1
@@ -993,9 +993,9 @@ oneyearC <- function(zoneC,zoneD,Ncl,catchp,year,sigmar,npop,movem) {
 } # end of oneyearC
 
 
-#' @title oneyearD conducts one year's dynamics in the simulation
+#' @title oneyearD conducts one year's dynamics on zoneD in the MSE
 #'
-#' @description onyearD conducts one year's dynamics in the simulation
+#' @description oneyearD conducts one year's dynamics on zoneD in the MSE
 #'     returning the revised zoneD, which will have had a single year
 #'     of activity included in each of its components. This uses zoneC
 #'     but always within the environment of another function in which
