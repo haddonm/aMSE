@@ -89,7 +89,7 @@ ctrlfiletemplate(resdir)
 zonefiletemplate(resdir)
 datafiletemplate(6,resdir,filename="zone1sau2pop6.csv")
 
-ctrl <- checkresdir(resdir)
+ctrl <- checkctrldat(resdir)
 #> All required files appear to be present
 runname <- ctrl$runlabel
 zone1 <- readzonefile(resdir,ctrl$zonefile)

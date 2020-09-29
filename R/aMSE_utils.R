@@ -18,10 +18,10 @@
 #'
 #' @examples
 #' resdir <- tempdir()
-#' ctrlfiletemplate(datadir)
-#' zonefiletemplate(datadir)
-#' datafiletemplate(6,datadir,filename="zone1sau2pop6.csv")
-#' ctrl <- checkctrldat(datadir)
+#' ctrlfiletemplate(resdir)
+#' zonefiletemplate(resdir)
+#' datafiletemplate(6,resdir,filename="zone1sau2pop6.csv")
+#' ctrl <- checkctrldat(resdir)
 #' ctrl
 checkctrldat <- function(datadir,ctrlfile="control.csv") { # resdir=resdir; ctrlfile="control.csv"
   filenames <- dir(datadir)

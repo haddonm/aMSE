@@ -555,7 +555,7 @@ readzonefile <- function(indir,infile) {  # infile="westzone1.csv"; indir=datdir
    }
    condition <- getsingleNum("CONDITION",indat)
    if (condition > 0) {
-      Nyrs <- condition
+      Nyrs <- condition  # don't forget to add an extra year for initiation
       begin <- grep("CondYears",indat)
       histCatch <- matrix(0,nrow=condition,ncol=nSAU)
       colnames(histCatch) <- SAUnames

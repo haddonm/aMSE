@@ -15,7 +15,7 @@ library(microbenchmark)
  zonefiletemplate(resdir)
  datafiletemplate(6,resdir,filename="zone1sau2pop6.csv")
 
- ctrl <- checkresdir(resdir)
+ ctrl <- checkctrldat(resdir)
  runname <- ctrl$runlabel
  zone1 <- readzonefile(resdir,ctrl$zonefile)
  glb <- zone1$globals
@@ -875,8 +875,5 @@ str(contents)
 
 out <- tryCatch((is.function(scaletoone)),
                 error=function(cond) print("not a function"))
-
-# apply historical catches------------------------------------------------------
-
 
 

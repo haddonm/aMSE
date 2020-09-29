@@ -25,9 +25,9 @@ checkctrldat checks datadir contains the required csv
 }
 \examples{
 resdir <- tempdir()
-ctrlfiletemplate(datadir)
-zonefiletemplate(datadir)
-datafiletemplate(6,datadir,filename="zone1sau2pop6.csv")
-ctrl <- checkctrldat(datadir)
+ctrlfiletemplate(resdir)
+zonefiletemplate(resdir)
+datafiletemplate(6,resdir,filename="zone1sau2pop6.csv")
+ctrl <- checkctrldat(resdir)
 ctrl
 }

@@ -44,7 +44,7 @@ resdir <- "./../../rcode2/aMSEUse/out/run1"
 dirExists(resdir,make=TRUE,verbose=TRUE)
 # You now need to ensure that there is a control.csv, zone1sau2pop6.csv
 # and zone1.csv file in the data directory
-ctrl <- checkresdir(resdir)
+ctrl <- checkctrldat(resdir)
 runname <- ctrl$runlabel
 zone1 <- readzonefile(resdir,ctrl$zonefile)
 glb <- zone1$globals

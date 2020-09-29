@@ -14,7 +14,7 @@ dirExists(resdir,make=TRUE,verbose=TRUE)
 # zonefiletemplate(resdir)
 # datafiletemplate(6,resdir,filename="zone1sau2pop6.csv")
 
-ctrl <- checkresdir(resdir)
+ctrl <- checkctrldat(resdir)
 zone1 <- readzonefile(resdir,ctrl$zonefile)
 glb <- zone1$globals     # glb without the movement matrix
 constants <- readdatafile(glb$numpop,resdir,ctrl$datafile)

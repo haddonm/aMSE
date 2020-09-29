@@ -41,3 +41,5 @@
 * 13/09/2020 0.0.0.7750 Have removed 'diagrams' from the requirements of running the MSE and started adding functions and data-sets to faciliate the full blown operating model conditioning.
 
 * 22/09/2020 0.0.0.7700 Have started adding files to begin conditioning the operating model on teh west coast data. This is designed to bring out the issues and problems raised when including such things insode the package. So far this has entailed changes to the readfiles for the control, zone, and data files. This probably means I will need now to fix the bare-bones example in teh readme.md file on github.
+
+* 29/09/2020 0.0.0.7650 Haev added functions to assist with the conditioning of the OM. Need to update the vignette. All examples should work, but some of them too need modification. 
