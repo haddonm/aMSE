@@ -42,4 +42,7 @@
 
 * 22/09/2020 0.0.0.7700 Have started adding files to begin conditioning the operating model on teh west coast data. This is designed to bring out the issues and problems raised when including such things insode the package. So far this has entailed changes to the readfiles for the control, zone, and data files. This probably means I will need now to fix the bare-bones example in teh readme.md file on github.
 
-* 29/09/2020 0.0.0.7650 Haev added functions to assist with the conditioning of the OM. Need to update the vignette. All examples should work, but some of them too need modification. 
+* 29/09/2020 0.0.0.7650 Have added functions to assist with the conditioning of the OM. Need to update the vignette. All examples should work, but some of them too need modification. 
+
+* 01/10/2020 0.0.0.7600 Am working on conditioning the model and am now using the observed CPUE in an attempt to match it to the predicted CPUE from teh OM after initial depletion levels are set and the historical catches area applied. I have added a new candidatefunctions.R file to the data-raw folder and will expect to make changes pretty much every day, some small some large.
+

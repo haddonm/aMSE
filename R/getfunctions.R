@@ -425,7 +425,8 @@ getzoneprod <- function(product) {
 #' data(zone1)
 #' glb <- zone1$globals
 #' round(getzoneprops(testzoneC,testzoneD,glb),4)
-getzoneprops <- function(zoneC,zoneD,glb,year=1) { # zoneC=zoneC; zoneD=zoneD; glb=glb; year=1
+getzoneprops <- function(zoneC,zoneD,glb,year=1) {
+  # zoneC=zoneC; zoneD=zoneD; glb=glb; year=47
   numpop <- glb$numpop
   Nclass <- glb$Nclass
   B0 <- getvar(zoneC,"B0")

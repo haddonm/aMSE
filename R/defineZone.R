@@ -1118,10 +1118,12 @@ testequil <- function(zoneC,zoneD,glb,inH=0.0,verbose=TRUE) {
     } else {
       print("matureB varies",quote=FALSE)
     }
-    if (all(trunc(zoneD$exploitB[1,],3) == trunc(zoneD$exploitB[Nyrs,],3))) {
+    expldiff <- trunc(zoneD$exploitB[1,],3) == trunc(zoneD$exploitB[Nyrs,],3)
+    if (all(expldiff)) {
       print("exploitB Stable",quote=FALSE)
     } else {
-      print("exploitB varies",quote=FALSE)
+      diffe <- abs(trunc(zoneD$exploitB[1,],3) - trunc(zoneD$exploitB[Nyrs,],3))
+      print(paste0("exploitB varies ",max(diffe,na.rm=TRUE)),quote=FALSE)
     }
     if (all(trunc(zoneD$recruit[1,],3) == trunc(zoneD$recruit[Nyrs,],3))) {
       print("recruitment Stable",quote=FALSE)
