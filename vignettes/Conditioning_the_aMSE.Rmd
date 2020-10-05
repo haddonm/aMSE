@@ -52,6 +52,8 @@ options("show.signif.stars"=FALSE,
         "width"=240)
 
 library(aMSE)
+library(rutilsMH)
+library(makehtml)
 library(knitr)
 library(captioner)
 #library(diagrams)
@@ -64,24 +66,36 @@ pgwid=75
 
 # Introduction
 
-The final intent to develop the MSE code base to the point where it should be possible to produce the data files, the control file, and a harvest control file and set multiple batch jobs running. It is assumed that even with maximum code optimization each MSE run would take too long to be run in an interactive manner. Hence, there is a requirement to be able to set off multiple jobs at once, taking advantage of modern computers having multiple CPU cores. Batch jobs are an ideal way to handle this.
+Management strategy evaluation (MSE) entails the construction of a simulation framework that encompasses a simulation of the dynamics of the fishery being considered (the operating model), which must include a simulation of sampling from that fishery. Finally, it requires a simulation of the management or harvest strategy is applied to the fishery, including what data is used, what assessment or performance measures are used, and what harvest control rule is applied (__`r fig_nums("f1",display="cite")`__). With abalone, we are working with a species with high degrees of spatial complexity, meaning that both abalone biology (growth, maturity, productivity) and the fishery (catches, catch-rates, and resilience to fishing) varies greatly at relatively small geographical scales. Such spatial complexity is one reason why large scale stock assessment models have limited success with abalone species; evidenced by their failure to provide more successful management advice where they have been applied (NSW, Victoria, and New Zealand) than where management has been based upon more upon empirically based preformance measures. 
 
-However, during the development of the MSE framework it is expected that this will proceed in a sequential, although multi-faceted, fashion and many of the details of each run will need to be apparent to the development team. This document is to assist with that process. Once the MSE project is nearing completion a different 'How to Run an MSE' document will be needed. But for now, a document with many more details is required, nnot just for the developers but for those who may work to maintain and possibly further develop the code after this project finishes.
+<br>
 
-Despite this being more of a development document than a final document it remains important to install from the beginning the underlying requirements of the final batch running environment. The details of these requirements may change through the project development but the fundamental structures should remain the same.
+```{r echo=FALSE, out.width = '65%'}
+knitr::include_graphics("C:/Users/User/Dropbox/A_code/aMSEUse/figures/structure_of_MSE.png")
+```
+
+`r fig_nums("f1", caption=" A representation of the main components of an MSE simulation framework as used with abalone (Haddon and Mundy, 2016).")`
+
+<br>
+
+
+A common strategy used when applying MSE to a particular fishery is first to fit the operating model dynamics to historical data from the particular fishery as if it were a stock assessment model (refs). An advantage of this is that the operating model is put into the best available estimate of the current state of the fishery prior to applying alternative management approaches (harvest strategies). Any differences then found in the effectiveness of the alternative management approaches can then be attributed  with more confidence to the effects of that management rather than to the initial state of the operating model. Thus, the initial conditioning of the operating model is clearly important. Unfortunately, the biology and fishery for abalone is so spatially complex that any assessment based on a large geographical scale can only be an approximation at best. This means that the initial conditioning of the operating model in the abalone MSE remains a difficult problem. Before describing how this conditioining might proceed we will first examine the assumed spatial structure within the operating model.
 
 ## The Underlying Spatial Structure and Population Dynamics
 
-The spatial complexity of abalone fisheries is the main reason that structurally simple stock assessment models fail to capture the dynamics of abalone fisheries. Hence, an explicit spatial structure is required for the operating model. Here, the upper geographical scale being used is that of a zone, which is the scale at which quota or TACs are set. In Tasmania this is equivalent to the quota zone. Within the single zone, there will be (can be) multiple spatial management units (SAUs) for which aspirational catches are set (which sum to the TAC; in Tasmania these are equivalent to the statistical blocks), and within each SAU there can be multiple populations (sub-areas) of abalone, each with their own set of biological properties, which reflect, to some extent, the average properties for the SAU.
+The spatial complexity of abalone fisheries is the main reason that structurally simple stock assessment models fail to capture the dynamics of abalone fisheries. Hence, an explicit spatial structure is required for the operating model. Here, the upper geographical scale being used is that of a zone, which is the scale at which quota or TACs are set. In Tasmania this is equivalent to the quota zone. Within the single zone, there will be (can be) multiple spatial assessment / management units (SAUs) for which aspirational catches are set (which sum to the TAC; in Tasmania these are equivalent to the statistical blocks), and within each SAU there can be multiple populations (persistent areas of productivity) of abalone, each with their own set of biological properties, which reflect, to some extent, the average properties for the SAU.
 
-Within each population the population dynamics are described using difference equations operating at an annual time-step with the biological processes of growth, mortality, and recruitment occurring in a modelled sequence. The dynamics in this size-based model are described by following the fate of the numbers-at-size. In each year the dynamics begin with the numbers-at-asize at the start of each year. The first process undergone is that growth occurs, then half natural mortality is applied. At that point the exploitable biomass can be calculated from the numbers-at-size before fishing occurs. The remaining dynamics involve the removal of the catch, the application of the last half of natural mortality and the addition of recruits, at that point larval dispersal occurs (if it is > 0.0), which produces the numbers-at-size at the start of the next year.
+Within each population the population dynamics are described using difference equations operating at an annual time-step with the biological processes of growth, mortality, and recruitment occurring in a modelled sequence. The dynamics in this size-based model are described by following the fate of the numbers-at-size. In each year the dynamics begin with the numbers-at-asize at the start of each year. The first part of the annual process is that growth occurs, then half natural mortality is applied. At that point the exploitable biomass can be calculated from the numbers-at-size before fishing occurs (and it may well be greater than the spawning biomass, which is caluclated at the start of the year before growth has occurred). The remaining dynamics involve the removal of the catch, the application of the last half of natural mortality and the addition of recruits, at that point larval dispersal occurs (if it is > 0.0), which produces the numbers-at-size at the start of the next year.
 
+## Model Initiation
+
+Before making any simulation runs it is first necessary to initiate the model/simulation. It is during this initiation that the model conditioning can occur. 
 
 ## The Input File Requirements
 
-To implement a run using the __aMSE__ R package one currently needs to install both __aMSE__ and __rutilsMH__, both of which can be downloaded or installed from the GitHub sites:  
+To implement a run using the __aMSE__ R package one currently needs to install  __aMSE__, __rutilsMH__, and __makehtml__, all of which can be downloaded or installed from the GitHub sites:  
 
-https://github.com/haddonm/aMSE and https://github.com/haddonm/rutilsMH 
+https://github.com/haddonm/aMSE, https://github.com/haddonm/rutilsMH, and  https://github.com/haddonm/makehtml 
 
 Instructions for how to make those downloads are included in the _ReadMe.md_ files for each package, but as an example one could use:
 
@@ -94,9 +108,9 @@ devtools::install_github("https://github.com/haddonm/aMSE",build_vignettes=TRUE)
 
 ### Package Dependency
 
-Apart from __rutilsMH__, the __aMSE__ package now uses the new package __makehtml__ that contains functions that allow for the rapid local website generation of results from a particular run. It is thus necessary to also install that package.
+Apart from __rutilsMH__, the __aMSE__ package now uses the new package __makehtml__ that contains functions that allow for the rapid local website generation of results from a particular run. It is thus currently necessary to also install that package, though it is intended to make its use optional.
 
-Apart from installing the R packages __aMSE__, __rutilsMH__, and __makehtml__, for each run of the MSE you will need to identify and name a directory somewhere on your computer, here we will refer to it as the _resdir_, which will contain all the results. You will need such a _resdir_ for each separate MSE run that is made. Each such result directory will be the focus for all the stored results from each particular run. The idea is that given the _resdir_ it will be possible to access all the plots, tables, and other results generated from the given run (indeed it should be possible to repeat the entire run if required). Later functions will be written that will take a set of such run directories and summarize and compare the results found within.
+Apart from installing the R packages __aMSE__, __rutilsMH__, and __makehtml__, for each run of the MSE you will need to identify and name two directories somewhere on your computer, here we will refer to them as the _datdir_ and the _resdir_, which will contain all required data (__datdir_), and be ready to receive all the desired results (__resdir__); the same directory can serve as both. You will need such a _resdir_ for each separate MSE run that is made. Each such result directory will be the focus for all the stored results from each particular run. The idea is that given the _resdir_ it will be possible to access all the plots, tables, and other results generated from the given run (indeed it should be possible to repeat the entire run if required). Later functions will be written that will take a set of such run directories and summarize and compare the results found within.
 
 In the 'resdir' directory there needs to be at least four .csv files:
 
@@ -144,15 +158,15 @@ When conducting a management strategy evaluation to compare a set of harvest str
 
 These questions are important because they determine the spatial structure imposed on the operating model of the fisheries dynamics (see the vignette on MSE for explanations of the components that make up the MSE model). 
 
-The first question about the number of SAUs will depend upon how management is arranged. For example, in Tasmania, a total allowable catch is allocated to each quota zone. But spatial management is taken further by allocating intended catch levels to each statistical block to avoid excessive fishing in any single block should abalone become available in greater numbers than usual (__`r fig_nums("f1",display="cite")`__). Elsewhere, however, it may be the case that management decisions are made at the level of each SAU and the spread of effort or catch among its component populations is decided each year by the industry members. Such possible variation can be accommodated by __aMSE__ by changing the number of SAU and associated populations.
+The first question about the number of SAUs will depend upon how management is arranged. For example, in Tasmania, a total allowable catch is allocated to each quota zone. But spatial management is taken further by allocating intended catch levels to each statistical block to avoid excessive fishing in any single block should abalone become available in greater numbers than usual (__`r fig_nums("f2",display="cite")`__). Elsewhere, however, it may be the case that management decisions are made at the level of each SAU and the spread of effort or catch among its component populations is decided each year by the industry members. Such possible variation can be accommodated by __aMSE__ by changing the number of SAU and associated populations.
 
 <br>
 
-```{r pressure, echo=FALSE, fig.cap="A caption", out.width = '65%'}
+```{r pressure, echo=FALSE, out.width = '65%'}
 knitr::include_graphics("C:/Users/User/Dropbox/A_code/aMSEUse/figures/Tas_Abalone_Zones.png")
 ```
 
-`r fig_nums("f1", caption=" A schematic map of the Tasmanian quota zones and associated legal minimum lengths. A trimmed version of the figure on page 189 of Mundy and McAllister (2019).")`
+`r fig_nums("f2", caption=" A schematic map of the Tasmanian quota zones and associated legal minimum lengths. A trimmed version of the figure on page 189 of Mundy and McAllister (2019). The current focus of the MSE in Tasmania is the western zone.")`
 
 <br>
 
@@ -266,12 +280,12 @@ As well as printing out them out we would want to save the unfished zone propert
 ```{r }
 # Use a unique file name and put it into the resdir
 filename <- "unfishprops.csv"
-write.table(unfishprops,file = filename,sep=",")
 # make up a caption for use when the table is printed
 caption <- paste("The unfished equilibrium properties of the populations ",
                  "and zone, before any initial depletion.",collapse=" ")
 # The category names the tab in local website where the table would be found 
 addtable(unfishprops,filen=filename,resdir=resdir,category="Tables",caption)
+# addtable saves a copy pf unfishprops into resdir
 ```
 
 Here we print out the table to see the typical contents
@@ -303,7 +317,6 @@ If we now run the _getzoneprops_ function, of course we would expect a different
 initprops <- getzoneprops(zoneC=zoneC,zoneD=zoneDD,glb=glb,year=1)
 # check out the help for getzoneprops
 filename <- "initprops.csv"
-write.table(initprops,file = filename,sep=",")
 #  or use tmp <- read.csv(file=filename,header=TRUE,row.names=1)
 caption <- paste("The properties of the populations and zone after ",
                  "the zone has been depleted to its starting point.",collapse=" ")

@@ -220,3 +220,11 @@ Punt, A.E., Butterworth, D.S., de Moor, C.L., De Oliveira, J.A.A. and M. Haddon 
 
 Smith, A.D.M. (1997) Quantification of objectives, strategies and performance criteria for fishery management plans—an Australian perspective.  p291–295 _in_ Hancock, D.A., Smith, D.C., Grant, A. and J.P. Beumer (_eds_) _Developing and Sustaining World Fisheries Resources. The State of Science and Management._ Proceedings of the 2nd World Fisheries Congress. CSIRO Publishing, Collingwood.
 
+
+# debris
+
+The final intent to develop the MSE code base to the point where it should be possible to produce the data files, the control file, and a harvest control file and set multiple batch jobs running. It is assumed that even with maximum code optimization each MSE run would take too long to be run in an interactive manner. Hence, there is a requirement to be able to set off multiple jobs at once, taking advantage of modern computers having multiple CPU cores. Batch jobs are an ideal way to handle this.
+
+However, during the development of the MSE framework it is expected that this will proceed in a sequential, although multi-faceted, fashion and many of the details of each run will need to be apparent to the development team. This document is to assist with that process. Once the MSE project is nearing completion a different 'How to Run an MSE' document will be needed. But for now, a document with many more details is required, nnot just for the developers but for those who may work to maintain and possibly further develop the code after this project finishes.
+
+Despite this being more of a development document than a final document it remains important to install from the beginning the underlying requirements of the final batch running environment. The details of these requirements may change through the project development but the fundamental structures should remain the same.
