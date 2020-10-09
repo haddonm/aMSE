@@ -711,7 +711,8 @@ makezone <- function(glob,zoneC) { #glob=glb; zoneC=zoneC;
     Nt[,1,pop] <- Minv %*% recr # initial unfished numbers-at-size
     MatB[1,pop] <- sum(zoneC[[pop]]$MatWt*Nt[,1,pop])/1e06
     zoneC[[pop]]$B0 <- MatB[1,pop] # mature biomass at start of year
-    ExplB[1,pop] <- sum(zoneC[[pop]]$SelWt[,1]*Nt[,1,pop])/1e06
+    newNt <- hSurv * (G %*% Nt[,1,pop])
+    ExplB[1,pop] <- sum(zoneC[[pop]]$SelWt[,1]*newNt)/1e06
     zoneC[[pop]]$ExB0 <- ExplB[1,pop]
     deplExB[1,pop] <- 1.0  # no depletion when first generating zones
     deplSpB[1,pop] <- 1.0
@@ -792,8 +793,6 @@ modzoneC <- function(zoneC,zoneD,glob,lowlim=0.0,uplim=0.4,inc=0.005) {
   }
   return(list(zoneC=zoneC,product=production))
 } # end of modzoneC
-
-
 
 #' @title print.zoneDefinition S3 method for printing zonedef summary
 #'
@@ -956,16 +955,17 @@ restart <- function(oldzoneD,nyrs,npop,N,zero=TRUE) { # oldzoneD=zoneD; nyrs=Nyr
 #' @param zoneD the dynamics portion of the zone, with matrices and
 #'     arrays for the dynamic variables of the dynamics of the
 #'     operating model
-#' @param glob the globals variable from readzonefile
 #' @param inHarv a vector of annual harvest rates to be held constant
 #'     across all years.
+#' @param glob the globals variable from readzonefile
+#' @param maxiter default=3; the number of runs through the equilibrium loop.
 #'
 #' @return a list containing a revised dynamics list, zoneD
 #'
 #' @examples
 #' print("wait on built in data sets")
 #' # zoneC=zoneC; zoneD=zoneD; glob=glb; inHarv=rep(0.3,numpop)
-runthreeH <- function(zoneC,zoneD,inHarv,glob) {
+runthreeH <- function(zoneC,zoneD,inHarv,glob,maxiter=3) {
   npop <- glob$numpop
   Nclass <- glob$Nclass
   Nyrs <- glob$Nyrs
@@ -1110,32 +1110,38 @@ testequil <- function(zoneC,zoneD,glb,inH=0.0,verbose=TRUE) {
   inHarv <- rep(inH,npop)
   for (yr in 2:Nyrs)
     zoneD <- oneyearD(zoneC=zoneC,zoneD=zoneD,Ncl=Nclass,
-                     inHt=inHarv,year=yr,sigmar=1e-08,npop=npop,
-                     movem=glb$move)
+                      inHt=inHarv,year=yr,sigmar=1e-08,npop=npop,
+                      movem=glb$move)
+  zoneD <- restart(oldzoneD=zoneD,nyrs=Nyrs,npop=npop,N=Nclass,zero=FALSE)
+  for (yr in 2:Nyrs)  # repeat to be sure
+    zoneD <- oneyearD(zoneC=zoneC,zoneD=zoneD,Ncl=Nclass,
+                      inHt=inHarv,year=yr,sigmar=1e-08,npop=npop,
+                      movem=glb$move)
   if (verbose) {
-    if (all(trunc(zoneD$matureB[1,],3) == trunc(zoneD$matureB[Nyrs,],3))) {
+    if (all(trunc(zoneD$matureB[1,],2) == trunc(zoneD$matureB[Nyrs,],2))) {
       print("matureB Stable",quote=FALSE)
     } else {
       print("matureB varies",quote=FALSE)
     }
-    expldiff <- trunc(zoneD$exploitB[1,],3) == trunc(zoneD$exploitB[Nyrs,],3)
+    expldiff <- trunc(zoneD$exploitB[1,],2) == trunc(zoneD$exploitB[Nyrs,],2)
     if (all(expldiff)) {
       print("exploitB Stable",quote=FALSE)
     } else {
-      diffe <- abs(trunc(zoneD$exploitB[1,],3) - trunc(zoneD$exploitB[Nyrs,],3))
+      diffe <- abs(trunc(zoneD$exploitB[1,],2) - trunc(zoneD$exploitB[Nyrs,],2))
       print(paste0("exploitB varies ",max(diffe,na.rm=TRUE)),quote=FALSE)
     }
-    if (all(trunc(zoneD$recruit[1,],3) == trunc(zoneD$recruit[Nyrs,],3))) {
+    if (all(trunc(zoneD$recruit[1,],2) == trunc(zoneD$recruit[Nyrs,],2))) {
       print("recruitment Stable",quote=FALSE)
     } else {
       print("recruitment varies",quote=FALSE)
     }
-    if (all(round(zoneD$deplsB[1,],3) == round(zoneD$deplsB[Nyrs,],3))) {
+    if (all(round(zoneD$deplsB[1,],2) == round(zoneD$deplsB[Nyrs,],2))) {
       print("spawning depletion Stable",quote=FALSE)
     } else {
       print("spawning depletion varies",quote=FALSE)
     }
   }
+  zoneD <- restart(oldzoneD=zoneD,nyrs=Nyrs,npop=npop,N=Nclass,zero=TRUE)
   return(zoneD)
 } # end of testequil
 

@@ -7,7 +7,8 @@
 numbersatsize(resdir, glb, zoneD)
 }
 \arguments{
-\item{resdir}{the results directory}
+\item{resdir}{the results directory, if set to "" then plot is sent to
+the console instead}
 
 \item{glb}{the globals list}
 

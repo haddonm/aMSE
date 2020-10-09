@@ -29,6 +29,16 @@ regDe <- testequil(zoneC,zoneD,glb)
 popd <- round(sapply(zoneC,"[[","popdef"),5)
 props <- round(getzoneprops(zoneC,zoneD,glb,1),5)
 rbind(c(popd["AvRec",],NA),props["MSY",])
+unfish <- getunFished(zoneC,zoneD,glb)
+nas <- getnas(zoneD,yr=1,glb,zone1)
+
+sau <- zoneD$SAU
+plotprep(width=7,height=8,newdev=FALSE)
+parset(plots=c(4,2),byrow=FALSE)
+for (i in 6:13) {
+  numbersatsizeSAU("",glb,zoneC,zoneD,sau=i,defpar=FALSE)
+}
+
 
 dirExists(resdir,make=TRUE,verbose=TRUE)
 resfile <- setuphtml(resdir,cleanslate = TRUE)# prepare to save and log results

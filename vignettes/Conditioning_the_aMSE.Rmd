@@ -34,7 +34,7 @@ MathJax.Hub.Config({
 </script>
 
 
-```{r, include = FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -56,7 +56,6 @@ library(rutilsMH)
 library(makehtml)
 library(knitr)
 library(captioner)
-#library(diagrams)
 
 tab_nums <- captioner(prefix = "Table")
 fig_nums <- captioner(prefix = "Figure")
@@ -66,11 +65,11 @@ pgwid=75
 
 # Introduction
 
-Management strategy evaluation (MSE) entails the construction of a simulation framework that encompasses a simulation of the dynamics of the fishery being considered (the operating model), which must include a simulation of sampling from that fishery. Finally, it requires a simulation of the management or harvest strategy is applied to the fishery, including what data is used, what assessment or performance measures are used, and what harvest control rule is applied (__`r fig_nums("f1",display="cite")`__). With abalone, we are working with a species with high degrees of spatial complexity, meaning that both abalone biology (growth, maturity, productivity) and the fishery (catches, catch-rates, and resilience to fishing) varies greatly at relatively small geographical scales. Such spatial complexity is one reason why large scale stock assessment models have limited success with abalone species; evidenced by their failure to provide more successful management advice where they have been applied (NSW, Victoria, and New Zealand) than where management has been based upon more upon empirically based preformance measures. 
+Management strategy evaluation (MSE) entails the construction of a simulation framework that encompasses a simulation of the dynamics of the fishery being considered (the operating model), which must include a simulation of sampling from that fishery. Finally, it requires a simulation of the management or harvest strategy that is to be applied to the fishery, including what data is used, what assessment or performance measures are used, and what harvest control rule is applied (__`r fig_nums("f1",display="cite")`__). Both blacklip and greenlip abalone are species whose geographical distributions have high degrees of spatial complexity, meaning that both abalone biology (growth, maturity, productivity) and the fishery (catches, catch-rates, and resilience to fishing) varies greatly at relatively small geographical scales. Such spatial complexity is one reason why large scale stock assessment models have limited success with abalone species; evidenced by their failure to provide more successful management advice where they have been applied (NSW, Victoria, and New Zealand) than where management has been based upon more upon empirically based performance measures. 
 
 <br>
 
-```{r echo=FALSE, out.width = '65%'}
+```{r FIG1, echo=FALSE, out.width = '65%', fig.align='center'}
 knitr::include_graphics("C:/Users/User/Dropbox/A_code/aMSEUse/figures/structure_of_MSE.png")
 ```
 
@@ -78,20 +77,35 @@ knitr::include_graphics("C:/Users/User/Dropbox/A_code/aMSEUse/figures/structure_
 
 <br>
 
+## Two Potential Approaches
 
-A common strategy used when applying MSE to a particular fishery is first to fit the operating model dynamics to historical data from the particular fishery as if it were a stock assessment model (refs). An advantage of this is that the operating model is put into the best available estimate of the current state of the fishery prior to applying alternative management approaches (harvest strategies). Any differences then found in the effectiveness of the alternative management approaches can then be attributed  with more confidence to the effects of that management rather than to the initial state of the operating model. Thus, the initial conditioning of the operating model is clearly important. Unfortunately, the biology and fishery for abalone is so spatially complex that any assessment based on a large geographical scale can only be an approximation at best. This means that the initial conditioning of the operating model in the abalone MSE remains a difficult problem. Before describing how this conditioining might proceed we will first examine the assumed spatial structure within the operating model.
+Being a simulation, running an MSE to explore options with in a particular fishery can take a number of different approaches. The first, and most obvious, is to attempt to simulate a real fishery as closely as possible and project its dynamics forward under the alternative harvest strategies that are to be compared. By conditioning the MSE to a particular fishery then presumably one would begin any projections from close to the actual current depletion state. Such an approach should provide the most convincing comparisons of the different harvest strategies (_HS_) for a particular fishery. This would enable workers to determine how successful each possible _HS_ was in the future management of that particular stock.
+
+A second approach is more general because it is less focussed on a particular fishery. Instead, one attempts to simulate a generic fishery for species of a particular type, that have a type of life-history and a type of productivity seen across a range of fisheries. Thus, for example, instead of setting up the MSE to reflect the fishery for blacklip abalone on the west coast of Tasmania one might set it up to reflect a 'typical' blacklip abalone fishery. If it is possible to condition the simulation model to reflect such a generic fishery then one could artificially deplete the simulated stock to a given level. Thus, one might try to determine how well different _HS_ could recover a depleted stock, maintain a relatively productive stock, and manage a fish-down from an undepleted state to a more productive state (__`r fig_nums("f2",display="cite")`__).
+
+```{r FIG2, echo=FALSE, out.width = '65%', fig.align='center'}
+knitr::include_graphics("C:/Users/User/Dropbox/A_code/aMSEUse/figures/AlternativeMSE.png")
+```
+
+`r fig_nums("f2", caption=" Two alternative approaches for initiating and using the MSE framework.")`
+
+<br>
+
+A common strategy used when applying MSE to a particular fishery is first to fit the operating model dynamics to historical data from the particular fishery as if it were a stock assessment model (refs). An advantage of this is that the operating model is put into the best available estimate of the current state of the fishery prior to applying alternative management approaches (harvest strategies). Any differences then found in the effectiveness of the alternative management approaches can then be attributed  with more confidence to the effects of that management rather than to the initial state of the operating model. Thus, the initial conditioning of the operating model is clearly important. Unfortunately, the biology and fishery for abalone is so spatially complex that any assessment based on a large geographical scale can only be an approximation at best. This means that the initial conditioning of the operating model in the abalone MSE remains a difficult problem. Before describing how this conditioning might proceed we will first examine the assumed spatial structure within the operating model.
 
 ## The Underlying Spatial Structure and Population Dynamics
 
 The spatial complexity of abalone fisheries is the main reason that structurally simple stock assessment models fail to capture the dynamics of abalone fisheries. Hence, an explicit spatial structure is required for the operating model. Here, the upper geographical scale being used is that of a zone, which is the scale at which quota or TACs are set. In Tasmania this is equivalent to the quota zone. Within the single zone, there will be (can be) multiple spatial assessment / management units (SAUs) for which aspirational catches are set (which sum to the TAC; in Tasmania these are equivalent to the statistical blocks), and within each SAU there can be multiple populations (persistent areas of productivity) of abalone, each with their own set of biological properties, which reflect, to some extent, the average properties for the SAU.
 
-Within each population the population dynamics are described using difference equations operating at an annual time-step with the biological processes of growth, mortality, and recruitment occurring in a modelled sequence. The dynamics in this size-based model are described by following the fate of the numbers-at-size. In each year the dynamics begin with the numbers-at-asize at the start of each year. The first part of the annual process is that growth occurs, then half natural mortality is applied. At that point the exploitable biomass can be calculated from the numbers-at-size before fishing occurs (and it may well be greater than the spawning biomass, which is caluclated at the start of the year before growth has occurred). The remaining dynamics involve the removal of the catch, the application of the last half of natural mortality and the addition of recruits, at that point larval dispersal occurs (if it is > 0.0), which produces the numbers-at-size at the start of the next year.
+Within each population the population dynamics are described using difference equations operating at an annual time-step with the biological processes of growth, mortality, and recruitment occurring in a modelled sequence. The dynamics in this size-based model are described by following the fate of the numbers-at-size. In each year the dynamics begin with the numbers-at-size at the start of each year. The first part of the annual process is that growth occurs, then half natural mortality is applied. At that point the exploitable biomass can be calculated from the numbers-at-size before fishing occurs (and it may well be greater than the spawning biomass, which is calculated at the start of the year before growth has occurred). The remaining dynamics involve the removal of the catch, the application of the last half of natural mortality and the addition of recruits, at that point larval dispersal occurs (if it is > 0.0), which produces the numbers-at-size at the start of the next year.
 
 ## Model Initiation
 
-Before making any simulation runs it is first necessary to initiate the model/simulation. It is during this initiation that the model conditioning can occur. 
+Before making any simulation runs it is first necessary to initiate the model/simulation. Here that initiation entails first reading in the data files describing the biological properties of the various populations making up the simulation and deriving the numbers-at-size and all the associated statistics and properties that enable the dynamics of the fishery to be described. The initial populations are established as unfished populations in an equilibrium derived from the individual recruitment levels of each population, their associated growth and maturity properties and the natural mortality rate. At the same time the productivity of each population and the total zone is characterized. Once this zone is produced it can then be conditioned ready for any projections to be made (__`r fig_nums("f2",display="cite")`__).
 
-## The Input File Requirements
+
+##One Possible Workflow
+### The R Package Requirements
 
 To implement a run using the __aMSE__ R package one currently needs to install  __aMSE__, __rutilsMH__, and __makehtml__, all of which can be downloaded or installed from the GitHub sites:  
 
@@ -108,11 +122,11 @@ devtools::install_github("https://github.com/haddonm/aMSE",build_vignettes=TRUE)
 
 ### Package Dependency
 
-Apart from __rutilsMH__, the __aMSE__ package now uses the new package __makehtml__ that contains functions that allow for the rapid local website generation of results from a particular run. It is thus currently necessary to also install that package, though it is intended to make its use optional.
+Apart from __rutilsMH__, the __aMSE__ package now uses the new package __makehtml__ that contains functions that allow for the rapid local website generation of results from a particular run. It is thus currently necessary to also install that package, it is not necessary to generate the internal website but __makehtml__ also provides the functionality to generate and store .csv files of tables and .png files of plots, all in one directory.
 
-Apart from installing the R packages __aMSE__, __rutilsMH__, and __makehtml__, for each run of the MSE you will need to identify and name two directories somewhere on your computer, here we will refer to them as the _datdir_ and the _resdir_, which will contain all required data (__datdir_), and be ready to receive all the desired results (__resdir__); the same directory can serve as both. You will need such a _resdir_ for each separate MSE run that is made. Each such result directory will be the focus for all the stored results from each particular run. The idea is that given the _resdir_ it will be possible to access all the plots, tables, and other results generated from the given run (indeed it should be possible to repeat the entire run if required). Later functions will be written that will take a set of such run directories and summarize and compare the results found within.
+Apart from installing the R packages __aMSE__, __rutilsMH__, and __makehtml__, for each run of the MSE you will need to identify and name one or two directories somewhere on your computer, here we will refer to them as the _datdir_ and the _resdir_. The first will contain all required data (__datdir_), and the second will be ready to receive all the desired results (__resdir__); the same directory can serve as both. You will need such a _resdir_ for each MSE run that you wish to remain separate (for example, containing the outcomes from different harvest strategies, for later comparison). Each such result directory will be the focus for all the stored results from each particular run. The idea is that given the _resdir_ it will be possible to access all the plots, tables, and other results generated from the given run (indeed it should be possible to repeat the entire run if required). Later functions will be written that will take a set of such run directories and summarize and compare the results found within.
 
-In the 'resdir' directory there needs to be at least four .csv files:
+In the _datdir_ directory (which can be, and most often should be, the same as the _resdir_) there needs to be at least four .csv files:
 
 1. A control file that identifies ideally, a unique run name, the other input file names, the number of replicates, and other details of a particular MSE run, such as which harvest control rule (HCR) to use.
 
@@ -122,27 +136,31 @@ In the 'resdir' directory there needs to be at least four .csv files:
 
 4. A harvest control-rule file containing any constants or values used within the HCR.
 
-Functions are provided within __aMSE__ for writing out template versions of the first three files. These mimic the worked example we will use below and have been used to generate some of the built-in data-sets within __aMSE__, which are used to illustrate the operation of the various R functions that have been developed for conducting the simulations. In practice, one would run the _ctrlfiletemplate_, the _datafiletemplate_, and the _zonefiletemplate_ R functions to produce such files and then use them after editing the contents to suit your own fishery and particular run details (such editing would constitute much of the conditioning of the operating model. 
+Additional files may contain conditioning data, such as historical catches, cpue, and/or size-composition data. 
 
-You should not be surprised to find that just as there are _xxxxfiletemplate_ functions there are _readctrlfile_, _readdatafile_, and _readzonefile_ R functions (though eventually these may be hidden within more all encompassing functions). The intent (hope) is that most users should eventually not need to know such details.
+Functions are provided within __aMSE__ for writing out template versions of the first three files. These mimic the worked example we will use below and have been used to generate some of the built-in data-sets within __aMSE__, which are used to illustrate the operation of the various R functions that have been developed for conducting the simulations. In practice, one would run the _ctrlfiletemplate_, the _zonefiletemplate_, and the _datafiletemplate_  R functions to produce such files and then use them after editing the contents to suit your own fishery and particular run details (such editing of the biological and fishery properties would constitute the initial the conditioning of the operating model). 
 
-The 'resdir' directory (referred to in the R code as _resdir_) is the repository for all the plots and tables that are produced by __aMSE__ for a particular run. When the directories for a particular run are setup and checked (using _setuphtml_), a 'resultTable_runname.csv' file is also created. After that, if desired, each plot or table that are generated can be stored as a '.png' or '.csv' file in the _resdir_, and the filename of each result logged by adding it to the 'resultTable_runname.csv' (the function _logfilename_ is used to add the filename to the list). Actually, now it is best to use the functions _addtable_ and _addplot_ to do thge work for you. At the same time one should add a category (productivity, catches, etc.) and caption (see the help page for _logfilename_, _addplot_, and _addtable_). At any stage in the run, it is then possible to call the function _make_html_ and this will produce a local webpage inside the resdir and one can open it in a local browser (or it can open automatically). This provides for a quick way to visualize the results from a run and allow for the planning of later comparisons.
+You should not be surprised to find that just as there are _xxxxfiletemplate_ functions there are _readctrlfile_, _readzonefile_, and _readdatafile_ R functions (though eventually these may be hidden within more all encompassing functions). The intent (hope) is that most users should eventually not need to know such details.
 
-## A Possible Workflow
+The _resdir_ directory (referred to in the R code as _resdir_) is the repository for all the plots and tables that are produced by __aMSE__ for a particular run. When the directories for a particular run are setup and checked (using _setuphtml_), a _resultTable.csv_ file is also created. After that, if desired, each plot or table that are generated can be stored as a '.png' or '.csv' file in the _resdir_, and the filename of each result logged by adding it to the _resultTable.csv_ (the function _logfilename_ can be used to add the filename to the list). Actually, it is best to use the functions _addtable_ and _addplot_ to do the detailed work for you. At the same time one should add a category (productivity, catches, etc.) and caption (see the help page for _logfilename_, _addplot_, and _addtable_). At any stage in the run, it is then possible to call the function _make_html_ and this will produce a local web-page inside the _resdir_ and one can open it in a local browser (or it can open automatically). This provides for a quick way to visualize the results from a run and allow for the planning of later comparisons. The syntax for the _make_html_ function can be obtained easily using the function _endmakehtml_.
 
-There are thus a number of steps involved when running __aMSE__: 
+## Creating an Unfished Equilibrium Zone
 
-1. Initial decisions on the run directory, the runname, filenames for the zone, data, and HCR files, the spatial structure to be simulated, the zone wide properties (such as larval dispersal rate), the number of simulations to run, the number of years to project the simulation, and other aspects relating to the details of a particular run (see the details of the _ctrl_ and _zone_ objects and data files).
+There are a number of steps involved when initiating the __aMSE__ simulation framework: 
 
-2. Condition the operating model on a fishery using biological characteristics taken from the fishery, or, alternatively, use a hypothetical set of characters as a testbed (see the details of the _constants_ R object).
+### Structural and Implementation Decisions
 
-3. The initiation of the operating model sets up the dynamics in an unfished state at equilibrium. Once that is achieved the properties of the unfished 'fishery' are characterized. This characterization includes a summary of the basic biological properties for each population including the selectivity, maturation, growth, and productivity at all spatial scales (population, SAU, zone). This characterization results in a series of plots and tables all of which are stored in _resdir_ and logged in _resfile_.
+Initial decisions on the run directory, filenames for the zone, data, and HCR files, the spatial structure to be simulated, the zone wide properties (such as larval dispersal rate), the number of simulations to run, the number of years to project the simulation, and other aspects relating to the details of a particular files used in the run (see the format and details of the _ctrl_ and _zone_ objects and data files).
 
-4. If the initial depletion for the run is < 1.0, then one uses _dodepletion_ to achieve the desired depletion for the zone. This zone-wide depletion level is found by searching for the harvest rate that, when applied to all populations, depletes the zone to close to the desired initial level. This means that the depletion within each population may differ (the example code within the _getzoneprops_ function illustrates this). 
+### Conditioning on Biological Characteristics
 
-5. Once again one can characterize the properties of the zone and populations to contrast the fished state with the unfished.
+Biologically condition the operating model on a fishery using biological characteristics taken from the fishery, or, alternatively, use a hypothetical set of characters as a testbed (__`r fig_nums("f2",display="cite")`__).
 
-6. Once all this has been achieved then one can move to conducting projections under the control to the selected harvest control rule.
+An array of biological characteristics are required for each population (see the contents of _data(constants)_). These relate to maturity and growth, and other aspects of productivity such as unfished recruitment levels. Translating the biological data that has been collected from the various fisheries through time into these parameters is a large part of what is entailed in conditioning the operating model. The full requirements will become clear when we discuss the format and contents of the various files required to conduct a model run.
+
+### Zone Initiation
+
+The initiation of the operating model sets up the dynamics in an unfished state at equilibrium. Once that is achieved the properties of the unfished 'fishery' are characterized. This characterization includes a summary of the basic biological properties for each population including the selectivity, maturation, growth, and productivity at all spatial scales (population, SAU, zone). This characterization results in a series of plots and tables all of which are stored in _resdir_ and logged in _resfile_. This allows a double-check that the biological attributes specified for each population have had the desired effect and given rise to a stock simulation having the properties required (hypothetical or approximately realistic). 
 
 ## Initial Decisions
 
@@ -158,15 +176,15 @@ When conducting a management strategy evaluation to compare a set of harvest str
 
 These questions are important because they determine the spatial structure imposed on the operating model of the fisheries dynamics (see the vignette on MSE for explanations of the components that make up the MSE model). 
 
-The first question about the number of SAUs will depend upon how management is arranged. For example, in Tasmania, a total allowable catch is allocated to each quota zone. But spatial management is taken further by allocating intended catch levels to each statistical block to avoid excessive fishing in any single block should abalone become available in greater numbers than usual (__`r fig_nums("f2",display="cite")`__). Elsewhere, however, it may be the case that management decisions are made at the level of each SAU and the spread of effort or catch among its component populations is decided each year by the industry members. Such possible variation can be accommodated by __aMSE__ by changing the number of SAU and associated populations.
+The first question about the number of SAUs will depend upon how management is arranged. For example, in Tasmania, a total allowable catch is allocated to each quota zone. But spatial management is taken further by allocating intended catch levels to each statistical block to avoid excessive fishing in any single block should abalone become available in greater numbers than usual (__`r fig_nums("f3",display="cite")`__). Elsewhere, however, it may be the case that management decisions are made at the level of each SAU and the spread of effort or catch among its component populations is decided each year by the industry members. Such possible variation can be accommodated by __aMSE__ by changing the number of SAU and associated populations.
 
 <br>
 
-```{r pressure, echo=FALSE, out.width = '65%'}
+```{r FIG3, echo=FALSE, out.width = '65%'}
 knitr::include_graphics("C:/Users/User/Dropbox/A_code/aMSEUse/figures/Tas_Abalone_Zones.png")
 ```
 
-`r fig_nums("f2", caption=" A schematic map of the Tasmanian quota zones and associated legal minimum lengths. A trimmed version of the figure on page 189 of Mundy and McAllister (2019). The current focus of the MSE in Tasmania is the western zone.")`
+`r fig_nums("f3", caption=" A schematic map of the Tasmanian quota zones and associated legal minimum lengths. A trimmed version of the figure on page 189 of Mundy and McAllister (2019). The current focus of the MSE in Tasmania is the western zone.")`
 
 <br>
 
@@ -174,9 +192,6 @@ The number of populations making up each SAU is also an important decision, whic
 
 The fourth question about larval dispersal will be influenced by the area and the species being considered. With blacklip abalone in Tasmania mostly larval settlement occurs locally with only minor levels of larval dispersal to populations no large distance away (Miller _et al_., 2008). But even low levels of larval dispersal (the example we will use below has a dispersal rate of 3% - 0.03) have an influence on equilibrium conditions and potential yields, especially when large productive populations lie next to less productive smaller populations.
 
-## Conditioning on Biological Characteristics
-
-An array of biological characteristics are required for each population (see the contents of _data(constants)_). These relate to maturity and growth, and other aspects of productivity such as unfished recruitment levels. Translating the biological data that has been collected from the various fisheries through time into these parameters is a large part of what is entailed in conditioning the operating model. The full requirements will become clear when we discuss the format and contents of the various files required to conduct a model run.
 
 ## A Worked Example
 
@@ -244,9 +259,9 @@ str(product)
 
 <br> 
 
-Essentially it is a matrix of of _numpop_ matrices with the exploitable biomass, the mature biomass, the effective harvest rate, the catch or yield, the depletion level, and the relative cpue. Each row of values is obtained by running the dynamics with each constant harvest rate (listed in the rownames) until an equilibrium is reached. Thus, by searching for the maximum equilibrium or sustainable yield one can characterize what is required to obtain the $MSY$, the $B_{MSY}$, the $H_{MSY}$ and what lelve of stock depletion will be expected to provide the circumstances that can lead to the maximum sustainable yields.
+Essentially it is a matrix of of _numpop_ matrices with the exploitable biomass, the mature biomass, the effective harvest rate, the catch or yield, the depletion level, and the relative cpue. Each row of values is obtained by running the dynamics with each constant harvest rate (listed in the rownames) until an equilibrium is reached. Thus, by searching for the maximum equilibrium or sustainable yield one can characterize what is required to obtain the $MSY$, the $B_{MSY}$, the $H_{MSY}$ and what level of stock depletion will be expected to provide the circumstances that can lead to the maximum sustainable yields.
 
-These values are searched for and then included into each population list within the  _zoneC_ object, which is why generatig that object takes two steps.
+These values are searched for and then included into each population list within the  _zoneC_ object, which is why generating that object takes two steps.
 
 
 ```{r }
@@ -298,9 +313,18 @@ suppressMessages(kable(unfishprops,digits=c(4,4,4,4,4,4,4)))
 ```
 
 
+
+4. If the initial depletion for the run is < 1.0, then one uses _dodepletion_ to achieve the desired depletion for the zone. This zone-wide depletion level is found by searching for the harvest rate that, when applied to all populations, depletes the zone to close to the desired initial level. This means that the depletion within each population may differ (the example code within the _getzoneprops_ function illustrates this). 
+
+5. Once again one can characterize the properties of the zone and populations to contrast the fished state with the unfished.
+
+6. Once all this has been achieved then one can move to conducting projections under the control to the selected harvest control rule.
+
+
+
 ## Starting at a Depletion < 1.0
 
-During the comparisons of different harvest strategies it will be necessary to determine how well each HS performs starting from different initial depletion levels. This would be answering questions such as 'How well does the HS allow for stock recovery from a depleted stock?'. The intended initial depletion is included as an entry in the _ctrl_ file. And a function, _dodepletion_ is provided to impose fishing mortality onto the stock so that the zone is depleted until it is close to the intended level. The zoneal depletion is determined from a weighted mean depletion across all populations, where the weighting factor is the relative unfished mature biomass predicted for each population (see the equations describing the operating model). If, for example, we wanted to deplete our initial zone to a level close to 20% unfished mature biomass we would implement the following code (see the function's help page for a description of the six arguments.
+During the comparisons of different harvest strategies it will be necessary to determine how well each HS performs starting from different initial depletion levels. This would be answering questions such as 'How well does the HS allow for stock recovery from a depleted stock?'. The intended initial depletion is included as an entry in the _ctrl_ file. And a function, _dodepletion_ is provided to impose fishing mortality onto the stock so that the zone is depleted until it is close to the intended level. The zonal depletion is determined from a weighted mean depletion across all populations, where the weighting factor is the relative unfished mature biomass predicted for each population (see the equations describing the operating model). If, for example, we wanted to deplete our initial zone to a level close to 20% unfished mature biomass we would implement the following code (see the function's help page for a description of the six arguments.
 
 ```{r}
 zoneDD <- dodepletion(zoneC=zoneC,zoneD=zoneD,glob=glb,depl=0.20,
@@ -337,7 +361,7 @@ Notice that while the spawning biomass (=mature biomass = SpbDepl) is 0.1967 (al
 
 ## Fleet Dynamics
 
-The application of any harvest control rule in this complex spatial model will entail the translation of SAU level aspirational catches (which should sum to the zone's TAC), into catches appied to each individual population within each SAU. Of course, the aspirational catches per SAU derived from the harvest control rules (HCR) within each harvest strategy will not be taken exactly, The overall TAC will eventually constrain total catches, but some SAU will experience larger catches than expected, and others will experience smaller catches. SO the applicaiton of catches to populations requires two steps.
+The application of any harvest control rule in this complex spatial model will entail the translation of SAU level aspirational catches (which should sum to the zone's TAC), into catches applied to each individual population within each SAU. Of course, the aspirational catches per SAU derived from the harvest control rules (HCR) within each harvest strategy will not be taken exactly, The overall TAC will eventually constrain total catches, but some SAU will experience larger catches than expected, and others will experience smaller catches. SO the application of catches to populations requires two steps.
 
 The first step is to include variation into the aspirational catches from the HCR and then scale them until their sum equals the original TAC. The second step requires that each SAU's actual catch is distributed across their component populations in some  manner that reflects plausible fleet dynamics.
 
@@ -360,7 +384,7 @@ would naturally be expected to be variable through time and across areas and so 
 
 $$I_{t,p}={q_p}\left(B_{t,p}^E\right)^{\lambda}{e^{N(0,\sigma_q)}}$$
 
-where $I_{t,p}$ is the cpue in year $t$ for area $p$, $q_p$ is the catchability coefficient within area $p$, ${B_{t,p}^E}$ is the exploitable biomass in year $t$ and area $p$, with a non-linearity coefficient of $\lambda$, and ${e^{N(0,\sigma_q)}}$ is a Log-Normal random deviate, with $\sigma_p$ being the standard deviation of the catchability coefficient $q_p$. If $\lambda = 1.0$ then the relationship between cpue and exploitble biomass is linear, values other than $\lambda = 1.0$ lead to non-linear relationships. Given how important the use of cpue is in all Australian abalone harvest strategies, this is one assumption whose influence is in need of testing. We are using $p$ as a sub-script for area, because in the conditioning each population within each Spatial Assessment Unit corresponds to a particular area within that SAU. Effectively, area and population are the same thing in the model.
+where $I_{t,p}$ is the cpue in year $t$ for area $p$, $q_p$ is the catchability coefficient within area $p$, ${B_{t,p}^E}$ is the exploitable biomass in year $t$ and area $p$, with a non-linearity coefficient of $\lambda$, and ${e^{N(0,\sigma_q)}}$ is a Log-Normal random deviate, with $\sigma_p$ being the standard deviation of the catchability coefficient $q_p$. If $\lambda = 1.0$ then the relationship between cpue and exploitable biomass is linear, values other than $\lambda = 1.0$ lead to non-linear relationships. Given how important the use of cpue is in all Australian abalone harvest strategies, this is one assumption whose influence is in need of testing. We are using $p$ as a sub-script for area, because in the conditioning each population within each Spatial Assessment Unit corresponds to a particular area within that SAU. Effectively, area and population are the same thing in the model.
 
 In the operating model, given a total allowable catch (TAC) or quota, if the harvest strategy selected does not allocated the desired level of catch among the different populations (sub-areas) in any given year then some fleet dynamics process will need to be adopted to make that distribution. Given the previous reasoning about cpue, then previous catch rates across the different populations may be considered able to serve as a guide to where to fish in subsequent years. This is a reasonable assumption if the fishery regularly leaves behind a significant proportion of the legal sized animals. However, catch-rates in one year do not give any indication of the availability of undersized abalone that are expected to grow into the fishery. In fisheries that are being fully exploited the advent of new recruits will be an important component of each year’s fishery. Fortunately, the abalone fishery depends on divers literally handling their catch and this automatically provides them an opportunity to identify visually those areas that would be expected to be productive in the next year and also those areas that would be expected to become less productive. Their own observations
 would be made with some error and discussions among divers would also rarely be precise. Such diver expectations provide an indication of exploitable biomass and this can thus be used in an algorithm for distributing catches by area:

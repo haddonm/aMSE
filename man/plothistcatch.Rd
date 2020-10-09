@@ -4,7 +4,7 @@
 \alias{plothistcatch}
 \title{plothistcatch plots the historical catches used for conditioning}
 \usage{
-plothistcatch(zone1, pops = NULL, resdir = "")
+plothistcatch(zone1, pops = NULL, resdir = "", defpar = TRUE)
 }
 \arguments{
 \item{zone1}{The zonewide properties as in readzonefile(indir,ctrl$zonefile)}
@@ -15,7 +15,10 @@ included. Thus if there were 8 populations the pops=c(1,2,3,8), would
 plot the first three and the last population.}
 
 \item{resdir}{the results directory used by makehtml to store plots and
-tables.}
+tables. If set to "", the default, then it plots to the console}
+
+\item{defpar}{define the plot parameters. Set to FALSE if using
+plothistcatch to add a plot to a multiple plot}
 }
 \value{
 nothing, it adds a plot into resdir and modifies resultTable.csv

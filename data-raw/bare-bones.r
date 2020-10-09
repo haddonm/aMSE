@@ -10,9 +10,9 @@ resdir <- "./../../A_code/aMSEUse/conddata/sspm"
 dirExists(resdir,make=TRUE,verbose=TRUE)
 # You now need to ensure that there is a control.csv, zone1sm\au2pop6.csv
 # and region1.csv file in the data directory
-# ctrlfiletemplate(resdir)
-# zonefiletemplate(resdir)
-# datafiletemplate(6,resdir,filename="zone1sau2pop6.csv")
+ ctrlfiletemplate(resdir)
+ zonefiletemplate(resdir)
+ datafiletemplate(6,resdir,filename="zone1sau2pop6.csv")
 
 ctrl <- checkctrldat(resdir)
 zone1 <- readzonefile(resdir,ctrl$zonefile)

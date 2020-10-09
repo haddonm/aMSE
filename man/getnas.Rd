@@ -16,7 +16,7 @@ getnas(zoneD, yr, glob, zone)
 \item{zone}{the zone constants}
 }
 \value{
-a matrix of numpop + nSAU + 1 columns of numbers-at-size
+a matrix of numpop + 1 columns of numbers-at-size
 }
 \description{
 getnas extracts numbers-at-size for all populations,

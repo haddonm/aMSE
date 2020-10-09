@@ -4,7 +4,7 @@
 \alias{runthreeH}
 \title{runthree conducts the dynamics with constant catch 3 times}
 \usage{
-runthreeH(zoneC, zoneD, inHarv, glob)
+runthreeH(zoneC, zoneD, inHarv, glob, maxiter = 3)
 }
 \arguments{
 \item{zoneC}{the constants components of the simulated zone}
@@ -17,6 +17,8 @@ operating model}
 across all years.}
 
 \item{glob}{the globals variable from readzonefile}
+
+\item{maxiter}{default=3; the number of runs through the equilibrium loop.}
 }
 \value{
 a list containing a revised dynamics list, zoneD

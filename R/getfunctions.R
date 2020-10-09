@@ -118,7 +118,7 @@ getLogical <- function(inline,nb) {  #inline <- txtline; nb=2
 #' @param glob the global variables object
 #' @param zone the zone constants
 #'
-#' @return a matrix of numpop + nSAU + 1 columns of numbers-at-size
+#' @return a matrix of numpop + 1 columns of numbers-at-size
 #' @export
 #'
 #' @examples
@@ -127,18 +127,18 @@ getLogical <- function(inline,nb) {  #inline <- txtline; nb=2
 #' data(testzoneD)
 #' nas <- getnas(testzoneD,yr=1,glob=glb,zone=zone1)
 #' round(nas[1:30,],1)
-getnas <- function(zoneD,yr,glob,zone) {
+getnas <- function(zoneD,yr,glob,zone) {# zoneD=zoneD;yr=1;glob=glb;zone=zone1
   numpop <- glob$numpop
   nSAU <- glob$nSAU
-  columns <- c(paste0("p",1:numpop),zone$SAUnames,"zone")
+  columns <- c(paste0("p",1:numpop),"zone") # ,zone$SAUnames
   nas <- matrix(0,nrow=glob$Nclass,ncol=length(columns),
                 dimnames=list(glob$midpts,columns))
   for (pop in 1:numpop) nas[,pop] <- zoneD$Nt[,yr,pop]
   nas[,"zone"] <- rowSums(nas[,1:numpop],na.rm=TRUE)
-  for (mu in 1:nSAU) {
-    pickcol <- which(zoneD$SAU == mu)
-    nas[,(numpop+mu)] <- rowSums(nas[,pickcol],na.rm=TRUE)
-  }
+  # for (mu in 1:nSAU) {
+  #   pickcol <- which(zoneD$SAU == mu)
+  #   nas[,(numpop+mu)] <- rowSums(nas[,pickcol],na.rm=TRUE)
+  # }
   return(nas)
 } #end of getnas
 
@@ -299,65 +299,66 @@ getsum <- function(inmat,index) {
 #'    unfished. Of course, this will only work as long as movezoneYear
 #'    hasn't been called, which would disrupt the contents of the first
 #'    year. But if applied to zone rather than zone1 etc, this should be
-#'    fine. The outputs include: R0, A0, B0, B0crypt, popdef, MSY,
-#'    MSYDepl, LML, ExB0, Nt, and Ncrypt
+#'    fine. The outputs include: R0, B0, B0crypt, popdef, MSY,
+#'    MSYDepl, LML, ExB0, and Nt
 #'
-#' @param inzone the zone whose unfished state is wanted
+#' @param zoneC the constant part of the zone
+#' @param zoneD the dynamic part of the zone
 #' @param glb contains the global variables used everywhere
 #'
 #' @return a list of multiple components relating to the unfished stock
 #' @export
 #' @examples
 #' \dontrun{
-#'  data(condDat)
-#'  glb <- condDat$globals
-#'  out <- makeZone(condDat,uplim=0.4)
-#'  zone <- out$zone
-#'  unfish <- getunFished(zone,glb)
-#'  str(unfish,max.level=1)
+#'   data(zone1)
+#'   glb <- zone1$globals
+#'   data(constants)
+#'   ans <- makezoneC(zone1,constants)
+#'   zoneC <- ans$zoneC
+#'   ans <- makezone(glb,zoneC)
+#'   zoneC <- ans$zoneC
+#'   zoneD <- ans$zoneD
+#'   ans2 <- modzoneC(zoneC,zoneD,glb)
+#'   zoneC <- ans2$zoneC
+#'   unfish <- getunFished(zoneC,zoneD,glb)
+#'   str(unfish,max.level=1)
 #' }
-getunFished <- function(inzone,glb) {  # inzone=zone
-  if((inzone[[1]]$B0 - inzone[[1]]$MatureB[1]) > 0.001) {
+getunFished <- function(zoneC,zoneD,glb) {  # inzone=zone
+  if((zoneC[[1]]$B0 - zoneD$matureB[1,1]) > 0.001) {
     warning("Unfished characters taken from a depleted zone in getunFished \n")
   }
-   numpop <- glb$numpop
+  numpop <- glb$numpop
   nofished <- vector("list",(numpop+1))
   label <- c("R0","B0","B0crypt","popdef","MSY","MSYDepl","LML","ExB0",
              "Nt")
   for (pop in 1:numpop) {
-    Nt <- inzone[[pop]]$Nt[,1]
-
-    R0 <- inzone[[pop]]$R0
-   # A0 <- inzone[[pop]]$A0
-    B0 <- inzone[[pop]]$B0
+    Nt <- zoneD$Nt[,1,pop]
+    R0 <- zoneC[[pop]]$R0
+    B0 <- zoneC[[pop]]$B0
     B0crypt <- B0 -
-            sum(inzone[[pop]]$Emergent * Nt * inzone[[pop]]$MatWt)/1e06
-    popdef <- inzone[[pop]]$popdef
-    MSY <- inzone[[pop]]$MSY
-    MSYDepl <- inzone[[pop]]$MSYDepl
-    LML <- inzone[[pop]]$LML[1]
-    ExB0 <- inzone[[pop]]$ExB0
+            sum(zoneC[[pop]]$Emergent * Nt * zoneC[[pop]]$MatWt)/1e06
+    popdef <- zoneC[[pop]]$popdef
+    MSY <- zoneC[[pop]]$MSY
+    MSYDepl <- zoneC[[pop]]$MSYDepl
+    LML <- zoneC[[pop]]$LML[1]
+    ExB0 <- zoneC[[pop]]$ExB0
     ans <- list(R0,B0,B0crypt,popdef,MSY,MSYDepl,LML,ExB0,Nt)
     names(ans) <- label
     nofished[[pop]] <- ans
   }
   R0 <- 0
- # A0 <- 0
   B0 <- 0
   B0crypt <- 0
   MSY <- 0
   ExB0 <- 0
   Nt <- numeric(glb$Nclass)
-  #Ncrypt <- numeric(glb$Nclass)
   for (pop in 1:numpop) { #sums across all pops to go into place numpop+1
     R0 <- R0 + nofished[[pop]]$R0
-  #  A0 <- A0 + nofished[[pop]]$A0
     B0 <- B0 + nofished[[pop]]$B0  ## or use: sum(sapply(zone,"[[","B0"))
     B0crypt <- B0crypt + nofished[[pop]]$B0crypt
     MSY <- MSY + nofished[[pop]]$MSY
     ExB0 <- ExB0 + nofished[[pop]]$ExB0
     Nt <- Nt + nofished[[pop]]$Nt
-   # Ncrypt <- Ncrypt + nofished[[pop]]$Ncrypt
   }
   zoneT <- list(R0,B0,B0crypt,MSY,ExB0,Nt)
   names(zoneT) <- c("R0","B0","B0crypt","MSY","ExB0","Nt")

@@ -4,10 +4,12 @@
 \alias{getunFished}
 \title{getunFished - extracts all data relating to year 1; unfished.}
 \usage{
-getunFished(inzone, glb)
+getunFished(zoneC, zoneD, glb)
 }
 \arguments{
-\item{inzone}{the zone whose unfished state is wanted}
+\item{zoneC}{the constant part of the zone}
+
+\item{zoneD}{the dynamic part of the zone}
 
 \item{glb}{contains the global variables used everywhere}
 }
@@ -19,16 +21,22 @@ getunFished - extracts all data relating to year 1;
    unfished. Of course, this will only work as long as movezoneYear
    hasn't been called, which would disrupt the contents of the first
    year. But if applied to zone rather than zone1 etc, this should be
-   fine. The outputs include: R0, A0, B0, B0crypt, popdef, MSY,
-   MSYDepl, LML, ExB0, Nt, and Ncrypt
+   fine. The outputs include: R0, B0, B0crypt, popdef, MSY,
+   MSYDepl, LML, ExB0, and Nt
 }
 \examples{
 \dontrun{
- data(condDat)
- glb <- condDat$globals
- out <- makeZone(condDat,uplim=0.4)
- zone <- out$zone
- unfish <- getunFished(zone,glb)
- str(unfish,max.level=1)
+  data(zone1)
+  glb <- zone1$globals
+  data(constants)
+  ans <- makezoneC(zone1,constants)
+  zoneC <- ans$zoneC
+  ans <- makezone(glb,zoneC)
+  zoneC <- ans$zoneC
+  zoneD <- ans$zoneD
+  ans2 <- modzoneC(zoneC,zoneD,glb)
+  zoneC <- ans2$zoneC
+  unfish <- getunFished(zoneC,zoneD,glb)
+  str(unfish,max.level=1)
 }
 }

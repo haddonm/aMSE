@@ -147,7 +147,8 @@ compzoneN <- function(unfN,curN,glb,yr,depl,LML=0,resdir="") {
 #'     at-size distribution, omitting the first four size classes to
 #'     avoid the recruitment numbers dominating the plot.
 #'
-#' @param resdir the results directory
+#' @param resdir the results directory, if set to "" then plot is sent to
+#'     the console instead
 #' @param glb the globals list
 #' @param zoneD the dynamic part of the zone, zoneD
 #'
@@ -160,10 +161,14 @@ numbersatsize <- function(resdir, glb, zoneD) {
   # some globals
   mids <- glb$midpts
   numpop <- glb$numpop
-  # initial numbers-at-size uses zoneD--------------------------------
+  # initial numbers-at-size uses zoneD--
   Nt <- zoneD$Nt[,1,]/1000.0
   Ntt <- rowSums(zoneD$Nt[,1,])/1000.0  # totals
-  filen <- filenametopath(resdir,"Initial_N-at-Size.png")
+  if (nchar(resdir) > 0) {
+    filen <- file.path(resdir,"Initial_N-at-Size.png")
+  } else {
+    filen <- ""
+  }
   plotprep(width=7,height=6,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
   parset(plots=c(2,1))
   plot(mids[5:105],Ntt[5:105],type="l",lwd=2,xlab="Shell Length mm (5 - 210mm)",
@@ -175,10 +180,77 @@ numbersatsize <- function(resdir, glb, zoneD) {
   abline(h=0.0,col="darkgrey")
   legend("topright",paste0("P",1:numpop),lwd=3,col=c(1:numpop),bty="n",
          cex=1.2)
-    caption <- "The numbers-at-size for the whole zone and for each population separately. The recruitment numbers are omitted for clarity."
-  addplot(filen,resdir=resdir,category="NumSize",caption)
-
+  if (nchar(resdir) > 0) {
+    caption <- paste0("The numbers-at-size for the whole zone and for each ",
+                      "population separately. The recruitment numbers are",
+                      " omitted for clarity.")
+    addplot(filen,resdir=resdir,category="NumSize",caption)
+  }
 } # end of numbersatsize
+
+#' @title numbersatsizeSAU plots the numbers-at-size for a given SAU
+#'
+#' @description numbersatsizeSAU plots the initial unfished numbers-
+#'     at-size distribution for a given SAU, omitting the first four size
+#'     classes to avoid the recruitment numbers dominating the plot.
+#'
+#' @param resdir the results directory, if set to "" then plot is sent to
+#'     the console instead
+#' @param glb the globals list
+#' @param zoneC the constant part of the zpne structure
+#' @param zoneD the dynamic part of the zone, zoneD
+#' @param sau the SAU name to select for plotting. If multiple populations are
+#'     contained in an SAU their numbers-at-size will be combined.
+#' @param yr which year of numbers-at-size should be plotted?
+#' @param defpar should the plot parameters be defined. Set to FALSE if
+#'     numbersatsizeSAU is to be used to add a plot to a multiple plot.
+#' @param exploit should exploitable numbers be plotted as well? default=TRUE
+#' @param mature should mature numbers be plotted as well? default=TRUE
+#' @param filename default='Numbers-at-Size_Year1.png', but can be changed
+#'     to suit whichever year is used
+#'
+#' @return nothing but it adda a plot to the results directory or console
+#' @export
+#'
+#' @examples
+#' print("this will be quite long when I get to it")
+numbersatsizeSAU <- function(resdir, glb, zoneC, zoneD, sau, yr=1,
+                             defpar=TRUE, exploit=TRUE, mature=TRUE,
+                             filename="Numbers-at-Size_Year1.png") {
+  # some globals resdir=""; glb=glb; zoneD=zoneD; sau=8; defpar=TRUE
+  mids <- glb$midpts
+  picksau <- which(zoneD$SAU == as.character(sau))
+  Nt <- as.matrix(zoneD$Nt[,yr,picksau]/1000.0)
+  if (length(picksau) > 1) {
+    Ntt <- as.matrix(rowSums(Nt,na.rm=TRUE))  # totals
+  } else {
+    Ntt <- Nt
+  }
+  if (nchar(resdir) > 0) {
+    filen <- file.path(resdir,filename)
+  } else {
+    filen <- ""
+  }
+  if ((exploit) | (mature)) pickzC <- which(sapply(zoneC,"[[","SAU") == sau)
+  maxy <- getmax(Ntt[5:105,])
+  if (defpar)
+    plotprep(width=7,height=4,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
+  plot(mids[5:105],Ntt[5:105],type="l",lwd=2,xlab="Shell Length mm (5 - 210mm)",
+       ylab="Numbers-at_size '000s",panel.first=grid(),ylim=c(0,maxy))
+  if (exploit)
+    lines(mids[5:105],zoneC[[pickzC]]$Select[5:105,yr] * Ntt[5:105],col=4,lwd=2)
+  if (mature)
+    lines(mids[5:105],zoneC[[pickzC]]$Maturity[5:105] * Ntt[5:105],col=2,lwd=2)
+  legend("topright",legend=as.character(sau),lwd=0,col=0,bty="n",cex=1.2)
+  if (nchar(resdir) > 0) {
+    addm <- ""; adde <- ""
+    if (mature) addm <- " The red line is mature numbers-at-size. "
+    if (exploit) adde <- " The blue line is exploitable numbers-at-size."
+    caption <- paste0("The numbers-at-size for the SAU ",sau," the recruitment ",
+                      "numbers are omitted for clarity.",addm,adde)
+    addplot(filen,resdir=resdir,category="NumSize",caption)
+  }
+} # end of numbersatsizeSAU
 
 #' @title plothistcatch plots the historical catches used for conditioning
 #'
@@ -192,41 +264,49 @@ numbersatsize <- function(resdir, glb, zoneD) {
 #'     included. Thus if there were 8 populations the pops=c(1,2,3,8), would
 #'     plot the first three and the last population.
 #' @param resdir the results directory used by makehtml to store plots and
-#'     tables.
+#'     tables. If set to "", the default, then it plots to the console
+#' @param defpar define the plot parameters. Set to FALSE if using
+#'     plothistcatch to add a plot to a multiple plot
 #'
 #' @return nothing, it adds a plot into resdir and modifies resultTable.csv
 #' @export
 #'
 #' @examples
 #' print("wait until I have altered the internals data sets")
-plothistcatch <- function(zone1,pops=NULL,resdir="") {
-  # zone1=zone1; pops=c(4,5,6,7)
+plothistcatch <- function(zone1,pops=NULL,resdir="",defpar=TRUE) {
+  # zone1=zone1; pops=c(1); defpar=FALSE
   glb <- zone1$globals
-  numpop <- glb$numpop
   if (length(pops) > 0) {
-    histcatch <- zone1$histCatch[,pops]
+    histcatch <- as.matrix(zone1$histCatch[,pops])
     numpop <- length(pops)
     addlab <- paste0(pops,"_",collapse="")
+    label <- paste0("p",pops)
+    numpop <- length(pops)
   } else {
     histcatch <- zone1$histCatch
     addlab <- "all"
+    label <- colnames(histcatch)
+    numpop <- glb$numpop
   }
   histyr <- zone1$histyr
   yearCE <- zone1$yearCE
   yearC <- histyr[,"year"]
   pngfile <- paste0("Historical_Catches_",addlab,".png")
-  filen <- filenametopath(resdir,pngfile)
-  plotprep(width=7,height=4,newdev=FALSE,filename=filen,cex=0.9,
-           verbose=FALSE)
+  if (nchar(resdir) > 0) {
+    filen <- filenametopath(resdir,pngfile)
+  } else { filen <- "" }
+  if (defpar)
+      plotprep(width=7,height=4,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
   ymax <- getmax(histcatch)
   plot(yearC,histcatch[,1],type="l",lwd=2,xlab="Year",
        ylab="Catch (t)",panel.first=grid(),ylim=c(0,ymax))
   if (numpop > 1) for (pop in 2:numpop)
     lines(yearC,histcatch[,pop],lwd=2,col=pop)
-  label <- colnames(histcatch)
   legend("topright",label,lwd=3,col=c(1:numpop),bty="n",cex=1.2)
-  caption <- "The historical catch used for conditioning for each population."
-  addplot(filen,resdir=resdir,category="history",caption)
+  if (nchar(resdir) > 0) {
+    caption <- "The historical catch used for conditioning for each population."
+    addplot(filen,resdir=resdir,category="history",caption)
+  }
 } # end of plothistcatch
 
 #' @title plothistCE plots the historical cpue used for conditioning
