@@ -345,21 +345,16 @@ readctrlfile <- function(indir,infile="control.csv") {
    runlabel <- getStr(indat[begin],1)
    zonefile <- getStr(indat[begin+1],1)
    datafile <- getStr(indat[begin+2],1)
-   hcrname <- getStr(indat[begin+3],1)
-   outdir <- getStr(indat[begin+4],1)
-   project <- getsingleNum("project",indat)
-
    batch <- getsingleNum("batch",indat)
    reps <- getsingleNum("replicates",indat)
  #  initdepl <- getsingleNum("initdepl",indat)
    withsigR <- getsingleNum("withsigR",indat)
    withsigB <- getsingleNum("withsigB",indat)
    withsigCE <- getsingleNum("withsigCE",indat)
-   outctrl <- list(runlabel,zonefile,datafile,hcrname,outdir,project,
-                   batch,reps,withsigR,withsigB,withsigCE)
-   names(outctrl) <- c("runlabel","zonefile","datafile","hcrname",
-                       "outdir","project","batch","reps",
-                       "withsigR","withsigB","withsigCE")
+   outctrl <- list(runlabel,zonefile,datafile,batch,
+                   reps,withsigR,withsigB,withsigCE)
+   names(outctrl) <- c("runlabel","zonefile","datafile","batch",
+                       "reps","withsigR","withsigB","withsigCE")
    return(outctrl)
 } # end of readctrlfile
 
@@ -499,13 +494,14 @@ readhcrfile <- function(infile) {  # infile <- "C:/A_CSIRO/Rcode/AbMSERun/ctrl_w
 #'     the function makezonefile, which produces an example *.csv
 #'     file that can then be customized to suit your own simulations.
 #'     Each required section contains a series of constants which are
-#'     read in individually,so their labels are equally important.
+#'     read in individually,so their labels are equally important. This
+#'     important function reads in the details of any conditioning and also
+#'     of any projections.
 #'
 #' @param indir directory in which to find the zone file
 #' @param infile character string with filename of the zone file
 #'
-#' @return eight objects, four vectors, 4 numbers, and a list of five
-#'     objects
+#' @return 15 objects relating to constnats for the zone
 #' \itemize{
 #'   \item SAUnames the labels given to each SAU
 #'   \item SAUpop the number of populations in each SAU, in sequence
@@ -513,8 +509,15 @@ readhcrfile <- function(infile) {  # infile <- "C:/A_CSIRO/Rcode/AbMSERun/ctrl_w
 #'   \item cw scaler defining the class width
 #'   \item randomseed used to ensure that each simulation run starts
 #'       in the same place. Could use getseed() to produce this.
-#'   \item outyear a vector of three, with Nyrs, fixyear, and firstyear
+#'   \item projyrs, he number of years of projection
+#'   \item outyear a vector of three, with projyrs, fixyear, and firstyear
 #'   \item projLML the LML expected in each projection year, a vector
+#'   \item HS the name of the harvest strategy to be used in the projection
+#'   \item condition the number of years of historical catch data
+#'   \item histCatch the years if historical catch and historical LML
+#'   \item histyr the actual years for which SAU catch data available
+#'   \item histCE the historical cpue data for each SAU
+#'   \item yearCE the actual years fo which cpue data available
 #'   \item globals a list containing numpop, nSAU, midpts, Nclass, and
 #'       Nyrs
 #' }
@@ -534,7 +537,7 @@ readzonefile <- function(indir,infile) {  # infile="westzone1.csv"; indir=datdir
    indat <- readLines(filename)   # reads the whole file as character strings
    nSAU <-  getsingleNum("nSAU",indat) # number of spatial management units
    begin <- grep("SAUpop",indat)
-   SAUpop <-  getConst(indat[begin],nSAU) #
+   SAUpop <-  getConst(indat[begin],nSAU) # how many populations per SAU
    numpop <- sum(SAUpop)
    SAUnames <- getStr(indat[begin+1],nSAU)
    minc <-  getsingleNum("minc",indat) # minimum size class
@@ -543,15 +546,20 @@ readzonefile <- function(indir,infile) {  # infile="westzone1.csv"; indir=datdir
    midpts <- seq(minc,minc+((Nclass-1)*cw),2)
    larvdisp <- getsingleNum("larvdisp",indat)
    randomseed <- getsingleNum("randomseed",indat)
-   Nyrs <- getsingleNum("Nyrs",indat)
+   projyrs <- getsingleNum("PROJECT",indat)
    firstyear <- getsingleNum("firstyear",indat)
    fixyear <- getsingleNum("fixyear",indat)
-   outyear <- c(Nyrs,fixyear,firstyear)
-   projLML <- numeric(Nyrs)
-   begin <- grep("PROJLML",indat)
-   for (i in 1:Nyrs) {
-      from <- begin + 1
-      projLML[i] <- getConst(indat[from],1)
+   outyear <- c(projyrs,fixyear,firstyear)
+   projLML <- numeric(projyrs)
+   HS <- NULL
+   if (projyrs > 0) {
+      begin <- grep("PROJLML",indat)
+      for (i in 1:projyrs) {
+         from <- begin + 1
+         projLML[i] <- getConst(indat[from],1)
+      }
+      start <- grep("HARVESTS",indat)
+      HS <- getStr(indat[start],1)
    }
    condition <- getsingleNum("CONDITION",indat)
    if (condition > 0) {
@@ -602,13 +610,13 @@ readzonefile <- function(indir,infile) {  # infile="westzone1.csv"; indir=datdir
    }
    globals <- list(numpop=numpop, nSAU=nSAU, midpts=midpts,
                    Nclass=Nclass, Nyrs=Nyrs, larvdisp=larvdisp)
-   totans <- list(SAUnames,SAUpop,minc,cw,larvdisp,randomseed,outyear,
-                  projLML,condition,histCatch,histyr,histCE,yearCE,compdat,
+   totans <- list(SAUnames,SAUpop,minc,cw,larvdisp,randomseed,projyrs,outyear,
+                  projLML,HS,condition,histCatch,histyr,histCE,yearCE,compdat,
                   globals)
-   names(totans) <- c("SAUnames","SAUpop","minc","cw","larvdisp",
-                      "randomseed","outyear","projLML","condition",
-                      "histCatch","histyr","histCE","yearCE","compdat",
-                      "globals")
+   names(totans) <- c("SAUnames","SAUpop","minc","cw","larvdisp","randomseed",
+                      "projyrs","outyear","projLML","HS",
+                      "condition","histCatch","histyr","histCE","yearCE",
+                      "compdat","globals")
    return(totans)
 }  # end of readzonefile
 

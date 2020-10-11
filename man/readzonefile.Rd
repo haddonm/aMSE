@@ -12,8 +12,7 @@ readzonefile(indir, infile)
 \item{infile}{character string with filename of the zone file}
 }
 \value{
-eight objects, four vectors, 4 numbers, and a list of five
-    objects
+15 objects relating to constnats for the zone
 \itemize{
   \item SAUnames the labels given to each SAU
   \item SAUpop the number of populations in each SAU, in sequence
@@ -21,8 +20,15 @@ eight objects, four vectors, 4 numbers, and a list of five
   \item cw scaler defining the class width
   \item randomseed used to ensure that each simulation run starts
       in the same place. Could use getseed() to produce this.
-  \item outyear a vector of three, with Nyrs, fixyear, and firstyear
+  \item projyrs, he number of years of projection
+  \item outyear a vector of three, with projyrs, fixyear, and firstyear
   \item projLML the LML expected in each projection year, a vector
+  \item HS the name of the harvest strategy to be used in the projection
+  \item condition the number of years of historical catch data
+  \item histCatch the years if historical catch and historical LML
+  \item histyr the actual years for which SAU catch data available
+  \item histCE the historical cpue data for each SAU
+  \item yearCE the actual years fo which cpue data available
   \item globals a list containing numpop, nSAU, midpts, Nclass, and
       Nyrs
 }
@@ -35,7 +41,9 @@ with the zone filename from the control file the
     the function makezonefile, which produces an example *.csv
     file that can then be customized to suit your own simulations.
     Each required section contains a series of constants which are
-    read in individually,so their labels are equally important.
+    read in individually,so their labels are equally important. This
+    important function reads in the details of any conditioning and also
+    of any projections.
 }
 \examples{
 \dontrun{

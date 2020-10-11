@@ -47,3 +47,5 @@
 * 01/10/2020 0.0.0.7600 Am working on conditioning the model and am now using the observed CPUE in an attempt to match it to the predicted CPUE from teh OM after initial depletion levels are set and the historical catches area applied. I have added a new candidatefunctions.R file to the data-raw folder and will expect to make changes pretty much every day, some small some large.
 
 * 09/10/2020 0.0.0.7550 Have begun making changes to the characterization of zones, both unfished and depleted. Making functions internally consistent with the requirements of getting an MSZE up and running. Added more characterization functions.
+
+* 11/10/2020 0.0.0.7500 Have transferred work to my travel laptop. Today have started to implement setting up the harvest strategy to be used in the projections after having generated a generic MSE operating model. This entailed modifying or adding to the zone definition .csv file as well as the readzonefile function and others to ensure internal consistency. I may eventually scrap the separation of hte control file and the zone files and have it all in the control file, which currently has little remaining.
