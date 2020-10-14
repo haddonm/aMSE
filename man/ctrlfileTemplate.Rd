@@ -20,7 +20,7 @@ invisibly the fill path and name of the control file. More
 ctrlfiletemplate generates a standardized control file
     template. Generate this and then modify the contents to suit
     the system you are attempting to simulate. Defaults to 10
-    replicates, starting at 100% depletion,i.e. at B0 and with
+    replicates, and with
     effectively no variation in recruitment, mature biomass or cpue
     calculations.
 }

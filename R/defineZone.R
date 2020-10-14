@@ -62,6 +62,7 @@ defineBlock <- function(numblk,blknum,numpop) {
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #'   data(zone1)
 #'   glb <- zone1$globals
 #'   data(constants)
@@ -69,6 +70,7 @@ defineBlock <- function(numblk,blknum,numpop) {
 #'   zoneC <- ans$zoneC
 #'   popdefs <- ans$popdefs
 #'   print(popdefs)
+#'  }
 definepops <- function(inSAU,inSAUindex,const,glob) {
   #  inSAU=nSAU; inSAUindex=SAUindex; const=constants; glob=glb
   numpop <- glob$numpop
@@ -237,7 +239,7 @@ doproduction <- function(zoneC,zoneD,glob,
   results <- array(0,dim=c(nH,6,numpop),dimnames=list(initH,columns,1:numpop))
   for (aH in 1:nH) { # aH=1 ; yr=2
     zoneD <- runthreeH(zoneC=zoneC,zoneD,inHarv=rep(initH[aH],numpop),glob)
-   # zoneD <- runthreeH(zoneD,inHarv=rep(initH[aH],numpop),glob)
+   # zoneD <- aMSE:::runthreeH(zoneC,zoneD,inHarv=rep(initH[aH],numpop),glob)
     results[aH,"ExB",] <- zoneD$exploitB[1,]
     results[aH,"MatB",] <- zoneD$matureB[1,]
     results[aH,"AnnH",] <- zoneD$harvestR[1,]
@@ -612,6 +614,7 @@ makemove <- function(npop,recs,ld,sigmove=0.0) {
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' data(zone1)
 #' data(constants)
 #' ans <- makezoneC(zone=zone1,const=constants)
@@ -620,6 +623,7 @@ makemove <- function(npop,recs,ld,sigmove=0.0) {
 #' str(zoneC,max.level=1)
 #' str(zoneC[[1]])  # not complete at this stage
 #' print(popdefs)
+#' }
 makezoneC <- function(zone,const) { # zone=zone1; const=constants
   glb <- zone$globals
   nSAU <- glb$nSAU
@@ -631,8 +635,9 @@ makezoneC <- function(zone,const) { # zone=zone1; const=constants
   if (zone$randomseed > 0) set.seed(zone$randomseed)
   projectionLML <- zone$projLML
   historicalLML <- zone$histyr[,"histLML"]
-  if (zone$condition)
-    projLML <- historicalLML else projLML <- projectionLML
+  if (zone$condition) projLML <- historicalLML
+  if ((zone$condition == 0) & (zone$projyrs == 0))
+    projLML <- rep(zone$initLML,glb$Nyrs)
   #pops <- trunc(const["popnum",])
   popdefs <- definepops(nSAU,SAUindex,const,glob=glb) # define pops
   zoneC <- vector("list",numpop)
@@ -673,6 +678,7 @@ makezoneC <- function(zone,const) { # zone=zone1; const=constants
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #'   data(zone1)
 #'   glb <- zone1$globals
 #'   data(constants)
@@ -681,6 +687,7 @@ makezoneC <- function(zone,const) { # zone=zone1; const=constants
 #'   glb <- ans$glb
 #'   ans2 <- makezone(glb,zoneC)
 #'   str(ans2,max.level=2)
+#'  }
 makezone <- function(glob,zoneC) { #glob=glb; zoneC=zoneC;
   Nyrs <- glob$Nyrs
   numpop <- glob$numpop
@@ -964,7 +971,7 @@ restart <- function(oldzoneD,nyrs,npop,N,zero=TRUE) { # oldzoneD=zoneD; nyrs=Nyr
 #'
 #' @examples
 #' print("wait on built in data sets")
-#' # zoneC=zoneC; zoneD=zoneD; glob=glb; inHarv=rep(0.3,numpop)
+#' # zoneC=zoneC; zoneD=zoneD; glob=glb; inHarv=rep(0.2,numpop)
 runthreeH <- function(zoneC,zoneD,inHarv,glob,maxiter=3) {
   npop <- glob$numpop
   Nclass <- glob$Nclass
@@ -995,6 +1002,7 @@ runthreeH <- function(zoneC,zoneD,inHarv,glob,maxiter=3) {
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' data(constants)
 #' data(zone1)
 #' out <- setupzone(constants,zone1)
@@ -1002,7 +1010,9 @@ runthreeH <- function(zoneC,zoneD,inHarv,glob,maxiter=3) {
 #' glb <- out$glb
 #' str(zoneC[[1]])
 #' str(glb)
-setupzone <- function(constants,zone1,uplim=0.4,inc=0.005) { # constants=constants; zone1=zone1
+#' }
+setupzone <- function(constants,zone1,uplim=0.4,inc=0.005) {
+  # constants=constants; zone1=zone1; uplim=0.4; inc=0.005
   ans <- makezoneC(zone1,constants) # classical equilibrium
   zoneC <- ans$zoneC
   glb <- ans$glb

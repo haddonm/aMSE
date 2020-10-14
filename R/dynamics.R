@@ -107,7 +107,7 @@ depleteSAU <- function(zoneC,zoneD,glob,depl,product,len=15) {
 #' print("need to wait on built in data sets")
 oneyear <- function(inpopC,inNt,Nclass,inH,yr) {  #
   # yr=2; pop=2; inpopC=zoneC[[pop]]; inNt=zoneD$Nt[,yr-1,pop];
-  # Nclass=glb$Nclass; inH=0.05;
+  # Nclass=glb$Nclass; inH=0.2;
   MatWt <- inpopC$MatWt/1e06
   SelectWt <- inpopC$SelWt[,yr]/1e06
   selyr <- inpopC$Select[,yr]
@@ -316,9 +316,10 @@ oneyearC <- function(zoneC,zoneD,Ncl,catchp,year,sigmar,npop,movem) {
 #'                    npop=numpop,movem=glb$move)
 #'  str(zoneD)
 #'  round(zoneD$catchN[60:105,1:5,1],1)
+#'  zoneC=zoneC;zoneD=zoneD;Ncl=Nclass;inHt=inHarv;year=yr;sigmar=1e-08;npop=npop;movem=glob$move
 oneyearD <- function(zoneC,zoneD,Ncl,inHt,year,sigmar,npop,movem) {
   matb <- numeric(npop)
-  for (popn in 1:npop) {  # year=2
+  for (popn in 1:npop) {  # year=2; popn=1
     out <- oneyear(inpopC=zoneC[[popn]],inNt=zoneD$Nt[,year-1,popn],
                    Nclass=Ncl,inH=inHt[popn],yr=year)
     zoneD$exploitB[year,popn] <- out$ExploitB

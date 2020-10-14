@@ -22,6 +22,7 @@ makezoneC makes the constant part of the simulated
     to produce zoneD, the dynamic part of the new zone
 }
 \examples{
+\dontrun{
 data(zone1)
 data(constants)
 ans <- makezoneC(zone=zone1,const=constants)
@@ -30,4 +31,5 @@ popdefs <- ans$popdefs
 str(zoneC,max.level=1)
 str(zoneC[[1]])  # not complete at this stage
 print(popdefs)
+}
 }

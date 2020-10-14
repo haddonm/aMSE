@@ -62,11 +62,11 @@ library(makehtml)
 resdir <- "./../../A_code/aMSEUse/out/run1"
 dirExists(resdir,make=TRUE,verbose=TRUE)
 # The following function calls will ensure that there is a control.csv,
-# a zone1sm\au2pop6.csv
-# and region1.csv file in the data directory
+# a zone1.csv, and a zone1sau2pop6.csv or population data file 
+# in the data directory, which in this case is the same as the resdir
 ctrlfiletemplate(resdir)
 zonefiletemplate(resdir)
-datafiletemplate(6,resdir,filename="zone1sau2pop6.csv")
+datafiletemplate(numpop=6,resdir,filename="zone1sau2pop6.csv")
 
 ctrl <- checkctrldat(resdir)
 runname <- ctrl$runlabel

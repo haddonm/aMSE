@@ -24,6 +24,7 @@ setupzone makes the zone's constant, dynamic, and
     productivity parts returning them, along with glb, in a list.
 }
 \examples{
+\dontrun{
 data(constants)
 data(zone1)
 out <- setupzone(constants,zone1)
@@ -31,4 +32,5 @@ zoneC <- out$zoneC
 glb <- out$glb
 str(zoneC[[1]])
 str(glb)
+}
 }

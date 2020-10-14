@@ -27,6 +27,7 @@ makezone generates the dynamics components of the
     arrays are N x Nyrs x numpop.
 }
 \examples{
+\dontrun{
   data(zone1)
   glb <- zone1$globals
   data(constants)
@@ -35,4 +36,5 @@ makezone generates the dynamics components of the
   glb <- ans$glb
   ans2 <- makezone(glb,zoneC)
   str(ans2,max.level=2)
+ }
 }

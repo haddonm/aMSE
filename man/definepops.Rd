@@ -31,6 +31,7 @@ definepops makes a parameter vector, popdef, for each
     used to define each population.
 }
 \examples{
+\dontrun{
   data(zone1)
   glb <- zone1$globals
   data(constants)
@@ -38,4 +39,5 @@ definepops makes a parameter vector, popdef, for each
   zoneC <- ans$zoneC
   popdefs <- ans$popdefs
   print(popdefs)
+ }
 }

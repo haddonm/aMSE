@@ -6,7 +6,7 @@
 #' @description ctrlfiletemplate generates a standardized control file
 #'     template. Generate this and then modify the contents to suit
 #'     the system you are attempting to simulate. Defaults to 10
-#'     replicates, starting at 100% depletion,i.e. at B0 and with
+#'     replicates, and with
 #'     effectively no variation in recruitment, mature biomass or cpue
 #'     calculations.
 #'
@@ -38,18 +38,12 @@ ctrlfiletemplate <- function(indir,filename="control.csv") {
        file=filename,append=TRUE)
    cat("datafile, zone1sau2pop6.csv, name of popdefs file \n",
        file=filename,append=TRUE)
-   cat("hcrfile, HCRfile.csv, HCR details file name \n",file=filename,
-       append=TRUE)
-   cat("project, 0, project model or condition (0 = FALSE = condition) \n",
-       file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
    cat("zoneCOAST \n",file=filename,append=TRUE)
    cat("batch,  0, run job interactively or as a batch (0 = FALSE) \n",
        file=filename, append=TRUE)
    cat("replicates,  10, number of replicates, usually 1000  \n",
-       file=filename, append=TRUE)
-   cat("initdepl,  1.0, the initial depletion for each population \n",
        file=filename, append=TRUE)
    cat("withsigR,  1.0e-08, recruitment variability eg 0.3 \n",
        file=filename, append=TRUE)
@@ -199,6 +193,7 @@ datafiletemplate <- function(numpop,indir,filename="tmpdat.csv") {
    cat("L50Mat,",genconst(rep(123.384,numpop)),", L50 for maturity b = -1/L50\n",
        file=filename, append=TRUE)
    cat("sL50Mat,",genconst(rep(4,numpop)),", \n",file=filename, append=TRUE)
+   cat("initdepl",genconst(rep(1.0,numpop)),", \n",file=filename, append=TRUE)
    return(invisible(filename))
 }  # end of datafileTemplate
 
@@ -531,7 +526,7 @@ readhcrfile <- function(infile) {  # infile <- "C:/A_CSIRO/Rcode/AbMSERun/ctrl_w
 #' reg1 <- readzonefile(datadir,ctrl$zonefile)
 #' str(reg1)
 #' }
-readzonefile <- function(indir,infile) {  # infile="westzone1.csv"; indir=datdir
+readzonefile <- function(indir,infile) {  # infile=ctrl$zonefile; indir=resdir
    context <- "zone_file"
    filename <- filenametopath(indir,infile)
    indat <- readLines(filename)   # reads the whole file as character strings
@@ -546,16 +541,18 @@ readzonefile <- function(indir,infile) {  # infile="westzone1.csv"; indir=datdir
    midpts <- seq(minc,minc+((Nclass-1)*cw),2)
    larvdisp <- getsingleNum("larvdisp",indat)
    randomseed <- getsingleNum("randomseed",indat)
+   initLML <- getsingleNum("initLML",indat)
    projyrs <- getsingleNum("PROJECT",indat)
    firstyear <- getsingleNum("firstyear",indat)
    fixyear <- getsingleNum("fixyear",indat)
    outyear <- c(projyrs,fixyear,firstyear)
-   projLML <- numeric(projyrs)
+   projLML <- NULL
    HS <- NULL
    if (projyrs > 0) {
-      begin <- grep("PROJLML",indat)
+      projLML <- numeric(projyrs)
+      from <- grep("PROJLML",indat)
       for (i in 1:projyrs) {
-         from <- begin + 1
+         from <- from + 1
          projLML[i] <- getConst(indat[from],1)
       }
       start <- grep("HARVESTS",indat)
@@ -608,13 +605,14 @@ readzonefile <- function(indir,infile) {  # infile="westzone1.csv"; indir=datdir
       yearCE <- NULL
       compdat=NULL
    }
+   if ((projyrs == 0) & (condition == 0)) Nyrs=40
    globals <- list(numpop=numpop, nSAU=nSAU, midpts=midpts,
                    Nclass=Nclass, Nyrs=Nyrs, larvdisp=larvdisp)
    totans <- list(SAUnames,SAUpop,minc,cw,larvdisp,randomseed,projyrs,outyear,
-                  projLML,HS,condition,histCatch,histyr,histCE,yearCE,compdat,
-                  globals)
+                  initLML,projLML,HS,condition,histCatch,histyr,histCE,yearCE,
+                  compdat,globals)
    names(totans) <- c("SAUnames","SAUpop","minc","cw","larvdisp","randomseed",
-                      "projyrs","outyear","projLML","HS",
+                      "projyrs","outyear","initLML","projLML","HS",
                       "condition","histCatch","histyr","histCE","yearCE",
                       "compdat","globals")
    return(totans)
@@ -669,21 +667,27 @@ zonefiletemplate <- function(indir,filename="zone1.csv") {
    cat("randomseed, 4024136, for repeatability of results if wished \n",
        file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
-   cat("YEARS \n",file=filename,append=TRUE)
-   cat("Nyrs, 40, number of projection years for each simulation \n",
+   cat("initLML, 132, the initial LML for generating the unfished zone \n",
        file=filename,append=TRUE)
-   cat("firstyear, 2014, first year of simulation if 1 hypothetical 2014 conditioned \n",
+   cat("\n",file=filename,append=TRUE)
+   cat("PROJECT, 0, number of projection years for each simulation \n",
+       file=filename,append=TRUE)
+   cat("firstyear, 2020, first year of simulation if 1 hypothetical 2014 conditioned \n",
        file=filename,append=TRUE)
    cat("fixyear, 3, conditions fixed for the first three years \n",
        file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
+   cat("\n",file=filename,append=TRUE)
+   cat("HARVESTS, MQMF, the name of the harvest strategy to apply \n",
+       file=filename,append=TRUE)
+   cat("\n",file=filename,append=TRUE)
    cat("PROJLML, same number of projection years \n",file=filename,
        append=TRUE) # ensure there are Nyrs lines
-   cat("projLML1, 132,  Legal Minimum Length (LML, MLL, MLS) e.g. 140 \n",
+   cat("2020, 132,  Legal Minimum Length (LML, MLL, MLS) e.g. 140 \n",
        file=filename,append=TRUE)
-   for (i in 2:30) {
-      label <- paste0("projLML",i)
-      cat(label,"132 \n",file=filename,append=TRUE)
+   for (i in 2:10) {
+      yr <- 2020 + i - 1
+      cat(as.character(yr),", 132 \n",file=filename,append=TRUE)
    }
    cat("\n",file=filename,append=TRUE)
    cat("CONDITION, 0, if > 1 then how many years in the histLML \n",

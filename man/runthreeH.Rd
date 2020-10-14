@@ -34,5 +34,5 @@ runthree is used when searching numerically for an
 }
 \examples{
 print("wait on built in data sets")
-# zoneC=zoneC; zoneD=zoneD; glob=glb; inHarv=rep(0.3,numpop)
+# zoneC=zoneC; zoneD=zoneD; glob=glb; inHarv=rep(0.2,numpop)
 }
