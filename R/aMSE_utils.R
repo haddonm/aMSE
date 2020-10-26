@@ -1,39 +1,53 @@
 
 
-#' @title checkctrldat checks datadir contains the required csv files
+# rutilsMH::listFunctions("C:/Users/User/Dropbox/A_code/aMSE/aMSE_utils.R")
+
+#' @title summarizeprod generates a summary of the productivity properties
 #'
-#' @description checkctrldat checks datadir contains the required csv
-#'     files including the named control file, which then contains
-#'     the names of the region data file, and the population data
-#'     file. The run stops if any are not present or are misnamed.
+#' @description summarizeprod generates a summary of the productivity properties
+#'     by examining the productivity matrix for each SAU/population and
+#'     extracting the Bmsy, annualH, MSY, Depletion, and RelCE at the maximum
+#'     catch level (which approximates the MSY). It summarizes the total zone
+#'     by summing all the productivity matrices and search for the largest
+#'     catch again. It generates estimates of the annualH, depletion and RelCE
+#'     by using a weighted average of those values from teh separate SAU or
+#'     populations, where the weighting is the proportion of the sum of the
+#'     MSYs taken in each sau or population. This latter is only an
+#'     approximation but provides at least an indication.
 #'
-#' @param datadir the directory in which all all files relating to a
-#'     particular run are to be held.
-#' @param ctrlfile default="control.csv", the filename of the control
-#'     file present in datadir containing information regarding the
-#'     run.
+#' @param product The productivity array from doproduction containing the
+#'     range of imposed harvest rates, and the resulting outputs for each
+#'     population
 #'
-#' @return the control list for the run
+#' @return a matrix containing the approximate productivity matrix for the zone
 #' @export
 #'
 #' @examples
-#' resdir <- tempdir()
-#' ctrlfiletemplate(resdir)
-#' zonefiletemplate(resdir)
-#' datafiletemplate(6,resdir,filename="zone1sau2pop6.csv")
-#' ctrl <- checkctrldat(resdir)
-#' ctrl
-checkctrldat <- function(datadir,ctrlfile="control.csv") { # resdir=resdir; ctrlfile="control.csv"
-  filenames <- dir(datadir)
-  if (length(grep(ctrlfile,filenames)) != 1)
-    stop(cat(ctrlfile," not found in resdir \n"))
-  ctrol <- readctrlfile(datadir,infile=ctrlfile)
-  if (length(grep(ctrol$zonefile,filenames)) != 1)
-      stop("zone data file not found \n")
-  if (length(grep(ctrol$datafile,filenames)) != 1)
-    stop("population data file not found \n")
-  cat("All required files appear to be present \n")
-  return(ctrol)
-} # end of checctrldat
-
-
+#' data(product)
+#' zoneprod <- summarizeprod(product)
+#' round(zoneprod,3)
+summarizeprod <- function(product,saunames) { # product=out$product; saunames=zone1$SAUnames
+  numrow <- dim(product)[1]
+  prodrows <- rownames(product[,,1])
+  prodcols <- colnames(product[,,1])
+  numpop <- dim(product)[3]  # here numpop = nSAU
+  columns <- c("Bmsy","AnnH","MSY","Deplet","RelCE")
+  rows <- c(saunames,"zone")
+  nrows <- length(rows)
+  ans <- matrix(0,nrow=nrows,ncol=length(columns),dimnames=list(rows,columns))
+  for (sau in 1:numpop) {
+    sauprod <- product[,,sau]
+    pick <- which(sauprod[,"Catch"] == max(sauprod[,"Catch"],na.rm=TRUE))
+    ans[sau,] <- sauprod[pick,2:6]
+  }
+  zoneprod <- matrix(0,nrow=numrow,ncol=length(prodcols),
+                     dimnames=list(prodrows,prodcols))
+  for (i in 1:numpop) zoneprod <- zoneprod + product[,,i]
+  pick <-  which(zoneprod[,"Catch"] == max(zoneprod[,"Catch"],na.rm=TRUE))
+  ans[nrows,] <- zoneprod[pick,2:6]
+  pmsy <- ans[1:numpop,"MSY"]/sum(ans[1:numpop,"MSY"],na.rm=TRUE)
+  ans[nrows,"AnnH"] <- sum(ans[1:numpop,"AnnH"] * pmsy,na.rm=TRUE)
+  ans[nrows,"Deplet"] <- sum(ans[1:numpop,"Deplet"] * pmsy,na.rm=TRUE)
+  ans[nrows,"RelCE"] <- sum(ans[1:numpop,"RelCE"] * pmsy,na.rm=TRUE)
+  return(ans)
+} # end of summarizeprod

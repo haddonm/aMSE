@@ -2,25 +2,23 @@
 % Please edit documentation in R/HS-HCR.R
 \name{targblockHCR}
 \alias{targblockHCR}
-\title{targblockHCR - calculates the block scores for the targetCE}
+\title{targblockHCR calculates the block scores for the targetCE}
 \usage{
 targblockHCR(incpueBlock, targetCE, modifyTarg = 1)
 }
 \arguments{
 \item{incpueBlock}{the matrix of cpue by Block by year}
 
-\item{targetCE}{- a vector of the targetCE for each of the blocks}
+\item{targetCE}{a vector of the targetCE for each of the blocks}
 
-\item{modifyTarg}{- the constant that sets the range of CPUE in the
-scoring function, default=1.0}
+\item{modifyTarg}{the constant that sets the range of CPUE in the scoring
+function, default=1.0}
 }
 \value{
-a vector of scores relating to the targetCE PM; used in
-   blockMCDA
+a vector of scores relating to the targetCE PM; used in blockMCDA
 }
 \description{
-targblockHCR - calculates the block scores for the
-    targetCE
+targblockHCR calculates the block scores for the targetCE
 }
 \examples{
 print("Need to use a dataset for an example")

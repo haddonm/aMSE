@@ -633,10 +633,10 @@ makezoneC <- function(zone,const) { # zone=zone1; const=constants
   SAUindex <- defineBlock(nSAU,blkdef,numpop)
   SAU <- as.numeric(const["SAU",])
   if (zone$randomseed > 0) set.seed(zone$randomseed)
-  projectionLML <- zone$projLML
+  projLML <- zone$projLML
   historicalLML <- zone$histyr[,"histLML"]
   if (zone$condition) projLML <- historicalLML
-  if ((zone$condition == 0) & (zone$projyrs == 0))
+  if ((zone$condition == 0))
     projLML <- rep(zone$initLML,glb$Nyrs)
   #pops <- trunc(const["popnum",])
   popdefs <- definepops(nSAU,SAUindex,const,glob=glb) # define pops
@@ -644,8 +644,8 @@ makezoneC <- function(zone,const) { # zone=zone1; const=constants
   for (pop in 1:numpop) {      # pop <- 1
     popdef <- popdefs[pop,]
     zoneC[[pop]] <- makeabpop(popdef,midpts,projLML)
-    tmpL <- oneyrgrowth(zoneC[[pop]],zoneC[[pop]]$SaM)
-    zoneC[[pop]]$bLML <- oneyrgrowth(zoneC[[pop]],tmpL)
+    tmpL <- oneyrgrowth(zoneC[[pop]],zoneC[[pop]]$SaM) #SaM defined in makeabpop
+    zoneC[[pop]]$bLML <- oneyrgrowth(zoneC[[pop]],tmpL) #SaM + 2 year's growth
     zoneC[[pop]]$SAU <- SAU[pop]
   }
   recs <- getvar(zoneC,"R0") #sapply(zoneC,"[[","R0")

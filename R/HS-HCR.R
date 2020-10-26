@@ -118,18 +118,16 @@ getscore <- function(grad14) {
   return(score)
 } # end of getscore
 
-#' @title targblockHCR - calculates the block scores for the targetCE
+#' @title targblockHCR calculates the block scores for the targetCE
 #'
-#' @description targblockHCR - calculates the block scores for the
-#'     targetCE
+#' @description targblockHCR calculates the block scores for the targetCE
 #'
 #' @param incpueBlock the matrix of cpue by Block by year
-#' @param targetCE - a vector of the targetCE for each of the blocks
-#' @param modifyTarg - the constant that sets the range of CPUE in the
-#'    scoring function, default=1.0
+#' @param targetCE a vector of the targetCE for each of the blocks
+#' @param modifyTarg the constant that sets the range of CPUE in the scoring
+#'     function, default=1.0
 #'
-#' @return a vector of scores relating to the targetCE PM; used in
-#'    blockMCDA
+#' @return a vector of scores relating to the targetCE PM; used in blockMCDA
 #' @export targblockHCR
 #'
 #' @examples

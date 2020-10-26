@@ -274,7 +274,7 @@ numbersatsizeSAU <- function(resdir, glb, zoneC, zoneD, sau, yr=1,
 #' @examples
 #' print("wait until I have altered the internals data sets")
 plothistcatch <- function(zone1,pops=NULL,resdir="",defpar=TRUE) {
-  # zone1=zone1; pops=c(1); defpar=FALSE
+  # zone1=zone1; pops=c(1,2,3,8); defpar=FALSE;  resdir=resdir
   glb <- zone1$globals
   if (length(pops) > 0) {
     histcatch <- as.matrix(zone1$histCatch[,pops])
