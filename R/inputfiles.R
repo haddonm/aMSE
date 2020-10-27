@@ -393,7 +393,8 @@ read_conddata <- function(filename) {  # filename=filen
 #' datafiletemplate(6,resdir,filename="zone1sau2pop6.csv")
 #' ctrl <- readctrlzone(resdir)
 #' ctrl
-readctrlzone <- function(datadir,infile="control.csv") { # datadir=datdir; infile="newcontrol.csv"
+readctrlzone <- function(datadir,infile="control.csv") {
+   # datadir=datdir; infile="newcontrol.csv"
    filenames <- dir(datadir)
    if (length(grep(infile,filenames)) != 1)
       stop(cat(infile," not found in datadir \n"))

@@ -15,7 +15,7 @@ getsum(inmat, index)
 an nSAU+1 column matrix summarizing each SAU and the zone
 }
 \description{
-getsum is used by getsauzone to sum each of the main
+getsum is only used by getsauzone to sum each of the main
     dynamic variables within zoneD, and hence is not exported.
 }
 \examples{

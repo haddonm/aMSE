@@ -97,7 +97,7 @@ listfuns <- function(infile) { # infile=filename; console=FALSE
       funnames[i] <- removeEmpty(unlist(strsplit(out[i],"<-"))[1])
       out[i] <- gsub("<-function","",out[i])
     }
-    columns <- c("syntax","function","linenumber","file","references")
+    columns <- c("syntax","linenumber","file","function","references")
     rows <- paste0(rfile,1:n)
     outfuns <- as.data.frame(matrix(NA,nrow=n,ncol=length(columns),
                                     dimnames=list(rows,columns)))
@@ -110,7 +110,7 @@ listfuns <- function(infile) { # infile=filename; console=FALSE
   return(outfuns)
 } # end of listfuns
 
-indir <- "C:/Users/User/Dropbox/A_Code/aMSE/R/"
+indir <- "C:/Users/Malcolm/Dropbox/A_Code/aMSE/R/"
 files <- c("aMSE_utils.R","defineZone.R","dynamics.R","generate_results.R",
            "getfunctions.R","HS-HCR.R","inputfiles.R","plotfuns.R")
 nfiles <- length(files)
@@ -123,12 +123,13 @@ allfilesort <- allfiles[order(allfiles[,"function"]),]
 
 allrefs <- NULL
 for (i in 1:nfiles)
-  allrefs <- rbind(allrefs,findfuns(paste0(indir,files[i]),allfilesort[,"function"]))
+  allrefs <- rbind(allrefs,findfuns(paste0(indir,files[i]),
+                                    allfilesort[,"function"]))
 
 allfiles[,"references"] <- allrefs
 allfilesort <- allfiles[order(allfiles[,"function"]),]
 
 
 
-outfile <- "C:/Users/User/Dropbox/A_Code/aMSE/data-raw/allfile.csv"
+outfile <- "C:/Users/Malcolm/Dropbox/A_Code/aMSE/data-raw/allfile.csv"
 write.csv(allfilesort,file = outfile)

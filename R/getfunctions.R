@@ -273,7 +273,7 @@ getStr <- function(inline,nb) {
 
 #' @title getsum sums each of the main dynamics within zoneD
 #'
-#' @description getsum is used by getsauzone to sum each of the main
+#' @description getsum is only used by getsauzone to sum each of the main
 #'     dynamic variables within zoneD, and hence is not exported.
 #'
 #' @param inmat what matrix within zoneD to sum into SAU and zone

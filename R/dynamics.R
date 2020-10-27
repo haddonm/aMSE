@@ -413,3 +413,93 @@ oneyrgrowth <- function(inpop,startsize=2) {
   return(outsize)
 } # end of onyrgrowth
 
+#' @title restart transfers final year values of zoneD into the first year
+#'
+#' @description restart transfers the final year values from the
+#'     dynamics part of the zone (zoneD), into the first year.
+#'     This is used, for example, when searching for an equilibrium
+#'     state if there is larval dispersal > 0.0. Of if one sets the
+#'     initial depletion to anything other than 1.0. Contains the
+#'     option of setting every other cell to zero, which is the
+#'     default.
+#'
+#' @param oldzoneD the old zoneD containing the dynamics as run for
+#'     Nyrs.
+#' @param nyrs The number of years of dynamics, the global Nyrs
+#' @param npop The number of populations, the global numpop
+#' @param N the number of size classes, teh global Nclass
+#' @param zero should the arrays be otherwise filled with zeros? The
+#'     default = TRUE
+#'
+#' @return a list containing a revised dynamics list
+#' @export
+#'
+#' @examples
+#' print("wait for built in data sets")
+restart <- function(oldzoneD,nyrs,npop,N,zero=TRUE) { # oldzoneD=zoneD; nyrs=Nyrs; npop=npop; N=Nclass
+  ExplB <- matrix(0,nrow=nyrs,ncol=npop)
+  MatB <- matrix(0,nrow=nyrs,ncol=npop)
+  Catch <- matrix(0,nrow=nyrs,ncol=npop)
+  Harvest <- matrix(0,nrow=nyrs,ncol=npop)
+  cpue <- matrix(0,nrow=nyrs,ncol=npop)
+  deplExB <- matrix(0,nrow=nyrs,ncol=npop)
+  deplSpB <- matrix(0,nrow=nyrs,ncol=npop)
+  Recruit <- matrix(0,nrow=nyrs,ncol=npop)
+  CatchN <- array(data=0,dim=c(N,nyrs,npop))
+  Nt <- array(data=0,dim=c(N,nyrs,npop))
+  zoneD <- list(SAU=oldzoneD$SAU,matureB=MatB,exploitB=ExplB,
+                catch=Catch,harvestR=Harvest,cpue=cpue,recruit=Recruit,
+                deplsB=deplSpB,depleB=deplExB,catchN=CatchN,Nt=Nt)
+  if (!zero) zoneD <- oldzoneD
+  zoneD$matureB[1,] <- oldzoneD$matureB[nyrs,]
+  zoneD$exploitB[1,] <- oldzoneD$exploitB[nyrs,]
+  zoneD$catch[1,] <- oldzoneD$catch[nyrs,]
+  zoneD$harvestR[1,] <- oldzoneD$harvestR[nyrs,]
+  zoneD$cpue[1,] <- oldzoneD$cpue[nyrs,]
+  zoneD$recruit[1,] <- oldzoneD$recruit[nyrs,]
+  zoneD$deplsB[1,] <- oldzoneD$deplsB[nyrs,]
+  zoneD$depleB[1,] <- oldzoneD$depleB[nyrs,]
+  zoneD$catchN[,1,] <- oldzoneD$catchN[,nyrs,]
+  zoneD$Nt[,1,] <- oldzoneD$Nt[,nyrs,]
+  return(zoneD)
+} # end of restart
+
+#' @title runthree conducts the dynamics with constant catch 3 times
+#'
+#' @description runthree is used when searching numerically for an
+#'     equilibrium and it conducts the Nyrs dynamics three times, each
+#'     time through it replaces year 1 with year Nyrs. Thus if Nyrs is
+#'     40 it conducts 3 * 39 years of dynamics (117 years). This is
+#'     not exported. It uses zoneC but always it does this inside
+#'     the environment of another function where zoneC can be found
+#'     Used inside dodepletion and doproduction
+#'
+#' @param zoneC the constants components of the simulated zone
+#' @param zoneD the dynamics portion of the zone, with matrices and
+#'     arrays for the dynamic variables of the dynamics of the
+#'     operating model
+#' @param inHarv a vector of annual harvest rates to be held constant
+#'     across all years.
+#' @param glob the globals variable from readzonefile
+#' @param maxiter default=3; the number of runs through the equilibrium loop.
+#'
+#' @return a list containing a revised dynamics list, zoneD
+#'
+#' @examples
+#' print("wait on built in data sets")
+#' # zoneC=zoneC; zoneD=zoneD; glob=glb; inHarv=rep(0.2,numpop)
+runthreeH <- function(zoneC,zoneD,inHarv,glob,maxiter=3) {
+  npop <- glob$numpop
+  Nclass <- glob$Nclass
+  Nyrs <- glob$Nyrs
+  larvdisp <- glob$larvdisp
+  for (iter in 1:maxiter) { # iter=1; yr=2
+    for (yr in 2:Nyrs)
+      zoneD <- oneyearD(zoneC=zoneC,zoneD=zoneD,Ncl=Nclass,
+                        inHt=inHarv,year=yr,sigmar=1e-08,npop=npop,
+                        movem=glob$move)
+    zoneD <- restart(oldzoneD=zoneD,nyrs=Nyrs,npop=npop,N=Nclass,zero=TRUE)
+  }
+  return(zoneD)
+} # end of runthree
+
