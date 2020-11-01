@@ -19,8 +19,8 @@ a matrix of values defining the PDFs used to define the
 }
 \description{
 readdatafile expects a matrix of probability density
-    function definitions that are used to define the populaitons
-    used in the simualtion. These constitute the definition of
+    function definitions that are used to define the populations
+    used in the simulation. These constitute the definition of
     popdefs.
 }
 \examples{

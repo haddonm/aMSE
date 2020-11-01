@@ -6,25 +6,25 @@ library(aMSE)
 library(rutilsMH)
 library(makehtml)
 # Obviously you should modify the resdir to suit your own computer
-resdir <- "./../../A_code/aMSEUse/conddata/sspm"
+resdir <- "./../../A_code/aMSEUse/conddata/generic2"
 dirExists(resdir,make=TRUE,verbose=TRUE)
 # You now need to ensure that there is a control.csv, zone1sm\au2pop6.csv
 # and region1.csv file in the data directory
- ctrlfiletemplate(resdir)
- zonefiletemplate(resdir)
- datafiletemplate(6,resdir,filename="zone1sau2pop6.csv")
-
-ctrl <- checkctrldat(resdir)
-zone1 <- readzonefile(resdir,ctrl$zonefile)
+zone1 <- readctrlzone(resdir,infile="control.csv")
+ctrl <- zone1$ctrl
 glb <- zone1$globals     # glb without the movement matrix
 constants <- readdatafile(glb$numpop,resdir,ctrl$datafile)
 
+#zone1$initLML <- 140
 out <- setupzone(constants,zone1) # make operating model
 zoneC <- out$zoneC
 zoneD <- out$zoneD
 glb <- out$glb        # glb now has the movement matrix
 product <- out$product     # important bits usually saved in resdir
-          # did the larval dispersal level disturb the equilibrium?
+# did the larval dispersal level disturb the equilibrium?
+
+
+
 regDe <- testequil(zoneC,zoneD,glb)
 
 resfile <- setuphtml(resdir)# prepare to save and log results

@@ -1,8 +1,8 @@
 
 
-#' @title makezoneDP generates the container for the projection dynamics
+#' @title makezoneDR generates the container for the projection dynamics
 #'
-#' @description makezoneDP generates an object designed to j=hold the outputs
+#' @description makezoneDR generates an object designed to hold the outputs
 #'     from each replicate within a set of projections. This is identical to
 #'     zoneD except it contains a repaet for each iteration.
 #'
@@ -16,7 +16,7 @@
 #'
 #' @examples
 #' print("wait for a considerd example")
-makezoneDP <- function(projyr,iter,glob,inzoneD) {
+makezoneDR <- function(projyr,iter,glob,inzoneD) {
   # projyr=projyrs; iter=reps; glob=glb; inzoneD=zoneDD
   numpop <- glob$numpop
   N <- glob$Nclass
@@ -47,4 +47,4 @@ makezoneDP <- function(projyr,iter,glob,inzoneD) {
                  harvestR=Harvest,cpue=cpue,recruit=Recruit,
                  deplsB=deplSpB,depleB=deplExB,catchN=CatchN,Nt=Nt)
   return(zoneDP)
-} # end of makezoneDP
+} # end of makezoneDR

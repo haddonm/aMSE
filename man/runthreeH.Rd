@@ -13,8 +13,8 @@ runthreeH(zoneC, zoneD, inHarv, glob, maxiter = 3)
 arrays for the dynamic variables of the dynamics of the
 operating model}
 
-\item{inHarv}{a vector of annual harvest rates to be held constant
-across all years.}
+\item{inHarv}{a vector, length numpop, of annual harvest rates to be held
+constant across all years.}
 
 \item{glob}{the globals variable from readzonefile}
 

@@ -408,11 +408,8 @@ readctrlzone <- function(datadir,infile="control.csv") {
    withsigR <- getsingleNum("withsigR",indat)
    withsigB <- getsingleNum("withsigB",indat)
    withsigCE <- getsingleNum("withsigCE",indat)
-   outctrl <- list(runlabel,datafile,batch,
-                   reps,withsigR,withsigB,withsigCE)
-   names(outctrl) <- c("runlabel","datafile","batch","reps",
-                       "withsigR","withsigB","withsigCE")
-   if (length(grep(outctrl$datafile,filenames)) != 1)
+   Nyrs=40 # to set up equilibrium unfished population; could be read in
+   if (length(grep(datafile,filenames)) != 1)
       stop("population data file not found \n")
    cat("All required files appear to be present \n")
    # Now read zone data
@@ -493,26 +490,30 @@ readctrlzone <- function(datadir,infile="control.csv") {
       yearCE <- NULL
       compdat=NULL
    }
-   # Need to clarify what happens when both condition and projyrs > 0
-   # First determine whether to restructure the zone once projections are reached
-   if ((condition == 0) & (projyrs < 40)) Nyrs=40
+   # make output objects
+   condC <- list(histCatch=histCatch,histyr=histyr,
+                 histCE=histCE,yearCE=yearCE,initdepl=initdepl,
+                 compdat=compdat,Sel=NULL,SelWt=NULL)
+   projC <- list(projLML=projLML,HS=HS,projyrs=projyrs,Sel=NULL,SelWt=NULL)
+   outctrl <- list(runlabel,datafile,batch,reps,withsigR,withsigB,
+                   withsigCE,condition,projyrs)
+   names(outctrl) <- c("runlabel","datafile","batch","reps","withsigR",
+                       "withsigB","withsigCE","condition","projection")
    globals <- list(numpop=numpop, nSAU=nSAU, midpts=midpts,
                    Nclass=Nclass, Nyrs=Nyrs, larvdisp=larvdisp)
-   totans <- list(SAUnames,SAUpop,minc,cw,larvdisp,randomseed,projyrs,outyear,
-                  initLML,projLML,HS,condition,histCatch,histyr,histCE,yearCE,
-                  initdepl,compdat,globals,outctrl)
+   totans <- list(SAUnames,SAUpop,minc,cw,larvdisp,randomseed,
+                  initLML,condC,projC,globals,outctrl,condition,projyrs)
    names(totans) <- c("SAUnames","SAUpop","minc","cw","larvdisp","randomseed",
-                      "projyrs","outyear","initLML","projLML","HS",
-                      "condition","histCatch","histyr","histCE","yearCE",
-                      "initdepl","compdat","globals","ctrl")
+                     "initLML","condC","projC","globals","ctrl",
+                     "condition","projyrs")
    return(totans)
 } # end of readctrlzone
 
 #' @title readdatafile reads in a matrix of data defining each population
 #'
 #' @description readdatafile expects a matrix of probability density
-#'     function definitions that are used to define the populaitons
-#'     used in the simualtion. These constitute the definition of
+#'     function definitions that are used to define the populations
+#'     used in the simulation. These constitute the definition of
 #'     popdefs.
 #'
 #' @param numpop the total number of populations across the zone

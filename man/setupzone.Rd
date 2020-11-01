@@ -9,7 +9,7 @@ setupzone(constants, zone1, uplim = 0.4, inc = 0.005)
 \arguments{
 \item{constants}{the population constants derived from readdatafile}
 
-\item{zone1}{the zonal object}
+\item{zone1}{the zonal object driving the construction}
 
 \item{uplim}{the upper limit of harvest rate applied, default=0.4}
 
@@ -21,7 +21,9 @@ a list of zoneC, zoneD, product, and glb the main
 }
 \description{
 setupzone makes the zone's constant, dynamic, and
-    productivity parts returning them, along with glb, in a list.
+    productivity parts returning them, along with glb, in a list. The
+    objective of this function is to generate the orignal unfished
+    equilibrium zone of nSAU SAU, and numpop populations
 }
 \examples{
 \dontrun{

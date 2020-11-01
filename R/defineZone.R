@@ -559,6 +559,8 @@ makeabpop <- function(popparam,midpts,projLML) {
   return(ans)
 } # End of makeabpop
 
+
+
 #' @title makemove produces the movement matrix
 #'
 #' @description makemove produces the movement matrix, which assumes
@@ -633,17 +635,17 @@ makezoneC <- function(zone,const) { # zone=zone1; const=constants
   SAUindex <- defineBlock(nSAU,blkdef,numpop)
   SAU <- as.numeric(const["SAU",])
   if (zone$randomseed > 0) set.seed(zone$randomseed)
-  projLML <- zone$projLML
-  historicalLML <- zone$histyr[,"histLML"]
-  if (zone$condition) projLML <- historicalLML
-  if ((zone$condition == 0))
-    projLML <- rep(zone$initLML,glb$Nyrs)
-  #pops <- trunc(const["popnum",])
+  if (zone$condition > 0) {
+     initialLML <- zone$condC$histyr[,2]
+     glb$Nyrs <- length(initialLML)
+   } else {
+     initialLML <- rep(zone$initLML,glb$Nyrs)
+  }
   popdefs <- definepops(nSAU,SAUindex,const,glob=glb) # define pops
   zoneC <- vector("list",numpop)
   for (pop in 1:numpop) {      # pop <- 1
     popdef <- popdefs[pop,]
-    zoneC[[pop]] <- makeabpop(popdef,midpts,projLML)
+    zoneC[[pop]] <- makeabpop(popdef,midpts,initialLML)
     tmpL <- oneyrgrowth(zoneC[[pop]],zoneC[[pop]]$SaM) #SaM defined in makeabpop
     zoneC[[pop]]$bLML <- oneyrgrowth(zoneC[[pop]],tmpL) #SaM + 2 year's growth
     zoneC[[pop]]$SAU <- SAU[pop]
@@ -656,7 +658,6 @@ makezoneC <- function(zone,const) { # zone=zone1; const=constants
   ans <- list(zoneC=zoneC,glb=glb,popdefs=popdefs)
   return(ans)
 }  # End of makezoneC
-
 
 #' @title makezone generates the parts of the simulated zone
 #'
@@ -758,6 +759,43 @@ maturity <- function(ina,inb,lens) {
    return(ans)
 } # end of maturity
 
+#' @title modprojC produces three objects used to condition the zone
+#'
+#' @description modprojC produces an object used to condition the zone when
+#'     projecting it following any conditioning. Once the initial conditions
+#'     for the projection have been attained through an initial depletion of an
+#'     unfished equilibrium, or more particularly by conditioning on historical
+#'     data then the projC object will be used to condition the projections.
+#'
+#' @param zoneC the constant part of the zone
+#' @param glob the globals for the simulation
+#' @param inzone the zone object from readctrlzone
+#'
+#' @return a list of projSel and projSelWt within the projC object from inzone
+#' @export
+#'
+#' @examples
+#' print("wait on new example data")
+modprojC <- function(zoneC,glob,inzone) { # zoneC=zoneC; glob=glb; inzone=zone1
+  numpop <- glob$numpop
+  popdefs <- getlistvar(zoneC,"popdef")
+  sau <- getvar(zoneC,"SAU")
+  midpts <- glob$midpts
+  projSel <- matrix(0,nrow=glob$Nclass,ncol=numpop,dimnames=list(midpts,sau))
+  projSelWt <- matrix(0,nrow=glob$Nclass,ncol=numpop,dimnames=list(midpts,sau))
+  pLML <- inzone$projC$projLML[1] # needs development to allow variation in projLML
+  for (pop in 1:numpop) {
+    selL50 <- popdefs["SelP1",pop]
+    selL95 <- popdefs["SelP2",pop]
+    projSel[,pop] <- logistic((pLML + selL50),selL95,midpts)
+    projSelWt[,pop] <- projSel[,pop] * zoneC[[pop]]$WtL
+  }
+  projC <- inzone$projC
+  projC$Sel <- projSel
+  projC$SelWt <- projSelWt
+  return(projC=projC)
+} # end of modprojC
+
 #' @title modzoneC runs the zone 3 x Nyrs to equilibrium
 #'
 #' @description modzoneC runs the doproduction function so it can then
@@ -800,6 +838,38 @@ modzoneC <- function(zoneC,zoneD,glob,lowlim=0.0,uplim=0.4,inc=0.005) {
   }
   return(list(zoneC=zoneC,product=production))
 } # end of modzoneC
+
+
+#' @title modzoneCSel changes the selectivity characteristics in zoneC
+#'
+#' @description modzoneCSel  changes the selectivity characteristics in zoneC
+#'     which is necessary when making a projection under a different LML.
+#'     Currently this function is designed to allow only a single LML during any
+#'     projections. It will obviously need modification if it is desired to
+#'     explore the option of gradually changing an LML
+#'
+#' @param zoneC the constant zone object from setupzone
+#' @param sel the new selectivity as a matrix of selectivity by population
+#' @param selwt new selectivity x WtL as a matrix of SelWt x Population
+#' @param glb the globals object
+#' @param yrs the number of years of projection
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' print("wait on suitable data")
+modzoneCSel <- function(zoneC,sel,selwt,glb,yrs) {
+  numpop <- glb$numpop
+  Nclass <- glb$Nclass
+  for (pop in 1:numpop){ # pop = 1
+    select <- matrix(sel[,pop],nrow=Nclass,ncol=yrs)
+    selectwt <- matrix(selwt[,pop],nrow=glb$Nclass,ncol=yrs)
+    zoneC[[pop]]$Select <- select
+    zoneC[[pop]]$SelWt <- selectwt
+  }
+  return(zoneC)
+} # end of modzoneCSel
 
 #' @title print.zoneDefinition S3 method for printing zonedef summary
 #'
@@ -897,15 +967,36 @@ resetLML <- function(inzone,inLML,inyear,glob) {
   return(inzone)
 }  # end of resetLML
 
-
+#' @title resetexB0 resets the unfished exploitable biomass at time zero
+#'
+#' @description resetexB0 sets the unfished exploitable biomass at time
+#'     zero to the average of the exploitable biomass levels before and
+#'     after any fishing (when there are zero catches). Hence growth and
+#'     natural mortality are included.
+#'
+#' @param zoneC the constant components of the simulated zone
+#' @param zoneD the dynamic components of the simulated zone
+#'
+#' @return a refreshed zoneC with updated ExB0 values
+#' @export
+#'
+#' @examples
+#' print("wait on data")
+resetexB0 <- function(zoneC,zoneD) {
+  numpop <- length(zoneC)
+  for (pop in 1:numpop)zoneC[[pop]]$ExB0 <- zoneD$exploitB[1,pop]
+  return(zoneC)
+} # end of resetexB0
 
 #' @title setupzone makes zone's constant, dynamic, and productivity parts
 #'
 #' @description setupzone makes the zone's constant, dynamic, and
-#'     productivity parts returning them, along with glb, in a list.
+#'     productivity parts returning them, along with glb, in a list. The
+#'     objective of this function is to generate the orignal unfished
+#'     equilibrium zone of nSAU SAU, and numpop populations
 #'
 #' @param constants the population constants derived from readdatafile
-#' @param zone1 the zonal object
+#' @param zone1 the zonal object driving the construction
 #' @param uplim the upper limit of harvest rate applied, default=0.4
 #' @param inc the harvest rate increment at each step, default=0.005
 #'
@@ -934,8 +1025,7 @@ setupzone <- function(constants,zone1,uplim=0.4,inc=0.005) {
   ans <- modzoneC(zoneC=zoneC,zoneD=zoneD,glob=glb,uplim=uplim,inc=inc)
   zoneC <- ans$zoneC  # zone constants
   product <- ans$product  # productivity by population
-  out <- list(zoneC=zoneC, zoneD=zoneD, product=product,
-              glb=glb)
+  out <- list(zoneC=zoneC, zoneD=zoneD, product=product,glb=glb)
   return(out)
 } # end of setupzone
 
@@ -1031,14 +1121,14 @@ testequil <- function(zoneC,zoneD,glb,inH=0.0,verbose=TRUE) {
   npop <- glb$numpop
   inHarv <- rep(inH,npop)
   for (yr in 2:Nyrs)
-    zoneD <- oneyearD(zoneC=zoneC,zoneD=zoneD,Ncl=Nclass,
-                      inHt=inHarv,year=yr,sigmar=1e-08,npop=npop,
-                      movem=glb$move)
+    zoneD <- oneyearD(zoneC=zoneC,zoneD=zoneD,
+                      inHt=inHarv,year=yr,sigmar=1e-08,
+                      Ncl=Nclass,npop=npop,movem=glb$move)
   zoneD <- restart(oldzoneD=zoneD,nyrs=Nyrs,npop=npop,N=Nclass,zero=FALSE)
   for (yr in 2:Nyrs)  # repeat to be sure
-    zoneD <- oneyearD(zoneC=zoneC,zoneD=zoneD,Ncl=Nclass,
-                      inHt=inHarv,year=yr,sigmar=1e-08,npop=npop,
-                      movem=glb$move)
+    zoneD <- oneyearD(zoneC=zoneC,zoneD=zoneD,
+                      inHt=inHarv,year=yr,sigmar=1e-08,
+                      Ncl=Nclass,npop=npop,movem=glb$move)
   if (verbose) {
     if (all(trunc(zoneD$matureB[1,],2) == trunc(zoneD$matureB[Nyrs,],2))) {
       print("matureB Stable",quote=FALSE)

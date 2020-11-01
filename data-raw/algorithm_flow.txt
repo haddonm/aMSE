@@ -1,0 +1,12 @@
+
+
+1. read in control.csv
+2. read population datafile
+3. generate unfished qeuilibrium zone, made up of nSAU, and numpop populations
+4. test the quality of the equilibrium in mature and exploitable biomass and recruitment
+5. reset the unfished exploitable biomass to average pre- and post- dynamics
+
+Alternates:
+  A. condition the unfished zone on historical data
+  B. deplete the unfished SAU to predetermined levels and then add variation
+

@@ -22,10 +22,9 @@ scalar. set this to 1e-08 to avoid recruitment variability}
 an absolute number of recruits from a given spawning biomass
 }
 \description{
-oneyearrec calculates the Beverton-Holt recruitment for a
-   single population in a single year; parameterized with steepness,
-   R0, and B0. Includes the logical parameter 'recvar' which determines
-   whether recruitment variation is expressed or not.
+oneyearrec calculates the Beverton-Holt recruitment for the
+   input populations in a single year; parameterized with steepness,
+   R0, and B0. To drop variation to insignificant levels set sigmar-1-08
 }
 \examples{
 \dontrun{

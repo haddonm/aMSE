@@ -1,4 +1,70 @@
 
+#' @title addrepvar adds variation to the start of a generic simulation run
+#'
+#' @description addrepvar conducts projyrs of simulation at the same constant
+#'     harvest rate used to deplete each population to the desired level, only
+#'     it does this with recruitment variability turned on, which sets up a
+#'     series of replicates with different starting positions.
+#'
+#' @param zoneC the constant zone object. Its selectivity patterns should be
+#'     altered to reflect the projection conditions using modzoneCSel
+#' @param zoneDR the dynamic zone object expanded to include all replicates,
+#'     using makezoneDR
+#' @param inHt the initial harvest strategy that was used to deplete the zone
+#' @param glb the globals object
+#' @param ctrl the ctrl object
+#' @param nyrs defaults to 20, which appears to be enough to produce the
+#'     required variation
+#'
+#' @return a revised zoneDR object
+#' @export
+#'
+#' @examples
+#' print("wait on suitable data")
+addrepvar <- function(zoneC,zoneDR,inHt,glb,ctrl,nyrs=20) {
+  # zoneC=zoneC;zoneDR=zoneDR;inHt=zoneDR$harvestR;glb=glb;ctrl=ctrl
+  varzoneDR <- zoneDR
+  sigmar <- ctrl$withsigR
+  npop <- glb$numpop
+  Ncl <- glb$Nclass
+  movem <- glb$move
+  reps <- ctrl$reps
+  matb <- numeric(npop)
+  for (iter in 1:reps) {
+    for (year in 2:nyrs) {
+      for (popn in 1:npop) { # year=2; iter=1; popn=1
+        out <- oneyear(inpopC=zoneC[[popn]],inNt=zoneDR$Nt[,year-1,popn,iter],
+                       Nclass=Ncl,inH=inHt[1,popn,iter],yr=year)
+        zoneDR$exploitB[year,popn,iter] <- out$ExploitB
+        zoneDR$matureB[year,popn,iter] <- out$MatureB
+        zoneDR$catch[year,popn,iter] <- out$Catch
+        zoneDR$harvestR[year,popn,iter] <- out$Harvest
+        zoneDR$cpue[year,popn,iter] <- out$ce
+        zoneDR$Nt[,year,popn,iter] <- out$Nt
+        zoneDR$catchN[,year,popn,iter] <- out$CatchN
+        matb[popn] <- out$MatureB
+      } # pop
+      steep <- getvect(zoneC,"steeph") #sapply(zoneC,"[[","popdef")["steeph",]
+      r0 <- getvar(zoneC,"R0") #sapply(zoneC,"[[","R0")
+      b0 <- getvar(zoneC,"B0") #sapply(zoneC,"[[","B0")
+      recs <- oneyearrec(steep,r0,b0,matb,sigR=sigmar)
+      newrecs <- movem %*% recs
+      zoneDR$recruit[year,,iter] <- newrecs
+      zoneDR$Nt[1,year,,iter] <- newrecs
+      zoneDR$deplsB[year,,iter] <- zoneDR$matureB[year,,iter]/b0
+      zoneDR$depleB[year,,iter] <- zoneDR$exploitB[year,,iter]/getvar(zoneC,"ExB0")
+    }   # year loop        zoneDR$matureB[,,1]
+  }     # rep loop
+  varzoneDR$matureB[1,,] <- zoneDR$matureB[nyrs,,]
+  varzoneDR$exploitB[1,,] <- zoneDR$exploitB[nyrs,,]
+  varzoneDR$catch[1,,] <- zoneDR$catch[nyrs,,]
+  varzoneDR$recruit[1,,] <- zoneDR$recruit[nyrs,,]
+  varzoneDR$cpue[1,,] <- zoneDR$cpue[nyrs,,]
+  varzoneDR$catchN[,1,,] <- zoneDR$catchN[,nyrs,,]
+  varzoneDR$Nt[,1,,] <- zoneDR$Nt[,nyrs,,]
+  return(varzoneDR)
+} # end of addrepvar
+
 #' @title depleteSAU resets zoneD to an input depletion level
 #'
 #' @description depleteSAU resets the depletion level of the whole
@@ -70,7 +136,8 @@ depleteSAU <- function(zoneC,zoneD,glob,depl,product,len=15) {
 
   }
   pickharv <- numeric(nSAU)
-  for (sau in 1:nSAU) pickharv[sau] <- which.closest(depl[sau],harvests[,sau],index=FALSE)
+  for (sau in 1:nSAU)
+    pickharv[sau] <- which.closest(depl[sau],harvests[,sau],index=FALSE)
   zoneDD <- runthreeH(zoneC=zoneC,zoneD,inHarv=pickharv,glob)
   return(zoneDD)
 } # end of depleteSAU
@@ -98,6 +165,9 @@ depleteSAU <- function(zoneC,zoneD,glob,depl,product,len=15) {
 #' @param yr the year in the dynamics being worked on. The first year
 #'     is generated when the zone is defined or when it is initially
 #'     depleted. All dynamics are applied from year 2 - Nyrs; scalar
+#' @param sel the selectivity vector or matrix to be used
+#' @param selwt the selectivity x WtL vector or matrix to be used
+#' @param pop the index number of the population
 #'
 #' @return a list containing ExploitB, MatureB, Catch, Harvest, Nt,
 #'     ce, and CatchN used to update the given pop in yr + 1
@@ -125,9 +195,9 @@ oneyear <- function(inpopC,inNt,Nclass,inH,yr) {  #
   avExpB <- (newExpB + oldExpB)/2.0 #av start and end
   MatureB <- sum(MatWt*newNt) #+ MatBC
   Catch <- sum(inpopC$WtL*Cat)/1e06
-  Harvest <- Catch/avExpB  # uses average of the start and end
+ # Harvest <- Catch/avExpB  # uses average of the start and end
   ce <- inpopC$popq * avExpB * 1000.0  #ExploitB
-  ans <- list(newExpB,MatureB,Catch,Harvest,newNt,ce,Cat)
+  ans <- list(avExpB,MatureB,Catch,inH,newNt,ce,Cat) # use inH not Harvest
   names(ans) <- c("ExploitB","MatureB","Catch","Harvest","Nt","ce",
                   "CatchN")
   return(ans)
@@ -211,15 +281,15 @@ oneyearcat <- function(inpopC,inNt,Nclass,incat,yr) {  #
 #' @param zoneD the dynamics portion of the zone, with matrices and
 #'     arrays for the dynamic variables of the dynamics of the
 #'     operating model
-#' @param Ncl the number of size classes used to describe size
 #' @param catchp a vector of catches to be taken in the year from each
 #'     population
 #' @param year the year of the dynamics, would start in year 2 as year
 #'     1 is the year of initiation.
 #' @param sigmar the variation in recruitment dynamics, set to 1e-08
 #'     when searching for equilibria.
+#' @param Ncl the number of size classes used to describe size, global Nclass
 #' @param npop the number of populations, the global numpop
-#' @param movem the larval dispersal movement matrix
+#' @param movem the larval dispersal movement matrix, global move
 #'
 #' @return a list containing a revised dynamics list
 #' @export
@@ -233,7 +303,6 @@ oneyearcat <- function(inpopC,inNt,Nclass,incat,yr) {  #
 #'  ans <- makezone(glb,zoneC) # now make zoneD
 #'  zoneC <- ans$zoneC  # zone constants
 #'  zoneD <- ans$zoneD
-#'  npop <- glb$numpop
 #'  Nc <- glb$Nclass
 #'  nyrs <- glb$Nyrs
 #'  catch <- 360.0 # larger than total MSY ~ 310t
@@ -243,11 +312,11 @@ oneyearcat <- function(inpopC,inNt,Nclass,incat,yr) {  #
 #'  catchpop <- catch * prop
 #'  for (yr in 2:nyrs)
 #'    zoneD <- oneyearC(zoneC=zoneC,zoneD=zoneD,Ncl=Nc,
-#'                    catchp=catchpop,year=yr,sigmar=1e-08,npop=npop,
-#'                    movem=glb$move)
+#'                    catchp=catchpop,year=yr,sigmar=1e-08,
+#'                    npop=glb$numpop,movem=glb$move)
 #'  str(zoneD)
 #'  round(zoneD$catchN[60:105,1:5,1],1)
-oneyearC <- function(zoneC,zoneD,Ncl,catchp,year,sigmar,npop,movem) {
+oneyearC <- function(zoneC,zoneD,catchp,year,sigmar,Ncl,npop,movem) {
   matb <- numeric(npop)
   for (popn in 1:npop) {  # year=2
     out <- oneyearcat(inpopC=zoneC[[popn]],inNt=zoneD$Nt[,year-1,popn],
@@ -288,13 +357,13 @@ oneyearC <- function(zoneC,zoneD,Ncl,catchp,year,sigmar,npop,movem) {
 #' @param zoneD the dynamics portion of the zone, with matrices and
 #'     arrays for the dynamic variables of the dynamics of the
 #'     operating model
-#' @param Ncl the number of size classes used to describe size
 #' @param inHt a vector of harvest rates taken in the year from each
 #'     population
 #' @param year the year of the dynamics, would start in year 2 as year
 #'     1 is the year of initiation.
 #' @param sigmar the variation in recruitment dynamics, set to 1e-08
 #'     when searching for equilibria.
+#' @param Ncl the number of size classes used to describe size
 #' @param npop the number of populations, the global numpop
 #' @param movem the larval dispersal movement matrix
 #'
@@ -312,12 +381,12 @@ oneyearC <- function(zoneC,zoneD,Ncl,catchp,year,sigmar,npop,movem) {
 #'  numpop <- glb$numpop
 #'  harvest <- rep(0.2,numpop) # not exported so needs aMSE:::
 #'  zoneD <- aMSE:::oneyearD(zoneC=zoneC,zoneD=zoneD,
-#'                    Ncl=glb$Nclass,inHt=harvest,year=2,sigmar=1e-06,
-#'                    npop=numpop,movem=glb$move)
+#'                    inHt=harvest,year=2,sigmar=1e-06,
+#'                    Ncl=glb$Nclass,npop=numpop,movem=glb$move)
 #'  str(zoneD)
 #'  round(zoneD$catchN[60:105,1:5,1],1)
 #'  zoneC=zoneC;zoneD=zoneD;Ncl=Nclass;inHt=inHarv;year=yr;sigmar=1e-08;npop=npop;movem=glob$move
-oneyearD <- function(zoneC,zoneD,Ncl,inHt,year,sigmar,npop,movem) {
+oneyearD <- function(zoneC,zoneD,inHt,year,sigmar,Ncl,npop,movem) {
   matb <- numeric(npop)
   for (popn in 1:npop) {  # year=2; popn=1
     out <- oneyear(inpopC=zoneC[[popn]],inNt=zoneD$Nt[,year-1,popn],
@@ -346,10 +415,10 @@ oneyearD <- function(zoneC,zoneD,Ncl,inHt,year,sigmar,npop,movem) {
 
 #' @title oneyearrec calculates the Beverton-Holt recruitment
 #'
-#' @description oneyearrec calculates the Beverton-Holt recruitment for a
-#'    single population in a single year; parameterized with steepness,
-#'    R0, and B0. Includes the logical parameter 'recvar' which determines
-#'    whether recruitment variation is expressed or not.
+#' @description oneyearrec calculates the Beverton-Holt recruitment for the
+#'    input populations in a single year; parameterized with steepness,
+#'    R0, and B0. To drop variation to insignificant levels set sigmar-1-08
+#'
 #' @param steep the steepness for the population; scalar
 #' @param R0 the unfished recruitment levels for the population; scalar
 #' @param B0 the unfished spawning biomass; scalar
@@ -370,7 +439,7 @@ oneyearD <- function(zoneC,zoneD,Ncl,inHt,year,sigmar,npop,movem) {
 #' oneyearrec(steep,R0,B0,Bsp,insigmar)
 #' }   # steep=steep; R0=mover0; B0=b0; Bsp=b0
 oneyearrec <- function(steep,R0,B0,Bsp,sigR) {
-  epsilon <- exp(rnorm(1,mean=0,sd=sigR) - (sigR * sigR)/2)
+  epsilon <- exp(rnorm(length(Bsp),mean=0,sd=sigR) - (sigR * sigR)/2)
   rec <- ((4*steep*R0*Bsp)/((1-steep)*B0+(5*steep-1)*Bsp)) * epsilon
   return(rec)
 } # end of oneyearrec
@@ -478,8 +547,8 @@ restart <- function(oldzoneD,nyrs,npop,N,zero=TRUE) { # oldzoneD=zoneD; nyrs=Nyr
 #' @param zoneD the dynamics portion of the zone, with matrices and
 #'     arrays for the dynamic variables of the dynamics of the
 #'     operating model
-#' @param inHarv a vector of annual harvest rates to be held constant
-#'     across all years.
+#' @param inHarv a vector, length numpop, of annual harvest rates to be held
+#'     constant across all years.
 #' @param glob the globals variable from readzonefile
 #' @param maxiter default=3; the number of runs through the equilibrium loop.
 #'

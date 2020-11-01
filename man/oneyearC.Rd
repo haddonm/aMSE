@@ -4,7 +4,7 @@
 \alias{oneyearC}
 \title{oneyearC conducts one year's dynamics using catch not harvest}
 \usage{
-oneyearC(zoneC, zoneD, Ncl, catchp, year, sigmar, npop, movem)
+oneyearC(zoneC, zoneD, catchp, year, sigmar, Ncl, npop, movem)
 }
 \arguments{
 \item{zoneC}{the constant portion of the zone with a list of
@@ -13,8 +13,6 @@ properties for each population}
 \item{zoneD}{the dynamics portion of the zone, with matrices and
 arrays for the dynamic variables of the dynamics of the
 operating model}
-
-\item{Ncl}{the number of size classes used to describe size}
 
 \item{catchp}{a vector of catches to be taken in the year from each
 population}
@@ -25,9 +23,11 @@ population}
 \item{sigmar}{the variation in recruitment dynamics, set to 1e-08
 when searching for equilibria.}
 
+\item{Ncl}{the number of size classes used to describe size, global Nclass}
+
 \item{npop}{the number of populations, the global numpop}
 
-\item{movem}{the larval dispersal movement matrix}
+\item{movem}{the larval dispersal movement matrix, global move}
 }
 \value{
 a list containing a revised dynamics list
@@ -48,7 +48,6 @@ oneyearD conducts one year's dynamics in the simulation
  ans <- makezone(glb,zoneC) # now make zoneD
  zoneC <- ans$zoneC  # zone constants
  zoneD <- ans$zoneD
- npop <- glb$numpop
  Nc <- glb$Nclass
  nyrs <- glb$Nyrs
  catch <- 360.0 # larger than total MSY ~ 310t
@@ -58,8 +57,8 @@ oneyearD conducts one year's dynamics in the simulation
  catchpop <- catch * prop
  for (yr in 2:nyrs)
    zoneD <- oneyearC(zoneC=zoneC,zoneD=zoneD,Ncl=Nc,
-                   catchp=catchpop,year=yr,sigmar=1e-08,npop=npop,
-                   movem=glb$move)
+                   catchp=catchpop,year=yr,sigmar=1e-08,
+                   npop=glb$numpop,movem=glb$move)
  str(zoneD)
  round(zoneD$catchN[60:105,1:5,1],1)
 }

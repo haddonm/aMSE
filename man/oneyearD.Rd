@@ -4,7 +4,7 @@
 \alias{oneyearD}
 \title{oneyearD conducts one year's dynamics on zoneD in the MSE}
 \usage{
-oneyearD(zoneC, zoneD, Ncl, inHt, year, sigmar, npop, movem)
+oneyearD(zoneC, zoneD, inHt, year, sigmar, Ncl, npop, movem)
 }
 \arguments{
 \item{zoneC}{the constant portion of the zone with a list of
@@ -14,8 +14,6 @@ properties for each population}
 arrays for the dynamic variables of the dynamics of the
 operating model}
 
-\item{Ncl}{the number of size classes used to describe size}
-
 \item{inHt}{a vector of harvest rates taken in the year from each
 population}
 
@@ -24,6 +22,8 @@ population}
 
 \item{sigmar}{the variation in recruitment dynamics, set to 1e-08
 when searching for equilibria.}
+
+\item{Ncl}{the number of size classes used to describe size}
 
 \item{npop}{the number of populations, the global numpop}
 
@@ -52,8 +52,8 @@ oneyearD conducts one year's dynamics on zoneD in the MSE
  numpop <- glb$numpop
  harvest <- rep(0.2,numpop) # not exported so needs aMSE:::
  zoneD <- aMSE:::oneyearD(zoneC=zoneC,zoneD=zoneD,
-                   Ncl=glb$Nclass,inHt=harvest,year=2,sigmar=1e-06,
-                   npop=numpop,movem=glb$move)
+                   inHt=harvest,year=2,sigmar=1e-06,
+                   Ncl=glb$Nclass,npop=numpop,movem=glb$move)
  str(zoneD)
  round(zoneD$catchN[60:105,1:5,1],1)
  zoneC=zoneC;zoneD=zoneD;Ncl=Nclass;inHt=inHarv;year=yr;sigmar=1e-08;npop=npop;movem=glob$move

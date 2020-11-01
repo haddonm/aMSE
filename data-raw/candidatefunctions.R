@@ -96,3 +96,8 @@ plotSAUdepl <- function(outB) {
   legend("topright",legend=c(11),col=c(6),lwd=3,bty="n",cex=1.0)
 } # end of plotSAUdepl
 
+
+
+
+
+
