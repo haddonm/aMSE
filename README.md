@@ -73,61 +73,126 @@ zoneC (constants) and zoneD (the dynamic components) from the
 conditioning data:
 
 ``` r
-# a minimal example
-starttime <- as.character(Sys.time())
+# a constant TAC example
+starttime <- (Sys.time())
 library(aMSE)
 library(rutilsMH)
 library(makehtml)
+library(knitr)
+#> Warning: package 'knitr' was built under R version 4.0.2
 # Obviously you should modify the resdir to suit your own computer
-resdir <- "./../../A_code/aMSEUse/out/run1"
+if (dir.exists("c:/Users/User/DropBox")) {
+  ddir <- "c:/Users/User/DropBox/A_code/"
+} else {
+  ddir <- "c:/Users/Malcolm/DropBox/A_code/"
+}
+resdir <- paste0(ddir,"aMSEUse/conddata/generic2")  # data and results directory
 dirExists(resdir,make=TRUE,verbose=TRUE)
-#> ./../../A_code/aMSEUse/out/run1 :  exists
-# The following function calls will ensure that there is a control.csv,
-# a zone1.csv, and a zone1sau2pop6.csv or population data file 
-# in the data directory, which in this case is the same as the resdir
-ctrlfiletemplate(resdir)
-zonefiletemplate(resdir)
-datafiletemplate(numpop=6,resdir,filename="zone1sau2pop6.csv")
-
-ctrl <- checkctrldat(resdir)
+#> c:/Users/User/DropBox/A_code/aMSEUse/conddata/generic2 :  exists
+# equilibrium zone -------------------------------------------------------------
+# You now need to ensure that there is, at least, a control.csv, zone1.csv
+# and region1.csv file in the data directory plus some other data .csv files
+# depending on how conditioned you want the model to be. Templates for the
+# correct format can be produced using ctrlfiletemplate(), datafiletemplate(),
+# and zonefiletemplate.
+zone1 <- readctrlzone(resdir,infile="control.csv")
 #> All required files appear to be present
-runname <- ctrl$runlabel
-zone1 <- readzonefile(resdir,ctrl$zonefile)
+ctrl <- zone1$ctrl
 glb <- zone1$globals     # glb without the movement matrix
 constants <- readdatafile(glb$numpop,resdir,ctrl$datafile)
-
+#zone1$initLML <- 140
 out <- setupzone(constants,zone1) # make operating model
 zoneC <- out$zoneC
 zoneD <- out$zoneD
-glb <- out$glb        # glb now has the movement matrix
+glb <- out$glb             # glb now has the movement matrix
 product <- out$product     # important bits usually saved in resdir
-          # did the larval dispersal level disturb the equilibrium?
-regDe <- testequil(zoneC,zoneD,glb)
+# did the larval dispersal level disturb the equilibrium?
+zoneD <- testequil(zoneC,zoneD,glb)
 #> [1] matureB Stable
 #> [1] exploitB Stable
 #> [1] recruitment Stable
 #> [1] spawning depletion Stable
+zoneC <- resetexB0(zoneC,zoneD) # rescale exploitB to avexplB after dynamics
+initialC <- zoneC
+unfishedD <- zoneD         # keep a copy of the unfished zone
 
-resfile <- setuphtml(resdir)# prepare to save and log results
+equiltime <- (Sys.time())
+print(equiltime - starttime)
+#> Time difference of 9.254215 secs
+# deplete generic zone ---------------------------------------------------------
+zoneC <- initialC
+zoneD <- unfishedD
+# set the initial depletion levels if not defined in the data file
+# the values below manage to achieve c(0.7,0.65,0.7,0.6,0.5,0.45,0.475,0.45)
+zone1$condC$initdepl <- c(0.53,0.53,0.48,0.48,0.49,0.49,0.52,0.52,
+                          0.51,0.51,0.45,0.45,0.484,0.484,0.467,0.467)
+origdepl <-  zone1$condC$initdepl
+zoneDD <- depletepop(zoneC,zoneD,glb,depl=origdepl,product,len=12)
+propD <- getzoneprops(zoneC,zoneDD,glb,year=1)
+#round(propD,2)
+# setup for projection ---------------------------------------------------------
+inityrs <- 10
+projyrs <- zone1$projC$projyrs + inityrs
+reps <- ctrl$reps
+projC <- modprojC(zoneC,glb,zone1)
+zoneC <- modzoneCSel(zoneC,projC$Sel,projC$SelWt,glb,projyrs)
+zoneDR <- makezoneDR(projyrs,reps,glb,zoneDD) # zoneDReplicates
+zoneDRp <- addrepvar(zoneC,zoneDR,zoneDR$harvestR,glb,ctrl)
+midtime <- (Sys.time())
+print(midtime - equiltime)
+#> Time difference of 21.05435 secs
+# prepare the HS --------------------------------------------------------------
+if (projC$HS == "constantCatch") {
+  hsFunc <- constCatch
+  inTAC <- projC$HSdetail
+}
+if (projC$HS == "MCDA") {  # not complete yet, this will do nothing
+  hsFunc <- doMCDA
+  mcdafile <- projC$HSdetail
+  optCE <- MCDAdata(resdir,mcdafile,zone1$SAUnames)
+}
+# Do the replicates ------------------------------------------------------------
+inityr <- 10
+saunames <- zone1$SAUnames
+sauindex <- glb$sauindex
+pyrs <- projC$projyrs + inityr
+B0 <- tapply(sapply(zoneC,"[[","B0"),sauindex,sum)
+exB0 <- tapply(sapply(zoneC,"[[","ExB0"),sauindex,sum)
+# a TAC = 870t = zoneal MSY
+zoneDP <- constCatch(870,zoneDRp,glb,ctrl,projC$projyrs,inityrs=10)
+sauzoneDP <- asSAU(zoneDP,sauindex,saunames,B0,exB0)
 
-plotproductivity(resdir,product,glb)
-biology_plots(resdir, glb, zoneC)
-numbersatsize(resdir, glb, zoneD)
+endtime <- (Sys.time())
+print(endtime - midtime)
+#> Time difference of 39.65308 secs
+#calculate the relative MSY weighted MSY-depletion level for each SAU
+pmsydepl <- sapply(zoneC,"[[","MSYDepl")
+pmsy <- sapply(zoneC,"[[","MSY")
+smsy <- tapply(pmsy,sauindex,sum)
+smsydepl <- tapply((pmsydepl * pmsy) / smsy[sauindex],sauindex,sum)
 
-endtime <- as.character(Sys.time())
-
-reportlist <- list(runname=runname,
-                   starttime=starttime,endtime=endtime,
-                   zoneC=zoneC, zoneD=zoneD, product=product,
-                   glb=glb,constants=constants)
-
-runnotes <- "This is a bare-bones example."
-# If you unhash the make_html call it will generate a local website 
-# inside resdir and open it so you can see the results so far.
-# make_html(replist=reportlist,resdir=resdir,width=500,
-#          openfile=TRUE,runnotes=runnotes,verbose=FALSE,
-#          packagename="aMSE",htmlname="testrun")
+# plot the projected depletion levels of mature biomass
+ans <- sauzoneDP$saudeplsB
+label <- "Mature Depletion"
+uplim <- 0.7
+plotprep(width=7,height=8,newdev=FALSE)
+parset(plots=c(4,2),byrow=FALSE,margin=c(0.25,0.4,0.1,0.05),
+       outmargin=c(1,1,0,0))
+yrs <- 1:pyrs
+for (sau in 1:8) {
+  maxy <- uplim
+  if (is.null(uplim)) maxy <- getmax(ans[,sau,])
+  plot(yrs,ans[,sau,1],lwd=1,col="grey",panel.first=grid(),ylim=c(0,maxy),
+       xlab="",ylab=saunames[sau])
+  for (iter in 1:reps) lines(yrs,ans[,sau,iter],lwd=1,col="grey")
+  abline(h=smsydepl[sau],lwd=2,col=4)
+  abline(v=inityr,lwd=1,col=2)
+}
+mtext("Years",side=1,line=-0.1,outer=TRUE,cex=1.0,font=7)
+mtext(label,side=2,line=-0.1,outer=TRUE,cex=1.0,font=7)
 ```
+
+<img src="man/figures/README-example-1.png" width="100%" />
 
 See the vignette Running\_aMSE.Rmd for a more detailed example.
 

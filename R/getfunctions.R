@@ -430,6 +430,7 @@ getzoneprops <- function(zoneC,zoneD,glb,year=1) {
   # zoneC=zoneC; zoneD=zoneD; glb=glb; year=47
   numpop <- glb$numpop
   Nclass <- glb$Nclass
+  sau <- getvar(zoneC,"SAU")
   B0 <- getvar(zoneC,"B0")
   ExB0 <- getvar(zoneC,"ExB0")
   blml <- getvar(zoneC,"bLML")
@@ -451,10 +452,10 @@ getzoneprops <- function(zoneC,zoneD,glb,year=1) {
   depletEx <- ExB/ExB0
   legaldepl <- legalmatB/B0
   propprot <- (matB - legalmatB)/matB
-  label <- c("B0","matureB","legalmatB","propprot","MSY",
+  label <- c("SAU","B0","matureB","legalmatB","propprot","MSY",
              "exB0","exploitB","SpBDepl","ExBDepl",
              "legalDepl","MSYDepl","LML","bLML","harvestR","catch")
-  ans <- rbind(B0,matB,legalmatB,propprot,msy,ExB0,ExB,deplet,
+  ans <- rbind(sau,B0,matB,legalmatB,propprot,msy,ExB0,ExB,deplet,
                depletEx,legaldepl,msydepl,lml,blml,harvestR,catch)
   rownames(ans) <- label
   tot <- numeric(length(rownames(ans))); names(tot) <- label

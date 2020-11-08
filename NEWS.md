@@ -48,10 +48,13 @@
 
 * 09/10/2020 0.0.0.7550 Have begun making changes to the characterization of zones, both unfished and depleted. Making functions internally consistent with the requirements of getting an MSZE up and running. Added more characterization functions.
 
-* 11/10/2020 0.0.0.7500 Have transferred work to my travel laptop. Today have started to implement setting up the harvest strategy to be used in the projections after having generated a generic MSE operating model. This entailed modifying or adding to the zone definition .csv file as well as the readzonefile function and others to ensure internal consistency. I may eventually scrap the separation of hte control file and the zone files and have it all in the control file, which currently has little remaining.
+* 11/10/2020 0.0.0.7500 Have transferred work to my travel laptop. Today have started to implement setting up the harvest strategy to be used in the projections after having generated a generic MSE operating model. This entailed modifying or adding to the zone definition .csv file as well as the readzonefile function and others to ensure internal consistency. I may eventually scrap the separation of the control file and the zone files and have it all in the control file, which currently has little remaining.
 
 * 14/10/2020 0.0.0.7450 Have started to iron out inconsistencies between different ways of running the MSE. It needs an initial LML in case there is no conditioning and no projection planned. The initial LML will influecen estimates of exlpoitable biomass, MSY, and other aspects of production. So have modified the template generating files and the read data file functions.
 
 * 26/10/2020 0.0.0.7400 Have altered the input control file to contain the zone wide information that was previously read in seperately. This entailed changing the ctrlfiletemplate and the readctrlzone functions. I have also been modifying the functions that assist with the automatic documentation of functions and the aMSE functions they reference. Not surprisingly, the makezone and oneyear related functions are referencing the most aMSE functions, while many others reference none.
 
 * 01/11/2020 0.0.0.7350 Now have the route through the generation of the pre-projection zone clarified and consistent. Using the generic MSE, once depleted to a pre-determined level the use of the function addrepvar literally adds variation to the beginning of each individual replicate prior to application of the chosen HCR.
+
+* 08/11/2020 0.0.0.7300 Implemented a constant Catch (constant TAC) harvest strategy so as to test the run time of a typical run. 1000 replicates in about 73 seconds.
+

@@ -394,7 +394,7 @@ read_conddata <- function(filename) {  # filename=filen
 #' ctrl <- readctrlzone(resdir)
 #' ctrl
 readctrlzone <- function(datadir,infile="control.csv") {
-   # datadir=datdir; infile="newcontrol.csv"
+   # datadir=resdir; infile="control.csv"
    filenames <- dir(datadir)
    if (length(grep(infile,filenames)) != 1)
       stop(cat(infile," not found in datadir \n"))
@@ -419,7 +419,7 @@ readctrlzone <- function(datadir,infile="control.csv") {
    SAUpop <-  getConst(indat[begin],nSAU) # how many populations per SAU
    numpop <- sum(SAUpop)
    SAUnames <- getStr(indat[begin+1],nSAU)
-   initdepl <- getConst(indat[begin+2],nSAU)
+   initdepl <- getConst(indat[begin+2],numpop)
    minc <-  getsingleNum("minc",indat) # minimum size class
    cw    <- getsingleNum("cw",indat) # class width
    Nclass <- getsingleNum("Nclass",indat) # number of classes
@@ -442,6 +442,10 @@ readctrlzone <- function(datadir,infile="control.csv") {
       }
       start <- grep("HARVESTS",indat)
       HS <- getStr(indat[start],1)
+      if (HS %in% c("MCDA","Other")) # get filename
+         HSdetail <- removeEmpty(unlist(strsplit(indat[start+1],",")))
+      if (HS == "constantCatch")  # get constant inTAC
+         HSdetail <- as.numeric(removeEmpty(unlist(strsplit(indat[start+1],","))))
    }
    condition <- getsingleNum("CONDITION",indat)
    if (condition > 0) {
@@ -494,13 +498,14 @@ readctrlzone <- function(datadir,infile="control.csv") {
    condC <- list(histCatch=histCatch,histyr=histyr,
                  histCE=histCE,yearCE=yearCE,initdepl=initdepl,
                  compdat=compdat,Sel=NULL,SelWt=NULL)
-   projC <- list(projLML=projLML,HS=HS,projyrs=projyrs,Sel=NULL,SelWt=NULL)
+   projC <- list(projLML=projLML,HS=HS,HSdetail=HSdetail,projyrs=projyrs,
+                 Sel=NULL,SelWt=NULL)
    outctrl <- list(runlabel,datafile,batch,reps,withsigR,withsigB,
                    withsigCE,condition,projyrs)
    names(outctrl) <- c("runlabel","datafile","batch","reps","withsigR",
                        "withsigB","withsigCE","condition","projection")
    globals <- list(numpop=numpop, nSAU=nSAU, midpts=midpts,
-                   Nclass=Nclass, Nyrs=Nyrs, larvdisp=larvdisp)
+                   Nclass=Nclass, Nyrs=Nyrs,larvdisp=larvdisp)
    totans <- list(SAUnames,SAUpop,minc,cw,larvdisp,randomseed,
                   initLML,condC,projC,globals,outctrl,condition,projyrs)
    names(totans) <- c("SAUnames","SAUpop","minc","cw","larvdisp","randomseed",

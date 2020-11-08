@@ -2,7 +2,7 @@
 % Please edit documentation in R/HS-HCR.R
 \name{getscore}
 \alias{getscore}
-\title{getscore calculates the scores for the grad1 PM}
+\title{getscore calculates the scores for the grad1 and grad4 PMs}
 \usage{
 getscore(grad14)
 }

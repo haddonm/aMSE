@@ -1,73 +1,8 @@
 
-#' @title addrepvar adds variation to the start of a generic simulation run
-#'
-#' @description addrepvar conducts projyrs of simulation at the same constant
-#'     harvest rate used to deplete each population to the desired level, only
-#'     it does this with recruitment variability turned on, which sets up a
-#'     series of replicates with different starting positions.
-#'
-#' @param zoneC the constant zone object. Its selectivity patterns should be
-#'     altered to reflect the projection conditions using modzoneCSel
-#' @param zoneDR the dynamic zone object expanded to include all replicates,
-#'     using makezoneDR
-#' @param inHt the initial harvest strategy that was used to deplete the zone
-#' @param glb the globals object
-#' @param ctrl the ctrl object
-#' @param nyrs defaults to 20, which appears to be enough to produce the
-#'     required variation
-#'
-#' @return a revised zoneDR object
-#' @export
-#'
-#' @examples
-#' print("wait on suitable data")
-addrepvar <- function(zoneC,zoneDR,inHt,glb,ctrl,nyrs=20) {
-  # zoneC=zoneC;zoneDR=zoneDR;inHt=zoneDR$harvestR;glb=glb;ctrl=ctrl
-  varzoneDR <- zoneDR
-  sigmar <- ctrl$withsigR
-  npop <- glb$numpop
-  Ncl <- glb$Nclass
-  movem <- glb$move
-  reps <- ctrl$reps
-  matb <- numeric(npop)
-  for (iter in 1:reps) {
-    for (year in 2:nyrs) {
-      for (popn in 1:npop) { # year=2; iter=1; popn=1
-        out <- oneyear(inpopC=zoneC[[popn]],inNt=zoneDR$Nt[,year-1,popn,iter],
-                       Nclass=Ncl,inH=inHt[1,popn,iter],yr=year)
-        zoneDR$exploitB[year,popn,iter] <- out$ExploitB
-        zoneDR$matureB[year,popn,iter] <- out$MatureB
-        zoneDR$catch[year,popn,iter] <- out$Catch
-        zoneDR$harvestR[year,popn,iter] <- out$Harvest
-        zoneDR$cpue[year,popn,iter] <- out$ce
-        zoneDR$Nt[,year,popn,iter] <- out$Nt
-        zoneDR$catchN[,year,popn,iter] <- out$CatchN
-        matb[popn] <- out$MatureB
-      } # pop
-      steep <- getvect(zoneC,"steeph") #sapply(zoneC,"[[","popdef")["steeph",]
-      r0 <- getvar(zoneC,"R0") #sapply(zoneC,"[[","R0")
-      b0 <- getvar(zoneC,"B0") #sapply(zoneC,"[[","B0")
-      recs <- oneyearrec(steep,r0,b0,matb,sigR=sigmar)
-      newrecs <- movem %*% recs
-      zoneDR$recruit[year,,iter] <- newrecs
-      zoneDR$Nt[1,year,,iter] <- newrecs
-      zoneDR$deplsB[year,,iter] <- zoneDR$matureB[year,,iter]/b0
-      zoneDR$depleB[year,,iter] <- zoneDR$exploitB[year,,iter]/getvar(zoneC,"ExB0")
-    }   # year loop        zoneDR$matureB[,,1]
-  }     # rep loop
-  varzoneDR$matureB[1,,] <- zoneDR$matureB[nyrs,,]
-  varzoneDR$exploitB[1,,] <- zoneDR$exploitB[nyrs,,]
-  varzoneDR$catch[1,,] <- zoneDR$catch[nyrs,,]
-  varzoneDR$recruit[1,,] <- zoneDR$recruit[nyrs,,]
-  varzoneDR$cpue[1,,] <- zoneDR$cpue[nyrs,,]
-  varzoneDR$catchN[,1,,] <- zoneDR$catchN[,nyrs,,]
-  varzoneDR$Nt[,1,,] <- zoneDR$Nt[,nyrs,,]
-  return(varzoneDR)
-} # end of addrepvar
 
-#' @title depleteSAU resets zoneD to an input depletion level
+#' @title depletepop resets zoneD to an input depletion level
 #'
-#' @description depleteSAU resets the depletion level of the whole
+#' @description depletepop resets the depletion level of the whole
 #'     zone and does this by searching for the harvest rate that
 #'     leads to the sum of the mature biomass, across populations,
 #'     divided by the sum of the effective B0 across populations is
@@ -104,20 +39,20 @@ addrepvar <- function(zoneC,zoneDR,inHt,glb,ctrl,nyrs=20) {
 #'   ans2 <- modzoneC(zoneC,zoneD,glb)
 #'   zoneC <- ans2$zoneC  # now has MSY and deplMSY
 #'   product <- ans2$product
-#'   zoneDD <- dodepletion(zoneC,zoneD,glb,depl=0.3,product)
+#'   zoneDD <- depletepop(zoneC,zoneD,glb,depl=0.3,product)
 #'   sum((zoneDD$matureB[1,]/sum(zoneDD$matureB[1,]))*zoneDD$deplsB[1,])
 #'   mean(zoneDD$deplsB[1,])
 #' }
-depleteSAU <- function(zoneC,zoneD,glob,depl,product,len=15) {
+depletepop <- function(zoneC,zoneD,glob,depl,product,len=15) {
   #  zoneC=zoneC; zoneD=zoneD; glob=glb;  product=product; depl=rep(0.8,8);len=15
   # use product to find bounds on H around the desired depletion level
-  nSAU <- glob$nSAU
-  harvests <- matrix(0,nrow=len,ncol=nSAU,dimnames=list(1:len,zoneD$SAU))
-  sauDepl <- harvests # need a matrix to hold the depletion levels
-  if (length(depl) != nSAU) stop("Need a depletion for each SAU \n")
+  npop <- glob$numpop
+  harvests <- matrix(0,nrow=len,ncol=npop,dimnames=list(1:len,1:npop))
+  popDepl <- harvests # need a matrix to hold the depletion levels
+  if (length(depl) != npop) stop("Need a depletion for each population \n")
   initH <- as.numeric(rownames(product))
-  for (sau in 1:nSAU) {
-    pick <- which.closest(depl[sau],product[,"Deplet",sau])
+  for (pop in 1:npop) {
+    pick <- which.closest(depl[pop],product[,"Deplet",pop])
     if (pick == nrow(product)) {
       mssg <- paste0("Initial maximum harvest rate when estimating ",
                      "productivity was too low to generate desired ",
@@ -128,16 +63,16 @@ depleteSAU <- function(zoneC,zoneD,glob,depl,product,len=15) {
       stop("Do not use depleteSAU with a depletion level of 1.0 \n")
     lowl <- initH[pick-1]
     upl <- initH[pick+1]
-    harvests[,sau] <- seq(lowl,upl,length=len)
+    harvests[,pop] <- seq(lowl,upl,length=len)
   }
   for (harv in 1:len) { # harv=1
     zoneDD <- runthreeH(zoneC=zoneC,zoneD,inHarv=harvests[harv,],glob)
-    sauDepl[harv,] <- zoneDD$deplsB[1,]
+    popDepl[harv,] <- zoneDD$deplsB[1,]
 
   }
-  pickharv <- numeric(nSAU)
-  for (sau in 1:nSAU)
-    pickharv[sau] <- which.closest(depl[sau],harvests[,sau],index=FALSE)
+  pickharv <- numeric(npop)
+  for (pop in 1:npop)
+    pickharv[pop] <- which.closest(depl[pop],harvests[,pop],index=FALSE)
   zoneDD <- runthreeH(zoneC=zoneC,zoneD,inHarv=pickharv,glob)
   return(zoneDD)
 } # end of depleteSAU
@@ -196,8 +131,8 @@ oneyear <- function(inpopC,inNt,Nclass,inH,yr) {  #
   MatureB <- sum(MatWt*newNt) #+ MatBC
   Catch <- sum(inpopC$WtL*Cat)/1e06
  # Harvest <- Catch/avExpB  # uses average of the start and end
-  ce <- inpopC$popq * avExpB * 1000.0  #ExploitB
-  ans <- list(avExpB,MatureB,Catch,inH,newNt,ce,Cat) # use inH not Harvest
+  ce <- inpopC$popq * avExpB * 1000.0  # Need to add CPUE variation
+  ans <- list(avExpB,MatureB,Catch,inH,newNt,ce,Cat)
   names(ans) <- c("ExploitB","MatureB","Catch","Harvest","Nt","ce",
                   "CatchN")
   return(ans)
@@ -237,6 +172,7 @@ oneyear <- function(inpopC,inNt,Nclass,inH,yr) {  #
 #'
 #' @return a list containing ExploitB, MatureB, Catch, Harvest, Nt,
 #'     ce, and CatchN used to update the given pop in yr + 1
+#' @export
 #'
 #' @examples
 #' print("need to wait on built in data sets")
@@ -252,17 +188,17 @@ oneyearcat <- function(inpopC,inNt,Nclass,incat,yr) {  #
   #  MatureB <- sum(MatWt*inNt)
   NumNe <- (Os * (inpopC$G %*% inNt))
   ExploitB <- sum(SelectWt * NumNe) #SelectWt=Select*WtL
-  oldExpB <- ExploitB   # ExploitB after growth and 0.5NatM
+  #oldExpB <- ExploitB   # ExploitB after growth and 0.5NatM
   estH <- min(incat/ExploitB,0.8) # no more than 0.8 harvest rate
   Fish <- 1-(estH*selyr)
   newNt <- (Os * (Fish * NumNe)) #+ Rec # Nt - catch - 0.5M, and + Rec
   Cat <- (estH*selyr) * NumNe  #numbers at size in the catch
-  ExploitB <- (sum(SelectWt * newNt) + oldExpB)/2.0 #av start and end
+  newExpB <- (sum(SelectWt * newNt) + ExploitB)/2.0 #av start and end
   MatureB <- sum(MatWt*newNt) #+ MatBC
   Catch <- sum(inpopC$WtL*Cat)/1e06
-  Harvest <- min(Catch/ExploitB,0.8)  # average of the start and end
-  ce <- inpopC$popq * ExploitB * 1000.0  #ExploitB
-  ans <- list(ExploitB,MatureB,Catch,Harvest,newNt,ce,Cat)
+ # Harvest <- min(Catch/ExploitB,0.8)  # average of the start and end
+  ce <- inpopC$popq * newExpB * 1000.0  #ExploitB
+  ans <- list(ExploitB,MatureB,Catch,estH,newNt,ce,Cat)
   names(ans) <- c("ExploitB","MatureB","Catch","Harvest","Nt","ce",
                   "CatchN")
   return(ans)
@@ -278,13 +214,14 @@ oneyearcat <- function(inpopC,inNt,Nclass,incat,yr) {  #
 #'
 #' @param zoneC the constant portion of the zone with a list of
 #'     properties for each population
-#' @param zoneD the dynamics portion of the zone, with matrices and
+#' @param zoneDP the dynamics portion of the zone, with matrices and
 #'     arrays for the dynamic variables of the dynamics of the
 #'     operating model
 #' @param catchp a vector of catches to be taken in the year from each
 #'     population
 #' @param year the year of the dynamics, would start in year 2 as year
 #'     1 is the year of initiation.
+#' @param iter the specific replicate being considered
 #' @param sigmar the variation in recruitment dynamics, set to 1e-08
 #'     when searching for equilibria.
 #' @param Ncl the number of size classes used to describe size, global Nclass
@@ -295,33 +232,34 @@ oneyearcat <- function(inpopC,inNt,Nclass,incat,yr) {  #
 #' @export
 #'
 #' @examples
-#'  data(constants)
-#'  data(zone1)
-#'  ans <- makezoneC(zone1,constants) # classical equilibrium
-#'  zoneC <- ans$zoneC
-#'  glb <- ans$glb
-#'  ans <- makezone(glb,zoneC) # now make zoneD
-#'  zoneC <- ans$zoneC  # zone constants
-#'  zoneD <- ans$zoneD
-#'  Nc <- glb$Nclass
-#'  nyrs <- glb$Nyrs
-#'  catch <- 360.0 # larger than total MSY ~ 310t
-#'  B0 <- getvar(zoneC,"B0")
-#'  totB0 <- sum(B0)
-#'  prop <- B0/totB0
-#'  catchpop <- catch * prop
-#'  for (yr in 2:nyrs)
-#'    zoneD <- oneyearC(zoneC=zoneC,zoneD=zoneD,Ncl=Nc,
-#'                    catchp=catchpop,year=yr,sigmar=1e-08,
-#'                    npop=glb$numpop,movem=glb$move)
-#'  str(zoneD)
-#'  round(zoneD$catchN[60:105,1:5,1],1)
-oneyearC <- function(zoneC,zoneD,catchp,year,sigmar,Ncl,npop,movem) {
+#' print("wait on new data")
+#'  #data(constants)
+#'  #data(zone1)
+#'  #ans <- makezoneC(zone1,constants) # classical equilibrium
+#'  #zoneC <- ans$zoneC
+#'  #glb <- ans$glb
+#'  #ans <- makezone(glb,zoneC) # now make zoneD
+#'  #zoneC <- ans$zoneC  # zone constants
+#'  #zoneD <- ans$zoneD
+#'  #Nc <- glb$Nclass
+#'  #nyrs <- glb$Nyrs
+#'  #catch <- 360.0 # larger than total MSY ~ 310t
+#'  #B0 <- getvar(zoneC,"B0")
+#'  #totB0 <- sum(B0)
+#'  #prop <- B0/totB0
+#'  #catchpop <- catch * prop
+#'  #for (yr in 2:nyrs)
+#'  #  zoneD <- oneyearC(zoneC=zoneC,zoneD=zoneD,Ncl=Nc,
+#'  #                  catchp=catchpop,year=yr,sigmar=1e-08,
+#'  #                  npop=glb$numpop,movem=glb$move)
+#'  #str(zoneD)
+#'  #round(zoneD$catchN[60:105,1:5,1],1)
+oneyearC <- function(zoneC,zoneDP,catchp,year,iter,sigmar,Ncl,npop,movem) {
   matb <- numeric(npop)
   for (popn in 1:npop) {  # year=2
-    out <- oneyearcat(inpopC=zoneC[[popn]],inNt=zoneD$Nt[,year-1,popn],
+    out <- oneyearcat(inpopC=zoneC[[popn]],inNt=zoneDP$Nt[,year-1,popn,iter],
                       Nclass=Ncl,incat=catchp[popn],yr=year)
-    zoneD$exploitB[year,popn] <- out$ExploitB
+    zoneDP$exploitB[year,popn,iter] <- out$ExploitB
     zoneD$matureB[year,popn] <- out$MatureB
     zoneD$catch[year,popn] <- out$Catch
     zoneD$harvestR[year,popn] <- out$Harvest

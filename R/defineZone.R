@@ -633,6 +633,7 @@ makezoneC <- function(zone,const) { # zone=zone1; const=constants
   midpts <- glb$midpts
   blkdef <- zone$SAUpop
   SAUindex <- defineBlock(nSAU,blkdef,numpop)
+  glb$sauindex <- SAUindex
   SAU <- as.numeric(const["SAU",])
   if (zone$randomseed > 0) set.seed(zone$randomseed)
   if (zone$condition > 0) {

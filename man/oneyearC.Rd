@@ -4,13 +4,13 @@
 \alias{oneyearC}
 \title{oneyearC conducts one year's dynamics using catch not harvest}
 \usage{
-oneyearC(zoneC, zoneD, catchp, year, sigmar, Ncl, npop, movem)
+oneyearC(zoneC, zoneDP, catchp, year, iter, sigmar, Ncl, npop, movem)
 }
 \arguments{
 \item{zoneC}{the constant portion of the zone with a list of
 properties for each population}
 
-\item{zoneD}{the dynamics portion of the zone, with matrices and
+\item{zoneDP}{the dynamics portion of the zone, with matrices and
 arrays for the dynamic variables of the dynamics of the
 operating model}
 
@@ -19,6 +19,8 @@ population}
 
 \item{year}{the year of the dynamics, would start in year 2 as year
 1 is the year of initiation.}
+
+\item{iter}{the specific replicate being considered}
 
 \item{sigmar}{the variation in recruitment dynamics, set to 1e-08
 when searching for equilibria.}
@@ -40,25 +42,26 @@ oneyearD conducts one year's dynamics in the simulation
     of activity included in each of its components.
 }
 \examples{
- data(constants)
- data(zone1)
- ans <- makezoneC(zone1,constants) # classical equilibrium
- zoneC <- ans$zoneC
- glb <- ans$glb
- ans <- makezone(glb,zoneC) # now make zoneD
- zoneC <- ans$zoneC  # zone constants
- zoneD <- ans$zoneD
- Nc <- glb$Nclass
- nyrs <- glb$Nyrs
- catch <- 360.0 # larger than total MSY ~ 310t
- B0 <- getvar(zoneC,"B0")
- totB0 <- sum(B0)
- prop <- B0/totB0
- catchpop <- catch * prop
- for (yr in 2:nyrs)
-   zoneD <- oneyearC(zoneC=zoneC,zoneD=zoneD,Ncl=Nc,
-                   catchp=catchpop,year=yr,sigmar=1e-08,
-                   npop=glb$numpop,movem=glb$move)
- str(zoneD)
- round(zoneD$catchN[60:105,1:5,1],1)
+print("wait on new data")
+ #data(constants)
+ #data(zone1)
+ #ans <- makezoneC(zone1,constants) # classical equilibrium
+ #zoneC <- ans$zoneC
+ #glb <- ans$glb
+ #ans <- makezone(glb,zoneC) # now make zoneD
+ #zoneC <- ans$zoneC  # zone constants
+ #zoneD <- ans$zoneD
+ #Nc <- glb$Nclass
+ #nyrs <- glb$Nyrs
+ #catch <- 360.0 # larger than total MSY ~ 310t
+ #B0 <- getvar(zoneC,"B0")
+ #totB0 <- sum(B0)
+ #prop <- B0/totB0
+ #catchpop <- catch * prop
+ #for (yr in 2:nyrs)
+ #  zoneD <- oneyearC(zoneC=zoneC,zoneD=zoneD,Ncl=Nc,
+ #                  catchp=catchpop,year=yr,sigmar=1e-08,
+ #                  npop=glb$numpop,movem=glb$move)
+ #str(zoneD)
+ #round(zoneD$catchN[60:105,1:5,1],1)
 }

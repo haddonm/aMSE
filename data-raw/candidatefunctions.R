@@ -96,6 +96,76 @@ plotSAUdepl <- function(outB) {
   legend("topright",legend=c(11),col=c(6),lwd=3,bty="n",cex=1.0)
 } # end of plotSAUdepl
 
+cpue <- zoneDRp$cpue[1:10,1,1]
+years <- 1:10
+getgrad1(cpue)
+getgrad4(cpue)
+
+plotprep()
+parset()
+plot1(years,cpue,lwd=2)
+
+
+#' @title MCDAdata returns some conditioning cpue data from a file
+#'
+#' @description MCDAdata uses the projC$HS to identify the file to be
+#'     used to input the MCDA cpue data to be used to condition the MCDA
+#'
+#' @param resdir the results directory containing all input csv filers
+#' @param filen the projC$HS filename
+#' @param saunames the names of each SAU (from zone1$SAUnames)
+#'
+#' @return a matrix of cpue data used to condition the MCDA
+#' @export
+#'
+#' @examples
+#' print("wait on example data being available")
+MCDAdata = function(resdir,filen,saunames) {
+  # filen = projC$HS; resdir=resdir; saunames=zone1$SAUnames
+  nSAU <- length(saunames)
+  filename = filenametopath(resdir,filen)
+  if (file.exists(filename)) {
+      indat = readLines(filename)
+  } else {
+    label <- paste0(filename," does not exist in ",resdir," \n")
+    stop(label)
+  }
+  yrce <- getsingleNum("OPTCPUE",indat)
+  begin <- grep("OPTCPUE",indat)+1
+  optCE <- matrix(NA,nrow=yrce,ncol=nSAU)
+  yearCE <- numeric(yrce)
+  colnames(optCE) <- saunames
+  cenum <- rep(NA,(length(saunames) + 1))
+  for (i in 1:yrce) { # i=1
+    begin <- begin + 1
+    tmp <- unlist(strsplit(indat[begin],","))
+    pick <- grep("NA",tmp)
+    if (length(pick) > 0) {
+       cenum[-pick] <- as.numeric(tmp[-pick])
+    } else {
+       cenum <- as.numeric(tmp)
+    }
+    yearCE[i] <- cenum[1]
+    optCE[i,] <- cenum[2:(nSAU+1)]
+  }
+  rownames(optCE) <- yearCE
+  return(optCE)
+} # end of MCDAdata
+
+condcpue <- MCDAdata(resdir,projC$HS,zone1$SAUnames)
+
+# constCatch -----------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
 
 
 

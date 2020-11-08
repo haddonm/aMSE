@@ -10,3 +10,15 @@ Alternates:
   A. condition the unfished zone on historical data
   B. deplete the unfished SAU to predetermined levels and then add variation
 
+
+HCR
+
+gradient1 (grad1) calculation entails:
+
+* Obtain the most recent cpue series for a SAU; select the most recent two values
+* Convert the two values into proportions of the first value
+* divide the second value by the first and subtract 1: (CE2/CE1) -1 to obtain the proportional change
+
+
+
+
