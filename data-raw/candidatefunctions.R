@@ -154,8 +154,6 @@ MCDAdata = function(resdir,filen,saunames) {
 
 condcpue <- MCDAdata(resdir,projC$HS,zone1$SAUnames)
 
-# constCatch -----------------------------------------------------------------
-
 
 
 

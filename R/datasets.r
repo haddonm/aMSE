@@ -29,19 +29,19 @@
 #'  print(blockE13)
 NULL
 
-#' @title constants is conditioning data for 6 populations
+#' @title constants is conditioning data for 16 populations and 8 SAU
 #'
 #' @description constants is a data.frame of parameters for blacklip
 #'     abalone (\emph{Haliotis rubra}) used to condition the
 #'     operating model as an example when running the aMSE function
-#'     examples. It describes a zone containing two hypothetical
-#'     Tasmanian blocks (the level of SAU) with a total of six
-#'     populations. If this were a data-set in a CSV file it would
-#'     require the readdatafile function to read the file. The function
-#'     datafiletemplate will generate a template of the required
-#'     format to be read by readdatafile, which can be edited
-#'     to suit a given fishery. once transposed this data becomes the
-#'     contents of popdefs
+#'     examples. It describes a zone containing eight hypothetical
+#'     Tasmanian blocks (the level of SAU) with a total of sixteen
+#'     populations (two per SAU). If this were a data-set in a CSV file it
+#'     would require the readdatafile function to read the file. The
+#'     function datafiletemplate will generate a template of the required
+#'     format to be read by readdatafile, which can be edited to suit a
+#'     given fishery. once transposed and with random variation included,
+#'     this data becomes the contents of popdefs.
 #'
 #' @name constants
 #'
@@ -136,39 +136,10 @@ NULL
 #'  par(oldpar)
 NULL
 
-#' @title product is the productivity curve matrix from doproduction
-#'
-#' @description product is the productivity curve matrix from
-#'     doproduction when the example zone is generated using the
-#'     inbuilt datasets ctrl, zone1, and constants. The slowest
-#'     part of building the whole is to use the modregC function
-#'     to adjust the zoneC and generate the production array. To
-#'     save that time in the examples (to avoid time limits on
-#'     examples should this package go to CRAN), then this dataset can
-#'     be used instead. This is a three dimensional array of
-#'     productivity variables.
-#'
-#' @name product
-#'
-#' @docType data
-#'
-#' @section contents:
-#' \itemize{
-#'   \item harvestrate the initial harvest rates applied
-#'   \item productivity variables ExB, MatB, AnnH, Catch, Deplet, RelCE
-#'   \item population the index of each population
-#' }
-#'
-#' @examples
-#'  data(product)
-#'  product[1:20,,1]
-NULL
-
-
 #' @title zone1 the constants common to a zone
 #'
 #' @description zone1 contains the constants relating to the whole
-#'     zone rather than th epopulations. See th elisting below.
+#'     zone rather than the populations. See the listing below.
 #'
 #' @name zone1
 #'
@@ -183,17 +154,25 @@ NULL
 #'   \item{cw}{the size-class width in mm}
 #'   \item{larvdisp}{the rate of larval dispersal as a proportion}
 #'   \item{randomseed}{used if results need repeating}
-#'   \item{outyear}{a vector on Nyrs, fix year, and start year}
-#'   \item{projLML}{the time series of LML used in the MSE projections}
-#'   \item{histLML}{time series of LML if conditioning the model prior
-#'       to projections}
+#'   \item{initLML}{the LML used to generate teh equilibrium population}
+#'   \item{condC}{a list containing any historical data used to condition the
+#'       initial zone}
+#'   \item{projC}{a list containing the details required to prepare the zoneC
+#'       and zoneD for the projections}
 #'   \item{globals}{a list of global constants, containing numpop,
 #'       nSAU, midpts, Nclass, Nyrs, and larvdisp}
+#'   \item{ctrl}{the list containing control information for the run, including
+#'       the datafile for the constants, the reps, the variation to be included
+#'       when projecting}
+#'   \item{condition}{if zero then no historical conditioning, if >0, then the
+#'       number of years of conditioning catch data, complements condC}
+#'   \item{projection}{if zero then no projection conducted, if >0 then the
+#'       number of years of projection}
 #' }
 #'
 #' @examples
 #'  data(zone1)
-#'  print(zone1)
+#'  str(zone1,max.level=1)
 NULL
 
 #' @title tasab is a matrix of abalone maturity-at-length data
@@ -236,70 +215,3 @@ NULL
 NULL
 
 
-#' @title testzoneC is a zone list made up of 6 equilibrium populations
-#'
-#' @description testzoneC is a zone list made up of 6 equilibrium
-#'     populations. These have been run with a laral dispersal rate of
-#'     0.03 so the change from B0 to effB0 is not great, but still
-#'     required for an initial equilibrium. This is here to simplify
-#'     the internal testing of funcitons that require a completed
-#'     zone starting at equilibrium. Its name is to avoid conflict
-#'     with any actual use of zoneC. use str(testzoneC, max.level=1)
-#'     to see its format. It can be expected to be used with testzoneD
-#'
-#' @name testzoneC
-#'
-#' @docType data
-#'
-#' @section Subjects:
-#'  \itemize{
-#'    \item testing of functions that require a full zone
-#'    \item initial equilibrium
-#'  }
-#'  @export
-#'
-#' @examples
-#'  data(testzoneC)
-#'  data(testzoneD)
-#'  data(zone1)
-#'  glb <- zone1$globals
-#'  r0 <- getvar(testzoneC,"R0")
-#'  move <- makemove(glb$numpop,r0,glb$larvdisp)
-#'  glb$move <- move
-#'  ans <- testequil(testzoneC, testzoneD, glb)
-#'  str(testzoneC[[1]])
-NULL
-
-#' @title testzoneD is a list of 8 matrices and 2 arrays defining the dynamics of a zone
-#'
-#' @description testzoneD is a list of 8 matrices and 2 arrays defining
-#'     the dynamics of a zone. These have been run with a larval
-#'     dispersal rate of 0.03 to achieve an initial equilibrium. This
-#'     is here to simplify the internal testing of functions that
-#'     require a completed zone starting at equilibrium. Its name is
-#'     to avoid conflict with any actual use of zoneD. use
-#'     str(testzoneD, max.level=1) to see its format. It can be
-#'     expected to be used with testzoneC.
-#'
-#' @name testzoneD
-#'
-#' @docType data
-#'
-#' @section Subjects:
-#'  \itemize{
-#'    \item testing of functions that require a full zone
-#'    \item initial equilibrium
-#'  }
-#'  @export
-#'
-#' @examples
-#'  data(testzoneC)
-#'  data(testzoneD)
-#'  data(zone1)
-#'  glb <- zone1$globals
-#'  r0 <- getvar(testzoneC,"R0")
-#'  move <- makemove(glb$numpop,r0,glb$larvdisp)
-#'  glb$move <- move
-#'  ans <- testequil(testzoneC, testzoneD, glb)
-#'  str(testzoneD)
-NULL

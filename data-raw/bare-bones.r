@@ -25,6 +25,12 @@ zone1 <- readctrlzone(resdir,infile="control.csv")
 ctrl <- zone1$ctrl
 glb <- zone1$globals     # glb without the movement matrix
 constants <- readdatafile(glb$numpop,resdir,ctrl$datafile)
+
+data(zone1)
+data(ctrl)
+data(constants)
+
+
 #zone1$initLML <- 140
 out <- setupzone(constants,zone1) # make operating model
 zoneC <- out$zoneC
@@ -83,7 +89,7 @@ pyrs <- projC$projyrs + inityr
 B0 <- tapply(sapply(zoneC,"[[","B0"),sauindex,sum)
 exB0 <- tapply(sapply(zoneC,"[[","ExB0"),sauindex,sum)
 
-zoneDP <- constCatch(1100,zoneDRp,glb,ctrl,projC$projyrs,inityrs=10)
+zoneDP <- constCatch(950,zoneDRp,glb,ctrl,projC$projyrs,inityrs=10)
 sauzoneDP <- asSAU(zoneDP,sauindex,saunames,B0,exB0)
 
 endtime <- (Sys.time())

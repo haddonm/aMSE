@@ -58,3 +58,4 @@
 
 * 08/11/2020 0.0.0.7300 Implemented a constant Catch (constant TAC) harvest strategy so as to test the run time of a typical run. 1000 replicates in about 73 seconds.
 
+* 09/11/2020 0.0.0.7250 Included new test data zone1, ctrl, and constants, with which to begin testing the MSE framework
