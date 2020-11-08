@@ -14,19 +14,27 @@ A list of constants that are uniform across all populations
   \item{cw}{the size-class width in mm}
   \item{larvdisp}{the rate of larval dispersal as a proportion}
   \item{randomseed}{used if results need repeating}
-  \item{outyear}{a vector on Nyrs, fix year, and start year}
-  \item{projLML}{the time series of LML used in the MSE projections}
-  \item{histLML}{time series of LML if conditioning the model prior
-      to projections}
+  \item{initLML}{the LML used to generate teh equilibrium population}
+  \item{condC}{a list containing any historical data used to condition the
+      initial zone}
+  \item{projC}{a list containing the details required to prepare the zoneC
+      and zoneD for the projections}
   \item{globals}{a list of global constants, containing numpop,
       nSAU, midpts, Nclass, Nyrs, and larvdisp}
+  \item{ctrl}{the list containing control information for the run, including
+      the datafile for the constants, the reps, the variation to be included
+      when projecting}
+  \item{condition}{if zero then no historical conditioning, if >0, then the
+      number of years of conditioning catch data, complements condC}
+  \item{projection}{if zero then no projection conducted, if >0 then the
+      number of years of projection}
 }
 }
 \description{
 zone1 contains the constants relating to the whole
-    zone rather than th epopulations. See th elisting below.
+    zone rather than the populations. See the listing below.
 }
 \examples{
  data(zone1)
- print(zone1)
+ str(zone1,max.level=1)
 }

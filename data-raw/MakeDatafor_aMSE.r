@@ -1,31 +1,33 @@
 #rm(list=ls())   # Cleanup the R console if required
 # Set up the run ----------
 
-
-# library(r4cpue)
-library(aMSE)
-
-
 options("show.signif.stars"=FALSE,"stringsAsFactors"=FALSE,
         "max.print"=50000,"width"=240)
 #     listFunctions("C:/A_Mal/A_Book/rcode/agestruct/age_utils.r")
 
-# two block abalone zone with 6 populations -----------
+library(aMSE)
+library(rutilsMH)
+library(makehtml)
 
+if (dir.exists("c:/Users/User/DropBox")) {
+  ddir <- "c:/Users/User/DropBox/A_code/"
+} else {
+  ddir <- "c:/Users/Malcolm/DropBox/A_code/"
+}
+resdir <- paste0(ddir,"aMSEUse/conddata/generic2")
+dirExists(resdir,make=TRUE,verbose=TRUE)
 
-# Setup data for aMSE -----------------------------------------------------
+# equilibrium zone -------------------------------------------------------------
+# You now need to ensure that there is, at least, a control.csv, zone1.csv
+# and region1.csv file in the data directory plus some other data .csv files
+# depending on how conditioned you want the model to be. Templates for the
+# correct format can be produced using ctrlfiletemplate(), datafiletemplate(),
+# and zonefiletemplate.
+zone1 <- readctrlzone(resdir,infile="control.csv")
+ctrl <- zone1$ctrl
+constants <- readdatafile(glb$numpop,resdir,ctrl$datafile)
 
-datadir <- "./../../rcode2/aMSE/data-raw/"
-
-ctrlfile <- "control.csv"
-#source(filenametopath(datadir,"sourcer.R"))
-
-ctrl <- readctrlfile(datadir,ctrlfile)
-zone1 <- readzonefile(datadir,ctrl$zonefile)
-glb <- zone1$globals
-constants <- readdatafile(glb$numpop,datadir,ctrl$datafile)
-
-
+datadir <- "C:/Users/User/Dropbox/A_Code/aMSE/data/"
 
 save(ctrl,file=paste0(datadir,"ctrl.RData"))
 save(zone1,file=paste0(datadir,"zone1.RData"))

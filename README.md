@@ -46,8 +46,8 @@ examine its implications.
 
 ## Installation
 
-You can install the development version from
-[GitHub](https://github.com/haddonm/aMSE) with:
+Once the MSE framework is made public you can install the development
+version from [GitHub](https://github.com/haddonm/aMSE) with:
 
 ``` r
 if (!require(devtools)){install.packages("devtools")} 
@@ -55,12 +55,14 @@ if (!require(devtools)){install.packages("devtools")}
 devtools::install_github("https://github.com/haddonm/aMSE",build_vignettes = TRUE)
 ```
 
-Alternatively, you can generate a branch that you can work on by cloning
-the repository, which, again, can be done very simply within RStudio.
-Open the New Project option in the project dialog at the top right of
-the RStudio screen and selection Version Control, then use
-‘<https://github.com/haddonm/aMSE>’ in the top box, identify where you
-want the new directory put, and press return.
+Alternatively, while the development version remains private, you can
+generate a branch that you can work on by cloning the repository, which,
+again, can be done very simply within RStudio. Open the New Project
+option in the project dialog at the top right of the RStudio screen and
+selection Version Control, then use ‘<https://github.com/haddonm/aMSE>’
+in the top box, identify where you want the new directory put, and press
+return. ALternatively, you could download the zip file from inside the
+‘code’ button and establish an R project from that.
 
 It would be a good idea to read Hadley Wickham’s draft chapter on Git
 and GitHub at <https://r-pkgs.org/index.html>.
@@ -94,12 +96,12 @@ dirExists(resdir,make=TRUE,verbose=TRUE)
 # and region1.csv file in the data directory plus some other data .csv files
 # depending on how conditioned you want the model to be. Templates for the
 # correct format can be produced using ctrlfiletemplate(), datafiletemplate(),
-# and zonefiletemplate.
-zone1 <- readctrlzone(resdir,infile="control.csv")
-#> All required files appear to be present
-ctrl <- zone1$ctrl
-glb <- zone1$globals     # glb without the movement matrix
-constants <- readdatafile(glb$numpop,resdir,ctrl$datafile)
+# and zonefiletemplate.  In the meantime it is easier to use the included 
+# data files. The original csv files are included in the data-raw directory
+data(ctrl)
+data(zone1)
+data(constants)
+ctrl$reps <- 250  # the original = 1000, we use 250 to use only 25% of the time
 #zone1$initLML <- 140
 out <- setupzone(constants,zone1) # make operating model
 zoneC <- out$zoneC
@@ -118,7 +120,7 @@ unfishedD <- zoneD         # keep a copy of the unfished zone
 
 equiltime <- (Sys.time())
 print(equiltime - starttime)
-#> Time difference of 9.254215 secs
+#> Time difference of 9.108087 secs
 # deplete generic zone ---------------------------------------------------------
 zoneC <- initialC
 zoneD <- unfishedD
@@ -140,7 +142,7 @@ zoneDR <- makezoneDR(projyrs,reps,glb,zoneDD) # zoneDReplicates
 zoneDRp <- addrepvar(zoneC,zoneDR,zoneDR$harvestR,glb,ctrl)
 midtime <- (Sys.time())
 print(midtime - equiltime)
-#> Time difference of 21.05435 secs
+#> Time difference of 6.350023 secs
 # prepare the HS --------------------------------------------------------------
 if (projC$HS == "constantCatch") {
   hsFunc <- constCatch
@@ -164,7 +166,7 @@ sauzoneDP <- asSAU(zoneDP,sauindex,saunames,B0,exB0)
 
 endtime <- (Sys.time())
 print(endtime - midtime)
-#> Time difference of 39.65308 secs
+#> Time difference of 9.955494 secs
 #calculate the relative MSY weighted MSY-depletion level for each SAU
 pmsydepl <- sapply(zoneC,"[[","MSYDepl")
 pmsy <- sapply(zoneC,"[[","MSY")

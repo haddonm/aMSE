@@ -3,19 +3,19 @@
 \docType{data}
 \name{constants}
 \alias{constants}
-\title{constants is conditioning data for 6 populations}
+\title{constants is conditioning data for 16 populations and 8 SAU}
 \description{
 constants is a data.frame of parameters for blacklip
     abalone (\emph{Haliotis rubra}) used to condition the
     operating model as an example when running the aMSE function
-    examples. It describes a zone containing two hypothetical
-    Tasmanian blocks (the level of SAU) with a total of six
-    populations. If this were a data-set in a CSV file it would
-    require the readdatafile function to read the file. The function
-    datafiletemplate will generate a template of the required
-    format to be read by readdatafile, which can be edited
-    to suit a given fishery. once transposed this data becomes the
-    contents of popdefs
+    examples. It describes a zone containing eight hypothetical
+    Tasmanian blocks (the level of SAU) with a total of sixteen
+    populations (two per SAU). If this were a data-set in a CSV file it
+    would require the readdatafile function to read the file. The
+    function datafiletemplate will generate a template of the required
+    format to be read by readdatafile, which can be edited to suit a
+    given fishery. once transposed and with random variation included,
+    this data becomes the contents of popdefs.
 }
 \section{contents}{
 
