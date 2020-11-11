@@ -4,10 +4,36 @@ author: "Malcolm Haddon"
 date: "`r format(Sys.time(), '%d&period; %B %Y')`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Management Strategy Evaluation}
+  %\VignetteIndexEntry{Abalone MSE Model Documentation}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
+
+<style type="text/css">
+  body, td {
+     font-size: 15px;
+     font-family: "Times New Roman", Times, serif;
+  }
+  code.r{
+    font-size: 12px;
+  }
+  pre {
+    font-size: 8px
+  }
+</style>
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: { 
+      equationNumbers: { 
+            autoNumber: "all",
+            formatNumber: function (n) {return n}
+      } 
+  }
+});
+</script>
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
@@ -29,184 +55,154 @@ library(captioner)
 
 tab_nums <- captioner(prefix = "Table")
 fig_nums <- captioner(prefix = "Figure")
-equ_nums <- captioner(prefix = "Equ.")
 ```
 
-##### l
-
-NOTE THERE ARE ISSUES WITH THE USE OF $L$ TO REFER TO PARTICULAR LENGTHS, AND $i$ TO REFER TO PARTICULAR SIZE-CLASSES. a DECISION IS NEEDED ABOUT SUCH NOMENCLATURE.
-
+##### 
 
 ## General Model Structure
 
-The focus of this work are Australian abalone stocks, including blacklip abalone (_Haliotis rubra_) and greenlip abalone (_Haliotis laevigata_). The underlying population dynamics model will have an annual time-step (with summer and winter seasons - see later on within year dynamics), and be described using a length-based model using a size-transition matrix to describe the growth in size each time period. The option of moving to a combined length-and-age-based model using a transition matrix will be explored once this new model has been developed to determine whether the advantages of such an extension outweight the disadvantages of extended computation time.  
+This work focusses on modelling Australian abalone stocks, especially blacklip abalone (_Haliotis rubra_) and greenlip abalone (_Haliotis laevigata_), but not excluding other species. The underlying population dynamics model has an annual time-step (including only crude within year dynamics), and be described using a length-based model (Sullivan _et al_, 1990; Sullivan, 1992). A size-transition matrix is used to describe the growth in size each time period. The option of moving to a combined length-and-age-based model using a transition matrix may be explored once this new model has been developed to determine whether the advantages of such an extension outweigh the disadvantages of extended computation time. As in previous work (Haddon _et al_, 2013; Haddon and Helidoniotis, 2013; Haddon and Mundy, 2016), the size-structure was based around a set of size-classes of 2mm - 210mm in 2mm steps, this has been retained but many other aspects have been changed.  
 
 ### Model Dynamics
 
-The model dynamics follows the numbers-at-size through time as they are affected by natural mortality, somatic growth, fishing mortality, and recruitment. The model developed in Haddon _et al_. (2013) and Haddon and Helidoniotis (2013) used separate vectors of numbers-at-size to describe the cryptic and emergent components of each population. After exploratory work that found there were no real advantages to using this structure, the model has been simplified through the cryptic and emergent components of the population now being contained in the single vector $\mathbf{N_t}$, where $\mathbf{N_t}$ is assumed to be the numbers-at-size (shell length in mm) at the start of each year $t$. This simplifies the equations and speeds the calculations although with this approach the effect of emergence needs to be included explicitly in some of the equations describing the dynamics. 
+The model dynamics follows the numbers-at-size through time as they are affected by natural mortality, somatic growth, fishing mortality, and recruitment. The earlier abalone MSE operating model used separate vectors of numbers-at-size to describe the cryptic and emergent components of each population within a simulated fishery zone. After exploratory work that found there were no advantages and some comuptational disavantages to using this structure, the model has been simplified through the cryptic and emergent components of the population now being contained in the single vector $\mathbf{N_t}$. $\mathbf{N_t}$ is assumed to be the numbers-at-size (shell length in mm) at the start of each year $t$. This simplifies the equations and speeds the calculations although with this approach the effect of emergence needs to be included explicitly in some of the equations describing the dynamics (see the _Selectivity_ section below). 
 
-The model structure adopted to reflect the assumed annual dynamics begins at the start of each year with half of the survivorship from natural mortality occurring followed by individual growth, then survivorship from fishing mortality, followed by the remaining survivorship from natural mortality. Finally any recruitment in that year is added to the first few size classes of of the population vector $\mathbf{N_t}$.  If natural mortality is implemented as the survivorship from half of natural mortality, that is $\mathbf{S_h} = e^{-M/2}$, twice a year, with other dynamic processes in between, then the dynamics for the numbers-at-size can be represented in matrix notation as:
+The model structure adopted to describe the assumed annual dynamics begins at the start of each year with half of the survivorship from natural mortality being applied first, followed by individual growth, then survivorship from fishing mortality (if fishing occurs), followed by the remaining survivorship from natural mortality. Finally, each population, $p$, will give rise to $R_p$ recruitments in year $t$, any larval dispersal that occurs (described by the movement matrix, Phi: $\mathbf{\Phi}$) leads to a re-distribution of a small proportion those recruits among the populations, and they are then added to the first few size classes of each population vector, $p$, in year $t$, $\mathbf{N_{p,t}}$. If natural mortality is implemented as the survivorship from half of natural mortality, that is $\mathbf{S_{p}^{h}} = e^{-{M_p}/2}$, twice a year, with other dynamic processes in between, then the dynamics for the numbers-at-size for each population can be represented in matrix notation as:
 
-`r equ_nums("m1")`
+$${\mathbf{{N}_{p,t+1}={S_{p}^{h}}{A_p}{G_p}{S_{p}^{h}}{N}_{p,t}+ {\Phi}{R_p}}}$$
 
-$${\mathbf{{N}_{t+1}={S}_{h}{AGS}_{h}{N}_{t}+ {R}}}$$
-
-where $\mathbf{S_h}$ is the survivorship following half of the instantaneous natural mortality, $M$, $A$ is the survivorship following the imposition of fishing mortality, $\mathbf{G}$ is the growth transition matrix, and $\mathbf{R}$ is the vector of numbers recruiting into each size-class within $\mathbf{N_{t+1}}$. 
+where $\mathbf{S_{p}^{h}}$ is the survivorship of population $p$ following half of the instantaneous natural mortality in each population, $M_p$ (some small variation between populations is assumed), $\mathbf{A_p}$ is the survivorship following the imposition of any fishing mortality occurring in population $p$, $\mathbf{G_p}$ is the growth transition matrix for population $p$, and $\mathbf{{\Phi}{R_p}}$ is the vector of recruits, $R_p$, from each population multiplied by the movement matrix $\mathbf{\Phi}$ and then added into each size-class within $\mathbf{N_{p,t+1}}$. 
 
 The survivorship following fishing mortality is defined as:
 
+$$\mathbf{A_p} = e^{-\mathbf{s}F_p}$$ 
 
-`r equ_nums("m1a")`
-
-$$\mathbf{A} = e^{-\mathbf{s}F}$$ 
-
-where $\mathbf{s}$ is the vector of selectivity-at-length (or size), and $F$ is the fully selected, instantaneous fishing mortality rate. The simplification means that now the transition from cryptic and emergent no longer needs to be included in the annual dynamics. 
+where $\mathbf{s}$ is the vector of selectivity-at-length (or size), which is assumed to be equal for all populations within a zone (although the option of having them differ exists), and $F_p$ is the fully selected, instantaneous fishing mortality rate for population $p$. The simplification means that now the transition from cryptic and emergent no longer needs to be included in the annual dynamics. However, it does require that selectivity is now a combination of selectivity-by-diver and Emergence, which is only influential on the final selectivity if the logistic used to describe emergence overlaps the legal minimum length (which is quite possible in some areas in the early years of the fishery in Tasmania where the LML was only 127mm).
 
 
 ## Model Initiation
 
-Model initiation will always begin with the population being assumed to be at equilibrium in the absence of fishing. This implies that, using __Equ `r equ_nums("m1", display="num")`__, the survivorship from the annual harvest rate, $\mathbf{A}$ = 1.0, so that, at equilibrium, it has no effect:
-
-`r equ_nums("m2")`
-
-$${\mathbf{{N}^{*}={S}_{h}{AGS}_{h}{N}^{*}+ {R}}}$$
-
-This can be re-arranged to obtain an analytic expression for the equilibrium numbers-at-length $\mathbf{N^*}$, thus:  
+Model initiation will always begin with each population being assumed to be at equilibrium in the absence of fishing. This implies that, using __Equ 1__, the survivorship from the annual harvest rate, $\mathbf{A_p}$ = 1.0, so that it has no effect and can be ignored (omitted):
 
 
-`r equ_nums("m3")`
+$${\mathbf{{N_p}^{*}={S_{p}^{h}}{G_p}{S_{p}^{h}}{N_p}^{*}+ {\Phi}{R_p}}}$$
+If It is assumed that there is no larval movement, $\mathbf{\Phi = 1}$, the Unit matrix, then the matrix can be ignored in __Equ 3__, which can be re-arranged to obtain an analytic expression for the equilibrium numbers-at-length $\mathbf{N^*}$ (Sullivan _et al_, 1990):  
 
-$${\mathbf{{N}^{*}-{S}_{h}{AGS}_{h}{N}^{*} = {N}^{*}({I-}{S}_{h}{GS}_{h})= {R}}}$$
 
-which, finally, implies:
+$${\mathbf{{N}^{*}-{S_{p}^{h}}{G_p}{S_{p}^{h}}{N}^{*} = {N}^{*}({I-}{S_{p}^{h}}{G_p}{S_{p}^{h}})= {R}}}$$
+where $\mathbf{I}$ is the unit matrix, which, if we invert the term in brackets, finally implies:
 
-`r equ_nums("m4")`
-
-$${\mathbf{{N}^{*}=\left ({I}-{S}_{h}{GS}_{h} \right )^{-1} {R}}}$$
-
-If there is an initial estimated fishing mortality rate, this can be defined as the complement of an annual harvest rate and is distributed down the diagonal of an otherwise zero square matrix $\mathbf{A}$:
-
-`r equ_nums("m5")`
-
-$$A_L = \left (1 - s_{L,t}H_t \right )$$
-
-where $A_L$ is the survivorship of length-class $L$, $s_{L,t}$ is the selectivity of length-class $L$ in year $t$ (which will relate to the Legal Minimum Length in that year = _LML_), and $H_t$ is the fully selected harvest rate in year $t$. With an initial constant fishing mortality rate the equilibrium numbers for the emergent population would then become:
-
-`r equ_nums("m6")`
-
-$${\mathbf{{N}^{*}=\left ({I}-{S}_{h}{AGS}_{h} \right )^{-1} {R}}}$$
-
-One important aspect of __Equ `r equ_nums("m6", display="num")`__ is that it can be used to search for a constant harvest rate that will return a specified initial depletion level. This might be required should such an initial state be wanted for testing how a given harvest strategy might operate when it begins to be applied to a stock when that stock is in different initial states of depletion.
+$${\mathbf{{N}^{*}=\left ({I}-{S_{p}^{h}}{G_p}{S_{p}^{h}} \right )^{-1} {R}}}$$
+If, however, there is even a minor degree of larval dispersal, and for blacklip abalone in Tasmania a value of 0.5 percent (0.05) between populations is plausible, then the analytical solution is no longer valid. In practice, within __aMSE__, the R-package from this project, the analytical solution is used to obtain the starting point for an iterative application of the dynamics from __Equ 1__ until an equilibrium is obtained (see the function _testequil_).
 
 ## Biology and Stock Related Statistics
 
 ### Emergence
 
-A logistic curve (Haddon, 2011) can be used to describe the transition from the cryptic to the emergent component of the population, when this is required. Given the presence of a Legal Minimum Length (LML), crypsis and emergence only become influential on the dynamics if natural mortality differs between the two components or if the emergence logistic overlaps with the selectivity curve, and or the LML.
+A logistic curve (Haddon, 2011; 2020) can be used to describe the transition from the cryptic to the emergent component of the population, when this is required. 
 
-`r equ_nums("m7")`
+$$\begin{matrix}
+E_{L,p}=\frac{1}{1+exp \left [{-log(19)(L-L_{E_{p}50})/(L_{E_{p}95}-L_{E_{p}50})} \right ]}
+\end{matrix} \\
+\begin{matrix}
+E_{L,p}=\frac{1}{1+exp \left [{-log(19)(L-L_{E_{p}50})/\delta_p} \right ]}
+\end{matrix} 
+$$
 
-$$E_L=\frac{1}{1+exp \left [{-log(19)(L-L_{E50})/(L_{E95}-L_{E50})} \right ]}=\frac{1}{1+exp \left [{-log(19)(L-L_{E50})/\delta_E} \right ]}$$
-
-where $E_L$ is the proportion of size-class $L$ that are emergent, and $L_{E50}$ and $L_{E95}$ are the usual logistic parameters defining the lengths at which 50% and 95% are emergent. The term $\delta_E$ is the constant $(L_{E95}-L_{E50})$. Emergence from crypsis only becomes an issue for the dynamics of the model if they are considered to have different natural mortality rates and/or when the emergence curve overlaps with the selectivity curve (which it can do when the LML is low, e.g. 127mm early on in Tasmania, especially on the west coast). Where the selectivity and emergence curves overlap then the proportion remaining in crypsis would act as a refuge, effectively reducing the fishing mortality on those size classes.
+where $E_{L,p}$ is the proportion of size-class $L$ that are emergent in population $p$, and $L_{E_{p}50}$ and $L_{E_{p}95}$ are the usual logistic parameters defining the lengths at which 50% and 95% are emergent. The term $\delta_p$ is the constant $(L_{E_{p}95}-L_{E_{p}50})$. Emergence from crypsis only becomes an issue for the dynamics of the model if they are considered to have different natural mortality rates and/or when the emergence curve overlaps with the selectivity curve (which it can do when the LML is low, e.g. 127mm early on in Tasmania, especially on the west coast). Where the selectivity and emergence curves overlap then the proportion remaining in crypsis would act as a refuge, effectively reducing the fishing mortality on those size classes.
 
 ### Selectivity
 
-Selectivity, $S_{L,t}$ for length $L$ (= size-class $i$) in year $t$ needs to be defined by year to permit changes in the LML to be reflected in the selectivity by divers. This implies that rather than a single vector of values, a matrix of selectivity values will be required in the simulations one column per year. Each year's selectivity is defined as:
+Selectivity-by-diver is assumed to be equal across populations within a zone, but a $p$ subscript could be added if different LML were expressed in different parts of a zone. Selectivity, $S_{L,t}$ for length $L$ (= size-class, from $L_i$, from $i  = L_{min}$ to $L_{max}$) in year $t$ needs to be defined by year to permit changes in the LML to be reflected in the selectivity-by-divers. This implies that rather than a single vector of values, a matrix of selectivity values will be required in the simulations, with one column per year. Each year's selectivity is defined as:
 
 
-`r equ_nums("m13")`
-
-$$S_{L,t}=\frac{1}{1+{exp \left [ {-log(19)( L-{L_{s50}})/{\delta_S}} \right ] }}$$
+$$s_{L,t}=\frac{1}{1+{exp \left [ {-log(19)( L-{L_{s50}})/{\delta_S}} \right ] }}$$
 
 where $\delta_S=L_{s95}-L_{s50}$. 
+
+Within the implementation inside __aMSE__ the selectivity-by-diver and Emergence are combined (element x element multiplication), which only occasionally has an effect on actual selectivity. Importantly, where there is an effect this means that actual selectivity would not be the same across all populations.
+
+$$s_{p,L,t}=s_{L,t} \times E_{p,L}$$
+
 
 ### Growth
 
 The growth from size-class $j$ to size-class $i$ is described by the elements of a growth transition matrix defined by:
 
-`r equ_nums("m8")`
 
 $$\begin{align}
   & \begin{matrix}
-   {G_{i,j}}=\int\limits_{-\infty }^{{L_i}+{LW/2}}{\frac{1}{\sqrt{2\pi }{\sigma_{j}}}\exp \left( -\left[ \frac{{L_i}-{{\bar{L}}_{j}}}{2{({\sigma_{j}})^{2}}} \right] \right)}dL & {L_i}={L_{Min}}  \\
+   {G_{p,i,j}}=\int\limits_{-\infty }^{{L_i}+{LW/2}}{\frac{1}{\sqrt{2\pi }{\sigma_{j}}}\exp \left( -\left[ \frac{{L_i}-{{\bar{L}}_{j}}}{2{({\sigma_{j}})^{2}}} \right] \right)}dL & {L_i}={L_{Min}}  \\
 \end{matrix} \\ 
  & \begin{matrix}
-   {G_{i,j}}=\int\limits_{{L_i}-{LW/2}}^{{{L}_{i}}+{LW/2}}{\frac{1}{\sqrt{2\pi }{\sigma_{j}}}\exp \left( -\left[ \frac{{L_i}-{{{\bar{L}}}_{j}}}{2{({\sigma_{j}})^{2}}} \right] \right)}dL & {{L}_{Min}}<{L_{i}}\le {L_{Max}}  \\
+   {G_{p,i,j}}=\int\limits_{{L_i}-{LW/2}}^{{{L}_{i}}+{LW/2}}{\frac{1}{\sqrt{2\pi }{\sigma_{j}}}\exp \left( -\left[ \frac{{L_i}-{{{\bar{L}}}_{j}}}{2{({\sigma_{j}})^{2}}} \right] \right)}dL & {{L}_{Min}}<{L_{i}}\le {L_{Max}}  \\
 \end{matrix} \\ 
-\end{align}$$
+\end{align}
+$$
 
-where $G_{i,j}$ is the probability of growing from size class $j$ into size class $i$, $LW$ is the size-class width, $\sigma_j$ is the standard deviation of the normal curve describing the growth increments of animals starting in size class $j$, $L_i$ is the length of size class $i$, and $\bar{L}_{j}$ is the mean growth increment of animals starting from the mean of size-class $j$. $L_{Min}$ and $L_{Max}$ are the minimum and maximum size-classes, with the maximum being treated as a plus group. To make $L_{Max}$ a plus group, and at the same time ensure that all columns sum to 1.0 (to prevent growth implying losses of its own), the final row of the matrix is modified for each column $j$ as:
+where $G_{p,i,j}$ is the probability of growing from size class $j$ into size class $i$, $LW$ is the size-class width, $\sigma_j$ is the standard deviation of the normal curve describing the growth increments of animals starting in size class $j$, $L_i$ is the length of size class $i$, and $\bar{L}_{j}$ is the mean growth increment of animals starting from the mean of size-class $j$. $L_{Min}$ and $L_{Max}$ are the minimum and maximum size-classes, with the maximum being treated as a plus group. To make $L_{Max}$ a plus group, and at the same time ensure that all columns sum to 1.0 (to prevent growth implying losses of its own), the final row of the matrix is modified for each column $j$ as:
 
-`r equ_nums("m9")`
 
-$${{G}_{{L}_{Max,j}}}={{G}_{{L}_{Max,j}}}+\left( 1-\sum\limits_{i={{L}_{1}}}^{{{L}_{Max}}}{{{G}_{i,j}}} \right)$$
+$${{G}_{{p,L}_{Max,j}}}={{G}_{{p,L}_{Max,j}}}+\left( 1-\sum\limits_{i={{L}_{1}}}^{{{L}_{Max}}}{{{G}_{p,i,j}}} \right)$$
 
-The expected mean growth increment for each size-class $i$ is defined using an inverse logistic growth curve that has been found to describe blacklip abalone growth well (Haddon et al. 2008; Helidoniotis et al., 2011):
+The expected mean growth increment for each size-class $i$ is defined using an inverse logistic growth curve that has been found to describe blacklip abalone growth well (Haddon et al. 2008; Helidoniotis et al., 2011; Haddon, 2020):
 
-`r equ_nums("m10")`
 
-$${\bar{L}_{i,j}={L_j}+\frac{Max\Delta L}{1+{exp \left[ {log\left( 19 \right)\left( {{L}_{j}}-{L_{g50}} \right)/\delta_g} \right ]}}+{{\varepsilon }_{{L_j}}}}$$
+$${\bar{L}_{p,i,j}={L_{p,j}}+\frac{Max\Delta L_p}{1+{exp \left[ {log\left( 19 \right)\left( {{L}_{p,j}}-{L_{p,g}50} \right)/\delta_{p,g}} \right ]}}+{{\varepsilon }_{{L_j}}}}$$
 
-$Max \Delta L$ is the maxiumum growth increment for the population, $L_g50$ and $L_g95$ are the usual logistic parameters defining the lengths at which 50% and 5% of the maximum growth increment are expressed. The ${\varepsilon}_{{L}_{i}}$ is the 
-Variation around the mean expected growth increment. It is assumed to be normally distributed with a standard deviation that varies with the growth increment (Haddon et al. 2008):
+$Max \Delta L_p$ is the maxiumum growth increment for the population $p$, $L_{p,g}50$ and $L_{p,g}95$ are the usual logistic parameters defining the lengths at which 50% and 5% of the maximum growth increment are expressed ($\delta_{p,g}$ is simply the 95% minus the 50% parameters). The ${\varepsilon}_{{L}_{i}}$ is the variation around the mean expected growth increment. It is assumed to be normally distributed with a standard deviation that varies with the growth increment (Haddon et al. 2008):
 
-`r equ_nums("m11")`
 
-$${{\sigma }_{L_j}}=\frac{Max{{\sigma }_{L}}}{1+{exp \left[ {log\left( 19 \right)\left( {L_j}-{L_{g95}} \right)/\delta_g} \right ]}}$$
+$${{\sigma }_{L_{p,j}}}=\frac{Max{{\sigma }_{L_p}}}{1+{exp \left[ {log\left( 19 \right)\left( {L_{p,j}}-{L_{p,g}95} \right)/\delta_{p,g,\sigma}} \right ]}}$$
 
-The $\left( L_{Max}-{L_{g95}} \right)$ remains a constant and can be parametereized as such ($\delta_{g\sigma}$).
+The $\left( L_{Max}-{L_{p,g}95} \right)$ remains a constant and can be parametereized as such: ($\delta_{p,g,\sigma}$). Alternative descriptions of this variation, such as the use of a power law (Haddon, 2020), may be explored for their impact. 
+
+An important influence on the growth increment estimates is the negative bias that appears to be introduced by the tagging methods used in their estimation (See Haddon _et al_, 2013, page 191, Figure 70). This means that when conditioning the abalone operating model, it will be necessary to compare the predicted unfished numbers-at-size with those obtained from the fishery. In that earlier work, after using the best estimates of growth increment from tagging, the predicted size-distribution of the unfished population had a smaller average size than the observed frequencies in the catches from a non-pristine fishery. Clearly modifications to the growth parameters are required and options are discussed in the _Conditioning_the_MSE_ vignette. 
 
 ### Weight-at-Length
 
-The weight-at-length, $W_L$, relationship invovles two constants:
+The weight-at-length, $W_{p,L}$, for each population is described by a relationship involving two constants for each population:
 
-`r equ_nums("m12")`
 
-$$W_L=aL^b$$
+$$W_{p,L}=a_pL_{p}^{b_p}$$
+During the conditioning of the model it is possible that an observed power relationship that exists between the two parameters can be used instead of estimating both (see Haddon _et al_, 2013, page 209, Figure 75).
+
 
 ### Maturity-at-Length
 
-Maturity at size, $m_L$,  uses an alternative logistic curve, again with two parameters, only this time $L_{50}\% = -{\alpha}/{\beta}$ and the inter-quartile distance is $2{\text{Ln}}3 \beta$.
+Maturity at size, $m_L$,  uses an alternative logistic curve, again with two parameters, only this time $L_{p}50 = -{\alpha}/{\beta}$ and the inter-quartile distance is $IQ=2{log}3 \beta$.
 
-`r equ_nums("m12")`
 
 $$m_L=\frac{exp(\alpha + \beta L)}{1+exp(\alpha + \beta L)}=\frac{1}{1+\left(exp(\alpha + \beta L)  \right)^{-1}}$$
 
 
 ### Spawning and Exploitable Biomass 
 
-Mature or spawning biomass needs to include numbers-at-size by maturity-at-size and weight-at-size:
+Mature or spawning biomass needs to include numbers-at-size by maturity-at-size and weight-at-size. The operating model (OM) operates at the population scale but the data from the OM needs to be at the SAU level. Hence, the outputs from each population need to be combined in a valid manner. Whatever the case for sampling, we will still need population based estimates of such things as exploitbale biomass, numbers-at-size, and so on, so methods for combined populations into a single SAU are required. Some, such as numbers-at-size, will need simple summation while others, such as cpue, might require catch-weighted values. 
 
-`r equ_nums("m14")`
 
-$$B_{t}^{S}=\sum\limits_{L={L_{Min}}}^{L_{Max}}{\left( {m_L}{W_L}{N_{L,t}} \right)}$$
+$$B_{p,t}^{S}=\sum\limits_{L={L_{Min}}}^{L_{Max}}{\left( {m_{p,L}}{W_{p,L}}{N_{p,L,t}} \right)}$$
 
-Spawning biomass is, like exploitable biomass, calculated in the same units as the $W_L$ equation. If that is in grams then it requires division by 1000,000 to estimate tonnes, if in kg then division by 1000 is required. Exploitable biomass, here, is estimated after half of natural mortality and growth have occurred and before any fishing mortality occurs in any single year. Only emergent biomass is considered as no fishing mortality is imposed on the cryptic component, but this is only important is the emergence curve overlaps the selectivity curve:
+Spawning biomass is, like exploitable biomass, calculated in the same units as the $W_L$ equation. If that is in grams then it requires division by 1000,000 to estimate tonnes, if in kg then division by 1000 is required. Exploitable biomass, here, is estimated after half of natural mortality and growth have occurred and before any fishing mortality occurs in any single year. Remember that the selectivity for each popultion includes any effects of Emergence:
 
-`r equ_nums("m15")`
 
-$$B_{t}^{E}=\sum\limits_{L={{L}_{Min}}}^{{{L}_{Max}}}{{{s}_{L,t}}{{E}_{L}}{{W}_{L}}G_{L,j}{e^{-M/2}}N_{L,t}}$$
+$$B_{p,t}^{E}=\sum\limits_{L={{L}_{Min}}}^{{{L}_{Max}}}{{{s}_{p,L,t}}{{W}_{p,L}}G_{p,L,j}{e^{-M/2}}N_{p,L,t}}$$
 
-where the exploitable numbers-at-size $L$ in year $t$, ${{N}_{L,t}^{E}}$, is obtained from
+where the exploitable numbers-at-size $L$ in year $t$, ${{N}_{p,L,t}^{E}}$, is obtained from
 
-`r equ_nums("m16")`
 
-$${{N}_{L,t}^{E}}=G_{L,j}{e^{-M/2}}{{s}_{L,t}}{{E}_{L}}N_{L,t}$$
+$${{N}_{p,L,t}^{E}}=G_{p,L,j}{e^{-M/2}}{{s}_{p,L,t}}N_{L,t}$$
 
-where $N_{L,t}$ is the numbers-at-size $L$ at the start of year $t$.
+where $N_{p,L,t}$ is the numbers-at-size $L$ at the start of year $t$ for population $p$.
 
 ### Catchability
 
 Catchability in a stock assessment model can be estimated analytically as:
 
-`r equ_nums("m17")`
 
 $$q=\exp \left[ \sum\limits_{t=1}^{n}{Ln\left( {{I}_{t}}/B_{t}^{E} \right)}/n \right]$$
 
 where $n$ is the number of years across which the observed catch rates, $I_t$, and predicted exploitable biomass are considered. In the simulation/operating model a maximum catch rate, $CE_{Max}$ was used to scale the unfished exploitable biomass to generate a catchability value for each population. The maximum catch rates were randomly selected from a pre-specified distribution, and then the following equation used:
-
-`r equ_nums("m18")`
 
 $$q_p=\left( CE_{Max}/{B_{0,p}^{E}} \right)$$
 
@@ -216,13 +212,10 @@ where $p$ is the index for each population and ${B_{0,p}^{E}}$ is the unfished e
 
 Once each population is initiated its dynamics can be projected forwards a year at a time depending on how much catch is expected to be taken or how much effort is expected to be focussed into each population. The population initiation sets up the equilibrium numbers for the properties defined for each population. Then, given a specific harvest rate for each population they can be projected forward in yearly steps. This projection is based around how the numbers-at-size change through fishing, growth, natural mortality, and recruitment. As before, the fishing mortality rate over a year is defined as the complement of an annual harvest rate and is distributed down the diagonal of an otherwise zero matrix __A__:
 
-`r equ_nums("m19")`
 
 $$A_L=\left(1-{s_{L,t}H_t} \right)$$
 
 where $A_L$ is the survivorship of length class $L$, $s_{L,t}$ is the selectivity of length class $L$ in year $t$, and $H_t$ is the fully selected harvest rate in year $t$ (the harvest rate being the proportion of exploitable biomass taken as catch). We can define the survivorship from applying half of natural mortality as follows:
-
-`r equ_nums("m20")`
 
 $$O_S=e^{-M/2}$$
 
@@ -241,20 +234,49 @@ $${\mathbf{N_{t+1}}}={O_S}\left[{\mathbf{GA_t}}{O_S}{\mathbf{N_t}}\right] + {\ma
 
 
 
+### Fleet Dynamics
+
+The application of any harvest control rule in this complex spatial model will entail the translation of SAU level aspirational catches (which should sum to the zone's TAC), into catches applied to each individual population within each SAU. Of course, the aspirational catches per SAU derived from the harvest control rules (HCR) within each harvest strategy will not be taken exactly, The overall TAC will eventually constrain total catches, but some SAU will experience larger catches than expected, and others will experience smaller catches. So the application of the TAC as catches to particular populations requires two steps.
+
+The first step is to include variation into the aspirational catches from the HCR and then scale them until their sum equals the original TAC. The second step requires that each SAU's actual catch is distributed across their component populations in some  manner that reflects plausible fleet dynamics.
+
+If $C_{u,hcr}$ is the aspiration catch for each SAU, $u$, derived from whatever HCR is used, then the first step on the way to setting the potential actual SAU catch is to include Normal variation:
+
+$$C_{u}^*=N(C_{u,hcr},\sigma_u)$$
+
+where $C_{u}^*$ is the potential SAU catch before re-scaling to the TAC, and $\sigma_u$ is the standard deviation of the variation that occurs between the aspirational and the potential actual catches within SAU's. The original $C_{u}$ sum to the TAC but the sum of the $C_{u}^*$ may be larger or smaller than the TAC. Hence, we need to rescale the potential actual catches so total SAU catches sum to the agreed TAC:
+
+$$C_u=\frac{{C_{u}^*}{TAC}}{\sum\limits_{u=1}^{nSAU}C_{u}^*}$$
 
 
+## Model Output
 
-##### l
+### CPUE
+
+At least in the Tasmanian blacklip abalone fishery the relationship between catch-rates and catches is usually observed to be a linear, hence the relation between catches and effort is also linear. Because of this catch-rates are assumed to have at least some influence over the distribution of catches among areas. Observed catch-rates (cpue) would naturally be expected to be variable through time and across areas and so are modelled as:
+
+$$I_{t,p}={q_p}\left(B_{p,t}^E\right)^{\lambda}{e^{N(0,\sigma_q)}}$$
+
+where $I_{t,p}$ is the cpue in year $t$ for area $p$, $q_p$ is the catchability coefficient within population $p$, ${B_{p,t}^E}$ is the exploitable biomass in year $t$ and area $p$, with a non-linearity coefficient of $\lambda$, and ${e^{N(0,\sigma_q)}}$ is a Log-Normal random deviate, with $\sigma_p$ being the standard deviation of the catchability coefficient $q_p$. If $\lambda = 1.0$ then the relationship between cpue and exploitable biomass is linear, values other than $\lambda = 1.0$ lead to non-linear relationships. Given how important the use of cpue is in all Australian abalone harvest strategies, this is one assumption whose influence is in need of testing. We are using $p$ as a sub-script for area, because in the conditioning each population within each Spatial Assessment Unit corresponds to a particular area within that SAU. Effectively, area and population are the same thing in the model.
+
+
 ## References
 
 Haddon, M. (2011) _Modelling and Quantitative Methods in Fisheries_. 2nd Ed. CRC/Chapman & Hall. 449p.
 
-Haddon, M., Mundy, C., and D. Tarbath (2008) Using an inverse-logistic model to describe growth increments of blacklip abalone (_Haliotis rubra_) in Tasmania. _Fishery Bulletin_ __106__:58-71
+Haddon, M. (2020) _Using R for Modelling and Quantitative Methods in Fisheries_. The R Series. CRC/Chapman & Hall.  337p.
 
 Haddon, M. and F. Helidoniotis (2013) Legal minimum lengths and the management of abalone fisheries. _Journal of Shellfish Research_ __32__:197-208
 
 Haddon, M., Mayfield, S., Helidoniotis, F., Chick, R. and C. Mundy (2013) _Identification and Evaluation of Performance Indicators for Abalone Fisheries_. FRDC Final Report 2007/020. CSIRO Oceans and Atmosphere and Fisheries Research Development Corporation. 295 p.
 
+Haddon, M. and C. Mundy (2016) _Testing abalone empirical harvest strategies for setting TACs and associated LMLs, which include the use of novel spatially explicit performance measures_. FRDC Final Report 2011/028. CSIRO Oceans and Atmosphere and Fisheries Research Development Corporation. Hobart 182 p.
+
+Haddon, M., Mundy, C., and D. Tarbath (2008) Using an inverse-logistic model to describe growth increments of blacklip abalone (_Haliotis rubra_) in Tasmania. _Fishery Bulletin_ __106__:58-71
+
 Helidoniotis, F., Haddon, M., Tuck, G., and D. Tarbath (2011) The relative suitability of the von Bertalanffy, Gompertz and inverse logistic models for describing growth in blacklip abalone populations (_Haliotis rubra_) in Tasmania, Australia. _Fisheries Research_ __112__: 13-21
 
+Sullivan, P.J., Han-Lin Lai, and V.F. Gallucci (1990) A catch-at-length analysis that incorporates a stochastic model of growth. _Canadian Journal of Fisheries and Aquatic Sciences_ __47__: 184-198.
+
+Sullivan, P.J. (1992) A Kalman filter approach to catch-at-length analysis. _Biometrics_ __48__: 237-257.
 

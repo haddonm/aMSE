@@ -102,19 +102,20 @@ smsy <- tapply(pmsy,sauindex,sum)
 smsydepl <- tapply((pmsydepl * pmsy) / smsy[sauindex],sauindex,sum)
 
 
-ans <- sauzoneDP$saudeplsB
-label <- "Mature Depletion"
-uplim <- 0.7
-plotprep(width=7,height=8,newdev=FALSE)
+ans <- sauzoneDP$catS
+label <- "Annual Catch"
+uplim <- NULL
+#plotprep(width=7,height=8,newdev=FALSE)
 parset(plots=c(4,2),byrow=FALSE,margin=c(0.25,0.4,0.1,0.05),
        outmargin=c(1,1,0,0))
 yrs <- 1:pyrs
 for (sau in 1:8) {
-  maxy <- uplim
-  if (is.null(uplim)) maxy <- getmax(ans[,sau,])
-  plot(yrs,ans[,sau,1],lwd=1,col="grey",panel.first=grid(),ylim=c(0,maxy),
+ # maxy <- uplim
+ # if (is.null(uplim))
+    maxy <- getmax(ans[,sau,])
+  plot(yrs,ans[,sau,1],lwd=1,type="l",col="grey",panel.first=grid(),ylim=c(0,maxy),
        xlab="",ylab=saunames[sau])
-  for (iter in 1:reps) lines(yrs,ans[,sau,iter],lwd=1,col="grey")
+  for (iter in 1:2) lines(yrs,ans[,sau,iter],lwd=1,col="grey")
   abline(h=smsydepl[sau],lwd=2,col=4)
   abline(v=inityr,lwd=1,col=2)
 }

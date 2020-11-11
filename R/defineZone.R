@@ -1083,13 +1083,15 @@ STM <- function(p,mids) { #    # p <- popparam[1:4]; mids <- midpts
    return(G)
 } # end of STM
 
-#' @title testequil runs a zone Nyrs and determines stability
+#' @title testequil runs a zone for Nyrs and determines stability
 #'
 #' @description testequil runs a given zone for Nyrs at the given
 #'     harvest rate, and then tests that the last values of matureB,
 #'     exploitB, recruitment, and spawning biomass depletion are the
 #'     same as the first (to three decimal places). It reports this
-#'     to the console if verbose=TRUE
+#'     to the console if verbose=TRUE. This is used with a harvest rate
+#'     of zero and no variation in recruitment when defining the equilibrium
+#'     zone under the application of the movement matrix.
 #'
 #' @param zoneC the constants components of the simulated zone
 #' @param zoneD the dynamic components of the simulated zone

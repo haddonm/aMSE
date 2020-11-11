@@ -110,9 +110,16 @@ listfuns <- function(infile) { # infile=filename; console=FALSE
   return(outfuns)
 } # end of listfuns
 
-indir <- "C:/Users/Malcolm/Dropbox/A_Code/aMSE/R/"
+if (dir.exists("c:/Users/User/DropBox")) {
+  ddir <- "c:/Users/User/DropBox/A_code/"
+} else {
+  ddir <- "c:/Users/Malcolm/DropBox/A_code/"
+}
+
+indir <- paste0(ddir,"aMSE/R/")
 files <- c("aMSE_utils.R","defineZone.R","dynamics.R","generate_results.R",
-           "getfunctions.R","HS-HCR.R","inputfiles.R","plotfuns.R")
+           "getfunctions.R","HS-HCR.R","inputfiles.R","plotfuns.R",
+           "projection.R","RcppExports.R")
 nfiles <- length(files)
 allfiles <- NULL
 
@@ -131,5 +138,9 @@ allfilesort <- allfiles[order(allfiles[,"function"]),]
 
 
 
-outfile <- "C:/Users/Malcolm/Dropbox/A_Code/aMSE/data-raw/allfile.csv"
+outfile <- paste0(ddir,"aMSE/data-raw/allfile.csv")
 write.csv(allfilesort,file = outfile)
+
+sapply(abb,"class")
+
+
