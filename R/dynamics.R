@@ -1,24 +1,25 @@
 
 
-#' @title depletepop resets zoneD to an input depletion level
+#' @title depleteSAU resets zoneD, approximately to an input depletion level
 #'
-#' @description depletepop resets the depletion level of the whole
+#' @description depleteSAU resets the depletion level of the whole
 #'     zone and does this by searching for the harvest rate that
-#'     leads to the sum of the mature biomass, across populations,
-#'     divided by the sum of the effective B0 across populations is
-#'     as close as possible to the desired depletion level. This means
+#'     leads to the mature biomass in each population is as close as
+#'     possible to the desired depletion level. This means
 #'     the individual populations will likely vary around the target
-#'     depletion, but across the zone it will be correct. The
+#'     depletion, so the depletion across the zone will only be
+#'     approximately at the target depletion. The
 #'     depletion is measured relative to the effective B0 as that
 #'     takes account of any larval dispersal. This function uses the
-#'     production curve matrix to search for harvest rates that bound
+#'     production curve array to search for harvest rates that bound
 #'     the target depletion and then re-searches across those bounds
 #'     using len intervals.
 #'
 #' @param zoneC the constants components of the simulated zone
 #' @param zoneD the dynamic components of the simulated zone
 #' @param glob the general global variables
-#' @param depl a vector of target depletion levels for each SAU
+#' @param initdepl a vector of target depletion levels for each SAU. This
+#'     is found in zone1$condC, but could obviously be modified in each run.
 #' @param product the production curve matrix from doproduction
 #' @param len the number of intervals in the trial harvest rates
 #'
@@ -39,17 +40,18 @@
 #'   ans2 <- modzoneC(zoneC,zoneD,glb)
 #'   zoneC <- ans2$zoneC  # now has MSY and deplMSY
 #'   product <- ans2$product
-#'   zoneDD <- depletepop(zoneC,zoneD,glb,depl=0.3,product)
+#'   zoneDD <- depleteSAU(zoneC,zoneD,glb,depl=rep(0.3,glb$nSAU),product)
 #'   sum((zoneDD$matureB[1,]/sum(zoneDD$matureB[1,]))*zoneDD$deplsB[1,])
 #'   mean(zoneDD$deplsB[1,])
 #' }
-depletepop <- function(zoneC,zoneD,glob,depl,product,len=15) {
-  #  zoneC=zoneC; zoneD=zoneD; glob=glb;  product=product; depl=rep(0.8,8);len=15
+depleteSAU <- function(zoneC,zoneD,glob,initdepl,product,len=15) {
+  #  zoneC=zoneC; zoneD=zoneD; glob=glb;  product=product; depl=initdepl;len=15
   # use product to find bounds on H around the desired depletion level
-  npop <- glob$numpop
+  if (length(initdepl) != glob$nSAU) stop("Need a depletion for each population \n")
+  npop <- glob$numpop  # need to deplete by pop
+  depl <- initdepl[glob$sauindex] # each pop should have depl of its SAU
   harvests <- matrix(0,nrow=len,ncol=npop,dimnames=list(1:len,1:npop))
   popDepl <- harvests # need a matrix to hold the depletion levels
-  if (length(depl) != npop) stop("Need a depletion for each population \n")
   initH <- as.numeric(rownames(product))
   for (pop in 1:npop) {
     pick <- which.closest(depl[pop],product[,"Deplet",pop])
@@ -68,7 +70,6 @@ depletepop <- function(zoneC,zoneD,glob,depl,product,len=15) {
   for (harv in 1:len) { # harv=1
     zoneDD <- runthreeH(zoneC=zoneC,zoneD,inHarv=harvests[harv,],glob)
     popDepl[harv,] <- zoneDD$deplsB[1,]
-
   }
   pickharv <- numeric(npop)
   for (pop in 1:npop)
@@ -76,6 +77,7 @@ depletepop <- function(zoneC,zoneD,glob,depl,product,len=15) {
   zoneDD <- runthreeH(zoneC=zoneC,zoneD,inHarv=pickharv,glob)
   return(zoneDD)
 } # end of depleteSAU
+
 
 #' @title oneyear one year's harvest dynamics for one abpop
 #'
@@ -306,6 +308,7 @@ oneyearC <- function(zoneC,zoneDP,catchp,year,iter,sigmar,Ncl,npop,movem) {
 #' @param movem the larval dispersal movement matrix
 #'
 #' @return a list containing a revised dynamics list
+#' @export
 #'
 #' @examples
 #'  data(constants)
@@ -318,7 +321,7 @@ oneyearC <- function(zoneC,zoneDP,catchp,year,iter,sigmar,Ncl,npop,movem) {
 #'  zoneD <- ans$zoneD
 #'  numpop <- glb$numpop
 #'  harvest <- rep(0.2,numpop) # not exported so needs aMSE:::
-#'  zoneD <- aMSE:::oneyearD(zoneC=zoneC,zoneD=zoneD,
+#'  zoneD <- oneyearD(zoneC=zoneC,zoneD=zoneD,
 #'                    inHt=harvest,year=2,sigmar=1e-06,
 #'                    Ncl=glb$Nclass,npop=numpop,movem=glb$move)
 #'  str(zoneD)

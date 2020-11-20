@@ -239,7 +239,6 @@ doproduction <- function(zoneC,zoneD,glob,
   results <- array(0,dim=c(nH,6,numpop),dimnames=list(initH,columns,1:numpop))
   for (aH in 1:nH) { # aH=1 ; yr=2
     zoneD <- runthreeH(zoneC=zoneC,zoneD,inHarv=rep(initH[aH],numpop),glob)
-   # zoneD <- aMSE:::runthreeH(zoneC,zoneD,inHarv=rep(initH[aH],numpop),glob)
     results[aH,"ExB",] <- zoneD$exploitB[1,]
     results[aH,"MatB",] <- zoneD$matureB[1,]
     results[aH,"AnnH",] <- zoneD$harvestR[1,]
@@ -559,7 +558,46 @@ makeabpop <- function(popparam,midpts,projLML) {
   return(ans)
 } # End of makeabpop
 
-
+#' @title makeequilzone high level function generates equilibrium zone
+#'
+#' @description makeequilzone is a high level function that merely hides the
+#'     details of generating the original unfished zone after reading in the
+#'     data files, estimates the productivity, and sets up the results
+#'     directory, resdir, ready to receive files.
+#'
+#' @param resdir the directory containing the data and control csv files. It
+#'     can/will also act to store results in a manner that will allow them
+#'     to be displayed using makehtml.
+#' @param ctrlfile the main file that controls the particular run. It contains
+#'     the name of the data file that is used to biologically condition the
+#'     numpop populations
+#' @param cleanslate a boolean determining whether any old results are deleted
+#'     from resdir before starting. Default=FALSE
+#'
+#' @return a list of zoneC, zoneD, glb, constants, product, ctrl, and zone1
+#' @export
+#'
+#' @examples
+#' print("wait on datafiles")
+makeequilzone <- function(resdir,ctrlfile="control.csv",cleanslate=FALSE) {
+  zone1 <- readctrlzone(resdir,infile=ctrlfile)
+  ctrl <- zone1$ctrl
+  glb <- zone1$globals     # glb without the movement matrix
+  constants <- readdatafile(glb$numpop,resdir,ctrl$datafile)
+  cat("Files read, now making zone \n")
+  out <- setupzone(constants,zone1) # make operating model
+  zoneC <- out$zoneC
+  zoneD <- out$zoneD
+  glb <- out$glb             # glb now has the movement matrix
+  product <- out$product     # important bits usually saved in resdir
+  # did the larval dispersal level disturb the equilibrium?
+  zoneD <- testequil(zoneC,zoneD,glb)
+  zoneC <- resetexB0(zoneC,zoneD) # rescale exploitB to avexplB after dynamics
+  setuphtml(resdir,cleanslate=cleanslate)
+  equilzone <- list(zoneC=zoneC,zoneD=zoneD,glb=glb,constants=constants,
+                    product=product,ctrl=ctrl,zone1=zone1)
+  return(equilzone)
+} # end of makeequilzone
 
 #' @title makemove produces the movement matrix
 #'
@@ -760,42 +798,7 @@ maturity <- function(ina,inb,lens) {
    return(ans)
 } # end of maturity
 
-#' @title modprojC produces three objects used to condition the zone
-#'
-#' @description modprojC produces an object used to condition the zone when
-#'     projecting it following any conditioning. Once the initial conditions
-#'     for the projection have been attained through an initial depletion of an
-#'     unfished equilibrium, or more particularly by conditioning on historical
-#'     data then the projC object will be used to condition the projections.
-#'
-#' @param zoneC the constant part of the zone
-#' @param glob the globals for the simulation
-#' @param inzone the zone object from readctrlzone
-#'
-#' @return a list of projSel and projSelWt within the projC object from inzone
-#' @export
-#'
-#' @examples
-#' print("wait on new example data")
-modprojC <- function(zoneC,glob,inzone) { # zoneC=zoneC; glob=glb; inzone=zone1
-  numpop <- glob$numpop
-  popdefs <- getlistvar(zoneC,"popdef")
-  sau <- getvar(zoneC,"SAU")
-  midpts <- glob$midpts
-  projSel <- matrix(0,nrow=glob$Nclass,ncol=numpop,dimnames=list(midpts,sau))
-  projSelWt <- matrix(0,nrow=glob$Nclass,ncol=numpop,dimnames=list(midpts,sau))
-  pLML <- inzone$projC$projLML[1] # needs development to allow variation in projLML
-  for (pop in 1:numpop) {
-    selL50 <- popdefs["SelP1",pop]
-    selL95 <- popdefs["SelP2",pop]
-    projSel[,pop] <- logistic((pLML + selL50),selL95,midpts)
-    projSelWt[,pop] <- projSel[,pop] * zoneC[[pop]]$WtL
-  }
-  projC <- inzone$projC
-  projC$Sel <- projSel
-  projC$SelWt <- projSelWt
-  return(projC=projC)
-} # end of modprojC
+
 
 #' @title modzoneC runs the zone 3 x Nyrs to equilibrium
 #'
@@ -841,36 +844,6 @@ modzoneC <- function(zoneC,zoneD,glob,lowlim=0.0,uplim=0.4,inc=0.005) {
 } # end of modzoneC
 
 
-#' @title modzoneCSel changes the selectivity characteristics in zoneC
-#'
-#' @description modzoneCSel  changes the selectivity characteristics in zoneC
-#'     which is necessary when making a projection under a different LML.
-#'     Currently this function is designed to allow only a single LML during any
-#'     projections. It will obviously need modification if it is desired to
-#'     explore the option of gradually changing an LML
-#'
-#' @param zoneC the constant zone object from setupzone
-#' @param sel the new selectivity as a matrix of selectivity by population
-#' @param selwt new selectivity x WtL as a matrix of SelWt x Population
-#' @param glb the globals object
-#' @param yrs the number of years of projection
-#'
-#' @return
-#' @export
-#'
-#' @examples
-#' print("wait on suitable data")
-modzoneCSel <- function(zoneC,sel,selwt,glb,yrs) {
-  numpop <- glb$numpop
-  Nclass <- glb$Nclass
-  for (pop in 1:numpop){ # pop = 1
-    select <- matrix(sel[,pop],nrow=Nclass,ncol=yrs)
-    selectwt <- matrix(selwt[,pop],nrow=glb$Nclass,ncol=yrs)
-    zoneC[[pop]]$Select <- select
-    zoneC[[pop]]$SelWt <- selectwt
-  }
-  return(zoneC)
-} # end of modzoneCSel
 
 #' @title print.zoneDefinition S3 method for printing zonedef summary
 #'
@@ -1134,26 +1107,27 @@ testequil <- function(zoneC,zoneD,glb,inH=0.0,verbose=TRUE) {
                       Ncl=Nclass,npop=npop,movem=glb$move)
   if (verbose) {
     if (all(trunc(zoneD$matureB[1,],2) == trunc(zoneD$matureB[Nyrs,],2))) {
-      print("matureB Stable",quote=FALSE)
+      cat("matureB Stable \n")
     } else {
-      print("matureB varies",quote=FALSE)
+      cat("matureB varies \n")
     }
     expldiff <- trunc(zoneD$exploitB[1,],2) == trunc(zoneD$exploitB[Nyrs,],2)
     if (all(expldiff)) {
-      print("exploitB Stable",quote=FALSE)
+      cat("exploitB Stable \n")
     } else {
       diffe <- abs(trunc(zoneD$exploitB[1,],2) - trunc(zoneD$exploitB[Nyrs,],2))
-      print(paste0("exploitB varies ",max(diffe,na.rm=TRUE)),quote=FALSE)
+      label <- paste0("exploitB varies ",max(diffe,na.rm=TRUE)," \n")
+      cat(label)
     }
     if (all(trunc(zoneD$recruit[1,],2) == trunc(zoneD$recruit[Nyrs,],2))) {
-      print("recruitment Stable",quote=FALSE)
+      cat("recruitment Stable \n")
     } else {
-      print("recruitment varies",quote=FALSE)
+      cat("recruitment varies \n")
     }
     if (all(round(zoneD$deplsB[1,],2) == round(zoneD$deplsB[Nyrs,],2))) {
-      print("spawning depletion Stable",quote=FALSE)
+      cat("spawning depletion Stable \n")
     } else {
-      print("spawning depletion varies",quote=FALSE)
+      cat("spawning depletion varies \n")
     }
   }
   zoneD <- restart(oldzoneD=zoneD,nyrs=Nyrs,npop=npop,N=Nclass,zero=TRUE)

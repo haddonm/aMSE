@@ -51,7 +51,7 @@ oneyearD conducts one year's dynamics on zoneD in the MSE
  zoneD <- ans$zoneD
  numpop <- glb$numpop
  harvest <- rep(0.2,numpop) # not exported so needs aMSE:::
- zoneD <- aMSE:::oneyearD(zoneC=zoneC,zoneD=zoneD,
+ zoneD <- oneyearD(zoneC=zoneC,zoneD=zoneD,
                    inHt=harvest,year=2,sigmar=1e-06,
                    Ncl=glb$Nclass,npop=numpop,movem=glb$move)
  str(zoneD)

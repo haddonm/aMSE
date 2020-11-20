@@ -15,83 +15,46 @@ if (dir.exists("c:/Users/User/DropBox")) {
 resdir <- paste0(ddir,"aMSEUse/conddata/generic2")
 dirExists(resdir,make=TRUE,verbose=TRUE)
 
-# equilibrium zone -------------------------------------------------------------
-# You now need to ensure that there is, at least, a control.csv, zone1.csv
-# and region1.csv file in the data directory plus some other data .csv files
-# depending on how conditioned you want the model to be. Templates for the
-# correct format can be produced using ctrlfiletemplate(), datafiletemplate(),
-# and zonefiletemplate.
-zone1 <- readctrlzone(resdir,infile="control.csv")
-ctrl <- zone1$ctrl
-glb <- zone1$globals     # glb without the movement matrix
-constants <- readdatafile(glb$numpop,resdir,ctrl$datafile)
+zone <- makeequilzone(resdir,"control.csv")
+    equiltime <- (Sys.time())
+    origdepl <-  c(0.30,0.31,0.29,0.32,0.30,0.31,0.29,0.32)
+zoneDD <- depleteSAU(zone$zoneC,zone$zoneD,zone$glb,origdepl,zone$product,len=12)
+out <- prepareprojection(zone$zone1,zoneC,zone$glb,zoneDD,zone$ctrl)
+zoneDR <- out$zoneDP
+projC <- out$projC
+zoneCP <- out$zoneC
+    midtime <- (Sys.time())
 
-data(zone1)
-data(ctrl)
-data(constants)
-
-
-#zone1$initLML <- 140
-out <- setupzone(constants,zone1) # make operating model
-zoneC <- out$zoneC
-zoneD <- out$zoneD
-glb <- out$glb             # glb now has the movement matrix
-product <- out$product     # important bits usually saved in resdir
-# did the larval dispersal level disturb the equilibrium?
-zoneD <- testequil(zoneC,zoneD,glb)
-zoneC <- resetexB0(zoneC,zoneD) # rescale exploitB to avexplB after dynamics
-initialC <- zoneC
-unfishedD <- zoneD         # keep a copy of the unfished zone
-
-equiltime <- (Sys.time())
-print(equiltime - starttime)
-# deplete generic zone ---------------------------------------------------------
-
-zoneC <- initialC
-zoneD <- unfishedD
-# set the initial depletion levels if not defined in the data file
-# the values below manage to achieve c(0.7,0.65,0.7,0.6,0.5,0.45,0.475,0.45)
-zone1$condC$initdepl <- c(0.53,0.53,0.48,0.48,0.49,0.49,0.52,0.52,
-                          0.51,0.51,0.45,0.45,0.484,0.484,0.467,0.467)
-origdepl <-  zone1$condC$initdepl
-zoneDD <- depletepop(zoneC,zoneD,glb,depl=origdepl,product,len=12)
-propD <- getzoneprops(zoneC,zoneDD,glb,year=1)
-#round(propD,2)
-
-# setup for projection ---------------------------------------------------------
-inityrs <- 10
-projyrs <- zone1$projC$projyrs + inityrs
-reps <- ctrl$reps
-projC <- modprojC(zoneC,glb,zone1)
-zoneC <- modzoneCSel(zoneC,projC$Sel,projC$SelWt,glb,projyrs)
-zoneDR <- makezoneDR(projyrs,reps,glb,zoneDD) # zoneDReplicates
-zoneDRp <- addrepvar(zoneC,zoneDR,zoneDR$harvestR,glb,ctrl)
-midtime <- (Sys.time())
-print(midtime - equiltime)
+    print(equiltime - starttime)
+    print(midtime - equiltime)
+    propD <- getzoneprops(zoneC,zoneDD,glb,year=1)
+    round(propD,3)
 # prepare the HS --------------------------------------------------------------
 
-if (projC$HS == "constantCatch") {
-  hsFunc <- constCatch
-  inTAC <- projC$HSdetail
-}
-if (projC$HS == "MCDA") {
-  hsFunc <- doMCDA
-  mcdafile <- projC$HSdetail
-  optCE <- MCDAdata(resdir,mcdafile,zone1$SAUnames)
-}
-
+# if (projC$HS == "constantCatch") {
+#   hsFunc <- constCatch
+#   inTAC <- projC$HSdetail
+# }
+# if (projC$HS == "MCDA") {
+#   hsFunc <- doMCDA
+#   mcdafile <- projC$HSdetail
+#   optCE <- MCDAdata(resdir,mcdafile,zone1$SAUnames)
+# }
+#
 
 # Do the replicates ------------------------------------------------------------
-inityr <- 10
-saunames <- zone1$SAUnames
-sauindex <- glb$sauindex
+inityr <- zone$zone1$projC$inityrs
+saunames <- zone$zone1$SAUnames
+sauindex <- zone$glb$sauindex
 pyrs <- projC$projyrs + inityr
-B0 <- tapply(sapply(zoneC,"[[","B0"),sauindex,sum)
-exB0 <- tapply(sapply(zoneC,"[[","ExB0"),sauindex,sum)
+B0 <- tapply(sapply(zone$zoneC,"[[","B0"),sauindex,sum)
+exB0 <- tapply(sapply(zone$zoneC,"[[","ExB0"),sauindex,sum)
 
-zoneDP <- constCatch(950,zoneDRp,glb,ctrl,projC$projyrs,inityrs=10)
+midtime <- (Sys.time())
+Rprof()
+zoneDP <- applymcda(zoneCP,zoneDRp,glb,ctrl,projC$projyrs,inityrs=10)
 sauzoneDP <- asSAU(zoneDP,sauindex,saunames,B0,exB0)
-
+Rprof(NULL)
 endtime <- (Sys.time())
 print(endtime - midtime)
 
@@ -102,10 +65,10 @@ smsy <- tapply(pmsy,sauindex,sum)
 smsydepl <- tapply((pmsydepl * pmsy) / smsy[sauindex],sauindex,sum)
 
 
-ans <- sauzoneDP$catS
-label <- "Annual Catch"
+ans <- sauzoneDP$matB
+label <- "Mature Biomass"
 uplim <- NULL
-#plotprep(width=7,height=8,newdev=FALSE)
+plotprep(width=7,height=8,newdev=FALSE)
 parset(plots=c(4,2),byrow=FALSE,margin=c(0.25,0.4,0.1,0.05),
        outmargin=c(1,1,0,0))
 yrs <- 1:pyrs
@@ -115,8 +78,8 @@ for (sau in 1:8) {
     maxy <- getmax(ans[,sau,])
   plot(yrs,ans[,sau,1],lwd=1,type="l",col="grey",panel.first=grid(),ylim=c(0,maxy),
        xlab="",ylab=saunames[sau])
-  for (iter in 1:2) lines(yrs,ans[,sau,iter],lwd=1,col="grey")
-  abline(h=smsydepl[sau],lwd=2,col=4)
+  for (iter in 1:50) lines(yrs,ans[,sau,iter],lwd=1,col="grey")
+ # abline(h=smsydepl[sau],lwd=2,col=4)
   abline(v=inityr,lwd=1,col=2)
 }
 mtext("Years",side=1,line=-0.1,outer=TRUE,cex=1.0,font=7)

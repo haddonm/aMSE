@@ -21,7 +21,9 @@ a large list containing an object ready for the projection dynamics
 \description{
 makezoneDR generates an object designed to hold the outputs
     from each replicate within a set of projections. This is identical to
-    zoneD except it contains a repaet for each iteration.
+    zoneD except it contains a repeat for each iteration and now includes
+    a cesau, which is the population-catch-weighted cpue for each SAU.
+    Variation should be added by addrecvar.
 }
 \examples{
 print("wait for a considerd example")

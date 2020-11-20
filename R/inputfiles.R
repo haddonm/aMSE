@@ -408,6 +408,7 @@ readctrlzone <- function(datadir,infile="control.csv") {
    withsigR <- getsingleNum("withsigR",indat)
    withsigB <- getsingleNum("withsigB",indat)
    withsigCE <- getsingleNum("withsigCE",indat)
+   inityrs <- getsingleNum("inityrs",indat)
    Nyrs=40 # to set up equilibrium unfished population; could be read in
    if (length(grep(datafile,filenames)) != 1)
       stop("population data file not found \n")
@@ -419,7 +420,7 @@ readctrlzone <- function(datadir,infile="control.csv") {
    SAUpop <-  getConst(indat[begin],nSAU) # how many populations per SAU
    numpop <- sum(SAUpop)
    SAUnames <- getStr(indat[begin+1],nSAU)
-   initdepl <- getConst(indat[begin+2],numpop)
+   initdepl <- getConst(indat[begin+2],nSAU)
    minc <-  getsingleNum("minc",indat) # minimum size class
    cw    <- getsingleNum("cw",indat) # class width
    Nclass <- getsingleNum("Nclass",indat) # number of classes
@@ -499,7 +500,7 @@ readctrlzone <- function(datadir,infile="control.csv") {
                  histCE=histCE,yearCE=yearCE,initdepl=initdepl,
                  compdat=compdat,Sel=NULL,SelWt=NULL)
    projC <- list(projLML=projLML,HS=HS,HSdetail=HSdetail,projyrs=projyrs,
-                 Sel=NULL,SelWt=NULL)
+                 inityrs=inityrs,Sel=NULL,SelWt=NULL)
    outctrl <- list(runlabel,datafile,batch,reps,withsigR,withsigB,
                    withsigCE,condition,projyrs)
    names(outctrl) <- c("runlabel","datafile","batch","reps","withsigR",

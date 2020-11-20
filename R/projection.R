@@ -1,7 +1,7 @@
 
-#' @title addrepvar adds variation to the start of a generic simulation run
+#' @title addrecvar adds recruitment variation to start of generic simulation
 #'
-#' @description addrepvar conducts projyrs of simulation at the same constant
+#' @description addrecvar conducts projyrs of simulation at the same constant
 #'     harvest rate used to deplete each population to the desired level, only
 #'     it does this with recruitment variability turned on, which sets up a
 #'     series of replicates with different starting positions. The final step
@@ -27,7 +27,7 @@
 #'
 #' @examples
 #' print("wait on suitable data")
-addrepvar <- function(zoneC,zoneDR,inHt,glb,ctrl,nyrs=25,reset=TRUE) {
+addrecvar <- function(zoneC,zoneDR,inHt,glb,ctrl,nyrs=25,reset=TRUE) {
   # zoneC=zoneC;zoneDR=zoneDR;inHt=zoneDR$harvestR;glb=glb;ctrl=ctrl
   varzoneDR <- zoneDR
   sigmar <- ctrl$withsigR
@@ -61,6 +61,7 @@ addrepvar <- function(zoneC,zoneDR,inHt,glb,ctrl,nyrs=25,reset=TRUE) {
       zoneDR$depleB[year,,iter] <- zoneDR$exploitB[year,,iter]/getvar(zoneC,"ExB0")
     }   # year loop        zoneDR$matureB[,,1]
   }     # rep loop
+
   if (reset) {
     varzoneDR$matureB[1:10,,] <- zoneDR$matureB[(nyrs-9):nyrs,,]
     varzoneDR$exploitB[1:10,,] <- zoneDR$exploitB[(nyrs-9):nyrs,,]
@@ -76,7 +77,7 @@ addrepvar <- function(zoneC,zoneDR,inHt,glb,ctrl,nyrs=25,reset=TRUE) {
     varzoneDR <- zoneDR
   }
   return(varzoneDR)
-} # end of addrepvar
+} # end of addrecvar
 
 #' @title asSAU generates an output list of SAU values from the in put zoneDP
 #'
@@ -145,7 +146,9 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 #'
 #' @description makezoneDR generates an object designed to hold the outputs
 #'     from each replicate within a set of projections. This is identical to
-#'     zoneD except it contains a repaet for each iteration.
+#'     zoneD except it contains a repeat for each iteration and now includes
+#'     a cesau, which is the population-catch-weighted cpue for each SAU.
+#'     Variation should be added by addrecvar.
 #'
 #' @param projyr the number of years of the projection
 #' @param iter the number of replicates
@@ -160,6 +163,7 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 makezoneDR <- function(projyr,iter,glob,inzoneD) {
   # projyr=projyrs; iter=reps; glob=glb; inzoneD=zoneDD
   numpop <- glob$numpop
+  nSAU <- glob$nSAU
   N <- glob$Nclass
   namedims <- list(1:projyr,1:numpop,1:iter)
   namendims <- list(glob$midpts,1:projyr,1:numpop,1:iter)
@@ -174,6 +178,13 @@ makezoneDR <- function(projyr,iter,glob,inzoneD) {
   Harvest[1,,] <- inzoneD$harvestR[1,]
   cpue <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
   cpue[1,,] <- inzoneD$cpue[1,]
+  sauindex <- glob$sauindex
+  cesau <- array(0,dim=c(projyr,nSAU,iter),
+                 dimnames=list(1:projyr,1:nSAU,1:iter))
+  catwt <- tapply(inzoneD$catch[1,],sauindex,sum)
+  wts <- inzoneD$catch[1,] / catwt[sauindex]
+  for (i in 1:nSAU)
+    cesau[1,i,] <- sum(inzoneD$cpue[1,(sauindex==i)] * wts[(sauindex==i)])
   Recruit <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
   Recruit[1,,] <- inzoneD$recruit[1,]
   deplSpB <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
@@ -185,12 +196,133 @@ makezoneDR <- function(projyr,iter,glob,inzoneD) {
   Nt <- array(data=0,dim=c(N,projyr,numpop,iter),dimnames=namendims)
   Nt[,1,,] <- inzoneD$Nt[,1,]
   zoneDP <- list(SAU=SAU,matureB=MatB,exploitB=ExplB,catch=Catch,
-                 harvestR=Harvest,cpue=cpue,recruit=Recruit,
+                 harvestR=Harvest,cpue=cpue,cesau=cesau,recruit=Recruit,
                  deplsB=deplSpB,depleB=deplExB,catchN=CatchN,Nt=Nt)
   return(zoneDP)
 } # end of makezoneDR
 
+#' @title modprojC produces three objects used to condition the zone
+#'
+#' @description modprojC produces an object used to condition the zone when
+#'     projecting it following any conditioning. Once the initial conditions
+#'     for the projection have been attained through an initial depletion of an
+#'     unfished equilibrium, or more particularly by conditioning on historical
+#'     data then the projC object will be used to condition the projections. In
+#'     essence, this puts the selectivity and selectivity x weight-at-size into
+#'     projC
+#'
+#' @param zoneC the constant part of the zone
+#' @param glob the globals for the simulation
+#' @param inzone the zone object from readctrlzone
+#'
+#' @return a list of projSel and projSelWt within the projC object from inzone
+#' @export
+#'
+#' @examples
+#' print("wait on new example data")
+modprojC <- function(zoneC,glob,inzone) { # zoneC=zoneC; glob=glb; inzone=zone1
+  numpop <- glob$numpop
+  popdefs <- getlistvar(zoneC,"popdef")
+  sau <- getvar(zoneC,"SAU")
+  midpts <- glob$midpts
+  projSel <- matrix(0,nrow=glob$Nclass,ncol=numpop,dimnames=list(midpts,sau))
+  projSelWt <- matrix(0,nrow=glob$Nclass,ncol=numpop,dimnames=list(midpts,sau))
+  pLML <- inzone$projC$projLML[1] # needs development to allow variation in projLML
+  for (pop in 1:numpop) {
+    selL50 <- popdefs["SelP1",pop]
+    selL95 <- popdefs["SelP2",pop]
+    projSel[,pop] <- logistic((pLML + selL50),selL95,midpts)
+    projSelWt[,pop] <- projSel[,pop] * zoneC[[pop]]$WtL
+  }
+  projC <- inzone$projC
+  projC$Sel <- projSel
+  projC$SelWt <- projSelWt
+  return(projC=projC)
+} # end of modprojC
 
+#' @title modzoneCSel changes the selectivity characteristics in zoneC
+#'
+#' @description modzoneCSel  changes the selectivity characteristics in zoneC
+#'     which is necessary when making a projection under a different LML.
+#'     Currently this function is designed to allow only a single LML during any
+#'     projections. It will obviously need modification if it is desired to
+#'     explore the option of gradually changing an LML
+#'
+#' @param zoneC the constant zone object from setupzone
+#' @param sel the new selectivity as a matrix of selectivity by population
+#' @param selwt new selectivity x WtL as a matrix of SelWt x Population
+#' @param glb the globals object
+#' @param yrs the number of years of projection
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' print("wait on suitable data")
+modzoneCSel <- function(zoneC,sel,selwt,glb,yrs) {
+# zoneC=zoneC; sel=projC$Sel; selwt=projC$SelWt; glb=glb; yrs
+  numpop <- glb$numpop
+  Nclass <- glb$Nclass
+  for (pop in 1:numpop){ # pop = 1
+    select <- matrix(sel[,pop],nrow=Nclass,ncol=yrs)
+    selectwt <- matrix(selwt[,pop],nrow=glb$Nclass,ncol=yrs)
+    zoneC[[pop]]$Select <- select
+    zoneC[[pop]]$SelWt <- selectwt
+  }
+  return(zoneC)
+} # end of modzoneCSel
+
+#' @title prepareprojection high level function that sets up a projection
+#'
+#' @description prepareprojection is a high level function that restructures
+#'     zoneC by including the projected selectivity (in case the LML changes),
+#'     and also selectivity x weight-at-size (for computational speed). It
+#'     then generates a new zoneD with room for all replicates. Finally, it
+#'     adds recruitment variabilkity to each of the replicates and keeps
+#'     zone1$projC$inityrs of each replicates series as the start of each
+#'     replicate projection.
+#'
+#' @param zone1 the original zone1 object from readctrlzone
+#' @param zoneC the constant part of the zone
+#' @param glb the global variables
+#' @param zoneDep the zone after initial depletion
+#' @param crtl the ctrl object
+#'
+#' @return a list of the dynamic zone object as a list of arrays of projyrs x
+#'     populations x replicates, plus the revised projC and revised zoneC
+#' @export
+#'
+#' @examples
+#' print("wait on data files")
+prepareprojection <- function(zone1,zoneC,glb,zoneDep,ctrl) {
+# zone1=zone$zone1;zoneC=zoneC; glb=glb; zoneDep=zoneDD; ctrl=ctrl
+  projyrs <- zone1$projC$projyrs + zone1$projC$inityrs
+  projC <- modprojC(zoneC,glb,zone1) # include selectivity into projC
+  zoneC <- modzoneCSel(zoneC,projC$Sel,projC$SelWt,glb,projyrs)
+  zoneDR <- makezoneDR(projyrs,ctrl$reps,glb,zoneDep) # zoneDReplicates
+  zoneDRp <- addrecvar(zoneC,zoneDR,zoneDR$harvestR,glb,ctrl)
+  return(list(zoneDP=zoneDRp,projC=projC,zoneC=zoneC))
+} # end of prepareprojection
+
+#' @title scaleto1 scales an input vector of CPUE to a mean of one x avCE
+#'
+#' @description scaleto1 scales a vector of CPUE to a mean of
+#'     one or avCE. The use of a mean of one means that visual comparisons
+#'     between different time-series becomes visually simplified. The
+#'     avCE option could be used to scale the CPUE to the average
+#'     geometric mean - so as to put it on the nominal scale
+#'
+#' @param invect a vector of linear scale CPUE
+#'
+#' @return a vector of CPUE re-scaled to a mean of one
+#' @export
+#'
+#' @examples
+#'  ce <- c(0.4667187,1.2628564,0.8442146,0.9813531, 0.5554076,0.7426321)
+#'  scaleto1(ce)
+scaleto1 <- function(invect) {
+  return(invect/mean(invect,na.rm=TRUE))
+} # end of scaleto1
 
 #' @title sumpops takes the zoneDP and sums the populations within each SAU
 #'
@@ -216,10 +348,9 @@ sumpops <- function(invar,sauindex,saunames) {
   nsau <- length(saunames)
   res <- array(0,dim=c(projyrs,nsau,reps))
   dimnames(res) <- list(1:projyrs,saunames,1:reps)
-  for (iter in 1:reps) {
-    for (i in 1:nsau) { # iter=1; i = 1
-      pickc <- which(sauindex == i)
-      res[,i,iter] <- rowSums(invar[,pickc,iter])
+  for (iter in 1:reps) {# iter=1; i = 1
+    for (i in 1:nsau) {
+      res[,i,iter] <- rowSums(invar[,(sauindex == i),iter])
     }
   }
   return(res)
