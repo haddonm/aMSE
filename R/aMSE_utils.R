@@ -18,6 +18,7 @@
 #' @param product The productivity array from doproduction containing the
 #'     range of imposed harvest rates, and the resulting outputs for each
 #'     population
+#' @param saunames the names of the different SAU
 #'
 #' @return a matrix containing the approximate productivity matrix for the zone
 #' @export

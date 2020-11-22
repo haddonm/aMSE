@@ -24,9 +24,12 @@ readctrlzone checks datadir contains the required csv
     file. The run stops if any are not present or are misnamed.
 }
 \examples{
+\dontrun{
+# this has sinoce been modified and needs updating
 resdir <- tempdir()
 ctrlzonetemplate(resdir)
 datafiletemplate(6,resdir,filename="zone1sau2pop6.csv")
 ctrl <- readctrlzone(resdir)
 ctrl
+}
 }

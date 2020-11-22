@@ -19,15 +19,17 @@ zone <- makeequilzone(resdir,"control.csv")
     equiltime <- (Sys.time())
     origdepl <-  c(0.30,0.31,0.29,0.32,0.30,0.31,0.29,0.32)
 zoneDD <- depleteSAU(zone$zoneC,zone$zoneD,zone$glb,origdepl,zone$product,len=12)
-out <- prepareprojection(zone$zone1,zoneC,zone$glb,zoneDD,zone$ctrl)
+out <- prepareprojection(zone$zone1,zone$zoneC,zone$glb,zoneDD,zone$ctrl)
 zoneDR <- out$zoneDP
 projC <- out$projC
 zoneCP <- out$zoneC
     midtime <- (Sys.time())
 
+    glb <- zone$glb
+    ctrl <- zone$ctrl
     print(equiltime - starttime)
     print(midtime - equiltime)
-    propD <- getzoneprops(zoneC,zoneDD,glb,year=1)
+    propD <- getzoneprops(zone$zoneC,zoneDD,glb,year=1)
     round(propD,3)
 # prepare the HS --------------------------------------------------------------
 
@@ -41,59 +43,54 @@ zoneCP <- out$zoneC
 #   optCE <- MCDAdata(resdir,mcdafile,zone1$SAUnames)
 # }
 #
-
+  #  zoneCP=zoneCP;zoneDP=zoneDR;glob=glb;ctrl=ctrl;projyrs=projC$projyrs;inityrs=projC$inityrs;
 # Do the replicates ------------------------------------------------------------
 inityr <- zone$zone1$projC$inityrs
 saunames <- zone$zone1$SAUnames
 sauindex <- zone$glb$sauindex
-pyrs <- projC$projyrs + inityr
+pyrs <- projC$projyrs + projC$inityr
 B0 <- tapply(sapply(zone$zoneC,"[[","B0"),sauindex,sum)
 exB0 <- tapply(sapply(zone$zoneC,"[[","ExB0"),sauindex,sum)
 
 midtime <- (Sys.time())
-Rprof()
-zoneDP <- applymcda(zoneCP,zoneDRp,glb,ctrl,projC$projyrs,inityrs=10)
-sauzoneDP <- asSAU(zoneDP,sauindex,saunames,B0,exB0)
-Rprof(NULL)
+#Rprof()
+mseproj <- applymcda(zoneCP,zoneDR,glb,ctrl,projC$projyrs,projC$inityrs)
+sauzoneDP <- asSAU(mseproj,sauindex,saunames,B0,exB0)
+#Rprof(NULL)
 endtime <- (Sys.time())
 print(endtime - midtime)
 
+#summaryRprof()
+
+
 #calculate the relative MSY weighted MSY-depletion level for each SAU
-pmsydepl <- sapply(zoneC,"[[","MSYDepl")
-pmsy <- sapply(zoneC,"[[","MSY")
+pmsydepl <- sapply(zoneCP,"[[","MSYDepl")
+pmsy <- sapply(zoneCP,"[[","MSY")
 smsy <- tapply(pmsy,sauindex,sum)
 smsydepl <- tapply((pmsydepl * pmsy) / smsy[sauindex],sauindex,sum)
 
-
-ans <- sauzoneDP$matB
-label <- "Mature Biomass"
-uplim <- NULL
-plotprep(width=7,height=8,newdev=FALSE)
-parset(plots=c(4,2),byrow=FALSE,margin=c(0.25,0.4,0.1,0.05),
-       outmargin=c(1,1,0,0))
-yrs <- 1:pyrs
-for (sau in 1:8) {
- # maxy <- uplim
- # if (is.null(uplim))
-    maxy <- getmax(ans[,sau,])
-  plot(yrs,ans[,sau,1],lwd=1,type="l",col="grey",panel.first=grid(),ylim=c(0,maxy),
-       xlab="",ylab=saunames[sau])
-  for (iter in 1:50) lines(yrs,ans[,sau,iter],lwd=1,col="grey")
- # abline(h=smsydepl[sau],lwd=2,col=4)
-  abline(v=inityr,lwd=1,col=2)
+plotC <- function(nsau,saunames,reps,projyrs,plts=c(4,2)) {
+  return(list(nsau=nsau,saunames=saunames,reps=reps,projyrs=projyrs,plts=plts))
 }
-mtext("Years",side=1,line=-0.1,outer=TRUE,cex=1.0,font=7)
-mtext(label,side=2,line=-0.1,outer=TRUE,cex=1.0,font=7)
 
 
 
-# plotprep(width=7,height=5)
-# parset(plots=c(2,2))
-# hist(colSums(zoneDRp$exploitB[1,,]),main="",col=4,xlab="Exploitable B")
-# hist(colSums(zoneDRp$matureB[1,,]),main="",col=4,xlab="Mature B")
-# hist(colSums(zoneDRp$recruit[1,,]/1e06),main="",col=4,xlab="Recruitment")
-# hist(apply(zoneDRp$cpue[1,,],2,mean),main="",col=4,xlab="CPUE")
+saunames <- zone$zone1$SAUnames
+pyrs <- projC$projyrs + projC$inityr
+reps <- ctrl$reps
+label <- "Catches t"
+yrs <- 1:pyrs
 
+plotconst <- plotC(nsau=length(saunames),saunames,reps,pyrs,plts=c(4,2))
+
+plotprep(width=7,height=8,newdev=FALSE)
+plotproj(sauzoneDP$cpue,"CPUE",plotconst,vline=projC$inityrs,addqnts=TRUE)
+
+plotproj(sauzoneDP$saudeplsB,"Spawning Biomass Depletion",plotconst,vline=projC$inityrs,addqnts=TRUE)
+
+plotproj(sauzoneDP$recS/1000,"Recruitment '000s",plotconst,vline=projC$inityrs,addqnts=TRUE)
+
+plotproj(sauzoneDP$catS,"Catches t",plotconst,vline=projC$inityrs,addqnts=TRUE)
 
 # equilibrium zone characterization---------------------------------------------
 # resfile <- setuphtml(resdir)# prepare to save and log results

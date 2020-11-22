@@ -59,3 +59,16 @@
 * 08/11/2020 0.0.0.7300 Implemented a constant Catch (constant TAC) harvest strategy so as to test the run time of a typical run. 1000 replicates in about 73 seconds.
 
 * 09/11/2020 0.0.0.7250 Included new test data zone1, ctrl, and constants, with which to begin testing the MSE framework
+
+* 22/11/2020 0.0.0.7000 Now includes an operational mcdahcr and applymcda functions. Currently 1000 replicates should take about 2.5 minutes as I have been optimizing again. There is much still to wrap up inside functions and plot convenient outputs, but it is already interesting.
+
+
+
+
+
+
+
+
+
+
+

@@ -102,9 +102,6 @@ depleteSAU <- function(zoneC,zoneD,glob,initdepl,product,len=15) {
 #' @param yr the year in the dynamics being worked on. The first year
 #'     is generated when the zone is defined or when it is initially
 #'     depleted. All dynamics are applied from year 2 - Nyrs; scalar
-#' @param sel the selectivity vector or matrix to be used
-#' @param selwt the selectivity x WtL vector or matrix to be used
-#' @param pop the index number of the population
 #'
 #' @return a list containing ExploitB, MatureB, Catch, Harvest, Nt,
 #'     ce, and CatchN used to update the given pop in yr + 1

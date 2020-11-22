@@ -10,6 +10,8 @@ summarizeprod(product, saunames)
 \item{product}{The productivity array from doproduction containing the
 range of imposed harvest rates, and the resulting outputs for each
 population}
+
+\item{saunames}{the names of the different SAU}
 }
 \value{
 a matrix containing the approximate productivity matrix for the zone

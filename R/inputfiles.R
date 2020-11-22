@@ -20,10 +20,13 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' # changes needed now I have simplified to two files and changed their formats
 #'  yourdir <- tempdir()
 #'  ctrlzonetemplate(yourdir,filename="testctrl.csv")   #
 #'  control <- readctrlzone(yourdir,"testctrl.csv")
 #'  str(control,max.level=1)
+#' }
 ctrlzonetemplate <- function(indir,filename="control.csv") {
    filename <- filenametopath(indir,filename)
    cat("Control file containing details of a particular run \n",
@@ -388,11 +391,14 @@ read_conddata <- function(filename) {  # filename=filen
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' # this has sinoce been modified and needs updating
 #' resdir <- tempdir()
 #' ctrlzonetemplate(resdir)
 #' datafiletemplate(6,resdir,filename="zone1sau2pop6.csv")
 #' ctrl <- readctrlzone(resdir)
 #' ctrl
+#' }
 readctrlzone <- function(datadir,infile="control.csv") {
    # datadir=resdir; infile="control.csv"
    filenames <- dir(datadir)

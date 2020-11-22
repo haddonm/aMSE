@@ -18,7 +18,7 @@ modzoneCSel(zoneC, sel, selwt, glb, yrs)
 \item{yrs}{the number of years of projection}
 }
 \value{
-
+the zoneC object modified ready for projection
 }
 \description{
 modzoneCSel  changes the selectivity characteristics in zoneC

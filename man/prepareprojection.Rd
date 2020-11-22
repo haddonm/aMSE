@@ -15,7 +15,7 @@ prepareprojection(zone1, zoneC, glb, zoneDep, ctrl)
 
 \item{zoneDep}{the zone after initial depletion}
 
-\item{crtl}{the ctrl object}
+\item{ctrl}{the ctrl object}
 }
 \value{
 a list of the dynamic zone object as a list of arrays of projyrs x

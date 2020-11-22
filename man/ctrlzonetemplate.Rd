@@ -25,8 +25,11 @@ ctrlzonetemplate generates a standardized control file
     calculations.
 }
 \examples{
+\dontrun{
+# changes needed now I have simplified to two files and changed their formats
  yourdir <- tempdir()
  ctrlzonetemplate(yourdir,filename="testctrl.csv")   #
  control <- readctrlzone(yourdir,"testctrl.csv")
  str(control,max.level=1)
+}
 }

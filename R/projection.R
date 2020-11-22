@@ -84,7 +84,8 @@ addrecvar <- function(zoneC,zoneDR,inHt,glb,ctrl,nyrs=25,reset=TRUE) {
 #' @description asSAU takes the population based results in zoneDP and converts
 #'     them into a list based around SAU
 #'
-#' @param zoneDP the population based results list zoneDP
+#' @param projzone the population based results list zoneDP plus the saucpue
+#'     all from applymcda
 #' @param sauindex the SAU index of each population
 #' @param saunames the names of each SAU
 #' @param b0 a vector of the B0 for each SAU
@@ -95,12 +96,9 @@ addrecvar <- function(zoneC,zoneDR,inHt,glb,ctrl,nyrs=25,reset=TRUE) {
 #'
 #' @examples
 #' print("wait on new data")
-asSAU <- function(zoneDP,sauindex,saunames,b0,exb0) {
-  #  zoneDP=zoneDP; sauindex=sauindex;saunames=saunames;b0=B0;exb0=exB0
-  # dimension <- dim(zoneDP$matureB)
-  # projyrs <- dimension[1]
-  # reps <- dimension[3]
-  # nsau <- length(saunames)
+asSAU <- function(projzone,sauindex,saunames,b0,exb0) {
+  zoneDP <- projzone$zoneDP
+  cpue <- projzone$saucpue
   matB <- sumpops(zoneDP$matureB,sauindex,saunames)
   expB <- sumpops(zoneDP$exploitB,sauindex,saunames)
   catS <- sumpops(zoneDP$catch,sauindex,saunames)
@@ -108,8 +106,8 @@ asSAU <- function(zoneDP,sauindex,saunames,b0,exb0) {
   harvS <- catS/expB
   saudeplsB <- calcsau(matB,saunames,b0)
   saudepleB <- calcsau(expB,saunames,exb0)
-  ans <- list(matB=matB,expB=expB,catS=catS,harvS=harvS,recS=recS,
-              saudeplsB=saudeplsB,saudepleB=saudepleB)
+  ans <- list(matB=matB,expB=expB,catS=catS,cpue=cpue,harvS=harvS,
+              recS=recS,saudeplsB=saudeplsB,saudepleB=saudepleB)
   return(ans)
 } #end of asSAU
 
@@ -254,13 +252,12 @@ modprojC <- function(zoneC,glob,inzone) { # zoneC=zoneC; glob=glb; inzone=zone1
 #' @param glb the globals object
 #' @param yrs the number of years of projection
 #'
-#' @return
+#' @return the zoneC object modified ready for projection
 #' @export
 #'
 #' @examples
 #' print("wait on suitable data")
 modzoneCSel <- function(zoneC,sel,selwt,glb,yrs) {
-# zoneC=zoneC; sel=projC$Sel; selwt=projC$SelWt; glb=glb; yrs
   numpop <- glb$numpop
   Nclass <- glb$Nclass
   for (pop in 1:numpop){ # pop = 1
@@ -286,7 +283,7 @@ modzoneCSel <- function(zoneC,sel,selwt,glb,yrs) {
 #' @param zoneC the constant part of the zone
 #' @param glb the global variables
 #' @param zoneDep the zone after initial depletion
-#' @param crtl the ctrl object
+#' @param ctrl the ctrl object
 #'
 #' @return a list of the dynamic zone object as a list of arrays of projyrs x
 #'     populations x replicates, plus the revised projC and revised zoneC

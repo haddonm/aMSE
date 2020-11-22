@@ -58,4 +58,54 @@ plotprod <- function(product,xname="MatB",yname="Catch",xlimit=NA,
 } # end of plotprod
 
 
+#' @title plotproj aids the polotting of a projected variable
+#'
+#' @description plotproj plots out the projections from teh mse for a selected
+#'     variable. iters is included so that details of a few trajectories can
+#'     be viewed as well as seeing all replicates.
+#'
+#' @param invar the array containing the year x SAU x reps values for a selected
+#'     variable out of sauzoneDP
+#' @param varlabel the label to place along the outer Y-axis
+#' @param plotconst a list containing nsau, saunames, reps, projyrs, and plts
+#'     a vector of two describing the layout of plots, default=c(4,2)
+#' @param vline default=NULL, which means nothing extra is plotted. If given a
+#'     year then a vertical line in red will be added to the plot
+#' @param iters default=0, which means all iterations will be plotted. If iters
+#'     has a value then only that many trajectories will be plotted
+#' @param addqnts will calculate and add the median and 90 percent quantiles
+#'
+#' @return nothing but it does generate a plot
+#' @export
+#'
+#' @examples
+#' print("wait on data files")
+plotproj <- function(invar,varlabel,plotconst,
+                     vline=NULL,iters=0,addqnts=FALSE) {
+  nsau <- plotconst$nsau
+  yrs <- 1:plotconst$projyrs
+  saunames <- plotconst$saunames
+  reps <- plotconst$reps
+  parset(plots=plotconst$plts,byrow=FALSE,margin=c(0.25,0.4,0.1,0.05),
+         outmargin=c(1,1,0,0))
+  for (sau in 1:nsau) { # sau=1
+    maxy <- getmax(invar[,sau,])
+    plot(yrs,invar[,sau,1],lwd=1,type="l",col="grey",panel.first=grid(),ylim=c(0,maxy),
+         xlab="",ylab=saunames[sau])
+    trajs <- reps
+    if (iters > 0) trajs <- iters
+    for (iter in 1:trajs) lines(yrs,invar[,sau,iter],lwd=1,col="grey")
+    if (!is.null(vline)) abline(v=vline,lwd=1,col=2)
+    if (addqnts) {
+        CI <- apply(invar[,sau,],1,quantile,probs=c(0.05,0.5,0.95))
+        lines(yrs,CI[1,],lwd=1,col=4)
+        lines(yrs,CI[2,],lwd=2,col=4)
+        lines(yrs,CI[3,],lwd=1,col=4)
+    }
+  }
+  mtext("Years",side=1,line=-0.1,outer=TRUE,cex=1.0,font=7)
+  mtext(varlabel,side=2,line=-0.1,outer=TRUE,cex=1.0,font=7)
+} # end of plotproj
+
+
 

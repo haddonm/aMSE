@@ -21,12 +21,6 @@ removed as catch during the year, a scalar}
 \item{yr}{the year in the dynamics being worked on. The first year
 is generated when the zone is defined or when it is initially
 depleted. All dynamics are applied from year 2 - Nyrs; scalar}
-
-\item{sel}{the selectivity vector or matrix to be used}
-
-\item{selwt}{the selectivity x WtL vector or matrix to be used}
-
-\item{pop}{the index number of the population}
 }
 \value{
 a list containing ExploitB, MatureB, Catch, Harvest, Nt,

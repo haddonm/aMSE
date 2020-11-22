@@ -381,9 +381,12 @@ fillzoneDef <- function(zoneC,zoneD,prod) {  # inzone=zone; prod=production
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' # data files changed, no longer works
 #' data(product) #for pop=1, a 28percent drop from Hmsy leads to a
 #' findF1(product=product) # loss of 3 tonnes, 4 percent of MSY
 #' findmsy(product)  # compare the AnnH, Deplet, and RelCE levels.
+#' }
 findF1 <- function(product) {
   npop <- dim(product)[3]
   label <- c(colnames(product),"index")

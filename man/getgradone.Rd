@@ -8,6 +8,8 @@ getgradone(vectce, yr)
 }
 \arguments{
 \item{vectce}{vector of cpue for a given spatial scale}
+
+\item{yr}{the year for which a score is required}
 }
 \value{
 a vector of gradient1 for each year, starting from year 2

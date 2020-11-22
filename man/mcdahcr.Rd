@@ -6,6 +6,7 @@
 \usage{
 mcdahcr(
   vectce,
+  yr,
   wid = 4,
   targqnt = 0.55,
   pmwts = c(0.65, 0.25, 0.1),
@@ -15,6 +16,8 @@ mcdahcr(
 }
 \arguments{
 \item{vectce}{the vector of cpue that forms the basis of the assessment}
+
+\item{yr}{the year for which a score is required}
 
 \item{wid}{the number of years to use in grad4, default=4}
 
@@ -38,7 +41,7 @@ mcdahcr conducts the MCDA on the basis of a vector of cpue and
      other details prescribed in the function's arguments. It returns the
      TAC multiplier, the combined score, and all the details of the
      calculation. The hcr is a vector of 1:10 values where the cell index
-     is used to allocate each combined scrore to a multiplier. The score is
+     is used to allocate each combined score to a multiplier. The score is
      rounded up to the nearest integer and that is the index within hcr.
      Thus a score of <=1 points to the first cell, >1 and <=2 points to the
      second cell, and so on, up to a score between >9 and <=10 which points

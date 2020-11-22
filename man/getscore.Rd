@@ -7,7 +7,7 @@
 getscore(grad14)
 }
 \arguments{
-\item{grad14}{the values derived from the function getgrad1 or
+\item{grad14}{the raw values derived from the function getgrad1 or
 getgrad4}
 }
 \value{

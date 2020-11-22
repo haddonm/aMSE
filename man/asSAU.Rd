@@ -4,10 +4,11 @@
 \alias{asSAU}
 \title{asSAU generates an output list of SAU values from the in put zoneDP}
 \usage{
-asSAU(zoneDP, sauindex, saunames, b0, exb0)
+asSAU(projzone, sauindex, saunames, b0, exb0)
 }
 \arguments{
-\item{zoneDP}{the population based results list zoneDP}
+\item{projzone}{the population based results list zoneDP plus the saucpue
+all from applymcda}
 
 \item{sauindex}{the SAU index of each population}
 

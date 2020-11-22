@@ -1,4 +1,104 @@
 
+#' @title applymcda applies the Tasmanian MCDA to a simulated zone
+#'
+#' @description applymcda applies the Tasmanian MCDA to a simulated zone. It
+#'     is still in need of optimization as 1000 iterations would currently take
+#'     about 20 minutes.
+#'
+#' @param zoneCP the modified zoneC object ready for projections
+#' @param zoneDP the modified zoneD object ready for projections
+#' @param glob the global variables object
+#' @param ctrl the ctrl object
+#' @param projyrs the number of years of projection
+#' @param inityrs the number of years kept from the period of conditioning,
+#'     defult=10
+#' @param wid the number of years for the gradient PM, default=4
+#' @param targqnt the target quantile for the cpue target, default=0.55
+#' @param pmwts the relative weights given to the PMs when generating the score,
+#'     default = c(0.65, 0.25, 0.1) targce, grad4, grad1
+#' @param hcr the TAC multiplier for each score default=c(0.25,0.75,0.8,0.85,
+#'     0.9,1,1.05,1.1,1.15,1.2)
+#'
+#' @return the filled in zoneDP list
+#' @export
+#'
+#' @examples
+#' print("wait on data files")
+applymcda <- function(zoneCP,zoneDP,glob,ctrl,projyrs,inityrs=10,wid = 4,
+                      targqnt = 0.55, pmwts = c(0.65, 0.25,0.1),
+                      hcr = c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2)) {
+  sigmar <- ctrl$withsigR # needed to add recruitment variation
+  npop <- glob$numpop
+  nsau <- glob$nSAU
+  Ncl <- glob$Nclass
+  nyrs <- projyrs + inityrs
+  movem <- glob$move
+  reps <- ctrl$reps
+  matb <- numeric(npop)                   # use the same initial TAC for all reps
+  origTAC <- mean(colSums(zoneDP$catch[inityrs,,])) # mean sum of catches in last year
+  sauindex <- glob$sauindex
+  saucatch <- array(0,dim=c(nyrs,nsau,reps))
+  saucpue <- saucatch
+  grad4 <- array(0,dim=c(projyrs,nsau,reps)) # declare arrays to store PMs
+  grad1 <- grad4
+  targsc <- grad4
+  targetce <- numeric(nsau)
+  for (iter in 1:reps) { # generate SAU total catches and catch-weighted cpue  iter=1
+    for (yr in 1:inityrs) { # iter=1; yr=4
+      saucatch[yr,,iter] <- tapply(zoneDP$catch[yr,,iter],sauindex,sum,na.rm=TRUE)
+      wts <- zoneDP$catch[yr,,iter]/(saucatch[yr,sauindex,iter])
+      saucpue[yr,,iter] <- tapply((zoneDP$cpue[yr,,iter] * wts),sauindex,sum,na.rm=TRUE)
+      if (yr >= wid) {
+        grad1[yr,,iter] <- apply(saucpue[1:yr,,iter],2,getgradone,yr=yr)
+        grad4[yr,,iter] <- apply(saucpue[1:yr,,iter],2,getgradwid,yr=yr)
+      }
+    }
+    for (sau in 1:nsau) targetce[sau] <- targscore(saucpue[1:inityrs,sau,iter],qnt=targqnt)$result
+    targsc[1:inityrs,,iter] <- targetce
+  }
+  # now do replicates, updating saucatch and saucpue each year
+  for (iter in 1:reps) {  # iter=1; year=11
+    TAC <- origTAC  # should we use the same original TAC for each replicate
+    for (year in (inityrs+1):nyrs) {
+      #  catpop <- colSums(zoneDP$catch[1:(year - 1),,iter])
+      inexpB <- zoneDP$exploitB[(year - 1),,iter]
+      sauexpB <- tapply(inexpB,sauindex,sum,na.rm=TRUE)
+      catbysau <- TAC * sauexpB/sum(sauexpB)  # no error initially
+      multh <- apply(saucpue[1:(year-1),,1],2,mcdahcr,yr=(year-1))
+      TAC <- sum(catbysau * multh)
+      divererr <- sauexpB * exp(rnorm(nsau,mean=0,sd=ctrl$withsigB))
+      catbysau <- TAC * (divererr/sum(divererr)) # currently no error on TAC
+      catbypop <- catbysau[sauindex] * (inexpB/sauexpB[sauindex]) # no error on pops
+      for (popn in 1:npop) { # year=11; iter=1; pop=1
+        out <- oneyearcat(inpopC=zoneCP[[popn]],inNt=zoneDP$Nt[,year-1,popn,iter],
+                          Nclass=Ncl,incat=catbypop[popn],yr=year)
+        zoneDP$exploitB[year,popn,iter] <- out$ExploitB
+        zoneDP$matureB[year,popn,iter] <- out$MatureB
+        zoneDP$catch[year,popn,iter] <- out$Catch
+        zoneDP$harvestR[year,popn,iter] <- out$Harvest
+        zoneDP$cpue[year,popn,iter] <- out$ce
+        zoneDP$Nt[,year,popn,iter] <- out$Nt
+        zoneDP$catchN[,year,popn,iter] <- out$CatchN
+        matb[popn] <- out$MatureB
+      } # pop
+      steep <- getvect(zoneCP,"steeph")
+      r0 <- sapply(zoneCP,"[[","R0")
+      b0 <- sapply(zoneCP,"[[","B0")
+      recs <- oneyearrec(steep,r0,b0,matb,sigR=sigmar)
+      newrecs <- movem %*% recs
+      zoneDP$recruit[year,,iter] <- newrecs
+      zoneDP$Nt[1,year,,iter] <- newrecs
+      zoneDP$deplsB[year,,iter] <- zoneDP$matureB[year,,iter]/b0
+      zoneDP$depleB[year,,iter] <- zoneDP$exploitB[year,,iter]/sapply(zoneCP,"[[","ExB0")
+      saucatch[year,,iter] <- tapply(zoneDP$catch[year,,iter],sauindex,sum,na.rm=TRUE)
+      wts <- zoneDP$catch[year,,iter]/(saucatch[year,sauindex,iter])
+      saucpue[year,,iter] <- tapply((zoneDP$cpue[year,,iter] * wts),sauindex,sum,na.rm=TRUE)
+    }   # year loop        zoneDR$matureB[,,1]
+  }     # rep loop
+  out <- list(zoneDP=zoneDP,saucpue=saucpue)
+  return(out)
+} # end of applymcda
+
 #' @title constCatch implements a constant TAC harvest strategy
 #'
 #' @description constCatch implements a constant catch harvest strategy. It
@@ -8,6 +108,7 @@
 #'     of each SAUs catch among its component populations
 #'
 #' @param inTAC the constant catch for the zone, from projC$HSdetail
+#' @param zoneCP the list of constants for the projections
 #' @param zoneDP the results list zoneDP after it has been generated by
 #'     makezoneDR and then had variation added using addrecvar
 #' @param glob the global object
@@ -20,12 +121,13 @@
 #'
 #' @examples
 #' print("wait on new data")
-constCatch <- function(inTAC,zoneDP,glob,ctrl,projyrs,inityrs=10) {
+constCatch <- function(inTAC,zoneCP,zoneDP,glob,ctrl,projyrs,inityrs=10) {
   sigmar <- ctrl$withsigR
   npop <- glob$numpop
   Ncl <- glob$Nclass
   nyrs <- projyrs + inityrs
   movem <- glob$move
+  sauindex <- glob$sauindex
   reps <- ctrl$reps
   matb <- numeric(npop)
   for (iter in 1:reps) {  # iter=1
@@ -36,7 +138,7 @@ constCatch <- function(inTAC,zoneDP,glob,ctrl,projyrs,inityrs=10) {
       catbysau <- inTAC * (divererr/sum(divererr)) # currently no error on TAC
       catbypop <- catbysau[sauindex] * (inexpB/sauexpB[sauindex]) # no error on pops
       for (popn in 1:npop) { # year=11; iter=1; pop=1
-        out <- oneyearcat(inpopC=zoneC[[popn]],inNt=zoneDP$Nt[,year-1,popn,iter],
+        out <- oneyearcat(inpopC=zoneCP[[popn]],inNt=zoneDP$Nt[,year-1,popn,iter],
                           Nclass=Ncl,incat=catbypop[popn],yr=year)
         zoneDP$exploitB[year,popn,iter] <- out$ExploitB
         zoneDP$matureB[year,popn,iter] <- out$MatureB
@@ -47,15 +149,15 @@ constCatch <- function(inTAC,zoneDP,glob,ctrl,projyrs,inityrs=10) {
         zoneDP$catchN[,year,popn,iter] <- out$CatchN
         matb[popn] <- out$MatureB
       } # pop
-      steep <- getvect(zoneC,"steeph")
-      r0 <- sapply(zoneC,"[[","R0")
-      b0 <- sapply(zoneC,"[[","B0")
+      steep <- getvect(zoneCP,"steeph")
+      r0 <- sapply(zoneCP,"[[","R0")
+      b0 <- sapply(zoneCP,"[[","B0")
       recs <- oneyearrec(steep,r0,b0,matb,sigR=sigmar)
       newrecs <- movem %*% recs
       zoneDP$recruit[year,,iter] <- newrecs
       zoneDP$Nt[1,year,,iter] <- newrecs
       zoneDP$deplsB[year,,iter] <- zoneDP$matureB[year,,iter]/b0
-      zoneDP$depleB[year,,iter] <- zoneDP$exploitB[year,,iter]/sapply(zoneC,"[[","ExB0")
+      zoneDP$depleB[year,,iter] <- zoneDP$exploitB[year,,iter]/sapply(zoneCP,"[[","ExB0")
     }   # year loop        zoneDR$matureB[,,1]
   }     # rep loop
   return(zoneDP)
@@ -151,6 +253,7 @@ getgrad4 <- function(vectce,wid=4) { # vectce=ab$cpue; wid=4
 #'    which provides the annual proportional change in CPUE.
 #'
 #' @param vectce vector of cpue for a given spatial scale
+#' @param yr the year for which a score is required
 #'
 #' @return a vector of gradient1 for each year, starting from year 2
 #' @export
@@ -193,6 +296,37 @@ getgradwid <- function(vectce,yr,wid=4) {
   return(xy/x2)
 } #end getgradwid
 
+#' @title getlmcoef is a greatly simplified way of gasining regression coefs
+#'
+#' @description getlmcoef is a simplified replacement for the lm function that
+#'     is much faster than lm but only returns the linear regression
+#'     coefficients. This is limited to a simple y ~ x model. When in use be
+#'     sure to give it the values of y required.
+#'
+#' @param y the dependent variable
+#' @param x the independent variable
+#'
+#' @return a vector of the intercept and gradient, in that order.
+#' @export
+#'
+#' @examples
+#' y <- c(1.226,1.237,1.238,1.156)
+#' x <- 1:4
+#' yp <- y/y[1]  # to make the cpue relative to the first in the series
+#' getlmcoef(yp,x)
+#' getgradwid(yp,4)
+getlmcoef <- function(y,x) {
+  mx <- mean(x,na.rm=TRUE)
+  xres <- (x-mx)
+  my <- mean(y,na.rm=TRUE)
+  yres <- (y - my)
+  x2 <- sum(xres^2)
+  xy <- sum(xres * yres)
+  grad <- xy/x2
+  inter <- my - grad*mx
+  return(c(inter,grad))
+}
+
 #' @title getscore calculates the scores for the grad1 and grad4 PMs
 #'
 #' @description getscore calculates the scores for the grad1 and grad4
@@ -201,7 +335,7 @@ getgradwid <- function(vectce,yr,wid=4) {
 #'     the values above and below zero. These enable it to calculate
 #'     the predicted scores.
 #'
-#' @param grad14 the values derived from the function getgrad1 or
+#' @param grad14 the raw values derived from the function getgrad1 or
 #'     getgrad4
 #'
 #' @return a vector of scores to be included in the MCDA
@@ -220,13 +354,11 @@ getscore <- function(grad14) {   # grad14=grad4
   low <- seq(bounds[1],0.0,length=6)
   high <- seq(0.0,bounds[2],length=6)
   xax <- c(low[1:5],high)
-  model1 <- lm(0:5 ~ xax[1:6])
-  vars <- coef(model1)
+  vars <- getlmcoef(0:5,xax[1:6])
   score <- grad14 # just to get a vector of the correct length
   pickl0 <- which(grad14 <= 0)
   score[pickl0] <- grad14[pickl0]*vars[2] + vars[1]
-  model2 <- lm(5:10 ~ xax[6:11])
-  vars2 <- coef(model2)
+  vars2 <- getlmcoef(5:10,xax[6:11])
   pickg0 <- which(grad14 >= 0)
   score[pickg0] <- grad14[pickg0]*vars2[2] + vars2[1]
   return(score)
@@ -238,13 +370,14 @@ getscore <- function(grad14) {   # grad14=grad4
 #'      other details prescribed in the function's arguments. It returns the
 #'      TAC multiplier, the combined score, and all the details of the
 #'      calculation. The hcr is a vector of 1:10 values where the cell index
-#'      is used to allocate each combined scrore to a multiplier. The score is
+#'      is used to allocate each combined score to a multiplier. The score is
 #'      rounded up to the nearest integer and that is the index within hcr.
 #'      Thus a score of <=1 points to the first cell, >1 and <=2 points to the
 #'      second cell, and so on, up to a score between >9 and <=10 which points
 #'      to the last cell.
 #'
 #' @param vectce the vector of cpue that forms the basis of the assessment
+#' @param yr the year for which a score is required
 #' @param wid the number of years to use in grad4, default=4
 #' @param targqnt the quantile for the cpue target level, default=0.55
 #' @param pmwts performance measure weights, default = 0.65, 0.25, 0.1 for the
@@ -260,17 +393,16 @@ getscore <- function(grad14) {   # grad14=grad4
 #'
 #' @examples
 #' print("wait on data and time")
-mcdahcr <- function(vectce, wid=4,targqnt=0.55,pmwts=c(0.65,0.25,0.1),
+mcdahcr <- function(vectce,yr, wid=4,targqnt=0.55,pmwts=c(0.65,0.25,0.1),
                     hcr=c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2),
                     only=TRUE) {
-  #wid=4;targqnt=0.55;pmwts=c(0.65,0.25,0.1);hcr=c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2)
-  grad4 <- getgrad4(vectce,wid=wid)
+  grad4 <- getgradwid(vectce,yr,wid=wid)
   score4 <- getscore(grad4)
-  grad1 <- getgrad1(vectce)
+  grad1 <- getgradone(vectce,yr)
   score1 <- getscore(grad1)
   scoret <- targscore(vectce,qnt=targqnt)
-  score <- pmwts[1]*scoret$result + pmwts[2]*tail(score4,1) +
-    pmwts[3]*tail(score1,1)
+  score <- pmwts[1]*scoret$result + pmwts[2]*score4 +
+    pmwts[3]*score1
   pick <- ceiling(score)
   if (pick < 1) pick <- 1
   if (pick > 10) pick <- 10
@@ -301,7 +433,7 @@ mcdahcr <- function(vectce, wid=4,targqnt=0.55,pmwts=c(0.65,0.25,0.1),
 #'
 #' @examples
 #' print("wait on suitable data")
-targscore <- function(vectce,qnt=0.55) { # vectce=vectce; wid=4
+targscore <- function(vectce,qnt=0.55) { # vectce=saucpue[1:inityrs,sau,iter];qnt=targqnt
   targ <- quantile(vectce,probs <- c(qnt))
   limrp <- min(vectce)*0.9
   uprp <- (targ + (targ - limrp))
@@ -313,4 +445,20 @@ targscore <- function(vectce,qnt=0.55) { # vectce=vectce; wid=4
   result <- tail(targsc,1)
   return(list(result=result,ans=ans,details=details))
 } # end of targscore
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
