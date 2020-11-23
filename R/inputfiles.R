@@ -27,7 +27,7 @@
 #'  control <- readctrlzone(yourdir,"testctrl.csv")
 #'  str(control,max.level=1)
 #' }
-ctrlzonetemplate <- function(indir,filename="control.csv") {
+ctrlzonetemplate <- function(indir,filename="control.csv") { # indir=resdir; filename="control2.csv"
    filename <- filenametopath(indir,filename)
    cat("Control file containing details of a particular run \n",
        file=filename,append=FALSE)
@@ -35,38 +35,31 @@ ctrlzonetemplate <- function(indir,filename="control.csv") {
        file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
    cat("START \n",file=filename,append=TRUE)
-   cat("runlabel, testrun, label for particular run \n",
+   cat("runlabel, zoneX, label for particular run \n",
        file=filename,append=TRUE)
-   cat("zonefile, zone1.csv, name of zone wide constants \n",
+   cat("datafile, zonewest.csv, name of popdefs file \n",
        file=filename,append=TRUE)
-   cat("datafile, zone1sau2pop6.csv, name of popdefs file \n",
-       file=filename,append=TRUE)
-   cat("\n",file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
    cat("zoneCOAST \n",file=filename,append=TRUE)
    cat("batch,  0, run job interactively or as a batch (0 = FALSE) \n",
        file=filename, append=TRUE)
-   cat("replicates,  10, number of replicates, usually 1000  \n",
+   cat("replicates,  100, number of replicates, usually 500 or 1000  \n",
        file=filename, append=TRUE)
-   cat("withsigR,  1.0e-08, recruitment variability eg 0.3 \n",
+   cat("withsigR,  0.3, recruitment variability eg 0.3 \n",
        file=filename, append=TRUE)
-   cat("withsigB,  1.0e-08, process error on mature biomass \n",
+   cat("withsigB,  0.05, process error on exploitable biomass \n",
        file=filename, append=TRUE)
-   cat("withsigCE, 1.0e-08, process error on cpue calculations  \n",
+   cat("withsigCE, 1e-08, process error on cpue calculations  \n",
        file=filename, append=TRUE)
-   cat("Details of zone wide constants for a run \n",
-       file=filename,append=FALSE)
-   cat("Modify the contents to suit your own situation \n",
-       file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
    cat("zone \n",file=filename,append=TRUE)
-   cat("nSAU, 2, number of spatial management units eg 2 \n",
+   cat("nSAU, 8, number of spatial management units eg 2 \n",
        file=filename,append=TRUE)
-   cat("SAUpop, 2, 4, number of populations per SAU in sequence \n",
+   cat("SAUpop, 2, 2, 2, 2, 2, 2, 2, 2, number of populations per SAU in sequence \n",
        file=filename,append=TRUE)
-   cat("SAUnames, block1, block2, labels for each SAU \n",file=filename,
-       append=TRUE)
-   cat("initdepl, 0.8, 0.8, initial depletion levels for each SAU \n",
+   cat("SAUnames, blk6, blk7, blk8, blk9, blk10, blk11, blk12, blk13, labels for each SAU \n",
+       file=filename,append=TRUE)
+   cat("initdepl, 0.4, 0.4, 0.4, 0.35, 0.35, 0.35, 0.35, 0.35, initial depletion levels for each SAU \n",
        file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
    cat("SIZE \n",file=filename,append=TRUE)
@@ -75,40 +68,42 @@ ctrlzonetemplate <- function(indir,filename="control.csv") {
    cat("Nclass, 105, number of size classes \n",file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
    cat("RECRUIT \n",file=filename,append=TRUE)
-   cat("larvdisp, 0.03, rate of larval dispersal eg 0.03=3precent \n",
+   cat("larvdisp, 0.005, rate of larval dispersal eg 0.03=3precent \n",
        file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
    cat("RANDOM \n",file=filename,append=TRUE)
-   cat("randomseed, 4024136, for repeatability of results if wished \n",
+   cat("randomseed, 4024136, for repeatability of results, alter for each separate run \n",
        file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
-   cat("initLML, 132, the initial LML for generating the unfished zone \n",
+   cat("initLML, 140, the initial LML for generating the unfished zone \n",
        file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
-   cat("PROJECT, 0, number of projection years for each simulation \n",
+   cat("PROJECT, 40, number of projection years for each simulation \n",
        file=filename,append=TRUE)
    cat("firstyear, 2020, first year of simulation if 1 hypothetical 2014 conditioned \n",
        file=filename,append=TRUE)
-   cat("fixyear, 3, conditions fixed for the first three years \n",
+   cat("inityrs, 10, number of  conditioning years included at start of projections.  \n",
+       file=filename, append=TRUE)
+   cat("\n",file=filename,append=TRUE)
+   cat("\n",file=filename,append=TRUE)
+   cat("HARVESTS, MCDA, the name of the harvest strategy to apply \n",
        file=filename,append=TRUE)
+   cat("700,  \n", file=filename,append=TRUE) # HSdetail, more later
    cat("\n",file=filename,append=TRUE)
-   cat("\n",file=filename,append=TRUE)
-   cat("HARVESTS, MQMF, the name of the harvest strategy to apply \n",
-       file=filename,append=TRUE)
-   cat("\n",file=filename,append=TRUE)
-   cat("PROJLML, same number of projection years \n",file=filename,
+   cat("PROJLML, need the same number as there are projection years \n",file=filename,
        append=TRUE) # ensure there are Nyrs lines
-   cat("2020, 132,  Legal Minimum Length (LML, MLL, MLS) e.g. 140 \n",
+   cat("2020, 145,  Legal Minimum Length (LML, MLL, MLS) e.g. 140 \n",
        file=filename,append=TRUE)
    for (i in 2:10) {
       yr <- 2020 + i - 1
-      cat(as.character(yr),", 132 \n",file=filename,append=TRUE)
+      cat(as.character(yr),", 145 \n",file=filename,append=TRUE)
    }
    cat("\n",file=filename,append=TRUE)
    cat("CONDITION, 0, if > 1 then how many years in the histLML \n",
        file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
-   cat("HistoricalLML, 0, if >1 then number reflects number of histLML \n",
+   cat("\n",file=filename,append=TRUE)
+   cat("CEYRS, 0,  if >1 then number reflects number of historical CPUE records by SAU \n",
        file=filename,append=TRUE)
    return(invisible(filename))
 } # end of ctrlzonetemplate
@@ -400,7 +395,7 @@ read_conddata <- function(filename) {  # filename=filen
 #' ctrl
 #' }
 readctrlzone <- function(datadir,infile="control.csv") {
-   # datadir=resdir; infile="control.csv"
+   # datadir=resdir; infile="control2.csv"
    filenames <- dir(datadir)
    if (length(grep(infile,filenames)) != 1)
       stop(cat(infile," not found in datadir \n"))
@@ -414,7 +409,6 @@ readctrlzone <- function(datadir,infile="control.csv") {
    withsigR <- getsingleNum("withsigR",indat)
    withsigB <- getsingleNum("withsigB",indat)
    withsigCE <- getsingleNum("withsigCE",indat)
-   inityrs <- getsingleNum("inityrs",indat)
    Nyrs=40 # to set up equilibrium unfished population; could be read in
    if (length(grep(datafile,filenames)) != 1)
       stop("population data file not found \n")
@@ -436,8 +430,8 @@ readctrlzone <- function(datadir,infile="control.csv") {
    initLML <- getsingleNum("initLML",indat)
    projyrs <- getsingleNum("PROJECT",indat)
    firstyear <- getsingleNum("firstyear",indat)
-   fixyear <- getsingleNum("fixyear",indat)
-   outyear <- c(projyrs,fixyear,firstyear)
+   inityrs <- getsingleNum("inityrs",indat)
+   outyear <- c(projyrs,firstyear)
    projLML <- NULL
    HS <- NULL
    if (projyrs > 0) {
@@ -447,12 +441,12 @@ readctrlzone <- function(datadir,infile="control.csv") {
          from <- from + 1
          projLML[i] <- getConst(indat[from],1)
       }
-      start <- grep("HARVESTS",indat)
-      HS <- getStr(indat[start],1)
+      begin <- grep("HARVESTS",indat)
+      HS <- getStr(indat[begin],1)
       if (HS %in% c("MCDA","Other")) # get filename
-         HSdetail <- removeEmpty(unlist(strsplit(indat[start+1],",")))
+         HSdetail <- removeEmpty(unlist(strsplit(indat[begin+1],",")))
       if (HS == "constantCatch")  # get constant inTAC
-         HSdetail <- as.numeric(removeEmpty(unlist(strsplit(indat[start+1],","))))
+         HSdetail <- as.numeric(removeEmpty(unlist(strsplit(indat[begin+1],","))))
    }
    condition <- getsingleNum("CONDITION",indat)
    if (condition > 0) {

@@ -12,10 +12,11 @@ if (dir.exists("c:/Users/User/DropBox")) {
 } else {
   ddir <- "c:/Users/Malcolm/DropBox/A_code/"
 }
-resdir <- paste0(ddir,"aMSEUse/conddata/generic2")
+#resdir <- paste0(ddir,"aMSEUse/conddata/generic2")
+resdir <- "C:/Users/User/Dropbox/A_Code/aMSEUse/conddata/generic"
 dirExists(resdir,make=TRUE,verbose=TRUE)
-
-zone <- makeequilzone(resdir,"control.csv")
+data(zone)
+# zone <- makeequilzone(resdir,"control2.csv") # normally would read in a file
     equiltime <- (Sys.time())
     origdepl <-  c(0.30,0.31,0.29,0.32,0.30,0.31,0.29,0.32)
 zoneDD <- depleteSAU(zone$zoneC,zone$zoneD,zone$glb,origdepl,zone$product,len=12)
@@ -31,19 +32,7 @@ zoneCP <- out$zoneC
     print(midtime - equiltime)
     propD <- getzoneprops(zone$zoneC,zoneDD,glb,year=1)
     round(propD,3)
-# prepare the HS --------------------------------------------------------------
 
-# if (projC$HS == "constantCatch") {
-#   hsFunc <- constCatch
-#   inTAC <- projC$HSdetail
-# }
-# if (projC$HS == "MCDA") {
-#   hsFunc <- doMCDA
-#   mcdafile <- projC$HSdetail
-#   optCE <- MCDAdata(resdir,mcdafile,zone1$SAUnames)
-# }
-#
-  #  zoneCP=zoneCP;zoneDP=zoneDR;glob=glb;ctrl=ctrl;projyrs=projC$projyrs;inityrs=projC$inityrs;
 # Do the replicates ------------------------------------------------------------
 inityr <- zone$zone1$projC$inityrs
 saunames <- zone$zone1$SAUnames
@@ -69,11 +58,11 @@ pmsy <- sapply(zoneCP,"[[","MSY")
 smsy <- tapply(pmsy,sauindex,sum)
 smsydepl <- tapply((pmsydepl * pmsy) / smsy[sauindex],sauindex,sum)
 
+
+
 plotC <- function(nsau,saunames,reps,projyrs,plts=c(4,2)) {
   return(list(nsau=nsau,saunames=saunames,reps=reps,projyrs=projyrs,plts=plts))
 }
-
-
 
 saunames <- zone$zone1$SAUnames
 pyrs <- projC$projyrs + projC$inityr
@@ -111,7 +100,19 @@ plotproj(sauzoneDP$catS,"Catches t",plotconst,vline=projC$inityrs,addqnts=TRUE)
 #           openfile=TRUE,runnotes=runnotes,verbose=FALSE,
 #           packagename = "aMSE",htmlname="testrun")
 
+# prepare the HS --------------------------------------------------------------
 
+# if (projC$HS == "constantCatch") {
+#   hsFunc <- constCatch
+#   inTAC <- projC$HSdetail
+# }
+# if (projC$HS == "MCDA") {
+#   hsFunc <- doMCDA
+#   mcdafile <- projC$HSdetail
+#   optCE <- MCDAdata(resdir,mcdafile,zone1$SAUnames)
+# }
+#
+#  zoneCP=zoneCP;zoneDP=zoneDR;glob=glb;ctrl=ctrl;projyrs=projC$projyrs;inityrs=projC$inityrs;
 
 
 

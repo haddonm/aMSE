@@ -87,20 +87,89 @@ if (dir.exists("c:/Users/User/DropBox")) {
 } else {
   ddir <- "c:/Users/Malcolm/DropBox/A_code/"
 }
-resdir <- paste0(ddir,"aMSEUse/conddata/generic2")  # data and results directory
+resdir <- paste0(ddir,"aMSEUse/conddata/generic")  # data and results directory
 dirExists(resdir,make=TRUE,verbose=TRUE)
-#> c:/Users/User/DropBox/A_code/aMSEUse/conddata/generic2 :  exists
+#> c:/Users/User/DropBox/A_code/aMSEUse/conddata/generic :  exists
 # equilibrium zone -------------------------------------------------------------
-# You now need to ensure that there is, at least, a control.csv, zone1.csv
-# and region1.csv file in the data directory plus some other data .csv files
+# You now need to ensure that there is, at least, a control.csv, and a 
+# constantsdata.csv file in the data directory plus some other data .csv files
 # depending on how conditioned you want the model to be. Templates for the
-# correct format can be produced using ctrlfiletemplate(), datafiletemplate(),
-# and zonefiletemplate.  In the meantime it is easier to use the included 
-# data files. The original csv files are included in the data-raw directory
+# correct format can be produced using ctrlfiletemplate(), datafiletemplate().
+# In the meantime it is easier to use the included data file "zone".
+data(zone)
+# Of course, usually one would use data files, control.csv and a zone.csv, which is 
+# listed as the datafile within the control.csv. 
+# zone <- makeequilzone(resdir,"control2.csv") # normally would read in a file
+    equiltime <- (Sys.time())   # let's change the initial depletion
+    origdepl <-  c(0.30,0.31,0.29,0.32,0.30,0.31,0.29,0.32) 
+zoneDD <- depleteSAU(zone$zoneC,zone$zoneD,zone$glb,origdepl,zone$product,len=12)
+out <- prepareprojection(zone$zone1,zone$zoneC,zone$glb,zoneDD,zone$ctrl)
+  zoneDR <- out$zoneDP
+  projC <- out$projC
+  zoneCP <- out$zoneC
+  midtime <- (Sys.time())
 
-# Many changes now require the data files to be updated and tested, but that will 
-# happen soon.
+  glb <- zone$glb
+  ctrl <- zone$ctrl
+  print(equiltime - starttime)
+#> Time difference of 0.07992578 secs
+  print(midtime - equiltime)
+#> Time difference of 3.884771 secs
+  propD <- getzoneprops(zone$zoneC,zoneDD,glb,year=1)
+  # round(propD,3)
+# Do the replicates ------------------------------------------------------------
+  inityr <- zone$zone1$projC$inityrs
+  saunames <- zone$zone1$SAUnames
+  sauindex <- zone$glb$sauindex
+  pyrs <- projC$projyrs + projC$inityr
+  B0 <- tapply(sapply(zone$zoneC,"[[","B0"),sauindex,sum)
+  exB0 <- tapply(sapply(zone$zoneC,"[[","ExB0"),sauindex,sum)
+
+  midtime <- (Sys.time())
+mseproj <- applymcda(zoneCP,zoneDR,glb,ctrl,projC$projyrs,projC$inityrs)
+sauzoneDP <- asSAU(mseproj,sauindex,saunames,B0,exB0)
+  endtime <- (Sys.time())
+  print(endtime - midtime)
+#> Time difference of 15.38822 secs
+# Now plot some results
+  plotC <- function(nsau,saunames,reps,projyrs,plts=c(4,2)) {
+    return(list(nsau=nsau,saunames=saunames,reps=reps,projyrs=projyrs,plts=plts))
+  }
+
+  saunames <- zone$zone1$SAUnames
+  pyrs <- projC$projyrs + projC$inityr
+  reps <- ctrl$reps
+  label <- "Catches t"
+  yrs <- 1:pyrs
+
+plotconst <- plotC(nsau=length(saunames),saunames,reps,pyrs,plts=c(4,2))
+
+plotprep(width=7,height=8,newdev=FALSE)
+plotproj(sauzoneDP$cpue,"CPUE",plotconst,vline=projC$inityrs,addqnts=TRUE)
 ```
+
+<img src="man/figures/README-example-1.png" width="100%" />
+
+``` r
+
+plotproj(sauzoneDP$saudeplsB,"Spawning Biomass Depletion",plotconst,vline=projC$inityrs,addqnts=TRUE)
+```
+
+<img src="man/figures/README-example-2.png" width="100%" />
+
+``` r
+
+plotproj(sauzoneDP$recS/1000,"Recruitment '000s",plotconst,vline=projC$inityrs,addqnts=TRUE)
+```
+
+<img src="man/figures/README-example-3.png" width="100%" />
+
+``` r
+
+plotproj(sauzoneDP$catS,"Catches t",plotconst,vline=projC$inityrs,addqnts=TRUE)
+```
+
+<img src="man/figures/README-example-4.png" width="100%" />
 
 See the vignette Running\_aMSE.Rmd for a more detailed example.
 

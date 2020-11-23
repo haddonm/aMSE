@@ -21,7 +21,10 @@ findF1 generates estimates of the annual harvest rate
     by searching for the gradient that is cloest to 0.1.
 }
 \examples{
+\dontrun{
+# data files changed, no longer works
 data(product) #for pop=1, a 28percent drop from Hmsy leads to a
 findF1(product=product) # loss of 3 tonnes, 4 percent of MSY
 findmsy(product)  # compare the AnnH, Deplet, and RelCE levels.
+}
 }

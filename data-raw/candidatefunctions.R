@@ -219,12 +219,15 @@ ces <- apply(ce,2,scaleto1)
 outs <- apply(ces,2,mcdahcr)
 
 
+library(aMSE)
+library(rutilsMH)
+library(makehtml)
+
+resdir <- "C:/Users/User/Dropbox/A_Code/aMSEUse/conddata/generic"
+ctrlzonetemplate(resdir,"control2.csv")
 
 
-
-
-
-
+zone <- readctrlzone(resdir,infile="control2.csv")
 
 
 

@@ -67,7 +67,7 @@ save(product,file=paste0(datadir,"product.RData"))
 
 # some cpue data -----------------------------------------------------
 
-datadir <- "./../../rcode2/aMSE/data-raw/"
+datadir <- "./../../A_code/aMSE/data-raw/"
 
 blockE13 <- read.csv(paste0(datadir,"block13e.csv"),header=TRUE)
 
