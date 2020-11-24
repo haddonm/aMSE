@@ -69,10 +69,12 @@ and GitHub at <https://r-pkgs.org/index.html>.
 
 ## Example
 
-This is a basic example which illustrates the generation of an initial
-equilibrium. It uses built in data-sets but usually you would generate
-zoneC (constants) and zoneD (the dynamic components) from the
-conditioning data:
+This is an example which illustrates the generation of an initial
+equilibrium, which then goes on to apply an early version of the
+Tasmania MCDA using only 100 replicates (that bit takes about 15 seconds
+on my computer, hence 2.5 minutes for 1000). It uses built in data-sets
+but usually you would read in a control file, which would contain the
+name of the biological datafile describing each population.
 
 ``` r
 # a constant TAC example
@@ -112,9 +114,9 @@ out <- prepareprojection(zone$zone1,zone$zoneC,zone$glb,zoneDD,zone$ctrl)
   glb <- zone$glb
   ctrl <- zone$ctrl
   print(equiltime - starttime)
-#> Time difference of 0.07992578 secs
+#> Time difference of 0.08277798 secs
   print(midtime - equiltime)
-#> Time difference of 3.884771 secs
+#> Time difference of 3.916585 secs
   propD <- getzoneprops(zone$zoneC,zoneDD,glb,year=1)
   # round(propD,3)
 # Do the replicates ------------------------------------------------------------
@@ -130,7 +132,7 @@ mseproj <- applymcda(zoneCP,zoneDR,glb,ctrl,projC$projyrs,projC$inityrs)
 sauzoneDP <- asSAU(mseproj,sauindex,saunames,B0,exB0)
   endtime <- (Sys.time())
   print(endtime - midtime)
-#> Time difference of 15.38822 secs
+#> Time difference of 14.91857 secs
 # Now plot some results
   plotC <- function(nsau,saunames,reps,projyrs,plts=c(4,2)) {
     return(list(nsau=nsau,saunames=saunames,reps=reps,projyrs=projyrs,plts=plts))

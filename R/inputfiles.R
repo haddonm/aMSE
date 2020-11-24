@@ -29,9 +29,13 @@
 #' }
 ctrlzonetemplate <- function(indir,filename="control.csv") { # indir=resdir; filename="control2.csv"
    filename <- filenametopath(indir,filename)
-   cat("Control file containing details of a particular run \n",
+   cat("DESCRIPTION \n",
        file=filename,append=FALSE)
-   cat("Modify the contents to suit your own situation \n",
+   cat("Control file containing details of a particular run. Modify the  \n",
+       file=filename,append=TRUE)
+   cat("contents to suit your own situation. In particular. modify the  \n",
+       file=filename,append=TRUE)
+   cat("contents of this description to suit the scenario being executed \n",
        file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
    cat("START \n",file=filename,append=TRUE)
@@ -52,7 +56,7 @@ ctrlzonetemplate <- function(indir,filename="control.csv") { # indir=resdir; fil
    cat("withsigCE, 1e-08, process error on cpue calculations  \n",
        file=filename, append=TRUE)
    cat("\n",file=filename,append=TRUE)
-   cat("zone \n",file=filename,append=TRUE)
+   cat("ZONE \n",file=filename,append=TRUE)
    cat("nSAU, 8, number of spatial management units eg 2 \n",
        file=filename,append=TRUE)
    cat("SAUpop, 2, 2, 2, 2, 2, 2, 2, 2, number of populations per SAU in sequence \n",
@@ -68,11 +72,11 @@ ctrlzonetemplate <- function(indir,filename="control.csv") { # indir=resdir; fil
    cat("Nclass, 105, number of size classes \n",file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
    cat("RECRUIT \n",file=filename,append=TRUE)
-   cat("larvdisp, 0.005, rate of larval dispersal eg 0.03=3precent \n",
+   cat("larvdisp, 0.005, rate of larval dispersal eg 0.005 = 0.5 percent \n",
        file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
    cat("RANDOM \n",file=filename,append=TRUE)
-   cat("randomseed, 4024136, for repeatability of results, alter for each separate run \n",
+   cat("randomseed, 0, for repeatability of results, alter for each separate run \n",
        file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
    cat("initLML, 140, the initial LML for generating the unfished zone \n",
@@ -94,7 +98,7 @@ ctrlzonetemplate <- function(indir,filename="control.csv") { # indir=resdir; fil
        append=TRUE) # ensure there are Nyrs lines
    cat("2020, 145,  Legal Minimum Length (LML, MLL, MLS) e.g. 140 \n",
        file=filename,append=TRUE)
-   for (i in 2:10) {
+   for (i in 2:40) {
       yr <- 2020 + i - 1
       cat(as.character(yr),", 145 \n",file=filename,append=TRUE)
    }
@@ -501,9 +505,9 @@ readctrlzone <- function(datadir,infile="control.csv") {
                  compdat=compdat,Sel=NULL,SelWt=NULL)
    projC <- list(projLML=projLML,HS=HS,HSdetail=HSdetail,projyrs=projyrs,
                  inityrs=inityrs,Sel=NULL,SelWt=NULL)
-   outctrl <- list(runlabel,datafile,batch,reps,withsigR,withsigB,
+   outctrl <- list(runlabel,datafile,batch,reps,randomseed,withsigR,withsigB,
                    withsigCE,condition,projyrs)
-   names(outctrl) <- c("runlabel","datafile","batch","reps","withsigR",
+   names(outctrl) <- c("runlabel","datafile","batch","reps","randseed","withsigR",
                        "withsigB","withsigCE","condition","projection")
    globals <- list(numpop=numpop, nSAU=nSAU, midpts=midpts,
                    Nclass=Nclass, Nyrs=Nyrs,larvdisp=larvdisp)

@@ -209,7 +209,7 @@ $$B_{p,t}^{E}=\sum\limits_{L={{L}_{Min}}}^{{{L}_{Max}}}{{{s}_{p,L,t}}{{W}_{p,L}}
 Catchability in a stock assessment model can be estimated analytically as:
 
 
-$$q=\exp \left[ \sum\limits_{t=1}^{n}{Ln\left( {{I}_{p,t}}/B_{p,t}^{E} \right)}/n \right]$$
+$$q_p=\exp \left[ \sum\limits_{t=1}^{n}{Ln\left( {{I}_{p,t}}/B_{p,t}^{E} \right)}/n \right]$$
 
 where $n$ is the number of years across which the observed catch rates, $I_{p,t}$, and predicted exploitable biomass are considered. In the simulation/operating model a maximum catch rate, $CE_{Max}$ was used to scale the unfished exploitable biomass to generate a catchability value for each population. The maximum catch rates were randomly selected from a pre-specified distribution, and then the following equation used:
 
@@ -237,8 +237,15 @@ $$
 
 ### Recruitment Processes
 
+Recruitment is modelled each year for each population using the Beverton and Holt stock recruitment relationship as re-parameterized by Francis (1990).
 
 
+$$R_{p,t}=\frac{4h{R_0}{B_{p,t}^{S}}}{(1-h){B_0}+(5h-1){B_{p,t}^{S}}} e^{\varepsilon_{p,t}-\sigma_{R}^2/2}$$
+where $\varepsilon_{p,t}$ is defined as:
+
+$$\varepsilon_{p,t}=N \left(0,\sigma_{R}^2 \right)$$
+
+This requires, for each population, that $h$, $R_0$, $B_0$, and $\sigma_R$ be defined, and for each year that ${B_{p,t}^{S}}$ be estimated. Should deterministic recruitment be required (as when calculating the unfished, equilibrium zone structure), then set $\sigma_R$ to a very small number (when 1e-08 is squared this is the smallest number possible with 15 significant digits).
 
 
 ### Larval Dispersal
@@ -266,17 +273,36 @@ While the default is to have the matrix structured so that only adjacent populat
 
 The application of any harvest control rule in this complex spatial model will entail the translation of SAU level aspirational catches (which should sum to the zone's TAC), into catches applied to each individual population within each SAU. Of course, the aspirational catches per SAU derived from the harvest control rules (HCR) within each harvest strategy will not be taken exactly, The overall TAC will eventually constrain total catches, but some SAU will experience larger catches than expected, and others will experience smaller catches. So the application of the TAC as catches to particular populations requires two steps.
 
-The first step is to include variation into the aspirational catches from the HCR and then scale them until their sum equals the original TAC. The second step requires that each SAU's actual catch is distributed across their component populations in some  manner that reflects plausible fleet dynamics.
+The first step is to include variation into the aspirational catches from the HCR and then scale them until their sum equals the original TAC. The second step requires that each SAU's actual catch is distributed across their component populations in some manner that reflects plausible fleet dynamics.
 
-If $C_{u,hcr}$ is the aspiration catch for each SAU, $u$, derived from whatever HCR is used, then the first step on the way to setting the potential actual SAU catch is to include Normal variation:
+The assumption is made that the sum of the catches across the SAU equates to the TAC. If ever the TAC were not completely caught this assumption would obviously have to change. Each year the aspirational catches for each SAU will be determined by application of the harvest control rule for ewhatever harvest strategy is being used. In Tasmania, this is uses a multi-criterion decision analysis based around different aspects of cpue. In the operating model this is implemented initial without error. 
 
-$$C_{u}^*=N(C_{u,hcr},\sigma_u)
+$$C_{u,t,hcr}={C_{u,t-1}} \times multhcr$$
+
+where $C_{u,t-1}$ is the actual catch from SAU $u$ in year $t-1$, $C_{u,t,hcr}$ is the aspirational catch from SAU $u$ in year $t$, and $multhcr$ is the multiplier derived from whatever HCR is used.
+
+The new $TAC_t$ will be:
+
+$$TAC_t={\sum\limits_{u=1}^{nSAU}C_{u,t,hcr}}$$
+
+The first step on the way to setting the potential actual SAU catch is to include Log-Normal variation to the SAU exploitable biomass on the assumption that the divers gain an appreciation of how much is present in each SAU but they make mistakes and so mis-allocate effort:
+
+$$B_{u,t}^{E,*}={B_{u,t}^{E}}e^{\varepsilon_{u,t}-\sigma_{B}^2/2}
 $$
 
-where $C_{u}^*$ is the potential SAU catch before re-scaling to the TAC, and $\sigma_u$ is the standard deviation of the variation that occurs between the aspirational and the potential actual catches within SAU's. The original $C_{u}$ sum to the TAC but the sum of the $C_{u}^*$ may be larger or smaller than the TAC. Hence, we need to rescale the potential actual catches so total SAU catches sum to the agreed TAC:
+where:
 
-$$C_u=\frac{{C_{u}^*}{TAC}}{\sum\limits_{u=1}^{nSAU}C_{u}^*}
-$$
+$$\varepsilon_{u,t}=N \left(0,\sigma_{B}^2 \right)$$
+$\sigma_B$ is the standard deviation of the variation that occurs between the real exploitable biomass and the perceived distribution of exploitable biomass across SAU's, which also includes other sources of uncertainty.
+
+This variation is introduced into the potential SAU catches using:
+
+$$C_{u,t}^*=TAC_t \times \frac{B_{u,t}^{E,*}}{\sum{B_{u,t}^{E}}}$$
+
+
+where $C_{u}^*$ is the actual SAU catch scaled to the new TAC.
+
+A useful diagnostic for use during conditioning, and during model runs, would be to examine the predicted variation between the actual catches and aspirational catches determined by the HCR, if one has such data from a real fishery. Otherwise, it should be characterized from the outputs, which will allow its variation to be examined for plausibility.
 
 
 ## Model Output

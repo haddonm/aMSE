@@ -13,10 +13,10 @@ if (dir.exists("c:/Users/User/DropBox")) {
   ddir <- "c:/Users/Malcolm/DropBox/A_code/"
 }
 #resdir <- paste0(ddir,"aMSEUse/conddata/generic2")
-resdir <- "C:/Users/User/Dropbox/A_Code/aMSEUse/conddata/generic"
+resdir <- paste0(ddir,"aMSEUse/conddata/generic")
 dirExists(resdir,make=TRUE,verbose=TRUE)
 data(zone)
-# zone <- makeequilzone(resdir,"control2.csv") # normally would read in a file
+#zone <- makeequilzone(resdir,"control2.csv") # normally would read in a file
     equiltime <- (Sys.time())
     origdepl <-  c(0.30,0.31,0.29,0.32,0.30,0.31,0.29,0.32)
 zoneDD <- depleteSAU(zone$zoneC,zone$zoneD,zone$glb,origdepl,zone$product,len=12)

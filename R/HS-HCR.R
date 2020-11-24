@@ -57,6 +57,7 @@ applymcda <- function(zoneCP,zoneDP,glob,ctrl,projyrs,inityrs=10,wid = 4,
     targsc[1:inityrs,,iter] <- targetce
   }
   # now do replicates, updating saucatch and saucpue each year
+  if(ctrl$randseed > 0) set.seed(ctrl$randseed) # set random seed if desired
   for (iter in 1:reps) {  # iter=1; year=11
     TAC <- origTAC  # should we use the same original TAC for each replicate
     for (year in (inityrs+1):nyrs) {
@@ -64,7 +65,7 @@ applymcda <- function(zoneCP,zoneDP,glob,ctrl,projyrs,inityrs=10,wid = 4,
       inexpB <- zoneDP$exploitB[(year - 1),,iter]
       sauexpB <- tapply(inexpB,sauindex,sum,na.rm=TRUE)
       catbysau <- TAC * sauexpB/sum(sauexpB)  # no error initially
-      multh <- apply(saucpue[1:(year-1),,1],2,mcdahcr,yr=(year-1))
+      multh <- apply(saucpue[1:(year-1),,1],2,mcdahcr,yr=(year-1)) # apply mcdahcr
       TAC <- sum(catbysau * multh)
       divererr <- sauexpB * exp(rnorm(nsau,mean=0,sd=ctrl$withsigB))
       catbysau <- TAC * (divererr/sum(divererr)) # currently no error on TAC
