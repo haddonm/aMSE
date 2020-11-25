@@ -107,5 +107,43 @@ plotproj <- function(invar,varlabel,plotconst,
   mtext(varlabel,side=2,line=-0.1,outer=TRUE,cex=1.0,font=7)
 } # end of plotproj
 
+#' @title plotzoneproj plots the replicates of a single zone-wide variable
+#'
+#' @description plotzoneproj takes the results from the function aszone, which
+#'     contains a set of variables zonesB, zoneeB, zoneC, zoneH, zoneR, zonece,
+#'     zonedeplsB,and zonedepleB, and plots whichever is selected. It contains
+#'     the option of also plotting the median and the inner 90 percent quantiles
+#'     of each year's spread of values across replicates
+#'
+#' @param zoneV the variable from within the output of aszone
+#' @param reps the number of replicates to plot. Generaly one would plot all of
+#'     them. If not then it might be best to turn addqnts to FALSE
+#' @param yrs the vector of years as in 1:(inityrs + projyrs)
+#' @param label the y-axis label, which should obviously reflect which variable
+#'     is chosen from the zone summary list.
+#' @param addqnts should the median and inner 90 percent quantiles be added to
+#'     the plot; default = TRUE
+#'
+#' @return if addqnts=TRUE the quantiles are returned invisibly
+#' @export
+#'
+#' @examples
+#' print("wait on more time")
+plotzoneproj <- function(zoneV,reps,yrs,label="",addqnts=TRUE) {
+  maxy <- getmax(zoneV)
+  ylabel <- "Variable"
+  if (nchar(label) > 0) ylabel <- label
+  plot(yrs,zoneV[,1],type="n",panel.first=grid(),ylim=c(0,maxy),yaxs="i",
+       ylab=ylabel,xlab="Years")
+  for (iter in 1:reps) lines(yrs,zoneV[,iter],lwd=1,col="grey")
+  if (addqnts) {
+    CI <- apply(zoneV,1,quantile,probs=c(0.05,0.5,0.95))
+    lines(yrs,CI[1,],lwd=2,col=4)
+    lines(yrs,CI[2,],lwd=2,col=2)
+    lines(yrs,CI[3,],lwd=2,col=4)
+  }
+  if (addqnts) return(invisible(t(CI)))
+} # end of plotzoneproj
+
 
 

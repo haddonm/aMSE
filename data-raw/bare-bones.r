@@ -15,11 +15,12 @@ if (dir.exists("c:/Users/User/DropBox")) {
 #resdir <- paste0(ddir,"aMSEUse/conddata/generic2")
 resdir <- paste0(ddir,"aMSEUse/conddata/generic")
 dirExists(resdir,make=TRUE,verbose=TRUE)
-data(zone)
-#zone <- makeequilzone(resdir,"control2.csv") # normally would read in a file
+#data(zone)
+zone <- makeequilzone(resdir,"control2.csv") # normally would read in a file
     equiltime <- (Sys.time())
     origdepl <-  c(0.30,0.31,0.29,0.32,0.30,0.31,0.29,0.32)
 zoneDD <- depleteSAU(zone$zoneC,zone$zoneD,zone$glb,origdepl,zone$product,len=12)
+zone$ctrl$reps=250
 out <- prepareprojection(zone$zone1,zone$zoneC,zone$glb,zoneDD,zone$ctrl)
 zoneDR <- out$zoneDP
 projC <- out$projC
@@ -33,6 +34,8 @@ zoneCP <- out$zoneC
     propD <- getzoneprops(zone$zoneC,zoneDD,glb,year=1)
     round(propD,3)
 
+
+
 # Do the replicates ------------------------------------------------------------
 inityr <- zone$zone1$projC$inityrs
 saunames <- zone$zone1$SAUnames
@@ -40,11 +43,13 @@ sauindex <- zone$glb$sauindex
 pyrs <- projC$projyrs + projC$inityr
 B0 <- tapply(sapply(zone$zoneC,"[[","B0"),sauindex,sum)
 exB0 <- tapply(sapply(zone$zoneC,"[[","ExB0"),sauindex,sum)
+ctrl$randseed <- 0
 
 midtime <- (Sys.time())
 #Rprof()
 mseproj <- applymcda(zoneCP,zoneDR,glb,ctrl,projC$projyrs,projC$inityrs)
 sauzoneDP <- asSAU(mseproj,sauindex,saunames,B0,exB0)
+zoneproj <- aszone(sauzoneDP,zoneCP)
 #Rprof(NULL)
 endtime <- (Sys.time())
 print(endtime - midtime)
@@ -65,10 +70,10 @@ plotC <- function(nsau,saunames,reps,projyrs,plts=c(4,2)) {
 }
 
 saunames <- zone$zone1$SAUnames
-pyrs <- projC$projyrs + projC$inityr
+nyrs <- projC$projyrs + projC$inityr
 reps <- ctrl$reps
 label <- "Catches t"
-yrs <- 1:pyrs
+yrs <- 1:nyrs
 
 plotconst <- plotC(nsau=length(saunames),saunames,reps,pyrs,plts=c(4,2))
 
@@ -80,6 +85,34 @@ plotproj(sauzoneDP$saudeplsB,"Spawning Biomass Depletion",plotconst,vline=projC$
 plotproj(sauzoneDP$recS/1000,"Recruitment '000s",plotconst,vline=projC$inityrs,addqnts=TRUE)
 
 plotproj(sauzoneDP$catS,"Catches t",plotconst,vline=projC$inityrs,addqnts=TRUE)
+
+plotproj(sauzoneDP$harvS,"Harvest Rate",plotconst,vline=projC$inityrs,addqnts=TRUE)
+
+
+
+
+
+
+
+
+
+
+
+pyrs <- projC$projyrs + projC$inityr
+reps <- ctrl$reps
+yrs <- 1:pyrs
+
+
+plotprep(width=9, height=8,newdev=FALSE)
+parset(plots=c(3,2))
+CIR <- plotzoneproj(zoneproj$zoneR/1000,reps,yrs,"Recruitment",addqnts=TRUE)
+CIC <- plotzoneproj(zoneproj$zoneC,reps,yrs,"Catches t",addqnts=TRUE)
+CIH <- plotzoneproj(zoneproj$zoneH,reps,yrs,"Harvest Rate",addqnts=TRUE)
+CIH <- plotzoneproj(zoneproj$zonece,reps,yrs,"CPUE",addqnts=TRUE)
+CIsBD <- plotzoneproj(zoneproj$zonedeplsB,reps,yrs,"SpB Depletion",addqnts=TRUE)
+CIeB <- plotzoneproj(zoneproj$zoneeB,reps,yrs,"Exploitable Biomass",addqnts=TRUE)
+
+
 
 # equilibrium zone characterization---------------------------------------------
 # resfile <- setuphtml(resdir)# prepare to save and log results

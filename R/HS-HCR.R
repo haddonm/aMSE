@@ -24,6 +24,8 @@
 #'
 #' @examples
 #' print("wait on data files")
+#' #  zoneCP=zoneCP;zoneDP=zoneDR;glob=glb;ctrl=ctrl;projyrs=projC$projyrs;inityrs=projC$inityrs
+#' # wid=4;targqnt=0.55;pmwts=c(0.65, 0.25,0.1);hcr = c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2)
 applymcda <- function(zoneCP,zoneDP,glob,ctrl,projyrs,inityrs=10,wid = 4,
                       targqnt = 0.55, pmwts = c(0.65, 0.25,0.1),
                       hcr = c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2)) {
@@ -96,8 +98,8 @@ applymcda <- function(zoneCP,zoneDP,glob,ctrl,projyrs,inityrs=10,wid = 4,
       saucpue[year,,iter] <- tapply((zoneDP$cpue[year,,iter] * wts),sauindex,sum,na.rm=TRUE)
     }   # year loop        zoneDR$matureB[,,1]
   }     # rep loop
-  out <- list(zoneDP=zoneDP,saucpue=saucpue)
-  return(out)
+  zoneDP$cesau <- saucpue
+  return(zoneDP=zoneDP)
 } # end of applymcda
 
 #' @title constCatch implements a constant TAC harvest strategy

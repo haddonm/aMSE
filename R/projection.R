@@ -82,7 +82,8 @@ addrecvar <- function(zoneC,zoneDR,inHt,glb,ctrl,nyrs=25,reset=TRUE) {
 #' @title asSAU generates an output list of SAU values from the in put zoneDP
 #'
 #' @description asSAU takes the population based results in zoneDP and converts
-#'     them into a list based around SAU
+#'     them into a list based around SAU. saucpue is already calculated during
+#'     the application of the harvest strategy.
 #'
 #' @param projzone the population based results list zoneDP plus the saucpue
 #'     all from applymcda
@@ -97,8 +98,9 @@ addrecvar <- function(zoneC,zoneDR,inHt,glb,ctrl,nyrs=25,reset=TRUE) {
 #' @examples
 #' print("wait on new data")
 asSAU <- function(projzone,sauindex,saunames,b0,exb0) {
-  zoneDP <- projzone$zoneDP
-  cpue <- projzone$saucpue
+# projzone=mseproj;sauindex=sauindex;saunames=saunames;B0=B0;exB0=exB0
+  zoneDP <- projzone
+  cpue <- zoneDP$cesau
   matB <- sumpops(zoneDP$matureB,sauindex,saunames)
   expB <- sumpops(zoneDP$exploitB,sauindex,saunames)
   catS <- sumpops(zoneDP$catch,sauindex,saunames)
@@ -111,6 +113,48 @@ asSAU <- function(projzone,sauindex,saunames,b0,exb0) {
   return(ans)
 } #end of asSAU
 
+#' @title aszone sums the various SAU dynamics and fishery properties
+#'
+#' @description aszone calculates zone wide totals by summing the mature and
+#'     exploitable biomass across SAU, it also sums the catches and recruitment
+#'     levels. It calculates zone wide harvest rates by dividing the catches by
+#'     the available exploitable biomass. It also calculates the depletion
+#'     levels of both the mature and exploitable biomass by dividing their
+#'     zone totals through time by the initial zone wide B0 and ExB0. Finally,
+#'     it calculates a zone-wide cpue by catch-weighting each of the SAU cpue
+#'     values and then summing each set of SAU for each year and iteration.
+#'
+#' @param sauzone the output from the applyharvest strategy function, a large
+#'     list of arrays or results
+#' @param zoneCP the constant part of the projection zone
+#'
+#' @return a list of 8 nyrs x reps matrices, summarizing the fishery outputs at
+#'     the geographical scale of the zone
+#' @export
+#'
+#' @examples
+#' print("wait on data")
+aszone <- function(sauzone,zoneCP) { # sauzone=sauzoneDP; zoneCP=zoneCP; reps=ctrl$reps
+  B0 <- sum(getvar(zoneCP,"B0"),na.rm=TRUE)
+  exB0 <- sum(getvar(zoneCP,"ExB0"),na.rm=TRUE)
+  zonesB <- apply(sauzone$matB,c(1,3),sum,na.rm=TRUE) # spawning biomass
+  zoneeB <- apply(sauzone$expB,c(1,3),sum,na.rm=TRUE) # exploitable biomass
+  zoneC <- apply(sauzone$catS,c(1,3),sum,na.rm=TRUE)  # catches
+  zoneH <- zoneC/zoneeB                               # gross harvest rate
+  zoneR <- apply(sauzone$recS,c(1,3),sum,na.rm=TRUE)  # total recruitment
+  zonedeplsB <- zonesB/B0               # spawning biomass depletion
+  zonedepleB <- zoneeB/exB0             # xploitable biomass depletion
+  nyrs <- nrow(zonesB)
+  reps <- ncol(zonesB)
+  zonece <- matrix(0,nrow=nyrs,ncol=reps,dimnames=list(1:nyrs,1:reps))
+  for (iter in 1:reps) { # generate SAU catch-weighted zonal cpue
+    wts <- sauzone$catS[,,iter]/zoneC[,iter]
+    zonece[,iter] <- rowSums((sauzone$cpue[,,iter] * wts),na.rm=TRUE)
+  }
+  outzone=list(zonesB=zonesB,zoneeB=zoneeB,zoneC=zoneC,zoneH=zoneH,zoneR=zoneR,
+               zonece=zonece,zonedeplsB=zonedeplsB,zonedepleB=zonedepleB)
+  return(outzone)
+} # end of aszone
 
 
 #' @title calcsau compares an input variable to a constant for each SAU
@@ -337,7 +381,7 @@ scaleto1 <- function(invect) {
 #'
 #' @examples
 #' print("wait on new data")
-sumpops <- function(invar,sauindex,saunames) {
+sumpops <- function(invar,sauindex,saunames) { #invar=zoneDP$matureB
   # for matureB, exploitB, catch, recruit
   dimension <- dim(invar)
   projyrs <- dimension[1]

@@ -62,7 +62,9 @@
 
 * 22/11/2020 0.0.0.7000 Now includes an operational mcdahcr and applymcda functions. Currently 1000 replicates should take about 2.5 minutes as I have been optimizing again. There is much still to wrap up inside functions and plot convenient outputs, but it is already interesting.
 
-* 24/11/2020 0.0.0.6950 Started a the_data_files.Rmds vignette, that attempts to describe the structure and contents of the data files (being the control.csv and populatiom.csv). Sone other minor adjustments, such as implementing the use of the randomseed. 
+* 24/11/2020 0.0.0.6950 Started a the_data_files.Rmds vignette, that attempts to describe the structure and contents of the data files (being the control.csv and populatiom.csv). Sone other minor adjustments, such as implementing the use of the randomseed.
+
+* 25/11/2020 0.0.0.6900 Added first zone wide summary of outputs, still need to include length-composition of catch
 
 
 

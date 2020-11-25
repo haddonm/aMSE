@@ -51,4 +51,6 @@ applymcda applies the Tasmanian MCDA to a simulated zone. It
 }
 \examples{
 print("wait on data files")
+#  zoneCP=zoneCP;zoneDP=zoneDR;glob=glb;ctrl=ctrl;projyrs=projC$projyrs;inityrs=projC$inityrs
+# wid=4;targqnt=0.55;pmwts=c(0.65, 0.25,0.1);hcr = c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2)
 }
