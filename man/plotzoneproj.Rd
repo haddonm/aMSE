@@ -4,7 +4,7 @@
 \alias{plotzoneproj}
 \title{plotzoneproj plots the replicates of a single zone-wide variable}
 \usage{
-plotzoneproj(zoneV, reps, yrs, label = "", addqnts = TRUE)
+plotzoneproj(zoneV, reps, yrs, label = "", addqnts = TRUE, miny = 0)
 }
 \arguments{
 \item{zoneV}{the variable from within the output of aszone}
@@ -19,6 +19,8 @@ is chosen from the zone summary list.}
 
 \item{addqnts}{should the median and inner 90 percent quantiles be added to
 the plot; default = TRUE}
+
+\item{miny}{sets the lower limit of the y-axis, default=0}
 }
 \value{
 if addqnts=TRUE the quantiles are returned invisibly
@@ -32,4 +34,5 @@ plotzoneproj takes the results from the function aszone, which
 }
 \examples{
 print("wait on more time")
+# zoneV=zoneproj$zoneC;reps=reps;yrs=1:50;miny=0;label="Catches"; addqnts=TRUE
 }

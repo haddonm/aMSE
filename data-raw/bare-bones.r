@@ -20,7 +20,7 @@ zone <- makeequilzone(resdir,"control2.csv") # normally would read in a file
     equiltime <- (Sys.time())
     origdepl <-  c(0.30,0.31,0.29,0.32,0.30,0.31,0.29,0.32)
 zoneDD <- depleteSAU(zone$zoneC,zone$zoneD,zone$glb,origdepl,zone$product,len=12)
-zone$ctrl$reps=250
+zone$ctrl$reps=200
 out <- prepareprojection(zone$zone1,zone$zoneC,zone$glb,zoneDD,zone$ctrl)
 zoneDR <- out$zoneDP
 projC <- out$projC
@@ -56,12 +56,20 @@ print(endtime - midtime)
 
 #summaryRprof()
 
+pyrs <- projC$projyrs + projC$inityr
+reps <- ctrl$reps
+yrs <- 1:pyrs
 
-#calculate the relative MSY weighted MSY-depletion level for each SAU
-pmsydepl <- sapply(zoneCP,"[[","MSYDepl")
-pmsy <- sapply(zoneCP,"[[","MSY")
-smsy <- tapply(pmsy,sauindex,sum)
-smsydepl <- tapply((pmsydepl * pmsy) / smsy[sauindex],sauindex,sum)
+
+plotprep(width=9, height=8,newdev=FALSE)
+parset(plots=c(3,2))
+CIR <- plotzoneproj(zoneproj$zoneR/1000,reps,yrs,"Recruitment",addqnts=TRUE,miny=2000)
+CIC <- plotzoneproj(zoneproj$zoneC,reps,yrs,"Catches t",addqnts=TRUE,miny=0)
+CIH <- plotzoneproj(zoneproj$zoneH,reps,yrs,"Harvest Rate",addqnts=TRUE)
+CIH <- plotzoneproj(zoneproj$zonece,reps,yrs,"CPUE",addqnts=TRUE)
+CIsBD <- plotzoneproj(zoneproj$zonedeplsB,reps,yrs,"SpB Depletion",addqnts=TRUE)
+CIeB <- plotzoneproj(zoneproj$zoneeB,reps,yrs,"Exploitable Biomass",addqnts=TRUE)
+
 
 
 
@@ -90,28 +98,8 @@ plotproj(sauzoneDP$harvS,"Harvest Rate",plotconst,vline=projC$inityrs,addqnts=TR
 
 
 
-
-
-
-
-
-
-
-
-pyrs <- projC$projyrs + projC$inityr
-reps <- ctrl$reps
-yrs <- 1:pyrs
-
-
-plotprep(width=9, height=8,newdev=FALSE)
-parset(plots=c(3,2))
-CIR <- plotzoneproj(zoneproj$zoneR/1000,reps,yrs,"Recruitment",addqnts=TRUE)
-CIC <- plotzoneproj(zoneproj$zoneC,reps,yrs,"Catches t",addqnts=TRUE)
-CIH <- plotzoneproj(zoneproj$zoneH,reps,yrs,"Harvest Rate",addqnts=TRUE)
-CIH <- plotzoneproj(zoneproj$zonece,reps,yrs,"CPUE",addqnts=TRUE)
-CIsBD <- plotzoneproj(zoneproj$zonedeplsB,reps,yrs,"SpB Depletion",addqnts=TRUE)
-CIeB <- plotzoneproj(zoneproj$zoneeB,reps,yrs,"Exploitable Biomass",addqnts=TRUE)
-
+plotprod(zone$product,xname="MatB",xlab="Spawning Biomass t",
+         ylab="Production t")
 
 
 # equilibrium zone characterization---------------------------------------------

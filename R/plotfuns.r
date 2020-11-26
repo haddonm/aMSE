@@ -74,13 +74,14 @@ plotprod <- function(product,xname="MatB",yname="Catch",xlimit=NA,
 #' @param iters default=0, which means all iterations will be plotted. If iters
 #'     has a value then only that many trajectories will be plotted
 #' @param addqnts will calculate and add the median and 90 percent quantiles
+#' @param miny sets the lower limit of the y-axis, default=0
 #'
 #' @return nothing but it does generate a plot
 #' @export
 #'
 #' @examples
 #' print("wait on data files")
-plotproj <- function(invar,varlabel,plotconst,
+plotproj <- function(invar,varlabel,plotconst,miny=0,
                      vline=NULL,iters=0,addqnts=FALSE) {
   nsau <- plotconst$nsau
   yrs <- 1:plotconst$projyrs
@@ -90,8 +91,8 @@ plotproj <- function(invar,varlabel,plotconst,
          outmargin=c(1,1,0,0))
   for (sau in 1:nsau) { # sau=1
     maxy <- getmax(invar[,sau,])
-    plot(yrs,invar[,sau,1],lwd=1,type="l",col="grey",panel.first=grid(),ylim=c(0,maxy),
-         xlab="",ylab=saunames[sau])
+    plot(yrs,invar[,sau,1],lwd=1,type="l",col="grey",panel.first=grid(),
+         ylim=c(miny,maxy),xlab="",ylab=saunames[sau])
     trajs <- reps
     if (iters > 0) trajs <- iters
     for (iter in 1:trajs) lines(yrs,invar[,sau,iter],lwd=1,col="grey")
@@ -123,17 +124,19 @@ plotproj <- function(invar,varlabel,plotconst,
 #'     is chosen from the zone summary list.
 #' @param addqnts should the median and inner 90 percent quantiles be added to
 #'     the plot; default = TRUE
+#' @param miny sets the lower limit of the y-axis, default=0
 #'
 #' @return if addqnts=TRUE the quantiles are returned invisibly
 #' @export
 #'
 #' @examples
 #' print("wait on more time")
-plotzoneproj <- function(zoneV,reps,yrs,label="",addqnts=TRUE) {
+#' # zoneV=zoneproj$zoneC;reps=reps;yrs=1:50;miny=0;label="Catches"; addqnts=TRUE
+plotzoneproj <- function(zoneV,reps,yrs,label="",addqnts=TRUE,miny=0) {
   maxy <- getmax(zoneV)
   ylabel <- "Variable"
   if (nchar(label) > 0) ylabel <- label
-  plot(yrs,zoneV[,1],type="n",panel.first=grid(),ylim=c(0,maxy),yaxs="i",
+  plot(yrs,zoneV[,1],type="n",panel.first=grid(),ylim=c(miny,maxy),yaxs="i",
        ylab=ylabel,xlab="Years")
   for (iter in 1:reps) lines(yrs,zoneV[,iter],lwd=1,col="grey")
   if (addqnts) {

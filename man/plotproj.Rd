@@ -4,7 +4,15 @@
 \alias{plotproj}
 \title{plotproj aids the polotting of a projected variable}
 \usage{
-plotproj(invar, varlabel, plotconst, vline = NULL, iters = 0, addqnts = FALSE)
+plotproj(
+  invar,
+  varlabel,
+  plotconst,
+  miny = 0,
+  vline = NULL,
+  iters = 0,
+  addqnts = FALSE
+)
 }
 \arguments{
 \item{invar}{the array containing the year x SAU x reps values for a selected
@@ -14,6 +22,8 @@ variable out of sauzoneDP}
 
 \item{plotconst}{a list containing nsau, saunames, reps, projyrs, and plts
 a vector of two describing the layout of plots, default=c(4,2)}
+
+\item{miny}{sets the lower limit of the y-axis, default=0}
 
 \item{vline}{default=NULL, which means nothing extra is plotted. If given a
 year then a vertical line in red will be added to the plot}

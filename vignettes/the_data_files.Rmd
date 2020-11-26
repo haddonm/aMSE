@@ -75,9 +75,11 @@ MathJax.Hub.Config({
 
 # Introduction
 
-Within __aMSE__, it is expected that all data files and all result files will be contained in the same directory. Within the __aMSE__ code, this directory is referred to as the _resdir_ (as in results directory). It is suggested that each run be given a unique name that is then used as the _resdir_ name. For example, if examining the infuence of the legal minimum length (LML) on the outcome of using a particular harvest strategy (perhaps the MCDA) one might have the following scenarios: mcdalml140, mcdalml145, mcdalml150, and so on. This might make future comparisons simpler to select. But of course, a user may name their _resdir_ whatever they wish.
+Within __aMSE__, it is expected that all data files and all result files will be contained in the same directory. Within the __aMSE__ code, this directory is referred to as the _resdir_ (as in results directory). It is suggested that each run be given a unique name that is then used as the _resdir_ name. For example, if examining the influence of the legal minimum length (LML) on the outcome of using a particular harvest strategy (perhaps the MCDA) one might have the following scenarios: mcdalml140, mcdalml145, mcdalml150, and so on. This might make future comparisons simpler to select. But of course, a user may name their _resdir_ whatever they wish.
 
-Currently, a minimum of two data files are required to run a particular scenario through the MSE, although the option of combining all data inputs into a single file is being considered. The input files are read using the _readLines_ function and are then parsed for the required components. For components with multiple values, the only separator between values is a comma, hence the obvious file type to use iS .csv file (though it could also be a .txt file if such things make a difference to a particular user). The first of the two files is the _control.csv_, which contains a wide range of settings concerning the structure of the Operating Model as well as any historical conditioning data from a given fishery, if such conditioning is required. The second file is the _population.csv_ file that contains the data that is used to define the biological properties of the populations that are contained in the SAU that make up the simulated zone. The rest of this document provides a detailed description of the contents and format of these files. If they are combined in the future then the contents of the _population.csv_ would simply make up a defined section within the _control.csv_ file, so the description below will still apply.
+Currently, a minimum of two data files are required to run a particular scenario through the MSE. The option of combining all data inputs into a single file was considered but if and when the population definition file needs to describe say 40 or 64 populations, it would distort the control file so they are to be kept separate. 
+
+The input files are read using the _readLines_ function and are then parsed for the required components. For components with multiple values, the only separator between values is a comma, hence the obvious file type to use iS .csv file (though it could also be a .txt file if such things make a difference to a particular user). The first of the two files is the _control.csv_, which contains a wide range of settings concerning the structure of the Operating Model as well as any historical conditioning data from a given fishery, if such conditioning is required. The second file is the _population.csv_ file that contains the data that is used to define the biological properties of the populations that are contained in the SAU that make up the simulated zone. The rest of this document provides a detailed description of the contents and format of these files. 
 
 ## Stages of an MSE Run
 
@@ -90,14 +92,14 @@ knitr::include_graphics("C:/Users/User/Dropbox/A_code/aMSEUse/figures/Alternativ
 
 <br>
 
-There is a spectrum to the degree to which the operating model is conditioned on a real fishery. At the least specific one still has to include a spatial structure that reflects a typical abalone stock. This can be customized to suit a particular species, and one could include what might be deemed typical characteristics of growth, maturity, emergence and other details, including variation among different popualtions. But it would remain generic (__`r fig_nums("f1",display="cite")`__). It is also possible to take that a step further and customize the details of the biolgoy of each population, or at least each SAU making up the spatial structure to reflect the biology known for a real fishery zone. One could also scale predicted productivity and cpue to match a real fishery. This would be less generic but still not clsoely fitted to a real fishery. The detailed spatial structure internal to the operating model is what makes it impossible to fit the operating model to fishery data as a whole. However, it is possible to fit the productivity and history of individual SAU to real fishery data and thereby gain estimates of actual productivity and posdsibly even recruitment deviates. Of course, while this latter approach would appear, at first glance, to be the best strategy for examining a harvest strategy as it might operate in a real situation, it is also the most demanding in terms of data and difficulty. One can spend large amounts of time iteratively improving the operating model fit to observed length-composition and CPUE data for each SAU (__`r fig_nums("f1",display="cite")`__). While this is a fine way to spend time it is also a good strategy to remember that there is this spectrum of how closely one reflects nature and that some questions do not need the best possible fit to be useful.
+There is a spectrum to the degree to which the operating model is conditioned on a real fishery. At the least specific one still has to include a spatial structure that reflects a typical abalone stock (in __aMSE__ the top level is the zone, which contains SAU, which each contain populations). This can be customized to suit a particular species, and one could include what might be deemed typical characteristics of growth, maturity, emergence and other details, including variation among the different populations found within each SAU. Even with such details it would remain a generic abalone MSE (__`r fig_nums("f1",display="cite")`__). It is possible to take such conditioning a step further and customize the details of the biology of each population, or at least each SAU making up the spatial structure, to reflect the biology known for a real fishery zone. One could also scale predicted productivity and cpue to match a real fishery. This would be less generic but still not closely fitted to a real fishery. The detailed spatial structure internal to the operating model is what makes it impossible to fit the operating model to fishery data as a whole. However, it would still be possible to fit the productivity and history of individual SAU to real fishery data and thereby gain estimates of actual productivity and possibly even recruitment deviates. Of course, while this latter approach would appear, at first glance, to be the best strategy for examining a harvest strategy, as it might operate in a real situation, it is also the most demanding in terms of data and difficulty. One can spend large amounts of time iteratively improving the operating model fit to observed catches, length-composition, and CPUE data for each SAU (__`r fig_nums("f1",display="cite")`__). While this is a fine way to spend time it is also a good strategy to remember that there is this spectrum of how closely one reflects nature and that some questions do not require the best possible fit to remain useful.
 
 
 # The _control.csv_ File
 
 The control file is made up of a series of sections and each will be described in turn, using where possible, the example as generated by the function _ctrlzonetemplate_. Within the _control.csv_ file (which can have any name you wish, it does not have to be _control.csv_) main section headings are usually written using capital letters for increased clarity. The correct spelling of such section titles is important. The order of the sections does not need to be strictly maintained but the order of any components within each section must be maintained as described. This is required because in numerous cases they are being parsed in sequence, though many are also being obtained explicitly by name. Where the labels are not clear as to the intent of the variable then a description will be given.
 
-The intent is to have the input file contents sent to a test file as they are parsed, so that if the read in fails the point at which it fails is made clear, but this is still to be implemented.
+The intent is to have the input file contents sent to an output text file as they are parsed, so that if the reading of data fails the point at which it fails is made clear, but this has still to be implemented.
 
 
 ### DESCRIPTION
@@ -115,7 +117,7 @@ _contents of this description to suit the scenario being executed_
 
 ### START
 
-The start section currently only has two components, the name of the particular run and the name of the _population.csv_ file. In each case, note the use of commas to separate the variable's label from the variable's value. Obviously, if the contents of _population.csv_ (called zonewest.csv in the file generated by _ctrlzonetemplate_) are combined with the _control.csv_ file then this section will be one of those modified. Here the order of the components matters. 
+The start section currently only has two components, a name for the particular run and the full name of the _population.csv_ file. In each case, note the use of commas to separate the variable's label from the variable's value. The hopefully descriptive text after the variable's value is ignored by the program and can be expanded if desired (as long as it remains as a single line).
 
 _START_
 
@@ -125,7 +127,7 @@ _datafile,	 zonewest.csv,	 name of popdefs file_
 
 ### zoneCOAST
 
-The zoneCOAST section (an odd name, which may change to become something more descriptive) currently contains five components These determine whether the run will be a batch job, how many replicates the run will have (in a real run this would be something more like 500 or 1000), and a listing of three sources of variation to be included when perfect knowledge (as perfect data) is not to be the case. 
+The zoneCOAST section (an odd name, which may change to become something more descriptive) currently contains five components These determine whether the run will be a batch job, how many replicates the run will have (in a real run this would be something more like 500 or 1000), and a listing of three sources of variation to be included when perfect knowledge (as perfect data) is not to be the case. Other sources of uncertainty will be added here as they are included in the dynamics of projection. 
 
 _zoneCOAST_
 
@@ -148,7 +150,7 @@ where $\varepsilon_{p,t}$ is defined as:
 
 $$\varepsilon_{p,t}=N \left(0,\sigma_{R}^2 \right)$$
 
-_withsigB_ the fleet dynamics of where divers elect to take their catches within an SAU mean that the actual catches from each SAU differ from the apsirational catches allocated to each SAU according to the harvest control rule. This is implemented by first allocating catches to the SAU in a determinstic manner and then modifying them by imputing variability to the perceived distribution of biomass among SAU $u$:
+_withsigB_ the fleet dynamics of where divers elect to take their catches within an SAU mean that the actual catches from each SAU differ from the aspirational catches allocated to each SAU according to whatever harvest control rule is used. This is implemented by first allocating catches to the SAU in a deterministic manner and then modifying them by imputing variability to the perceived distribution of biomass among SAU $u$:
 
 $$B_{u,t}^{E,*}={B_{u,t}^{E}}e^{\varepsilon_{u,t}-\sigma_{B}^2/2}$$
 
@@ -166,7 +168,7 @@ where $TAC_t$ is the sum of the HCR's aspirational catches. One diagnostic used 
 
 ### ZONE
 
-Again the use of commas to separate variable values is essential. The zone is defied in terms of the number of SAU (spatial assessment units) it is made up of.  
+Again the use of commas to separate variable values is essential. The zone is defined in terms of the number of SAU (spatial assessment units) it is made up of.  
 
 _ZONE_
 
@@ -182,7 +184,7 @@ The example file from _ctrlzonetemplate_ imputes equal numbers of populations am
 
 ### SIZE
 
-The size structure of th eoperating model was originally built to suit the Tasmanian blacklip abalone fishery. Hence it extends the midpoints of each 2mm size class from 2mm - 210mm, with the 210mm class being a plus group. These values will not necesarily make sense for other jurisdictions or species. _Haliotis roie_, for example, will require a much smaller upper size, and might possibly use 1mm size classes, depending on how data are collected..
+The size structure of the operating model was originally built to suit the Tasmanian blacklip abalone fishery. Hence it extends the midpoints of each 2mm size class from 2mm - 210mm, with the 210mm class being a plus group. These values will not necessarily make sense for other jurisdictions or species. _Haliotis roie_, for example, will require a much smaller upper size, and might possibly use 1mm size classes, depending on how data are collected.
 
 
 _SIZE_
@@ -196,18 +198,18 @@ _Nclass, 105, number of size classes_
 
 ### RECRUIT
 
-Larval movement between Tasmanian blacklip populations has been demonstrated to be remarkably low. Nevertheless, there will undoiubtedly be some small amount of larval drift between populations, which operate on a smaller sale than the SAU within which they are found. With no other real data on this it is assumed that the populations are generally aligned linerarly along the coastline and such larval movement is a constant rate. 
+Larval movement between Tasmanian blacklip populations has been demonstrated to be remarkably low. Nevertheless, there will undoubtedly be some small amount of larval drift between populations, which operate on a smaller sale than the SAU within which they are found. With no other real data on this it is assumed that the populations are generally aligned linearly along the coastline and such larval movement is a constant rate. 
 
 _RECRUIT_
 
 _larvdisp, 0.005, rate of larval dispersal eg 0.005 = 0.5 percent_ 
 
-The value of _larvdisp_ is used to construct a simple larval movement matrix than assumes movement only occurs between adjacent populations at a rate of half the _larvdisp_ value. While a value of 0.005 may appear almost trivial this does effect the equilibrium dynamics, but the effects are only minor. However, by including this it is now possible to determine the explicit effect of different levels of larval movement, and this would enable the importance of the relative isolation of the different species to be explored.
+The value of _larvdisp_ is used to construct a simple larval movement matrix that assumes movement only occurs between adjacent populations at a rate of half the _larvdisp_ value. While a value of 0.005 may appear almost trivial this does effect the equilibrium dynamics, but the effects are only minor. However, by including this it is now possible to determine the explicit effect of different levels of larval movement, and this would enable the importance of the relative isolation of the different species to be explored.
 
 
 ### RANDOM
 
-There will often be a need to control the generation of random numbers used during the projections. This might be wanted, for example, if one wanted to be sure to repeat a particular analysis exactly, of perhaps to see only the effect of changing on argument, perhaps the LML, while making no other changes. So, to ensure the same sequence of pseudo-random numbers one uses _set.seed_. By altering _randomseed_ this can be achieved. One could use _getseed()_ from __rutilsMH__ to generate such a seed. It is recommended that one not try to generate one by oneself. 12345 is just not good enough. 
+There will often be a need to control the generation of random numbers used during the projections. This might be wanted, for example, if one wanted to be sure to repeat a particular analysis exactly, of perhaps to see only the effect of changing an argument, perhaps the LML, while making no other changes. So, to ensure the same sequence of pseudo-random numbers one uses _set.seed_. By altering _randomseed_ this can be achieved. One could use _getseed()_ from __rutilsMH__ to generate such a seed. It is recommended that one not try to generate one by oneself. 12345 is just not good enough. 
 
 If one does not want to set the random seed and just use any old random sequence that comes along then set _randomseed_ to 0. 
 
@@ -218,22 +220,224 @@ _randomseed, 4024136, for repeatability of results, alter for each separate run_
 
 ### initLML
 
-However the model is to be run, all scenarios begin by generating an unfished, equilibrium model. This includes a characterization of the equilibrium productivity of this population and this will require a selectivity to be used, hence we need an initial LML. The fishery productivity is altered when the LML is changed because it alters the balance between natural mortality, growth, and fishing mortality. In one of the vignettes, an example is given of running the model to equilibrium under different LML and plotting up the productivity and tabulating the MSY, which shows that smaller LML do not always generate the highest levels of productivity (although that also, of course, depends upon the biological properties of growth).
+However the model is to be run (__`r fig_nums("f1",display="cite")`__), all scenarios begin by generating an unfished, equilibrium model. This includes a characterization of the equilibrium productivity of this population and this will require a selectivity to be used, hence we need an initial LML. The fishery productivity is altered when the LML is changed because it alters the balance between natural mortality, growth, and fishing mortality. In one of the vignettes, an example is given of running the model to equilibrium under different LML and plotting up the productivity and tabulating the MSY, which shows that smaller LML do not always generate the highest levels of productivity (although that also, of course, depends upon the biological properties of growth).
 
 _initLML, 140, the initial LML for generating the unfished zone_
 
-If the conditioning is to include the application of historical catches the different SAU will still require an initial depletion (which can be set at 1.0) and an LML. If conditioning on historical catches then it makes sense to initiate the model at the LML in use at the start of the historical catches. If a generic MSE is being conducted, for example, a generic west coast Tasmania starting projections in 2020 or 2021, then perhas initiate teh model at an LML of 140, although, as in the file generated by _ctrlzonetemplate_ project the dynamics forward with an LML of 145 (see PREOJLML later).
+If the conditioning is to include the application of historical catches the different SAU will still require an initial depletion (which can be set at 1.0) and an initial LML. If conditioning on historical catches then it makes sense to initiate the model at the LML in use at the start of the historical catches. If a generic MSE is being conducted, for example, a generic west coast Tasmania starting projections in 2020 or 2021, then perhaps initiate the model at an LML of 140, although, as in the file generated by _ctrlzonetemplate_, project the dynamics forward with an LML of 145 (see PREOJLML later).
 
 
 ### PROJECT
 
-Basic information about the projection period of the simulations
+Basic information about the projection period of the simulations. The firstyear variable is currently not used but remains available. We add together the projection years (here 40) and the inityrs value to obtain the total number of years of the final projections
 
 _PROJECT, 40, number of projection years for each simulation_
 
 _firstyear, 2020, first year of simulation if 1 hypothetical 2014 conditioned_
 
 _inityrs, 10, number of  conditioning years included at start of projections._  
+
+
+
+### HARVESTS
+
+Describes the harvest strategy used. Currently implementing this as a series of functions that can be replaced at will is one of the implementation problems still to be solved. This is why the HSdetails value below the main heading is presently meaningless. The solution requires that the arguments used in any given harvest strategy's harvest control rule can be modified easily, but, of course, these are highly variable between HS. The MCDA, for example, has its internal settings for the three performance measures, then it has meta-rules that influence the outcome of the HCR. Making all of these variables in a manner that is replaceable with a different HS and HCR is currently an unsolved problem.
+
+_HARVESTS, MCDA, the name of the harvest strategy to apply_
+
+_700,_  
+
+
+### PROJLML
+
+The LML used in the projections are listed here explicitly so that changes through time can be easily implemented. There needs to be as many defined as the value of _PROJECT_, here that is 40.
+
+
+_PROJLML, need the same number as there are projection years_
+
+_2020,145,  Legal Minimum Length (LML, MLL, MLS) e.g. 140_
+
+_2021,145,_
+
+_2022,145,_
+
+_2023,145,_
+
+_..._
+
+_2059,145,_
+
+
+### CONDITION
+
+If _CONDITION_ is >1 then one would need to include that number of years of historical catches by SAU along with the year and LML that was used when the catches were taken. An example is given below of the required format even though in the example control file none are expected. If  _CONDITION_ = 0, then any data here will be ignored.
+
+_CONDITION,0, if > 1 then how many years in the histLML_
+
+_CondYears,LML,6,7,8,9,10,11,12,13,_
+
+_1973,132,0,0,0,0,0,0,0,0,_
+
+_1974,132,8,1,0,3,24,82,143,16,_
+
+_1975,132,21,36,42,126,130,191,143,43,_
+
+_..._
+
+_2019,132,30,56,77,252,179,240,153,62,_
+
+
+### CEYRS
+
+_CEYRS_ is similar to _CONDITION_ in that it defines how many years of cpue data will be read in, but it will only be searched for if _CONDITION_ >0. The required format is given below despite here _CEYRS_ = 0. This means any cpue data will be ignored. Note that in the early years there appears to be cpue data missing from SAU6 and SAU13, which are present in the latest years. This is because, in Tasmania, zonation was only introduced in 2000, so cross-zone blocks such as 6 and 13 cannot be included prior to 2000.
+
+_CEYRS,0,  if >1 then number reflects number of historical CPUE records by SAU_
+
+_CPUE,6,7,8,9,10,11,12,13,_
+
+_1992,,0.794696959,0.619787429,0.67346121,0.705236243,0.775591382,0.867862817,,_
+
+_1993,,0.818523142,0.725938638,0.759120758,0.70318669,0.852842637,0.885256733,,_
+
+_..._
+
+_2018,0.905939,1.00612,0.9761,0.927993,0.740328,0.751128,0.925753,1.141631,_
+
+_2019,0.783118,0.789820,0.704407,0.649997,0.651784,0.687335,0.779823,0.995769,_
+
+
+### SIZECOMP
+
+Size-composition data is akin to the biological properties data in being potentially a large amount of data which might confuse the structure and editing of of the _control_ file. Hence we use this to refer to a filename containing the required data. Again, this will only be searched for if _CONDITION_ >0.
+
+_SIZECOMP,1_
+
+_laterdata,lateLF-84-20.csv_
+
+
+
+# The _population.csv_ File
+
+
+This also starts off with some optional descriptive text lines.
+
+_Population definitions containing the Probability Density Functions by parameter  popdefs_
+
+_Define the populations in the same sequence in which they occur along the coast_
+
+As many of these as are required can be included. The real input is signaled by the PDF heading. In this file there is only one heading so the variables are split into groups that relate to their function.
+
+### PDFS
+
+Not all variables input are used to define probability density functions. Thus each of the _popnum_ populations to be defined is given an index number. They need to be listed in the order in which they are expected occur along the coast. Each population is a member of a given _SAU_, and here we are using the Tasmanian block number as the SAU index. In this case each SAU is given 2 populations. It is imagined that having an even distribution of populations in nature is unlikely. The fact there are 16 separate populations means that each variable needs 16 values; any line breaks in the examples are illusory and in reality the values should all be on single lines. Obviously as the number of populations increases the number of values will too. The precision with which this matrix is filled will constitute a large part of any conditioning. Approximate and plausible values will produce a generic MSE whereas, tuning the matrix to the biological properties of a particular zone, as best one can, will generate a much more specific MSE. If one then included historical catches and other fishery data that would be as realistic as one could get. Here we only generate a plausible and generic zone, as can be inferred by the repeated values (which will still lead to different values between populations because the variability in  each case - variables prefixed s, are all large enough to influence a random number). If specific values for a given population are wanted then set the respective variation value to 1e-08. All variables are sampled from a Normal distribution except for the average unfished recruitment, which strongly defines the upper productivity of each population, which is sampled from a log-normal distribution (see the function _definepops_).
+
+_PDFs,32_
+
+_popnum ,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16, the index number for each population_
+
+_SAU ,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13, define the SAU index for each population_
+
+### Growth
+
+The parameters of the Inverse Logistic model describing growth. Alternative growth functions will be implemented in the future and will be selected in this section. In each case there is the main parameter (MaxDL, L50, L50inc, and SigMAx) followed immediately by the variation to be attributed to a given population's value through sampling from a normal distribution. If specific values for a given population are wanted then set the respective variation value to 1e-08. 
+
+* _MaxDL ,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24, maximum growth increment_
+* _sMaxDL ,2.5,2.5,2.5,2.5,2.5,2.5,2.5,2.5,2.5,2.5,2.5,2.5,2.5,2.5,2.5,2.5, variation of MaxDL_ 
+* _L50 ,135.276,135.276,135.276,135.276,135.276,135.276,135.276,135.276,135.276, 135.276,135.276,135.276,135.276,135.276,135.276,135.276, Length at 50% MaxDL_
+* _sL50 ,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3, variation of L50_ 
+* _L50inc ,39,39,39,39,39,39,39,39,39,39,39,39,39,39,39,39, L95 - L50 = delta =L50inc_
+* _sL50inc ,1.5,1.5,1.25,1.25,1.25,1.25,1.25,1.25,1.25,1.25,1.25,1.25,1.25,1.25,1.25,1.25, variation of L50inc_ 
+* _SigMax  ,3.3784,3.3784,3.3784,3.3784,3.3784,3.3784,3.3784,3.3784,3.3784, 3.3784,3.3784,3.3784,3.3784,3.3784,3.3784,3.3784, max var around growth_
+* _sSigMax ,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1, var of SigMax_ 
+
+### LML
+
+It is not impossible that different SAU operate under different LML, this allows for the generation of the equilibrium zone to reflect such variation if present.
+
+* _LML ,132,132,132,132,132,132,132,132,132,132,132,132,132,132,132,132, 
+Initial legal minimum length_ 
+
+
+### Weight-at-Size
+
+The weight-at-size relationships for each population are defined using the standard equation:
+
+$$W_{p,L}=a_pL_{p}^{b_p}$$
+which defines the weight of animals in population $p$ at length $L$. For this we need both the $a_p$ and $b_p$ parameters. It was found in Haddon _et al_ (2013; see pages 208-209) that there was a power relationship between the $b_p$ parameter and its corresponding $a_p$ parameter. So that this relationship is not broken, first the $b_p$ parameter is produced (sampled from a Normal distribution), and that is used to estimate the $a_p$ parameter, with variation. Given the advent of new samples, and different jurisdictions, in each case this relationship should be estimated first. Given the length/size-based dynamics this relationship is highly influential on the outcomes so effort with respect to this relationship is important.
+
+
+* _Wtb ,3.162,3.162,3.162,3.162,3.162,3.162,3.162,3.162,3.162,3.162,3.162,3.162, 3.162,3.162,3.162,3.162, weight-at-length exponent_ 
+* _sWtb ,0.148,0.148,0.148,0.148,0.148,0.148,0.148,0.148,0.148,0.148,0.148,0.148, 0.148,0.148,0.148,0.148, var of Wtb_
+* _Wtbtoa ,962.8098,962.8098,962.8098,962.8098,962.8098,962.8098,962.8098, 962.8098,962.8098,962.8098,962.8098,962.8098,962.8098,962.8098,962.8098,962.8098, intercept of power curve between Wtb and Wta 
+* _sWtbtoa ,-14.3526,-14.3526,-14.3526,-14.3526,-14.3526,-14.3526,-14.3526, -14.3526,-14.3526,-14.3526,-14.3526,-14.3526,-14.3526,-14.3526,-14.3526, -14.3526, exponent of power curve between Wtb and Wta_
+
+
+### Natural Mortality
+
+This is a troublesome variable. Previous work has generally assumed a natural mortality rate of about 0.2, but this suggests that most animals would be close to senile by the age of 23 (only 1 percent would be expected to survive that long). However, so many large animals have been found, despite their growth characteristics implying that to reach such sizes would take longer than 23 years. This casts doubt on the notion of M = 0.2, which, if traced, stems from some rather limited tagging data from decades ago. As with the growth characteristics, tagging may negatively affect , this potentially affecting any early tagging study of natural mortality (biasing it high). Here we have selected 0.15 and the mean, but the uncertainty means that it would be worthwhile comparing the outcomes of any HS when M = c(0.125, 0.15, 0.2).
+
+* _Me ,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,
+0.15, Nat Mort_
+* _sMe ,0.003,0.003,0.003,0.003,0.003,0.003,0.003,0.003,0.003,0.003,0.003,0.003,
+0.003,0.003,0.003,0.003, var of Me_
+
+
+### Recruitment
+
+The average unfished recruitment is a major influence on the productivity of each population. During conditioning it is recommended that this be one of the first variables to adjust to set-up each populations unfished production. At very least it should be possible to determine the relative long-term production of each SAU, and this can be used as a guide to determine the relative productivity of each SAU and this should then be distributed among its constituent populations. If a time-series of GPS data-logger information is available (or potentially of a series of surveys) this can be used to scale the relative productivity of each constituent population within SAU. The value, in each case, is in log-space, so that 11.42 = 91,126 would be the average unfished recruitment each year off the Beverton-Holt relationship. This is defined using steepness as shown in the _zoneCOAST_ section above.
+
+
+* _AvRec ,11.42,11.42,12.357,12.357,11.782,11.782,13.087,13.087,13.407,13.407,
+13.8069,13.8069,13.657,13.357,12.2069,12.2069, log of unfished recruitment LnR0_ 
+* _sAvRec ,0.0001,0.0001,0.0001,0.0001,0.0001,0.0001,0.0001,0.0001,0.0001,0.0001,
+0.0001,0.0001,0.0001,0.0001,0.0001,0.0001_
+* _defsteep ,0.75,0.75,0.75,0.75,0.75,0.75,0.75,0.75,0.75,0.75,0.75,0.75,0.75,
+0.75,0.75,0.75, Beverton-Holt steepness_
+* _sdefsteep ,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,
+0.02,0.02,0.02_
+
+### Emergence
+
+Emergence has been studied in Tasmania through an examination of the growth of encrusting animals and algae on the animals shells. The cover by algae (even encrusting algae) being taken as evidence of emergence. This only becomes influential if the emergence curve overlaps with the selectivity curve, which may happen when the LML is low. If no emergence data is present, then just set values so that the emergence curve always runs at smaller sizes than the selectivity curves (see later). These values below are invented.
+
+
+* _L50C ,126.42,126.42,126.42,126.42,126.42,126.42,126.42,126.42,126.42,126.42,126.42,
+126.42,126.42,126.42,126.42,126.42, length at 50% emergent_
+* _sL50C ,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5_
+* _deltaC ,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10, length at 95% emergent_
+* _sdeltaC ,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1_
+
+
+### CPUE
+
+
+* _MaxCEpar,0.37,0.37,0.37,0.37,0.37,0.37,0.37,0.37,0.37,0.37,0.37,0.37,0.37,
+0.37,0.37,0.37, max cpue t-hr_
+* _MaxCEvar,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02_
+
+
+
+### Selectivity
+
+
+* _selL50p ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, L50 of selectivity_
+* _selL95p ,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5, L95 of selectivity_
+
+
+### Size-at-Maturity
+
+It was found Haddon _et al_ (2013; see pages 210-211) that there were relationships between the two parameters used to define the logistic maturity-at-size relationships for different populations.
+
+* _SaMa,-16,-16,-16,-16,-16,-16,-16,-16,-16,-16,-16,-16,-16,-16,-16,-16, maturity a par_
+* _L50Mat,117,117,117,117,117,117,117,117,117,117,117,117,117,117,117,117, 
+L50 for maturity b = -1/L50_
+* _sL50Mat,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4_
+
+
+
+
+
+
 
 
 
