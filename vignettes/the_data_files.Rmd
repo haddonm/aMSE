@@ -410,6 +410,8 @@ Emergence has been studied in Tasmania through an examination of the growth of e
 
 ### CPUE
 
+In order to scale the predicted cpue we use _MaxCEpar_ to define the maximum cpue expected when exploitable biomass is at its greatest density. The option of including hyper-stability still needs to be implemented and that will require an extra couple of parameters to define the relationship between exploitable biomass and cpue.
+
 
 * _MaxCEpar,0.37,0.37,0.37,0.37,0.37,0.37,0.37,0.37,0.37,0.37,0.37,0.37,0.37,
 0.37,0.37,0.37, max cpue t-hr_
@@ -419,6 +421,8 @@ Emergence has been studied in Tasmania through an examination of the growth of e
 
 ### Selectivity
 
+Even though there is an LML, the precision with which abalone are taken with respect to the LML not perfect. Here we use a simple addition to the selectivity ogive used for each population.
+
 
 * _selL50p ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, L50 of selectivity_
 * _selL95p ,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5, L95 of selectivity_
@@ -426,7 +430,7 @@ Emergence has been studied in Tasmania through an examination of the growth of e
 
 ### Size-at-Maturity
 
-It was found Haddon _et al_ (2013; see pages 210-211) that there were relationships between the two parameters used to define the logistic maturity-at-size relationships for different populations.
+It was found Haddon _et al_ (2013; see pages 210-211) that there were relationships between the two parameters used to define the logistic maturity-at-size relationships for different populations. A fixed parameter value of -16 for the $a_p$ parameter led to a range of plausible values for the $b_p$ parameter
 
 * _SaMa,-16,-16,-16,-16,-16,-16,-16,-16,-16,-16,-16,-16,-16,-16,-16,-16, maturity a par_
 * _L50Mat,117,117,117,117,117,117,117,117,117,117,117,117,117,117,117,117, 
