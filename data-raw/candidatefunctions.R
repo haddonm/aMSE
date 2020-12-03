@@ -233,3 +233,19 @@ zone <- readctrlzone(resdir,infile="control2.csv")
 
 
 
+
+x <- c(1,2,3,4,5)
+wts <- c(1,1,1,1,1)
+
+wtedmean(x,wts)
+
+
+library(microbenchmark)
+
+microbenchmark(
+wtedmean(saucpue,saucatch),
+wtmean(saucpue,saucatch)
+)
+
+
+

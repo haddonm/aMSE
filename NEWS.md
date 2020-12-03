@@ -66,7 +66,7 @@
 
 * 25/11/2020 0.0.0.6900 Added first zone wide summary of outputs, still need to include length-composition of catch
 
-
+* 03/12/2020 0.0.0.6800 Added separate randomseeds for population definition and projections. Added wtedmean and worked on vignettes. Modified zone.RData.
 
 
 

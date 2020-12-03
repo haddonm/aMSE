@@ -59,7 +59,7 @@ applymcda <- function(zoneCP,zoneDP,glob,ctrl,projyrs,inityrs=10,wid = 4,
     targsc[1:inityrs,,iter] <- targetce
   }
   # now do replicates, updating saucatch and saucpue each year
-  if(ctrl$randseed > 0) set.seed(ctrl$randseed) # set random seed if desired
+  if(ctrl$randseedP > 0) set.seed(ctrl$randseedP) # set random seed if desired
   for (iter in 1:reps) {  # iter=1; year=11
     TAC <- origTAC  # should we use the same original TAC for each replicate
     for (year in (inityrs+1):nyrs) {

@@ -209,13 +209,16 @@ The value of _larvdisp_ is used to construct a simple larval movement matrix tha
 
 ### RANDOM
 
-There will often be a need to control the generation of random numbers used during the projections. This might be wanted, for example, if one wanted to be sure to repeat a particular analysis exactly, of perhaps to see only the effect of changing an argument, perhaps the LML, while making no other changes. So, to ensure the same sequence of pseudo-random numbers one uses _set.seed_. By altering _randomseed_ this can be achieved. One could use _getseed()_ from __rutilsMH__ to generate such a seed. It is recommended that one not try to generate one by oneself. 12345 is just not good enough. 
+There will often be a need to control the generation of random numbers used during both the definition of the populations and the projections. This might be wanted, for example, if one wanted to be sure to repeat a particular analysis exactly, of perhaps to see only the effect of changing an argument, perhaps the LML, while making no other changes. So, to ensure the same sequence of pseudo-random numbers one uses _set.seed_. Under _RANDOM_ we have two values, the first, _randomseed_ is used for repeatability of population generation, while the second, _randomseedP_ is used for repeatability during the projecitons. Each scenario should have a different _randomseed_ and _randomseedP_. One can use _getseed()_ from __rutilsMH__ to generate such seeds. It is recommended that one not try to generate one by oneself. 12345 tends to be used more often than would be expected at random(!) so it, and others akin to it are just not good enough. 
 
-If one does not want to set the random seed and just use any old random sequence that comes along then set _randomseed_ to 0. 
+If one does not want to set the random seeds and just use any old random sequence that comes along then set _randomseed_ and _randomseedP_ to 0. 
 
-_RANDOM_
+_RANDOM, 		Set these to zero for random starting points._
 
-_randomseed, 4024136, for repeatability of results, alter for each separate run_ 
+_randomseed, 4024136, for repeatability of population definitions_
+
+_randomseedP, 7999647, for repeatability of Projections_
+
 
 
 ### initLML

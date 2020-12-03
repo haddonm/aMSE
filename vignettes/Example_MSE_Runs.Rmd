@@ -74,7 +74,7 @@ pgwid=80
 
 # Introduction
 
-The __aMSE__ software, like any spatially detailed model, has many complexities and options. Even getting started with such software is a potentially daunting challenge. The intent of this document is to present a series of examples to illustrate what can be achieved with even a basic understanding of the __aMSE__ internal details. It is recommended that any potential user also familiarize themselves with the other vignettes within __aMSE__, especially _the_data_files_, _Model_Documentation_, and _Conditioning_the MSE_.
+The __aMSE__ software, like any spatially detailed model, has many complexities and options. Even getting started with such software is a potentially daunting challenge. The intent of this document is to present a series of relatively simple examples to illustrate what can be achieved with even a basic understanding of the __aMSE__ internal details. It is recommended that any potential user also familiarize themselves with the other vignettes within __aMSE__, especially _the_data_files_, _Model_Documentation_, and _Conditioning_the MSE_.
 
 However, here we will focus on practical examples. These will include:
 
@@ -84,27 +84,32 @@ However, here we will focus on practical examples. These will include:
 * examining the effect of the LML on productivity in a spatially structured abalone zone.
 * examining the effect of the assumed natural mortality on productivity and size-structure.
 
-# The Initial Equilibrium Zone
+## The Initial Equilibrium Zone
 
-The starting place for every analysis is to produce an unfished, equilibrium zone, made up of a series of SAU, each containing a number of populations. This would normally entail using at least a _control.csv_ file and a _population.csv_ file. In this first example, we will not require any further files. The _control.csv_ file is stored in the results directory (_resdir_) for the particular run/scenario it is intended to represent. This would be defined at the start of any R file you use to contain the code needed to run the example:
+The starting place for every analysis is to produce an unfished, equilibrium zone, made up of a series of SAU, each containing a number of populations. This would normally entail using at least a _control.csv_ file and a _population.csv_ file. If one were to conuct historical conditioning then ther may also be a csv file containing size or length-composition data. 
+
+In this first example, we will not require any further files. The _control.csv_ file is stored in the results directory (_resdir_) for the particular run/scenario it is intended to represent. This directory would be defined and checked at the start of any R file you use to contain the code needed to run the example:
 
 ```{r }
-library(aMSE)
-library(rutilsMH)
-library(makehtml)
-library(knitr)
+# First call the libraries required
+library(aMSE)           # the main library
+library(rutilsMH)       # contains numerous utility functions
+library(makehtml)       # required if large amounts of output are to be viewed
+library(knitr)          # required if makehtml used.
 # of course, a user would always select their own directory and resdir name 
-if (dir.exists("c:/Users/User/DropBox")) {
-  ddir <- "c:/Users/User/DropBox/A_code/"
+if (dir.exists("c:/Users/User/DropBox")) {  # define your results directory 
+  ddir <- "c:/Users/User/DropBox/A_code/"   # however you need to.
 } else {
   ddir <- "c:/Users/Malcolm/DropBox/A_code/"
 }
 resdir <- paste0(ddir,"aMSEUse/conddata/generic")
-dirExists(resdir,make=TRUE,verbose=TRUE)
+dirExists(resdir,make=TRUE,verbose=TRUE)   # check it exists, and make it if not 
 
 ```
 
-Once such details are sorted out then we can start by generating the unfished, equilibrium zone. Usually, one would use functions to read the _control.csv_ that is held in the _resdir_, but here we will use an internal data-set called _zone_ that contains the list of lists that is output from calling the function _makeequilzone_.
+Once such details are sorted out then we can start by generating the unfished, equilibrium zone. Usually, one would use functions _ctrlzonetemplate_ and _datafiletemplate_ to initiate the correct format and content, and then edit each one appropriately to represent the abalone zone of interest. The spatial structure adopted plus the contents of the population data-file constitute the first stage of model conditioning (see the vignette _Conditioning the MSE_). Initially, however, we will use adata-set  built into __aMSE__. This is instead of calling the _readctrlzone_ function to read the _control.csv_ that is held in the _resdir_. The internal data-set, called _zone_, contains the list of lists that is output from calling the function _makeequilzone_ (which, by itself, avoids anyone needing to now all the details).
+
+Two files _control2.csv_ and _zonewest.csv_ have been placed in the _National abalone MSE_ directory in DropBox (note those spaces are in the directory name). These can be placed into your _resdir_ and you could use _makeequilzone_ instead of the internal data-set. One can run the _ctrlzonetemplate_ function now as it produces a replicate of _control2.csv_ (naming things is hard).
 
 ```{r makezone }
 # zone <- makeequilzone(resdir,"control2.csv") # normally would read in a file
@@ -112,10 +117,13 @@ data(zone)
 str(zone,max.level = 1) # zone is an R list of 7 R lists
 ```
 
+Once we have the data read in and the required objects generated (which, with only 16 populations, takes about 12 seconds) we can proceed to characterize the properties of the equilibrium zone. During conditioning of the model this characterization would be important when ensuring, for examlpe, that the distribution of productivity is as intended, or the growth dynamics reflects what is known about the SAU. The details already provided by the next section are merely a first trial. Many more details and summaries can be produced at the level of zone, SAU, and population. One could either expand the three functions listed below of generate new ones to reflect any details required.
 
+Here we are making use of the makehtml library to log a series of tables (csv files), and figures (.png files) into the _resdir_. These can then be placed into an internal website by the _make_html_ function, as seen below.
 
 ```{r }
 # equilibrium zone characterization---------------------------------------------
+starttime <- as.character(Sys.time())
 resfile <- setuphtml(resdir)# prepare to save and log results
 glb <- zone$glb
 plotproductivity(resdir,zone$product,glb)
@@ -127,7 +135,7 @@ endtime <- as.character(Sys.time())
 reportlist <- list(starttime=starttime,endtime=endtime,
                    zoneC=zone$zoneC, zoneD=zone$zoneD, product=zone$product,
                    glb=glb,constants=zone$constants)
-runnotes <- "This is a bare-bones example."
+runnotes <- "This is an 8 SAU, 16 population example."
 # If you unhash this component it will generate a local website inside
 # resdir and open it so you can see the results so far.
 make_html(replist=reportlist,resdir=resdir,width=500,
@@ -135,30 +143,36 @@ make_html(replist=reportlist,resdir=resdir,width=500,
           packagename = "aMSE",htmlname="testrun")
 ```
 
+One could also save the most important objects created during a run into _resdir_ to simplify recreating a particular run. However, if run-times for a given scenario can remain under 10 - 15 minutes then perhaps there is less value is filling up one's harddrive.
+
+Here we have also put together a small function to simplify extracting the zone wide productivity characteristics, as a simplification over the details for each population. Both are valuable as showing the variation across the zone and the perceived totals for the zone. Catches, or yields can simply be summed, but variables such as annual harvest rate or depletion rate have been catch weighted by population to reflect their relative contribution to the whole. A similar function could be written to summarize by SAU.
+
 
 ```{r andMSY}
 
-wtedmean <- function(x,wts) {
-  pwts <- wts/sum(wts,na.rm=TRUE)
-  ans <- sum((x * pwts),na.rm=TRUE)
-  return(ans)
-}
-
-
-getMSY <- function(product) { # product=out$product
+getzoneMSY <- function(product) { # product=out$product
   bypop <- findmsy(product)
   msy <- sum(bypop[,"Catch"])
   annH <- wtedmean(bypop[,"AnnH"],bypop[,"Catch"])
   depl <- wtedmean(bypop[,"Deplet"],bypop[,"Catch"])
   return(c(msy=msy,annH=annH,depl=depl))
 }
-getMSY(zone$product)
+
+getzoneMSY(zone$product)
+```
+
+We can try altering _randomseed_ inside the _control2.csv_ file before making the equilibrium, unfished zone to see the effect of a different random number on the productivity. We have done this and made a different _csv_ file _control3.csv_, which uses the same datafile _zonewest.csv_. Once the three files from the _National abalone MSE_ directory in DropBox have been placed into your _resdir_ you can run the following (which, note, will take a few seconds). You will notice that all three statistics are slightly different. Try using _control2.csv_ to confirm one gets the same answers as above.
+
+```{r }
+zone <- makeequilzone(resdir,"control3.csv") # normally would read in a file
+getzoneMSY(zone$product)
+
 ```
 
 
 ## The Effect of LML and M on Productivity
 
-To examine the effects of the initial LML and of natural mortality, M, on productivity in the size-structured model we have put together, we need to read in the different _.csv_ files directly rather than using _makeequilzone_
+To examine the effects of the initial LML and of natural mortality, M, on productivity in the size-structured model we have put together, we need to read in the different _.csv_ files directly rather than using _makeequilzone_ because, to make the changes we require, we need to use the lower level function _setupzone_, which uses 
 
 ```{r }
 if (dir.exists("c:/Users/User/DropBox")) {
@@ -170,9 +184,10 @@ resdir <- paste0(ddir,"aMSEUse/conddata/generic")
 dirExists(resdir,make=TRUE,verbose=TRUE)
 
 starttime <- (Sys.time())  # Not strictly necessary but it keeps an eye on time
-zone1 <- readctrlzone(resdir,infile="control2.csv") # control2.csv is in generic
-ctrl <- zone1$ctrl
-constants <- readdatafile(zone1$globals$numpop,resdir,ctrl$datafile)
+zone <- makeequilzone(resdir,"control2.csv")
+zone1 <- zone$zone1          # to use _setupzone_ we need zone1 and constants
+constants <- zone$constants
+
 cat("Files read, now making zone \n")
 out <- setupzone(constants,zone1) # make operating model
 equiltime <- (Sys.time())
@@ -185,40 +200,82 @@ product <- out$product     # important bits usually saved in resdir
 zoneD <- testequil(zoneC,zoneD,glb)
 zoneC <- resetexB0(zoneC,zoneD) # rescale exploitB to avexplB after dynamics
 equiltime - starttime
-getMSY(product)            #  same as from data(zone)
+getzoneMSY(product)            #  same as from data(zone)
 
 ```
 
-Now we have the _zone1_ and _constants_ objects we can explore the effect of the initial LML and M on productivity. To do this we can alter their values within the two objects before they are used to make the equilbrium zone.
+Now we have the _zone1_ and _constants_ objects we can explore the effect of the initial LML and M on productivity. To do this we can alter their values within the two objects before they are used to make the equilibrium zone.
 
 ```{r }
-LMLrge <- c(127,130,132,135,140,145)
+LMLrge <- c(127,130,132,135,140,145) # the original was 140
 nLML <- length(LMLrge)
-Mrge <- c(0.125,0.15,0.175,0.2)
+Mrge <- c(0.125,0.15,0.175,0.2)      # the original was 0.15
 nM <- length(Mrge) 
 numpop <- glb$numpop   # from previous code chunk
 msy <- matrix(0,nrow=nM,ncol=nLML,dimnames=list(Mrge,LMLrge))
 annualH <- msy
 depletion <- msy
-# This can take a few minutes
+starttime <- Sys.time()
+# This can take a few minutes 24 x 11.25 seconds ~ 4.5 minutes
 for (natm in 1:nM) {
   constants["Me",] <- rep(Mrge[natm],numpop)
   for (lml in 1:nLML) {
     zone1$initLML <- LMLrge[lml]
     out <- setupzone(constants,zone1)
-    msy[natm,lml] <- getMSY(out$product)[1]
-    annualH[natm,lml] <- getMSY(out$product)[2]
-    depletion[natm,lml] <- getMSY(out$product)[3]
+    msy[natm,lml] <- getzoneMSY(out$product)[1]
+    annualH[natm,lml] <- getzoneMSY(out$product)[2]
+    depletion[natm,lml] <- getzoneMSY(out$product)[3]
   }
 }
-
+endtime <- Sys.time()
 round(msy,3)
 cat("\n")
 round(annualH,3)
 cat("\n")
 round(depletion,3)
+cat("\n")
+endtime-starttime
 ```
 
+For each natural mortality value the higher the LML the larger the MSY, however, the higher the natural mortality the lower the maximum sustainable yield. However, to attain that increased MSY requires a higher harvest rate, which implies greater effort will be required. The zone depletion levels required to achieve the MSY all remain much more similar. Some of these trends appear to go againsts usual intuition, which suggest that as natural mortality increases a stock becomes more productive. However, here, we are changing some variables such as M but not altering growth variables, which are often related to life-hstory characteristics such as M. A problem for the abalone MSE is that while we can estimate maturity-at-size and growth characteristics (attempting to account for any negative biases on growth from tagging effects), estimating natural mortality in a representative manner is very difficult. Historical estimates appear to have copied the results of an early review that included an analysis of a relatively weak tagging experiment. Current 'estimates' of natural mortality are not held with any confidence, so at least three alternatives should be examined to determine the sensitivity of any tested harvest strategy to the assumed value for M.
+
+## A Naive MCDA
+
+Tasmania used a multi-criteria decision analysis to generate management advice for its abalone stocks. Currently, this uses three performance measures relating to commercial catch rates (grad1, grad4, and targce). These are used to generate an overall score, which when combined with an array of meta-rules generate recommended or aspirational catches for individual SAU. When these totals are summed this permits a zone-wide TAC to be recommended. To avoid excessive fishing in preferred SAU (and reasons for prefering SAU can change through time) the aspirational catches are put forward as local soft targets for each SAU, with associated management rules for what happens should SAU catches approach or exceed those aspirational targets.
+
+So far, we have implemented a naive MCDA harvest strategy that can operate without the associated meta-rules. Nevertheless, it can serve to illustrate how the MSE can operate. Once again we start by generating a simulated, unfished, equilibrium abalone zone.
+
+```{r }
+if (dir.exists("c:/Users/User/DropBox")) {
+  ddir <- "c:/Users/User/DropBox/A_code/"
+} else {
+  ddir <- "c:/Users/Malcolm/DropBox/A_code/"
+}
+resdir <- paste0(ddir,"aMSEUse/conddata/generic")
+dirExists(resdir,make=TRUE,verbose=TRUE)
+
+starttime <- (Sys.time())  # Not strictly necessary but it keeps an eye on time
+zone <- makeequilzone(resdir,"control2.csv")
+
+str(zone,max.level=1)
+```
+
+We could start applying the MCDA to this unfished zone but as there are no unfished abalone stocks left in Australia (or anywhere) a somewhat more relevant generic scenario would have us work with a zone that is already in a semi-depleted state. The default arrangement contained in the _control.csv_ file only barely depleted the simulated zone, so here we will alter that vector of initial SAU depletion levels and use the modified values as a target depletion level for each SAU within the function _depleteASU_, which uses a constant annual harvest to deplete each SAU to as close as it can to each target. 
+
+The depletion dynamics within _depleteSAU_ are conducted deterministically, that is, without recruitment variation. To avoid running each replicate from exactly the same starting point we then use _prepareprojection_ to run the depleted zone for multiple years under the constant harvest rate that generates the required depletion only this time with recruitment variation. The finctions final step is to use the last _zone$zone1$projC$inityrs_ (which default = 10). These functions do alot of work. They extend the dynamic aspect of the simulated zone (_zoneD_) so that rather than a matrix of years x populations we have arrays of years x populations x replicates. Each replicate has a different initial time-series of the 10 years of data that include variation.
+
+```{r }
+equiltime <- Sys.time()
+origdepl <-  c(0.30,0.31,0.29,0.32,0.30,0.31,0.29,0.32) # deplete to about 0.3B0
+zoneDD <- depleteSAU(zone$zoneC,zone$zoneD,zone$glb,origdepl,zone$product,len=12)
+zone$ctrl$reps=200  # the default = 100 so we will double that
+out <- prepareprojection(zone$zone1,zone$zoneC,zone$glb,zoneDD,zone$ctrl)
+zoneDR <- out$zoneDP
+projC <- out$projC
+zoneCP <- out$zoneC
+midtime <- Sys.time()
+
+```
 
 
 

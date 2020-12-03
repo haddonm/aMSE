@@ -52,3 +52,30 @@ summarizeprod <- function(product,saunames) { # product=out$product; saunames=zo
   ans[nrows,"RelCE"] <- sum(ans[1:numpop,"RelCE"] * pmsy,na.rm=TRUE)
   return(ans)
 } # end of summarizeprod
+
+
+#' @title wtedmean calculates the weighted mean of a set of values and weights
+#'
+#' @description wtedmean solves the problem of calculating a weighted mean
+#'     value from a set of values with different weights. Within the aMSE this
+#'     is common when trying to summarize across populations within an SAU or
+#'     summarize SAU within a zone by finding a mean value weighted by the
+#'     respective catch from each related population or SAU.
+#'
+#' @param x the values whose weighted mean is wanted
+#' @param wts the weights to use, often a set of catches
+#'
+#' @return a single real number
+#' @export
+#'
+#' @examples
+#' saucpue <- c(91.0,85.5,88.4,95.2)
+#' saucatch <- c(42.0,102.3,75.0,112.0)
+#' wtedmean(saucpue,saucatch)
+#' saucatch/sum(saucatch)  # the relative weights
+wtedmean <- function(x,wts) {
+  pwts <- wts/sum(wts,na.rm=TRUE)
+  ans <- sum((x * pwts),na.rm=TRUE)
+  return(ans)
+} # end of wtedmean
+

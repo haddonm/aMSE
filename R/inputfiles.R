@@ -76,7 +76,9 @@ ctrlzonetemplate <- function(indir,filename="control.csv") { # indir=resdir; fil
        file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
    cat("RANDOM \n",file=filename,append=TRUE)
-   cat("randomseed, 0, for repeatability of results, alter for each separate run \n",
+   cat("randomseed, 4024136, for repeatability of population definitions set to 0 otherwise \n",
+       file=filename,append=TRUE)
+   cat("randomseedP, 7999647, for repeatability of projections set to 0 otherwise \n",
        file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
    cat("initLML, 140, the initial LML for generating the unfished zone \n",
@@ -431,6 +433,7 @@ readctrlzone <- function(datadir,infile="control.csv") {
    midpts <- seq(minc,minc+((Nclass-1)*cw),2)
    larvdisp <- getsingleNum("larvdisp",indat)
    randomseed <- getsingleNum("randomseed",indat)
+   randomseedP <- getsingleNum("randomseedP",indat)
    initLML <- getsingleNum("initLML",indat)
    projyrs <- getsingleNum("PROJECT",indat)
    firstyear <- getsingleNum("firstyear",indat)
@@ -505,10 +508,11 @@ readctrlzone <- function(datadir,infile="control.csv") {
                  compdat=compdat,Sel=NULL,SelWt=NULL)
    projC <- list(projLML=projLML,HS=HS,HSdetail=HSdetail,projyrs=projyrs,
                  inityrs=inityrs,Sel=NULL,SelWt=NULL)
-   outctrl <- list(runlabel,datafile,batch,reps,randomseed,withsigR,withsigB,
-                   withsigCE,condition,projyrs)
-   names(outctrl) <- c("runlabel","datafile","batch","reps","randseed","withsigR",
-                       "withsigB","withsigCE","condition","projection")
+   outctrl <- list(runlabel,datafile,batch,reps,randomseed,randomseedP,
+                   withsigR,withsigB,withsigCE,condition,projyrs)
+   names(outctrl) <- c("runlabel","datafile","batch","reps","randseed",
+                       "randseedP","withsigR","withsigB","withsigCE",
+                       "condition","projection")
    globals <- list(numpop=numpop, nSAU=nSAU, midpts=midpts,
                    Nclass=Nclass, Nyrs=Nyrs,larvdisp=larvdisp)
    totans <- list(SAUnames,SAUpop,minc,cw,larvdisp,randomseed,
