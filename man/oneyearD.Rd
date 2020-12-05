@@ -56,5 +56,6 @@ oneyearD conducts one year's dynamics on zoneD in the MSE
                    Ncl=glb$Nclass,npop=numpop,movem=glb$move)
  str(zoneD)
  round(zoneD$catchN[60:105,1:5,1],1)
- zoneC=zoneC;zoneD=zoneD;Ncl=Nclass;inHt=inHarv;year=yr;sigmar=1e-08;npop=npop;movem=glob$move
+# zoneC=zone$zoneC;zoneD=zone$zoneD;Ncl=glb$Nclass;inHt=pickharv;year=2;
+# sigmar=1e-08;npop=npop;movem=glob$move
 }

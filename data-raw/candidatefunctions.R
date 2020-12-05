@@ -249,3 +249,16 @@ wtmean(saucpue,saucatch)
 
 
 
+reps=10
+hr <- zoneDD$harvestR[1,]
+ans <- matrix(0,nrow=reps,ncol=16)
+for (pop in 1:16) ans[,pop] <- rnorm(reps,mean=hr[pop],sd=0.003)
+
+ans
+
+
+
+
+
+
+

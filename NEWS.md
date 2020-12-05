@@ -68,7 +68,7 @@
 
 * 03/12/2020 0.0.0.6800 Added separate randomseeds for population definition and projections. Added wtedmean and worked on vignettes. Modified zone.RData.
 
-
+* 05/12/2020 0.0.0.6700 Exploring the initiation of projections.
 
 
 

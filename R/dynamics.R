@@ -43,7 +43,7 @@
 #'   zoneDD <- depleteSAU(zoneC,zoneD,glb,depl=rep(0.3,glb$nSAU),product)
 #'   sum((zoneDD$matureB[1,]/sum(zoneDD$matureB[1,]))*zoneDD$deplsB[1,])
 #'   mean(zoneDD$deplsB[1,])
-#' }
+#' }  # zoneC=zone$zoneC;zoneD=zone$zoneD;glob=zone$glb;initdepl=origdepl;product=zone$product;len=12
 depleteSAU <- function(zoneC,zoneD,glob,initdepl,product,len=15) {
   #  zoneC=zoneC; zoneD=zoneD; glob=glb;  product=product; depl=initdepl;len=15
   # use product to find bounds on H around the desired depletion level
@@ -72,8 +72,10 @@ depleteSAU <- function(zoneC,zoneD,glob,initdepl,product,len=15) {
     popDepl[harv,] <- zoneDD$deplsB[1,]
   }
   pickharv <- numeric(npop)
-  for (pop in 1:npop)
-    pickharv[pop] <- which.closest(depl[pop],harvests[,pop],index=FALSE)
+  for (pop in 1:npop) {
+    pickdepl <- which.closest(depl[pop],popDepl[,pop],index=TRUE)
+    pickharv[pop] <- harvests[pickdepl,pop]
+  }
   zoneDD <- runthreeH(zoneC=zoneC,zoneD,inHarv=pickharv,glob)
   return(zoneDD)
 } # end of depleteSAU
@@ -123,7 +125,7 @@ oneyear <- function(inpopC,inNt,Nclass,inH,yr) {  #
   ExploitB <- sum(SelectWt * NumNe) #SelectWt=Select*WtL
   oldExpB <- ExploitB   # ExploitB after growth and 0.5NatM
   Fish <- 1-(inH*selyr)
-  newNt <- (Os * (Fish * NumNe)) #+ Rec # Nt - catch - 0.5M, and + Rec
+  newNt <- (Os * (Fish * NumNe)) #+ Rec # Nt - catch - 0.5M,
   Cat <- (inH*selyr) * NumNe  #numbers at size in the catch
   newExpB <- sum(SelectWt * newNt)
   avExpB <- (newExpB + oldExpB)/2.0 #av start and end
@@ -323,7 +325,8 @@ oneyearC <- function(zoneC,zoneDP,catchp,year,iter,sigmar,Ncl,npop,movem) {
 #'                    Ncl=glb$Nclass,npop=numpop,movem=glb$move)
 #'  str(zoneD)
 #'  round(zoneD$catchN[60:105,1:5,1],1)
-#'  zoneC=zoneC;zoneD=zoneD;Ncl=Nclass;inHt=inHarv;year=yr;sigmar=1e-08;npop=npop;movem=glob$move
+#' # zoneC=zone$zoneC;zoneD=zone$zoneD;Ncl=glb$Nclass;inHt=pickharv;year=2;
+#' # sigmar=1e-08;npop=npop;movem=glob$move
 oneyearD <- function(zoneC,zoneD,inHt,year,sigmar,Ncl,npop,movem) {
   matb <- numeric(npop)
   for (popn in 1:npop) {  # year=2; popn=1
@@ -491,6 +494,7 @@ restart <- function(oldzoneD,nyrs,npop,N,zero=TRUE) { # oldzoneD=zoneD; nyrs=Nyr
 #' @param maxiter default=3; the number of runs through the equilibrium loop.
 #'
 #' @return a list containing a revised dynamics list, zoneD
+#' @export
 #'
 #' @examples
 #' print("wait on built in data sets")

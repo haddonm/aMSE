@@ -18,7 +18,8 @@ dirExists(resdir,make=TRUE,verbose=TRUE)
 #data(zone)
 zone <- makeequilzone(resdir,"control2.csv") # normally would read in a file
     equiltime <- (Sys.time())
-    origdepl <-  c(0.30,0.31,0.29,0.32,0.30,0.31,0.29,0.32)
+   # origdepl <-  c(0.40,0.41,0.39,0.42,0.40,0.41,0.39,0.42)
+    origdepl <- rep(0.3,8)
 zoneDD <- depleteSAU(zone$zoneC,zone$zoneD,zone$glb,origdepl,zone$product,len=12)
 zone$ctrl$reps=200
 out <- prepareprojection(zone$zone1,zone$zoneC,zone$glb,zoneDD,zone$ctrl)

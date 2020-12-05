@@ -201,7 +201,8 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 #' @export
 #'
 #' @examples
-#' print("wait for a considerd example")
+#' print("Could add variation to the harvest rates so that when ")
+#' print("prepareprojection was run the range of initial H values would increase ")
 makezoneDR <- function(projyr,iter,glob,inzoneD) {
   # projyr=projyrs; iter=reps; glob=glb; inzoneD=zoneDD
   numpop <- glob$numpop
@@ -336,7 +337,7 @@ modzoneCSel <- function(zoneC,sel,selwt,glb,yrs) {
 #' @examples
 #' print("wait on data files")
 prepareprojection <- function(zone1,zoneC,glb,zoneDep,ctrl) {
-# zone1=zone$zone1;zoneC=zoneC; glb=glb; zoneDep=zoneDD; ctrl=ctrl
+# zone1=zone$zone1;zoneC=zone$zoneC; glb=glb; zoneDep=zoneDD; ctrl=ctrl
   projyrs <- zone1$projC$projyrs + zone1$projC$inityrs
   projC <- modprojC(zoneC,glb,zone1) # include selectivity into projC
   zoneC <- modzoneCSel(zoneC,projC$Sel,projC$SelWt,glb,projyrs)

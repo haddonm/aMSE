@@ -26,5 +26,6 @@ makezoneDR generates an object designed to hold the outputs
     Variation should be added by addrecvar.
 }
 \examples{
-print("wait for a considerd example")
+print("Could add variation to the harvest rates so that when ")
+print("prepareprojection was run the range of initial H values would increase ")
 }
