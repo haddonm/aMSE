@@ -24,14 +24,18 @@
 #' @export
 #'
 #' @examples
-#' data(product)
-#' zoneprod <- summarizeprod(product)
+#' \dontrun{
+#' data(zone)
+#' product <- zone$product
+#' zoneprod <- summarizeprod(product,saunames=zone$zone1$SAUnames)
 #' round(zoneprod,3)
-summarizeprod <- function(product,saunames) { # product=out$product; saunames=zone1$SAUnames
+#' }
+summarizeprod <- function(product,saunames) { # product=zone$product; saunames=zone$zone1$SAUnames
   numrow <- dim(product)[1]
+  numpop <- dim(product)[3]
   prodrows <- rownames(product[,,1])
   prodcols <- colnames(product[,,1])
-  numpop <- dim(product)[3]  # here numpop = nSAU
+ # nSAU <- length()  # here numpop = nSAU
   columns <- c("Bmsy","AnnH","MSY","Deplet","RelCE")
   rows <- c(saunames,"zone")
   nrows <- length(rows)

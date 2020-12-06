@@ -27,9 +27,6 @@ getzoneprops extracts a set of properties for each
     of these.
 }
 \examples{
-data(testzoneC)
-data(testzoneD)
-data(zone1)
-glb <- zone1$globals
-round(getzoneprops(testzoneC,testzoneD,glb),4)
+data(zone)
+round(getzoneprops(zone$zoneC,zone$zoneD,zone$glb),4)
 }

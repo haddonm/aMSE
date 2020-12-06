@@ -14,7 +14,9 @@ getunFished(zoneC, zoneD, glb)
 \item{glb}{contains the global variables used everywhere}
 }
 \value{
-a list of multiple components relating to the unfished stock
+a list of multiple components relating to the unfished stock this
+    includes a list of each of the equilibrium populations and the zone as
+    the last element of the list
 }
 \description{
 getunFished - extracts all data relating to year 1;
@@ -26,17 +28,8 @@ getunFished - extracts all data relating to year 1;
 }
 \examples{
 \dontrun{
-  data(zone1)
-  glb <- zone1$globals
-  data(constants)
-  ans <- makezoneC(zone1,constants)
-  zoneC <- ans$zoneC
-  ans <- makezone(glb,zoneC)
-  zoneC <- ans$zoneC
-  zoneD <- ans$zoneD
-  ans2 <- modzoneC(zoneC,zoneD,glb)
-  zoneC <- ans2$zoneC
-  unfish <- getunFished(zoneC,zoneD,glb)
+  data(zone) # would normally use zone <- makeequilzone(resdir,"control.csv")
+  unfish <- getunFished(zone$zoneC,zone$zoneD,zone$glb)
   str(unfish,max.level=1)
 }
 }

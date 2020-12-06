@@ -20,6 +20,10 @@ getvect extracts a numpop vector of invar from the
     complete vectors such as popdef or maturity etc.
 }
 \examples{
-data(testzoneC)
-getvect(testzoneC,"steeph")
+data(zone)
+zoneC <- zone$zoneC
+getvect(zoneC,"steeph")
+}
+\seealso{
+getlistvar
 }

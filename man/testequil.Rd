@@ -31,18 +31,7 @@ testequil runs a given zone for Nyrs at the given
 }
 \examples{
 \dontrun{  # modzoneC takes too long to run because of doproduction
- data(ctrl)
- data(zone1)
- glb <- zone1$globals
- data(constants)
- ans <- makezoneC(zone1,constants)
- zoneC <- ans$zoneC
- glb <- ans$glb # now contains movement matrix
- ans <- makezone(glb,zoneC)
- zoneC <- ans$zoneC  # zone constants
- zoneD <- ans$zoneD
- ans <- modzoneC(zoneC,zoneD,glb)
- zoneC <- ans$zoneC  # zone constants
- zoneDe <- testequil(zoneC=zoneC,zoneD=zoneD,glb=glb)
+ data(zone)
+ zoneDe <- testequil(zoneC=zone$zoneC,zoneD=zone$zoneD,glb=zone$glb)
 }    #zoneC=zoneC; zoneD=zoneD; glb=glb; inH=0.0; verbose=TRUE
 }

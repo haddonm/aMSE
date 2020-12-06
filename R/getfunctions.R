@@ -48,10 +48,8 @@ getConst <- function(inline,nb,index=2) { # parses lines containing numbers
 #' @export
 #'
 #' @examples
-#'  data(zone1)
-#'  data(constants)
-#'  ans <- makezoneC(zone=zone1,const=constants)
-#'  zoneC <- ans$zoneC
+#'  data(zone)
+#'  zoneC <- zone$zoneC
 #'  getlistvar(zoneC,"MSY")
 #'  getlistvar(zoneC,"B0")
 #'  getlistvar(zoneC,"popdef","AvRec")
@@ -95,7 +93,6 @@ getlistvar <- function(zoneC,indexvar,indexvar2="") {
 #' @export
 #'
 #' @examples
-#'  # Not exported, prefix with aMSE:::
 #'  txtline <- "Depleted, TRUE"
 #'  aMSE:::getLogical(txtline,nb=1)
 #'  txtline2 <- "calcthis, TRUE, FALSE"
@@ -118,14 +115,13 @@ getLogical <- function(inline,nb) {  #inline <- txtline; nb=2
 #' @param glob the global variables object
 #' @param zone the zone constants
 #'
-#' @return a matrix of numpop + 1 columns of numbers-at-size
+#' @return a matrix of numpop + 1 columns of numbers-at-size for each population
+#'     and for the zone
 #' @export
 #'
 #' @examples
-#' data(zone1)
-#' glb <- zone1$globals
-#' data(testzoneD)
-#' nas <- getnas(testzoneD,yr=1,glob=glb,zone=zone1)
+#' data(zone)
+#' nas <- getnas(zone$zoneD,yr=1,glob=zone$glb,zone=zone$zone1)
 #' round(nas[1:30,],1)
 getnas <- function(zoneD,yr,glob,zone) {# zoneD=zoneD;yr=1;glob=glb;zone=zone1
   numpop <- glob$numpop
@@ -158,9 +154,7 @@ getnas <- function(zoneD,yr,glob,zone) {# zoneD=zoneD;yr=1;glob=glb;zone=zone1
 #' @export
 #'
 #' @examples
-#' \dontrun{
 #' print("An example needs to be written")
-#' }
 getzoneLF <- function(zoneD,glb) { # need to define years
   numpop <- glb$numpop
   Nyrs <- glb$Nyrs
@@ -306,21 +300,14 @@ getsum <- function(inmat,index) {
 #' @param zoneD the dynamic part of the zone
 #' @param glb contains the global variables used everywhere
 #'
-#' @return a list of multiple components relating to the unfished stock
+#' @return a list of multiple components relating to the unfished stock this
+#'     includes a list of each of the equilibrium populations and the zone as
+#'     the last element of the list
 #' @export
 #' @examples
 #' \dontrun{
-#'   data(zone1)
-#'   glb <- zone1$globals
-#'   data(constants)
-#'   ans <- makezoneC(zone1,constants)
-#'   zoneC <- ans$zoneC
-#'   ans <- makezone(glb,zoneC)
-#'   zoneC <- ans$zoneC
-#'   zoneD <- ans$zoneD
-#'   ans2 <- modzoneC(zoneC,zoneD,glb)
-#'   zoneC <- ans2$zoneC
-#'   unfish <- getunFished(zoneC,zoneD,glb)
+#'   data(zone) # would normally use zone <- makeequilzone(resdir,"control.csv")
+#'   unfish <- getunFished(zone$zoneC,zone$zoneD,zone$glb)
 #'   str(unfish,max.level=1)
 #' }
 getunFished <- function(zoneC,zoneD,glb) {  # inzone=zone
@@ -385,8 +372,8 @@ getunFished <- function(zoneC,zoneD,glb) {  # inzone=zone
 #' @export
 #'
 #' @examples
-#' data(product)
-#' zoneprod <- getzoneprod(product)
+#' data(zone)
+#' zoneprod <- getzoneprod(zone$product)
 #' head(zoneprod,20)
 getzoneprod <- function(product) {
   numrow <- dim(product)[1]
@@ -421,13 +408,9 @@ getzoneprod <- function(product) {
 #' @export
 #'
 #' @examples
-#' data(testzoneC)
-#' data(testzoneD)
-#' data(zone1)
-#' glb <- zone1$globals
-#' round(getzoneprops(testzoneC,testzoneD,glb),4)
+#' data(zone)
+#' round(getzoneprops(zone$zoneC,zone$zoneD,zone$glb),4)
 getzoneprops <- function(zoneC,zoneD,glb,year=1) {
-  # zoneC=zoneC; zoneD=zoneD; glb=glb; year=47
   numpop <- glb$numpop
   Nclass <- glb$Nclass
   sau <- getvar(zoneC,"SAU")
@@ -488,10 +471,13 @@ getzoneprops <- function(zoneC,zoneD,glb,year=1) {
 #' @return a numpop vector of the invar constants from zoneC
 #' @export
 #'
+#' @seealso getlistvar
+#'
 #' @examples
-#' data(testzoneC)
-#' getvar(testzoneC,"MSY")
-#' getvar(testzoneC,"B0")
+#' data(zone)
+#' zoneC <- zone$zoneC
+#' getvar(zoneC,"MSY")
+#' getvar(zoneC,"B0")
 getvar <- function(zoneC,invar) {
   npop <- length(zoneC)
   recs <- numeric(npop)
@@ -511,9 +497,12 @@ getvar <- function(zoneC,invar) {
 #' @return a numpop vector of invar from the numpop popdefs in zoneC
 #' @export
 #'
+#' @seealso getlistvar
+#'
 #' @examples
-#' data(testzoneC)
-#' getvect(testzoneC,"steeph")
+#' data(zone)
+#' zoneC <- zone$zoneC
+#' getvect(zoneC,"steeph")
 getvect <- function(zoneC,invar) {
   npop <- length(zoneC)
   ans <- numeric(npop)

@@ -41,21 +41,15 @@ oneyearD conducts one year's dynamics on zoneD in the MSE
     dodepletion and doproduction) and in testequil
 }
 \examples{
- data(constants)
- data(zone1)
- ans <- makezoneC(zone1,constants) # classical equilibrium
- zoneC <- ans$zoneC
- glb <- ans$glb
- ans <- makezone(glb,zoneC) # now make zoneD
- zoneC <- ans$zoneC  # zone constants used as zoneC in oneyearD
- zoneD <- ans$zoneD
+ data(zone)
+ zoneC <- zone$zoneC
+ glb <- zone$glb
+ zoneD <- zone$zoneD
  numpop <- glb$numpop
- harvest <- rep(0.2,numpop) # not exported so needs aMSE:::
+ harvest <- rep(0.2,numpop)
  zoneD <- oneyearD(zoneC=zoneC,zoneD=zoneD,
                    inHt=harvest,year=2,sigmar=1e-06,
                    Ncl=glb$Nclass,npop=numpop,movem=glb$move)
  str(zoneD)
  round(zoneD$catchN[60:105,1:5,1],1)
-# zoneC=zone$zoneC;zoneD=zone$zoneD;Ncl=glb$Nclass;inHt=pickharv;year=2;
-# sigmar=1e-08;npop=npop;movem=glob$move
 }

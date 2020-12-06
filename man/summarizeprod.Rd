@@ -29,7 +29,10 @@ summarizeprod generates a summary of the productivity properties
     approximation but provides at least an indication.
 }
 \examples{
-data(product)
-zoneprod <- summarizeprod(product)
+\dontrun{
+data(zone)
+product <- zone$product
+zoneprod <- summarizeprod(product,saunames=zone$zone1$SAUnames)
 round(zoneprod,3)
+}
 }

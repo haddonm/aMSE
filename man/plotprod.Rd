@@ -52,9 +52,11 @@ plotprod graphs a selected productivity variable from
     depletion level, and RelCE the relative cpue at MSY
 }
 \examples{
-data(product)
+data(zone)
+product <- zone$product
 plotprod(product)
 stat <- findmsy(product)
 abline(h=stat[,"Catch"],col=1:6,lwd=2)
 abline(v=stat[,"MatB"],col=1:6,lwd=2)
+print(stat)
 }

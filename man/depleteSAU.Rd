@@ -39,19 +39,10 @@ depleteSAU resets the depletion level of the whole
 }
 \examples{
 \dontrun{
-  data(zone1)
-  glb <- zone1$globals
-  data(constants)
-  ans <- makezoneC(zone1,constants)
-  zoneC <- ans$zoneC
-  glb <- ans$glb  # now contains the move matrix
-  ans <- makezone(glb,zoneC)
-  zoneC <- ans$zoneC
-  zoneD <- ans$zoneD
-  ans2 <- modzoneC(zoneC,zoneD,glb)
-  zoneC <- ans2$zoneC  # now has MSY and deplMSY
-  product <- ans2$product
-  zoneDD <- depleteSAU(zoneC,zoneD,glb,depl=rep(0.3,glb$nSAU),product)
+  data(zone)
+  glb <- zone$glb
+  depl <- rep(0.3,glb$nSAU)
+  zoneDD <- depleteSAU(zone$zoneC,zone$zoneD,glb,initdepl=depl,zone$product)
   sum((zoneDD$matureB[1,]/sum(zoneDD$matureB[1,]))*zoneDD$deplsB[1,])
   mean(zoneDD$deplsB[1,])
 }  # zoneC=zone$zoneC;zoneD=zone$zoneD;glob=zone$glb;initdepl=origdepl;product=zone$product;len=12

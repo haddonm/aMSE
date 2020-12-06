@@ -24,7 +24,7 @@ getzoneprod takes in the product matrix from doproduction and
     by the first value = B0
 }
 \examples{
-data(product)
-zoneprod <- getzoneprod(product)
+data(zone)
+zoneprod <- getzoneprod(zone$product)
 head(zoneprod,20)
 }

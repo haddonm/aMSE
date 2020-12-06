@@ -22,6 +22,6 @@ getgradone calculates the one year gradient score for a
 \examples{
 data(blockE13)
 nyr <- length(blockE13$year)
-grad1 <- getgrad1(blockE13$cpue,yr = 10)
+grad1 <- getgradone(blockE13$cpue,yr = 10)
 print(grad1)
 }

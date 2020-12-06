@@ -16,7 +16,8 @@ getnas(zoneD, yr, glob, zone)
 \item{zone}{the zone constants}
 }
 \value{
-a matrix of numpop + 1 columns of numbers-at-size
+a matrix of numpop + 1 columns of numbers-at-size for each population
+    and for the zone
 }
 \description{
 getnas extracts numbers-at-size for all populations,
@@ -24,9 +25,7 @@ getnas extracts numbers-at-size for all populations,
     columns of numbers-at-size fr the particular year given.
 }
 \examples{
-data(zone1)
-glb <- zone1$globals
-data(testzoneD)
-nas <- getnas(testzoneD,yr=1,glob=glb,zone=zone1)
+data(zone)
+nas <- getnas(zone$zoneD,yr=1,glob=zone$glb,zone=zone$zone1)
 round(nas[1:30,],1)
 }

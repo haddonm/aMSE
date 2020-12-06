@@ -42,18 +42,14 @@ oneyearD conducts one year's dynamics in the simulation
     of activity included in each of its components.
 }
 \examples{
-print("wait on new data")
- #data(constants)
- #data(zone1)
- #ans <- makezoneC(zone1,constants) # classical equilibrium
- #zoneC <- ans$zoneC
- #glb <- ans$glb
- #ans <- makezone(glb,zoneC) # now make zoneD
- #zoneC <- ans$zoneC  # zone constants
- #zoneD <- ans$zoneD
+print("Wait on new data")
+# data(zone)
+# zoneC <- zone$zoneC
+#  glb <- zone$glb
+ #zoneD <- zone$zoneD
  #Nc <- glb$Nclass
  #nyrs <- glb$Nyrs
- #catch <- 360.0 # larger than total MSY ~ 310t
+ #catch <- 900.0 # larger than total MSY ~ 870t
  #B0 <- getvar(zoneC,"B0")
  #totB0 <- sum(B0)
  #prop <- B0/totB0

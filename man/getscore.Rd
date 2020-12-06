@@ -4,11 +4,14 @@
 \alias{getscore}
 \title{getscore calculates the scores for the grad1 and grad4 PMs}
 \usage{
-getscore(grad14)
+getscore(grad14, mult = 0.1)
 }
 \arguments{
 \item{grad14}{the raw values derived from the function getgrad1 or
 getgrad4}
+
+\item{mult}{the multiplier on the bounds to expand them upwards and
+downwards. default value = 1.1 = 10 percent increase}
 }
 \value{
 a vector of scores to be included in the MCDA

@@ -30,12 +30,10 @@ STM With the input of the four parameters inside a vector,
     Negative growth is disallowed. All columns in the matrix sunm to one.
 }
 \examples{
-\dontrun{
  param <- c(25.0,120.0,170.0,4.0)
  midpts <- seq(2,210,2)
  G <- STM(param,midpts)
  print(round(G[1:30,1:8],4))
-}
 }
 \references{
 Haddon, M., Mundy, C., and D. Tarbath (2008) Using an

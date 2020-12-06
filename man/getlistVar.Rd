@@ -27,10 +27,8 @@ getlistvar extracts a vector or matrix from zoneC.
    then use indexvar2.
 }
 \examples{
- data(zone1)
- data(constants)
- ans <- makezoneC(zone=zone1,const=constants)
- zoneC <- ans$zoneC
+ data(zone)
+ zoneC <- zone$zoneC
  getlistvar(zoneC,"MSY")
  getlistvar(zoneC,"B0")
  getlistvar(zoneC,"popdef","AvRec")

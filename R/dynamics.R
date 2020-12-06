@@ -28,19 +28,10 @@
 #'
 #' @examples
 #' \dontrun{
-#'   data(zone1)
-#'   glb <- zone1$globals
-#'   data(constants)
-#'   ans <- makezoneC(zone1,constants)
-#'   zoneC <- ans$zoneC
-#'   glb <- ans$glb  # now contains the move matrix
-#'   ans <- makezone(glb,zoneC)
-#'   zoneC <- ans$zoneC
-#'   zoneD <- ans$zoneD
-#'   ans2 <- modzoneC(zoneC,zoneD,glb)
-#'   zoneC <- ans2$zoneC  # now has MSY and deplMSY
-#'   product <- ans2$product
-#'   zoneDD <- depleteSAU(zoneC,zoneD,glb,depl=rep(0.3,glb$nSAU),product)
+#'   data(zone)
+#'   glb <- zone$glb
+#'   depl <- rep(0.3,glb$nSAU)
+#'   zoneDD <- depleteSAU(zone$zoneC,zone$zoneD,glb,initdepl=depl,zone$product)
 #'   sum((zoneDD$matureB[1,]/sum(zoneDD$matureB[1,]))*zoneDD$deplsB[1,])
 #'   mean(zoneDD$deplsB[1,])
 #' }  # zoneC=zone$zoneC;zoneD=zone$zoneD;glob=zone$glb;initdepl=origdepl;product=zone$product;len=12
@@ -53,6 +44,7 @@ depleteSAU <- function(zoneC,zoneD,glob,initdepl,product,len=15) {
   harvests <- matrix(0,nrow=len,ncol=npop,dimnames=list(1:len,1:npop))
   popDepl <- harvests # need a matrix to hold the depletion levels
   initH <- as.numeric(rownames(product))
+  # bound the harvest rates nearest to the desired depletion
   for (pop in 1:npop) {
     pick <- which.closest(depl[pop],product[,"Deplet",pop])
     if (pick == nrow(product)) {
@@ -233,18 +225,14 @@ oneyearcat <- function(inpopC,inNt,Nclass,incat,yr) {  #
 #' @export
 #'
 #' @examples
-#' print("wait on new data")
-#'  #data(constants)
-#'  #data(zone1)
-#'  #ans <- makezoneC(zone1,constants) # classical equilibrium
-#'  #zoneC <- ans$zoneC
-#'  #glb <- ans$glb
-#'  #ans <- makezone(glb,zoneC) # now make zoneD
-#'  #zoneC <- ans$zoneC  # zone constants
-#'  #zoneD <- ans$zoneD
+#' print("Wait on new data")
+#' # data(zone)
+#' # zoneC <- zone$zoneC
+#' #  glb <- zone$glb
+#'  #zoneD <- zone$zoneD
 #'  #Nc <- glb$Nclass
 #'  #nyrs <- glb$Nyrs
-#'  #catch <- 360.0 # larger than total MSY ~ 310t
+#'  #catch <- 900.0 # larger than total MSY ~ 870t
 #'  #B0 <- getvar(zoneC,"B0")
 #'  #totB0 <- sum(B0)
 #'  #prop <- B0/totB0
@@ -310,23 +298,17 @@ oneyearC <- function(zoneC,zoneDP,catchp,year,iter,sigmar,Ncl,npop,movem) {
 #' @export
 #'
 #' @examples
-#'  data(constants)
-#'  data(zone1)
-#'  ans <- makezoneC(zone1,constants) # classical equilibrium
-#'  zoneC <- ans$zoneC
-#'  glb <- ans$glb
-#'  ans <- makezone(glb,zoneC) # now make zoneD
-#'  zoneC <- ans$zoneC  # zone constants used as zoneC in oneyearD
-#'  zoneD <- ans$zoneD
+#'  data(zone)
+#'  zoneC <- zone$zoneC
+#'  glb <- zone$glb
+#'  zoneD <- zone$zoneD
 #'  numpop <- glb$numpop
-#'  harvest <- rep(0.2,numpop) # not exported so needs aMSE:::
+#'  harvest <- rep(0.2,numpop)
 #'  zoneD <- oneyearD(zoneC=zoneC,zoneD=zoneD,
 #'                    inHt=harvest,year=2,sigmar=1e-06,
 #'                    Ncl=glb$Nclass,npop=numpop,movem=glb$move)
 #'  str(zoneD)
 #'  round(zoneD$catchN[60:105,1:5,1],1)
-#' # zoneC=zone$zoneC;zoneD=zone$zoneD;Ncl=glb$Nclass;inHt=pickharv;year=2;
-#' # sigmar=1e-08;npop=npop;movem=glob$move
 oneyearD <- function(zoneC,zoneD,inHt,year,sigmar,Ncl,npop,movem) {
   matb <- numeric(npop)
   for (popn in 1:npop) {  # year=2; popn=1

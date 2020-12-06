@@ -102,6 +102,54 @@ applymcda <- function(zoneCP,zoneDP,glob,ctrl,projyrs,inityrs=10,wid = 4,
   return(zoneDP=zoneDP)
 } # end of applymcda
 
+#' @title calibrateMCDA uses historical CPUE to calibrate the MCDA
+#'
+#' @description calibrateMCDA uses the projC$histCE to apply the getgrad1,
+#'     getgrad4, and targscore functions so as to provide vewctors of
+#'     permance measure scores to enhance the calibration of the MCDA before
+#'     any projections are done. This is not absolutely required but improves
+#'     the reality of the process. It also means that the productivity of each
+#'     SAU needs to be scaled to the current cpue (see Conditioning the MSE).
+#'
+#' @param histCE this is a matrix of nominal scale CPUE from the fishery of
+#'     interest. Usually standardized. Obtainable from the projC object but
+#'     also the condC object
+#' @param saunames the names of each SAU (from zone1$SAUnames)
+#'
+#' @return a list of three matrices of performance measure scores used to
+#'     condition the MCDA
+#' @export
+#'
+#' @examples
+#' print("wait on example data being available")
+calibrateMCDA <- function(histCE,saunames) {
+  # histCE <- zone$zone1$projC$histCE; saunames=zone$zone1$SAUnames
+  nSAU <- length(saunames)
+  yearCE <- as.numeric(rownames(histCE))
+  yrce <- length(yearCE)
+  grad1val <- matrix(0,nrow=yrce,ncol=nSAU,dimnames=list(yearCE,saunames))
+  grad4val <- grad1val
+  targval <- grad1val
+  for (sau in 1:nSAU) { # sau=1
+    pickce <- which(!is.na(histCE[,sau]))
+    tmp <- getgrad1(histCE[pickce,sau])
+    nec <- length(tmp)
+    if (nec < yrce) tmp <- c(rep(NA,(yrce-nec)),tmp)
+    grad1val[,sau] <- tmp
+    tmp2 <- getgrad4(histCE[pickce,sau])
+    nec2 <- length(tmp2)
+    if (nec2 < yrce) tmp2 <- c(rep(NA,(yrce-nec2)),tmp2)
+    grad4val[,sau] <- tmp2
+    tmp3 <- targscore(histCE[pickce,sau])
+    values <- tmp3$ans[,"targval"]
+    nec3 <- length(values)
+    if (nec3 < yrce) values <- c(rep(NA,(yrce-nec3)),values)
+    targval[,sau] <- values
+  }
+  return(list(grad1val=grad1val,grad4val=grad4val,targval=targval))
+} # end of calibrateMCDA
+
+
 #' @title constCatch implements a constant TAC harvest strategy
 #'
 #' @description constCatch implements a constant catch harvest strategy. It
@@ -264,7 +312,7 @@ getgrad4 <- function(vectce,wid=4) { # vectce=ab$cpue; wid=4
 #' @examples
 #' data(blockE13)
 #' nyr <- length(blockE13$year)
-#' grad1 <- getgrad1(blockE13$cpue,yr = 10)
+#' grad1 <- getgradone(blockE13$cpue,yr = 10)
 #' print(grad1)
 getgradone <- function(vectce,yr) {
   grad1 <- (vectce[yr]/vectce[yr-1])-1
@@ -340,6 +388,8 @@ getlmcoef <- function(y,x) {
 #'
 #' @param grad14 the raw values derived from the function getgrad1 or
 #'     getgrad4
+#' @param mult the multiplier on the bounds to expand them upwards and
+#'     downwards. default value = 1.1 = 10 percent increase
 #'
 #' @return a vector of scores to be included in the MCDA
 #' @export
@@ -350,8 +400,8 @@ getlmcoef <- function(y,x) {
 #' grad1 <- getgrad1(blockE13$cpue)
 #' score1 <- getscore(grad1)
 #' cbind(blockE13$year[2:nyr],grad1,score1)
-getscore <- function(grad14) {   # grad14=grad4
-  bounds <- round((range(grad14,na.rm=TRUE) * 1.1),2)
+getscore <- function(grad14,mult=0.1) {   # grad14=grad4; mult=1.1
+  bounds <- round((range(grad14,na.rm=TRUE) * mult),2)
   if (bounds[1] > -0.05) bounds[1] <- -0.05
   if (bounds[2] <= 0) bounds[2] <- 0.05
   low <- seq(bounds[1],0.0,length=6)

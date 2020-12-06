@@ -21,7 +21,11 @@ getvar is a replacement for sapply to obtain scalar
     need to use sapply to pull out vectors.
 }
 \examples{
-data(testzoneC)
-getvar(testzoneC,"MSY")
-getvar(testzoneC,"B0")
+data(zone)
+zoneC <- zone$zoneC
+getvar(zoneC,"MSY")
+getvar(zoneC,"B0")
+}
+\seealso{
+getlistvar
 }

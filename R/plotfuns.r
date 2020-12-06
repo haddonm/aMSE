@@ -28,11 +28,13 @@
 #' @export
 #'
 #' @examples
-#' data(product)
+#' data(zone)
+#' product <- zone$product
 #' plotprod(product)
 #' stat <- findmsy(product)
 #' abline(h=stat[,"Catch"],col=1:6,lwd=2)
 #' abline(v=stat[,"MatB"],col=1:6,lwd=2)
+#' print(stat)
 plotprod <- function(product,xname="MatB",yname="Catch",xlimit=NA,
                      xlab="Mature Biomass t",ylab="Production t",
                      font=7,filename="",devoff=FALSE) {

@@ -441,6 +441,11 @@ readctrlzone <- function(datadir,infile="control.csv") {
    outyear <- c(projyrs,firstyear)
    projLML <- NULL
    HS <- NULL
+   histCatch <- NULL
+   histyr <- NULL
+   histCE <- NULL
+   yearCE <- NULL
+   compdat=NULL
    if (projyrs > 0) {
       projLML <- numeric(projyrs)
       from <- grep("PROJLML",indat)
@@ -450,11 +455,29 @@ readctrlzone <- function(datadir,infile="control.csv") {
       }
       begin <- grep("HARVESTS",indat)
       HS <- getStr(indat[begin],1)
-      if (HS %in% c("MCDA","Other")) # get filename
-         HSdetail <- removeEmpty(unlist(strsplit(indat[begin+1],",")))
+      if (HS == "MCDA") # if HSdetail=1 then get the CPUE calibration data
+         HSdetail <- getsingleNum("HSdetail",indat)
+      if ((HS == "MCDA") & (HSdetail == 1)) {
+         yrce <- getsingleNum("CEYRS",indat)
+         if (yrce == 0) {
+            warning("CPUE calibration has no data")
+         } else {
+            begin <- grep("CPUE",indat)
+            histCE <- matrix(NA,nrow=yrce,ncol=nSAU)
+            yearCE <- numeric(yrce) # of same length as nSAU
+            colnames(histCE) <- SAUnames
+            for (i in 1:yrce) {
+               begin <- begin + 1
+               cenum <- as.numeric(unlist(strsplit(indat[begin],",")))
+               yearCE[i] <- cenum[1]
+               histCE[i,] <- cenum[2:(nSAU+1)]
+            }
+            rownames(histCE) <- yearCE
+         }
+      } # end of if HSdetail test
       if (HS == "constantCatch")  # get constant inTAC
          HSdetail <- as.numeric(removeEmpty(unlist(strsplit(indat[begin+1],","))))
-   }
+   } # end of projyrs if test
    condition <- getsingleNum("CONDITION",indat)
    if (condition > 0) {
       Nyrs <- condition  # don't forget to add an extra year for initiation
@@ -495,19 +518,13 @@ readctrlzone <- function(datadir,infile="control.csv") {
             compdat[[i]] <- read.csv(file=filename,header=TRUE)
          }
       }
-   } else {
-      histCatch <- NULL
-      histyr <- NULL
-      histCE <- NULL
-      yearCE <- NULL
-      compdat=NULL
-   }
+   } # end of if condition test
    # make output objects
    condC <- list(histCatch=histCatch,histyr=histyr,
                  histCE=histCE,yearCE=yearCE,initdepl=initdepl,
                  compdat=compdat,Sel=NULL,SelWt=NULL)
    projC <- list(projLML=projLML,HS=HS,HSdetail=HSdetail,projyrs=projyrs,
-                 inityrs=inityrs,Sel=NULL,SelWt=NULL)
+                 inityrs=inityrs,Sel=NULL,SelWt=NULL,histCE=histCE)
    outctrl <- list(runlabel,datafile,batch,reps,randomseed,randomseedP,
                    withsigR,withsigB,withsigCE,condition,projyrs)
    names(outctrl) <- c("runlabel","datafile","batch","reps","randseed",

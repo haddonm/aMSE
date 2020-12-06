@@ -1031,12 +1031,10 @@ setupzone <- function(constants,zone1,uplim=0.4,inc=0.005) {
 #'     inverse-logistic model to describe growth increments of blackip
 #'     abalone (Haliotis rubra) in Tasmania. Fisheries Bulletin 106: 58-71
 #' @examples
-#' \dontrun{
 #'  param <- c(25.0,120.0,170.0,4.0)
 #'  midpts <- seq(2,210,2)
 #'  G <- STM(param,midpts)
 #'  print(round(G[1:30,1:8],4))
-#' }
 STM <- function(p,mids) { #    # p <- popparam[1:4]; mids <- midpts
    n <- length(mids)
    G <- matrix(0,nrow=n,ncol=n)
@@ -1053,8 +1051,6 @@ STM <- function(p,mids) { #    # p <- popparam[1:4]; mids <- midpts
       }
    }
    G[n,] <- G[n,]+ (1-colSums(G)) # plus group
-   #rownames(G) <- mids
-   #colnames(G) <- mids
    class(G) <- "STM"
    return(G)
 } # end of STM
@@ -1080,19 +1076,8 @@ STM <- function(p,mids) { #    # p <- popparam[1:4]; mids <- midpts
 #'
 #' @examples
 #' \dontrun{  # modzoneC takes too long to run because of doproduction
-#'  data(ctrl)
-#'  data(zone1)
-#'  glb <- zone1$globals
-#'  data(constants)
-#'  ans <- makezoneC(zone1,constants)
-#'  zoneC <- ans$zoneC
-#'  glb <- ans$glb # now contains movement matrix
-#'  ans <- makezone(glb,zoneC)
-#'  zoneC <- ans$zoneC  # zone constants
-#'  zoneD <- ans$zoneD
-#'  ans <- modzoneC(zoneC,zoneD,glb)
-#'  zoneC <- ans$zoneC  # zone constants
-#'  zoneDe <- testequil(zoneC=zoneC,zoneD=zoneD,glb=glb)
+#'  data(zone)
+#'  zoneDe <- testequil(zoneC=zone$zoneC,zoneD=zone$zoneD,glb=zone$glb)
 #' }    #zoneC=zoneC; zoneD=zoneD; glb=glb; inH=0.0; verbose=TRUE
 testequil <- function(zoneC,zoneD,glb,inH=0.0,verbose=TRUE) {
   Nyrs <- glb$Nyrs

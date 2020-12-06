@@ -21,7 +21,7 @@ zone <- makeequilzone(resdir,"control2.csv") # normally would read in a file
    # origdepl <-  c(0.40,0.41,0.39,0.42,0.40,0.41,0.39,0.42)
     origdepl <- rep(0.3,8)
 zoneDD <- depleteSAU(zone$zoneC,zone$zoneD,zone$glb,origdepl,zone$product,len=12)
-zone$ctrl$reps=200
+  zone$ctrl$reps=100
 out <- prepareprojection(zone$zone1,zone$zoneC,zone$glb,zoneDD,zone$ctrl)
 zoneDR <- out$zoneDP
 projC <- out$projC
@@ -34,6 +34,7 @@ zoneCP <- out$zoneC
     print(midtime - equiltime)
     propD <- getzoneprops(zone$zoneC,zoneDD,glb,year=1)
     round(propD,3)
+
 
 
 
@@ -70,7 +71,6 @@ CIH <- plotzoneproj(zoneproj$zoneH,reps,yrs,"Harvest Rate",addqnts=TRUE)
 CIH <- plotzoneproj(zoneproj$zonece,reps,yrs,"CPUE",addqnts=TRUE)
 CIsBD <- plotzoneproj(zoneproj$zonedeplsB,reps,yrs,"SpB Depletion",addqnts=TRUE)
 CIeB <- plotzoneproj(zoneproj$zoneeB,reps,yrs,"Exploitable Biomass",addqnts=TRUE)
-
 
 
 
