@@ -4,7 +4,7 @@
 \alias{oneyearrec}
 \title{oneyearrec calculates the Beverton-Holt recruitment}
 \usage{
-oneyearrec(steep, R0, B0, Bsp, sigR)
+oneyearrec(steep, R0, B0, Bsp, sigR, withvar = TRUE)
 }
 \arguments{
 \item{steep}{the steepness for the population; scalar}
@@ -17,6 +17,8 @@ oneyearrec(steep, R0, B0, Bsp, sigR)
 
 \item{sigR}{standard deviation of the recruitment residuals;
 scalar. set this to 1e-08 to avoid recruitment variability}
+
+\item{withvar}{should recruitment variation be included, default=TRUE}
 }
 \value{
 an absolute number of recruits from a given spawning biomass

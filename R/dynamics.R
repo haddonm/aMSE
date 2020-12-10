@@ -220,6 +220,7 @@ oneyearcat <- function(inpopC,inNt,Nclass,incat,yr) {  #
 #' @param Ncl the number of size classes used to describe size, global Nclass
 #' @param npop the number of populations, the global numpop
 #' @param movem the larval dispersal movement matrix, global move
+#' @param recvar should recruitment variation be included, default=TRUE
 #'
 #' @return a list containing a revised dynamics list
 #' @export
@@ -243,7 +244,8 @@ oneyearcat <- function(inpopC,inNt,Nclass,incat,yr) {  #
 #'  #                  npop=glb$numpop,movem=glb$move)
 #'  #str(zoneD)
 #'  #round(zoneD$catchN[60:105,1:5,1],1)
-oneyearC <- function(zoneC,zoneDP,catchp,year,iter,sigmar,Ncl,npop,movem) {
+oneyearC <- function(zoneC,zoneDP,catchp,year,iter,sigmar,Ncl,npop,movem,
+                     recvar=TRUE) {
   matb <- numeric(npop)
   for (popn in 1:npop) {  # year=2
     out <- oneyearcat(inpopC=zoneC[[popn]],inNt=zoneDP$Nt[,year-1,popn,iter],
@@ -260,7 +262,7 @@ oneyearC <- function(zoneC,zoneDP,catchp,year,iter,sigmar,Ncl,npop,movem) {
   steep <- getvect(zoneC,"steeph") #sapply(zoneC,"[[","popdef")["steeph",]
   r0 <- getvar(zoneC,"R0") #sapply(zoneC,"[[","R0")
   b0 <- getvar(zoneC,"B0") #sapply(zoneC,"[[","B0")
-  recs <- oneyearrec(steep,r0,b0,matb,sigR=sigmar)
+  recs <- oneyearrec(steep,r0,b0,matb,sigR=sigmar,withvar = recvar)
   newrecs <- movem %*% recs
   zoneD$recruit[year,] <- newrecs
   zoneD$Nt[1,year,] <- newrecs
@@ -293,6 +295,7 @@ oneyearC <- function(zoneC,zoneDP,catchp,year,iter,sigmar,Ncl,npop,movem) {
 #' @param Ncl the number of size classes used to describe size
 #' @param npop the number of populations, the global numpop
 #' @param movem the larval dispersal movement matrix
+#' @param recvar should recruitment variation be included, default=TRUE
 #'
 #' @return a list containing a revised dynamics list
 #' @export
@@ -309,7 +312,8 @@ oneyearC <- function(zoneC,zoneDP,catchp,year,iter,sigmar,Ncl,npop,movem) {
 #'                    Ncl=glb$Nclass,npop=numpop,movem=glb$move)
 #'  str(zoneD)
 #'  round(zoneD$catchN[60:105,1:5,1],1)
-oneyearD <- function(zoneC,zoneD,inHt,year,sigmar,Ncl,npop,movem) {
+oneyearD <- function(zoneC,zoneD,inHt,year,sigmar,Ncl,npop,movem,
+                     recvar=TRUE) {
   matb <- numeric(npop)
   for (popn in 1:npop) {  # year=2; popn=1
     out <- oneyear(inpopC=zoneC[[popn]],inNt=zoneD$Nt[,year-1,popn],
@@ -326,7 +330,7 @@ oneyearD <- function(zoneC,zoneD,inHt,year,sigmar,Ncl,npop,movem) {
   steep <- getvect(zoneC,"steeph") #sapply(zoneC,"[[","popdef")["steeph",]
   r0 <- getvar(zoneC,"R0") #sapply(zoneC,"[[","R0")
   b0 <- getvar(zoneC,"B0") #sapply(zoneC,"[[","B0")
-  recs <- oneyearrec(steep,r0,b0,matb,sigR=sigmar)
+  recs <- oneyearrec(steep,r0,b0,matb,sigR=sigmar,withvar=recvar)
   newrecs <- movem %*% recs
   zoneD$recruit[year,] <- newrecs
   zoneD$Nt[1,year,] <- newrecs
@@ -348,6 +352,7 @@ oneyearD <- function(zoneC,zoneD,inHt,year,sigmar,Ncl,npop,movem) {
 #' @param Bsp the current spawning biomass; scalar
 #' @param sigR standard deviation of the recruitment residuals;
 #'     scalar. set this to 1e-08 to avoid recruitment variability
+#' @param withvar should recruitment variation be included, default=TRUE
 #' @return an absolute number of recruits from a given spawning biomass
 #' @export
 #'
@@ -361,8 +366,10 @@ oneyearD <- function(zoneC,zoneD,inHt,year,sigmar,Ncl,npop,movem) {
 #' oneyearrec(steep,R0,B0,Bsp,insigmar)
 #' oneyearrec(steep,R0,B0,Bsp,insigmar)
 #' }   # steep=steep; R0=mover0; B0=b0; Bsp=b0
-oneyearrec <- function(steep,R0,B0,Bsp,sigR) {
-  epsilon <- exp(rnorm(length(Bsp),mean=0,sd=sigR) - (sigR * sigR)/2)
+oneyearrec <- function(steep,R0,B0,Bsp,sigR,withvar=TRUE) {
+  basevar <- (sigR * sigR)/2
+  epsilon <- exp(-basevar)
+  if (withvar) epsilon <- exp(rnorm(length(Bsp),mean=0,sd=sigR) - basevar)
   rec <- ((4*steep*R0*Bsp)/((1-steep)*B0+(5*steep-1)*Bsp)) * epsilon
   return(rec)
 } # end of oneyearrec
@@ -490,7 +497,7 @@ runthreeH <- function(zoneC,zoneD,inHarv,glob,maxiter=3) {
     for (yr in 2:Nyrs)
       zoneD <- oneyearD(zoneC=zoneC,zoneD=zoneD,Ncl=Nclass,
                         inHt=inHarv,year=yr,sigmar=1e-08,npop=npop,
-                        movem=glob$move)
+                        movem=glob$move,recvar=FALSE)
     zoneD <- restart(oldzoneD=zoneD,nyrs=Nyrs,npop=npop,N=Nclass,zero=TRUE)
   }
   return(zoneD)

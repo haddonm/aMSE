@@ -23,7 +23,7 @@ dirExists(resdir,make=TRUE,verbose=TRUE)
 # depending on how conditioned you want the model to be. Templates for the
 # correct format can be produced using ctrlfiletemplate(), datafiletemplate(),
 # and zonefiletemplate.
-zone1 <- readctrlzone(resdir,infile="control.csv")
+zone1 <- readctrlfile(resdir,infile="control.csv")
 ctrl <- zone1$ctrl
 constants <- readdatafile(glb$numpop,resdir,ctrl$datafile)
 

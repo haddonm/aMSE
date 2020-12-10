@@ -11,7 +11,7 @@ modprojC(zoneC, glob, inzone)
 
 \item{glob}{the globals for the simulation}
 
-\item{inzone}{the zone object from readctrlzone}
+\item{inzone}{the zone object from readctrlfile}
 }
 \value{
 a list of projSel and projSelWt within the projC object from inzone

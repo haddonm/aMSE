@@ -422,6 +422,7 @@ library(makehtml)
 library(microbenchmark)
 
 datadir <- "C:/Users/User/Dropbox/A_Code/aMSEUse/conddata/"
+datadir <- "C:/Users/Malcolm/Dropbox/A_Code/aMSEUse/conddata/"
 
 
 pcomp <- readRDS(paste0(datadir,"compiledMM.df.final.rds"))

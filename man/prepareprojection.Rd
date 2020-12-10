@@ -7,7 +7,7 @@
 prepareprojection(zone1, zoneC, glb, zoneDep, ctrl)
 }
 \arguments{
-\item{zone1}{the original zone1 object from readctrlzone}
+\item{zone1}{the original zone1 object from readctrlfile}
 
 \item{zoneC}{the constant part of the zone}
 

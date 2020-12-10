@@ -141,7 +141,7 @@ cbind(one$ans[,"targsc"],two$ans[,"targsc"],two$ans[,"targsc"]-one$ans[,"targsc"
 # plot(vectce,type="l",ylim=c(0,1.4))
 # abline(h=c(limrp,targ,uprp),col=c(2,3,2))
 #
-  # requirements for applymcda
+  # requirements for doprojection
   zoneCP=zoneCP;zoneDP=zoneDR;glob=glb;ctrl=ctrl;projyrs=projC$projyrs;inityrs=projC$inityrs;
 
   yr=28
@@ -151,8 +151,6 @@ cbind(one$ans[,"targsc"],two$ans[,"targsc"],two$ans[,"targsc"]-one$ans[,"targsc"
   targqnt=0.55
   pmwts=c(0.65,0.25,0.1)
   only=TRUE
-
-
 
 
 library(microbenchmark)
@@ -182,7 +180,7 @@ resdir <- "C:/Users/User/Dropbox/A_Code/aMSEUse/conddata/generic"
 ctrlzonetemplate(resdir,"control2.csv")
 
 
-zone <- readctrlzone(resdir,infile="control2.csv")
+zone <- readctrlfile(resdir,infile="control2.csv")
 
 
 
@@ -210,6 +208,170 @@ ans <- matrix(0,nrow=reps,ncol=16)
 for (pop in 1:16) ans[,pop] <- rnorm(reps,mean=hr[pop],sd=0.003)
 
 ans
+
+
+
+# newreadctrlfile ---------------------------------------------------------
+
+readctrlfile2 <- function(datadir,infile="control.csv") {
+  # datadir=resdir; infile="control2.csv"
+  filenames <- dir(datadir)
+  if (length(grep(infile,filenames)) != 1)
+    stop(cat(infile," not found in datadir \n"))
+  filename <- filenametopath(datadir,infile)
+  indat <- readLines(filename)   # reads the whole file as character strings
+  begin <- grep("START",indat) + 1
+  runlabel <- getStr(indat[begin],1)
+  datafile <- getStr(indat[begin+1],1)
+  batch <- getsingleNum("batch",indat)
+  reps <- getsingleNum("replicates",indat)
+  withsigR <- getsingleNum("withsigR",indat)
+  withsigB <- getsingleNum("withsigB",indat)
+  withsigCE <- getsingleNum("withsigCE",indat)
+  Nyrs=40 # to set up equilibrium unfished population; could be read in
+  if (length(grep(datafile,filenames)) != 1)
+    stop("population data file not found \n")
+  cat("All required files appear to be present \n")
+  # Now read zone data
+  context <- "control_file"
+  nSAU <-  getsingleNum("nSAU",indat) # number of spatial management units
+  begin <- grep("SAUpop",indat)
+  SAUpop <-  getConst(indat[begin],nSAU) # how many populations per SAU
+  numpop <- sum(SAUpop)
+  SAUnames <- getStr(indat[begin+1],nSAU)
+  initdepl <- getConst(indat[begin+2],nSAU)
+  minc <-  getsingleNum("minc",indat) # minimum size class
+  cw    <- getsingleNum("cw",indat) # class width
+  Nclass <- getsingleNum("Nclass",indat) # number of classes
+  midpts <- seq(minc,minc+((Nclass-1)*cw),2)
+  larvdisp <- getsingleNum("larvdisp",indat)
+  randomseed <- getsingleNum("randomseed",indat)
+  randomseedP <- getsingleNum("randomseedP",indat)
+  initLML <- getsingleNum("initLML",indat)
+  projyrs <- getsingleNum("PROJECT",indat)
+  firstyear <- getsingleNum("firstyear",indat)
+  inityrs <- getsingleNum("inityrs",indat)
+  outyear <- c(projyrs,firstyear)
+  projLML <- NULL
+  HS <- NULL
+  histCatch <- NULL
+  histyr <- NULL
+  histCE <- NULL
+  yearCE <- NULL
+  compdat=NULL
+  if (projyrs > 0) {
+    projLML <- numeric(projyrs)
+    from <- grep("PROJLML",indat)
+    for (i in 1:projyrs) {
+      from <- from + 1
+      projLML[i] <- getConst(indat[from],1)
+    }
+    begin <- grep("HARVESTS",indat)
+    HS <- getStr(indat[begin],1)
+    if (HS == "MCDA") # if HSdetail=1 then get the CPUE calibration data
+      HSdetail <- getsingleNum("HSdetail",indat)
+    if ((HS == "MCDA") & (HSdetail == 1)) {
+      yrce <- getsingleNum("CEYRS",indat)
+      if (yrce == 0) {
+        warning("CPUE calibration has no data")
+      } else {
+        begin <- grep("CPUE",indat)
+        histCE <- matrix(NA,nrow=yrce,ncol=nSAU)
+        yearCE <- numeric(yrce) # of same length as nSAU
+        colnames(histCE) <- SAUnames
+        for (i in 1:yrce) {
+          begin <- begin + 1
+          cenum <- as.numeric(unlist(strsplit(indat[begin],",")))
+          yearCE[i] <- cenum[1]
+          histCE[i,] <- cenum[2:(nSAU+1)]
+        }
+        rownames(histCE) <- yearCE
+      }
+    } # end of if HSdetail test
+    if (HS == "constantCatch")  # get constant inTAC
+      HSdetail <- as.numeric(removeEmpty(unlist(strsplit(indat[begin+1],","))))
+  } # end of projyrs if test
+  catches <- getsingleNum("CATCHES",indat)
+  if (catches > 0) {
+     Nyrs <- catches  # don't forget to add an extra year for initiation
+     begin <- grep("CondYears",indat)
+     histCatch <- matrix(0,nrow=catches,ncol=nSAU)
+     colnames(histCatch) <- SAUnames
+     histyr <- matrix(0,nrow=Nyrs,ncol=2)
+     colnames(histyr) <- c("year","histLML")
+     for (i in 1:catches) {
+       begin <- begin + 1
+       asnum <- as.numeric(unlist(strsplit(indat[begin],",")))
+       histyr[i,] <- asnum[1:2]
+       histCatch[i,] <- asnum[3:(nSAU+2)]
+     }
+  } # end of catches loop
+  rownames(histCatch) <- histyr[,1]
+  rownames(histyr) <- histyr[,1]
+  yrce <- getsingleNum("CEYRS",indat)
+  if (yrce > 0) {
+    begin <- grep("CPUE",indat)
+    histCE <- matrix(NA,nrow=yrce,ncol=nSAU)
+    yearCE <- numeric(yrce) # of same length as nSAU
+    colnames(histCE) <- SAUnames
+    for (i in 1:yrce) {
+      begin <- begin + 1
+      cenum <- as.numeric(unlist(strsplit(indat[begin],",")))
+      yearCE[i] <- cenum[1]
+      histCE[i,] <- cenum[2:(nSAU+1)]
+    }
+  } # end of ceyrs loop
+  rownames(histCE) <- yearCE
+  sizecomp <- getsingleNum("SIZECOMP",indat)
+  compdat <- NULL
+  if (sizecomp > 0) {
+    lffiles <- NULL
+    locsizecomp <- grep("SIZECOMP",indat)
+    lffiles <- c(lffiles,getStr(indat[locsizecomp+i],1))
+    compdat <- vector("list",sizecomp)
+    for (i in 1:sizecomp) {
+      filename <- filenametopath(datadir,lffiles[i])
+      compdat[[i]] <- read.csv(file=filename,header=TRUE)
+    }
+  } # end of sizecomp loop
+  condC <- list(histCatch=histCatch,histyr=histyr,
+                histCE=histCE,yearCE=yearCE,initdepl=initdepl,
+                compdat=compdat,Sel=NULL,SelWt=NULL)
+  projC <- list(projLML=projLML,HS=HS,HSdetail=HSdetail,projyrs=projyrs,
+                inityrs=inityrs,Sel=NULL,SelWt=NULL,histCE=histCE)
+  outctrl <- list(runlabel,datafile,batch,reps,randomseed,randomseedP,
+                  withsigR,withsigB,withsigCE,catches,projyrs)
+  names(outctrl) <- c("runlabel","datafile","batch","reps","randseed",
+                      "randseedP","withsigR","withsigB","withsigCE",
+                      "catchyrs","projection")
+  globals <- list(numpop=numpop, nSAU=nSAU, midpts=midpts,
+                  Nclass=Nclass, Nyrs=Nyrs,larvdisp=larvdisp)
+  totans <- list(SAUnames,SAUpop,minc,cw,larvdisp,randomseed,
+                 initLML,condC,projC,globals,outctrl,catches,projyrs)
+  names(totans) <- c("SAUnames","SAUpop","minc","cw","larvdisp","randomseed",
+                     "initLML","condC","projC","globals","ctrl",
+                     "catchyrs","projyrs")
+  return(totans)
+} # end of readctrlzone
+
+
+
+
+
+
+
+zone1 <- readctrlfile2(resdir,infile="control2.csv")
+ctrl <- zone1$ctrl
+glb <- zone1$globals     # glb without the movement matrix
+constants <- readdatafile(glb$numpop,resdir,ctrl$datafile)
+
+
+
+
+
+
+
+
 
 
 

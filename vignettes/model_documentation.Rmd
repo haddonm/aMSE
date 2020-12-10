@@ -52,8 +52,13 @@ knitr::opts_chunk$set(
 
 options(knitr.kable.NA = "",
         knitr.table.format = "pandoc")
+if (dir.exists("C:/Users/Malcolm/Dropbox")) {
+  ddir <- "C:/Users/Malcolm/Dropbox"
+} else {
+  ddir <- "C:/Users/User/Dropbox"
+}
 
-wkdir <- "C:/Users/User/Dropbox/AbMSE/AbMSE/data-raw/"
+wkdir <- paste0(ddir,"/AbMSE/AbMSE/data-raw/")
 
 options("show.signif.stars"=FALSE,"stringsAsFactors"=FALSE,
         "max.print"=50000,"width"=240)
@@ -68,7 +73,8 @@ fig_nums <- captioner(prefix = "Figure")
 
 ##### 
 
-# Introduction
+
+# Introduction - DRAFT version
 
 The abalone MSE that this vignette is related to is part of the FRDC project 2019-118 _Drawing strength from each other: simulation testing of Australia’s abalone harvest strategies_. The intent of this current document is to provide a formal description of the model structure used to describe the spatial arrangement and related population dynamics that together make up the operating model of the abalone MSE model. It will form a description of the underlying dynamics implemented in the R-package __aMSE__.  How the model is conditioned to more closely reflect an abalone stock is described in a separate vignette: _Conditioning the aMSE_. Ideally, each of these vignettes, and others, will either constitute or contribute greatly to particular chapters within the FRDC Final Report due at the end of the project. To this end each vignette will be a document evolving in parallel with on-going additions and inclusions as the R-package itself evolves and matures.
 

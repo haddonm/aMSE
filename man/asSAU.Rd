@@ -8,7 +8,7 @@ asSAU(projzone, sauindex, saunames, b0, exb0)
 }
 \arguments{
 \item{projzone}{the population based results list zoneDP plus the saucpue
-all from applymcda}
+all from doprojection}
 
 \item{sauindex}{the SAU index of each population}
 

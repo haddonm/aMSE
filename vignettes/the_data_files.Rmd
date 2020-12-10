@@ -34,6 +34,12 @@ library(captioner)
 tab_nums <- captioner(prefix = "Table")
 fig_nums <- captioner(prefix = "Figure")
 
+if (dir.exists("C:/Users/Malcolm/Dropbox")) {
+  ddir <- "C:/Users/Malcolm/Dropbox"
+} else {
+  ddir <- "C:/Users/User/Dropbox"
+}
+
 ```
 
 <style type="text/css">
@@ -85,7 +91,8 @@ The input files are read using the _readLines_ function and are then parsed for 
 
 
 ```{r FIG1, echo=FALSE, out.width = '65%', fig.align='center'}
-knitr::include_graphics("C:/Users/User/Dropbox/A_code/aMSEUse/figures/AlternativeMSE.png")
+
+knitr::include_graphics(paste0(ddir,"/A_code/aMSEUse/figures/AlternativeMSE.png"))
 ```
 
 `r fig_nums("f1", caption=" A spectrum of alternative approaches for initiating and using the MSE framework.")`

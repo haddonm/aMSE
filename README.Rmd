@@ -75,7 +75,7 @@ dirExists(resdir,make=TRUE,verbose=TRUE)
 # In the meantime it is easier to use the included data file "zone".
 data(zone)
 # Of course, usually one would use data files, control.csv and a zone.csv, which is 
-# listed as the datafile within the control.csv. 
+# listed as the datafile within the control.csv. These must be stored in resdir
 # zone <- makeequilzone(resdir,"control2.csv") # normally would read in a file
     equiltime <- (Sys.time())   # let's change the initial depletion
     origdepl <-  c(0.30,0.31,0.29,0.32,0.30,0.31,0.29,0.32) 
@@ -101,7 +101,8 @@ out <- prepareprojection(zone$zone1,zone$zoneC,zone$glb,zoneDD,zone$ctrl)
   exB0 <- tapply(sapply(zone$zoneC,"[[","ExB0"),sauindex,sum)
 
   midtime <- (Sys.time())
-mseproj <- applymcda(zoneCP,zoneDR,glb,ctrl,projC$projyrs,projC$inityrs)
+  applyHS <- mcdahcr   # name the HS/HCR to be used
+mseproj <- doprojection(zoneCP,zoneDR,glb,ctrl,projC$projyrs,projC$inityrs)
 sauzoneDP <- asSAU(mseproj,sauindex,saunames,B0,exB0)
   endtime <- (Sys.time())
   print(endtime - midtime)

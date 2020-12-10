@@ -583,7 +583,7 @@ makeabpop <- function(popparam,midpts,projLML) {
 #' @examples
 #' print("wait on datafiles")
 makeequilzone <- function(resdir,ctrlfile="control.csv",cleanslate=FALSE) {
-  zone1 <- readctrlzone(resdir,infile=ctrlfile)
+  zone1 <- readctrlfile(resdir,infile=ctrlfile)
   ctrl <- zone1$ctrl
   glb <- zone1$globals     # glb without the movement matrix
   constants <- readdatafile(glb$numpop,resdir,ctrl$datafile)

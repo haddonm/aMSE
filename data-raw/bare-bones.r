@@ -18,8 +18,8 @@ dirExists(resdir,make=TRUE,verbose=TRUE)
 #data(zone)
 zone <- makeequilzone(resdir,"control2.csv") # normally would read in a file
     equiltime <- (Sys.time())
-   # origdepl <-  c(0.40,0.41,0.39,0.42,0.40,0.41,0.39,0.42)
-    origdepl <- rep(0.3,8)
+    # origdepl <-  c(0.40,0.41,0.39,0.42,0.40,0.41,0.39,0.42)
+    origdepl <- c(0.32,0.29,0.3,0.31,0.28,0.32,0.33,0.3)
 zoneDD <- depleteSAU(zone$zoneC,zone$zoneD,zone$glb,origdepl,zone$product,len=12)
   zone$ctrl$reps=100
 out <- prepareprojection(zone$zone1,zone$zoneC,zone$glb,zoneDD,zone$ctrl)
@@ -35,9 +35,6 @@ zoneCP <- out$zoneC
     propD <- getzoneprops(zone$zoneC,zoneDD,glb,year=1)
     round(propD,3)
 
-
-
-
 # Do the replicates ------------------------------------------------------------
 inityr <- zone$zone1$projC$inityrs
 saunames <- zone$zone1$SAUnames
@@ -49,7 +46,9 @@ ctrl$randseed <- 0
 
 midtime <- (Sys.time())
 #Rprof()
-mseproj <- applymcda(zoneCP,zoneDR,glb,ctrl,projC$projyrs,projC$inityrs)
+source(paste0(resdir,"/alternative_HS.R"))
+applyHS <- mcdahcrnew
+mseproj <- doprojection(zoneCP,zoneDR,glb,ctrl,projC$projyrs,projC$inityrs)
 sauzoneDP <- asSAU(mseproj,sauindex,saunames,B0,exB0)
 zoneproj <- aszone(sauzoneDP,zoneCP)
 #Rprof(NULL)
@@ -136,7 +135,29 @@ plotprod(zone$product,xname="MatB",xlab="Spawning Biomass t",
 #
 #  zoneCP=zoneCP;zoneDP=zoneDR;glob=glb;ctrl=ctrl;projyrs=projC$projyrs;inityrs=projC$inityrs;
 
+# NEW----------------------------------
+# condition on catch history-------------------------------------------------
+# setup run + resdir
+starttime <- (Sys.time())
+library(aMSE)
+library(rutilsMH)
+library(makehtml)
+library(knitr)
+# Obviously you should modify the resdir to suit your own computer
+if (dir.exists("c:/Users/User/DropBox")) {
+  ddir <- "c:/Users/User/DropBox/A_code/"
+} else {
+  ddir <- "c:/Users/Malcolm/DropBox/A_code/"
+}
+#resdir <- paste0(ddir,"aMSEUse/conddata/generic2")
+resdir <- paste0(ddir,"aMSEUse/conddata/generic")
+dirExists(resdir,make=TRUE,verbose=TRUE)
 
+ctrlfile <- "control2.csv"
+zone1 <- readctrlfile(resdir,infile=ctrlfile)
+ctrl <- zone1$ctrl
+glb <- zone1$globals     # glb without the movement matrix
+constants <- readdatafile(glb$numpop,resdir,ctrl$datafile)
 
 
 

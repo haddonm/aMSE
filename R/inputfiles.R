@@ -24,7 +24,7 @@
 #' # changes needed now I have simplified to two files and changed their formats
 #'  yourdir <- tempdir()
 #'  ctrlzonetemplate(yourdir,filename="testctrl.csv")   #
-#'  control <- readctrlzone(yourdir,"testctrl.csv")
+#'  control <- readctrlfile(yourdir,"testctrl.csv")
 #'  str(control,max.level=1)
 #' }
 ctrlzonetemplate <- function(indir,filename="control.csv") { # indir=resdir; filename="control2.csv"
@@ -375,9 +375,9 @@ read_conddata <- function(filename) {  # filename=filen
 } # end of read_condata
 
 
-#' @title readctrlzone checks datadir contains the required csv files
+#' @title readctrlfile checks datadir contains the required csv files
 #'
-#' @description readctrlzone checks datadir contains the required csv
+#' @description readctrlfile checks datadir contains the required csv
 #'     files including the named control file, which then contains
 #'     the names of the region data file, and the population data
 #'     file. The run stops if any are not present or are misnamed.
@@ -397,10 +397,10 @@ read_conddata <- function(filename) {  # filename=filen
 #' resdir <- tempdir()
 #' ctrlzonetemplate(resdir)
 #' datafiletemplate(6,resdir,filename="zone1sau2pop6.csv")
-#' ctrl <- readctrlzone(resdir)
+#' ctrl <- readctrlfile(resdir)
 #' ctrl
 #' }
-readctrlzone <- function(datadir,infile="control.csv") {
+readctrlfile <- function(datadir,infile="control.csv") {
    # datadir=resdir; infile="control2.csv"
    filenames <- dir(datadir)
    if (length(grep(infile,filenames)) != 1)
