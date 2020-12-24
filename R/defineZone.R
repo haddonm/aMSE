@@ -1,4 +1,4 @@
-#  rutilsMH::listFunctions("C:/Users/User/Dropbox/rcode2/aMSE/R/defineZone.R")
+#  rutilsMH::listFunctions("C:/Users/User/Dropbox/A_Code/aMSE/R/defineZone.R")
 
 #' @title defineBlock subdivides defined number of populations into blocks
 #'
@@ -677,7 +677,7 @@ makezoneC <- function(zone,const) { # zone=zone1; const=constants
   glb$sauindex <- SAUindex
   SAU <- as.numeric(const["SAU",])
   if (zone$randomseed > 0) set.seed(zone$randomseed)
-  if (zone$condition > 0) {
+  if (zone$catches > 0) {
      initialLML <- zone$condC$histyr[,2]
      glb$Nyrs <- length(initialLML)
    } else {

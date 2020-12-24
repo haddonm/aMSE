@@ -105,11 +105,109 @@ ctrlzonetemplate <- function(indir,filename="control.csv") { # indir=resdir; fil
       cat(as.character(yr),", 145 \n",file=filename,append=TRUE)
    }
    cat("\n",file=filename,append=TRUE)
-   cat("CONDITION, 0, if > 1 then how many years in the histLML \n",
+   cat("CATCHES, 0, if > 1 then how many years in the histLML \n",
        file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
+   cat("CondYears, LML, 6,	7,	8,	9,	10, 11, 12, 13 \n",
+       file=filename,append=TRUE)
+   cat("1973,	132,	0,	0,	0,	0,	0,	0,	0,	0, \n",
+       file=filename,append=TRUE)
+   cat("1974,	132,	8,	1,	0,	3,	24, 82, 143,	16, \n",
+       file=filename,append=TRUE)
+   cat("1975,	132,	21, 36, 42,	126, 130, 191,	143,	43, \n",
+       file=filename,append=TRUE)
+   cat("1976,	132,	30,	56,	77,	252,	179,	240,	153,	62, \n",
+       file=filename,append=TRUE)
+   cat("1977,	132,	19,	24,	22,	123,	98,	153,	189,	39, \n",
+       file=filename,append=TRUE)
+   cat("1978,	132,	28,	13,	27,	115,	258,	275,	208,	58, \n",
+       file=filename,append=TRUE)
+   cat("1979,	132,	31,	19,	23,	172,	166,	269,	325,	63, \n",
+       file=filename,append=TRUE)
+   cat("1980,	132,	42,	81,	63,	316,	195,	338,	351,	87, \n",
+       file=filename,append=TRUE)
+   cat("1981,	132,	48,	88,	87,	444,	260,	417,	246,	99, \n",
+       file=filename,append=TRUE)
+   cat("1982,	132,	30,	34,	34,	249,	100,	303,	235,	62, \n",
+       file=filename,append=TRUE)
+   cat("1983,	132,	38,	102,	58,	199,	175,	430,	242,	78, \n",
+       file=filename,append=TRUE)
+   cat("1984,	132,	50,	78,	38,	248,	284,	682,	258,	102, \n",
+       file=filename,append=TRUE)
+   cat("1985,	132,	36,	99,	23,	246,	140,	479,	155,	74, \n",
+       file=filename,append=TRUE)
+   cat("1986,	132,	27,	97,	11,	133,	127,	289,	194,	55, \n",
+       file=filename,append=TRUE)
+   cat("1987,	132,	31,	84,	44,	251,	82,	339,	195,	64, \n",
+       file=filename,append=TRUE)
+   cat("1988,	132,	25,	53,	27,	160,	126,	276,	162,	52, \n",
+       file=filename,append=TRUE)
+   cat("1989,	132,	21,	49,	46,	120,	109,	212,	145,	44, \n",
+       file=filename,append=TRUE)
+   cat("1990,	140,	19,	56,	21,	95,	80,	232,	125,	39, \n",
+       file=filename,append=TRUE)
+   cat("1991,	140,	20,	54,	30,	102,	106,	219,	140,	42, \n",
+       file=filename,append=TRUE)
+   cat("1992,	140,	23,	70,	40,	102,	96,	267,	160,	47, \n",
+       file=filename,append=TRUE)
+   cat("1993,	140,	21,	67,	40,	110,	65,	197,	177,	42, \n",
+       file=filename,append=TRUE)
+   cat("1994,	140,	18,	37,	38,	78,	60,	203,	160,	37, \n",
+       file=filename,append=TRUE)
+   cat("1995,	140,	17,	33,	17,	44,	69,	186,	185,	34, \n",
+       file=filename,append=TRUE)
+   cat("1996,	140,	16,	68,	13,	59,	75,	145,	148,	33, \n",
+       file=filename,append=TRUE)
+   cat("1997,	140,	24,	75,	28,	140,	66,	224,	227,	49, \n",
+       file=filename,append=TRUE)
+   cat("1998,	140,	18,	50,	27,	78,	47,	165,	204,	37, \n",
+       file=filename,append=TRUE)
+   cat("1999,	140,	23,	60,	24,	115,	58,	220,	251,	47, \n",
+       file=filename,append=TRUE)
+   cat("2000,	140,	21,	61,	23,	205,	148,	333,	288,	54, \n",
+       file=filename,append=TRUE)
+   cat("2001,	140,	49,	32,	15,	186,	157,	321,	304,	43, \n",
+       file=filename,append=TRUE)
+   cat("2002,	140,	31,	52,	17,	174,	149,	366,	237,	93, \n",
+       file=filename,append=TRUE)
+   cat("2003,	140,	34,	104,	27,	142,	246,	352,	232,	67, \n",
+       file=filename,append=TRUE)
+   cat("2004,	140,	24,	89,	22,	130,	193,	390,	250,	96, \n",
+       file=filename,append=TRUE)
+   cat("2005,	140,	26,	110,	26,	92,	149,	389,	311,	65, \n",
+       file=filename,append=TRUE)
+   cat("2006,	140,	50,	75,	6,	143,	198,	384,	229,	89, \n",
+       file=filename,append=TRUE)
+   cat("2007,	140,	34,	39,	18,	178,	231,	354,	267,	68, \n",
+       file=filename,append=TRUE)
+   cat("2008,	140,	35,	51,	9,	156,	178,	345,	305,	79, \n",
+       file=filename,append=TRUE)
+   cat("2009,	140,	47,	107,	51,	155,	110,	244,	327,	77, \n",
+       file=filename,append=TRUE)
+   cat("2010,	140,	23, 110,	37,	159,	158,	245,	278,	68, \n",
+       file=filename,append=TRUE)
+   cat("2011,	140,	17,	95,	48,	171,	159,	247,	257,	56, \n",
+       file=filename,append=TRUE)
+   cat("2012,	140,	59,	97,	19,	172,	146,	273,	267,	44, \n",
+       file=filename,append=TRUE)
+   cat("2013,	140,	11,	44,	8,	158,	180,	288,	251,	41, \n",
+       file=filename,append=TRUE)
+   cat("2014,	140,	34,	44	5,	98,	142,	220,	249,	37, \n",
+       file=filename,append=TRUE)
+   cat("2015,	140,	32,	65,	11,	89,	115,	240,	245,	34, \n",
+       file=filename,append=TRUE)
+   cat("2016,	140,	19,	31,	12,	62,	77,	170,	299,	34, \n",
+       file=filename,append=TRUE)
+   cat("2017,	140,	12,	37,	7, 56,	78,	195,	274,	42, \n",
+       file=filename,append=TRUE)
+   cat("2018,	140,	11,	41,	14,	57,	89,	174,	262,	52, \n",
+       file=filename,append=TRUE)
+   cat("2019,	140,	16,	53,	5,	65,	81,	179,	251,	53, \n",
+       file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
    cat("CEYRS, 0,  if >1 then number reflects number of historical CPUE records by SAU \n",
+       file=filename,append=TRUE)
+   cat("SIZECOMP, 0, if 1 then a single filename should follow, if 2 then two filenames, etc. \n",
        file=filename,append=TRUE)
    return(invisible(filename))
 } # end of ctrlzonetemplate
@@ -415,7 +513,7 @@ readctrlfile <- function(datadir,infile="control.csv") {
    withsigR <- getsingleNum("withsigR",indat)
    withsigB <- getsingleNum("withsigB",indat)
    withsigCE <- getsingleNum("withsigCE",indat)
-   Nyrs=40 # to set up equilibrium unfished population; could be read in
+   Nyrs=40 # minimum to set up equilibrium unfished population
    if (length(grep(datafile,filenames)) != 1)
       stop("population data file not found \n")
    cat("All required files appear to be present \n")
@@ -478,15 +576,15 @@ readctrlfile <- function(datadir,infile="control.csv") {
       if (HS == "constantCatch")  # get constant inTAC
          HSdetail <- as.numeric(removeEmpty(unlist(strsplit(indat[begin+1],","))))
    } # end of projyrs if test
-   condition <- getsingleNum("CONDITION",indat)
-   if (condition > 0) {
-      Nyrs <- condition  # don't forget to add an extra year for initiation
+   catches <- getsingleNum("CATCHES",indat)
+   if (catches > 0) {
+      if (catches > Nyrs) Nyrs <- catches
       begin <- grep("CondYears",indat)
-      histCatch <- matrix(0,nrow=condition,ncol=nSAU)
+      histCatch <- matrix(0,nrow=catches,ncol=nSAU)
       colnames(histCatch) <- SAUnames
       histyr <- matrix(0,nrow=Nyrs,ncol=2)
       colnames(histyr) <- c("year","histLML")
-      for (i in 1:condition) {
+      for (i in 1:catches) {
          begin <- begin + 1
          asnum <- as.numeric(unlist(strsplit(indat[begin],",")))
          histyr[i,] <- asnum[1:2]
@@ -494,7 +592,9 @@ readctrlfile <- function(datadir,infile="control.csv") {
       }
       rownames(histCatch) <- histyr[,1]
       rownames(histyr) <- histyr[,1]
-      yrce <- getsingleNum("CEYRS",indat)
+   } # end of catches loop
+   yrce <- getsingleNum("CEYRS",indat)
+   if (yrce > 0) {
       begin <- grep("CPUE",indat)
       histCE <- matrix(NA,nrow=yrce,ncol=nSAU)
       yearCE <- numeric(yrce) # of same length as nSAU
@@ -506,19 +606,19 @@ readctrlfile <- function(datadir,infile="control.csv") {
          histCE[i,] <- cenum[2:(nSAU+1)]
       }
       rownames(histCE) <- yearCE
-      sizecomp <- getsingleNum("SIZECOMP",indat)
-      if (sizecomp > 0) {
-         lffiles <- NULL
-         locsizecomp <- grep("SIZECOMP",indat)
-         for (i in 1:sizecomp)
-            lffiles <- c(lffiles,getStr(indat[locsizecomp+i],1))
-         compdat <- vector("list",sizecomp)
-         for (i in 1:sizecomp) {
-            filename <- filenametopath(datadir,lffiles[i])
-            compdat[[i]] <- read.csv(file=filename,header=TRUE)
-         }
+   } # end of histcpue loop
+   sizecomp <- getsingleNum("SIZECOMP",indat)
+   if (sizecomp > 0) {
+      lffiles <- NULL
+      locsizecomp <- grep("SIZECOMP",indat)
+      for (i in 1:sizecomp)
+         lffiles <- c(lffiles,getStr(indat[locsizecomp+i],1))
+      compdat <- vector("list",sizecomp)
+      for (i in 1:sizecomp) {
+         filename <- filenametopath(datadir,lffiles[i])
+         compdat[[i]] <- read.csv(file=filename,header=TRUE)
       }
-   } # end of if condition test
+   }  # end of sizecomp loop
    # make output objects
    condC <- list(histCatch=histCatch,histyr=histyr,
                  histCE=histCE,yearCE=yearCE,initdepl=initdepl,
@@ -526,17 +626,17 @@ readctrlfile <- function(datadir,infile="control.csv") {
    projC <- list(projLML=projLML,HS=HS,HSdetail=HSdetail,projyrs=projyrs,
                  inityrs=inityrs,Sel=NULL,SelWt=NULL,histCE=histCE)
    outctrl <- list(runlabel,datafile,batch,reps,randomseed,randomseedP,
-                   withsigR,withsigB,withsigCE,condition,projyrs)
+                   withsigR,withsigB,withsigCE,catches,projyrs)
    names(outctrl) <- c("runlabel","datafile","batch","reps","randseed",
                        "randseedP","withsigR","withsigB","withsigCE",
-                       "condition","projection")
+                       "catches","projection")
    globals <- list(numpop=numpop, nSAU=nSAU, midpts=midpts,
                    Nclass=Nclass, Nyrs=Nyrs,larvdisp=larvdisp)
    totans <- list(SAUnames,SAUpop,minc,cw,larvdisp,randomseed,
-                  initLML,condC,projC,globals,outctrl,condition,projyrs)
+                  initLML,condC,projC,globals,outctrl,catches,projyrs)
    names(totans) <- c("SAUnames","SAUpop","minc","cw","larvdisp","randomseed",
                      "initLML","condC","projC","globals","ctrl",
-                     "condition","projyrs")
+                     "catches","projyrs")
    return(totans)
 } # end of readctrlzone
 

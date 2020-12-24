@@ -352,10 +352,7 @@ readctrlfile2 <- function(datadir,infile="control.csv") {
                      "initLML","condC","projC","globals","ctrl",
                      "catchyrs","projyrs")
   return(totans)
-} # end of readctrlzone
-
-
-
+} # end of readctrlfile2
 
 
 

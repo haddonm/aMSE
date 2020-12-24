@@ -9,7 +9,7 @@ library(knitr)
 # Obviously you should modify the resdir to suit your own computer
 if (dir.exists("c:/Users/User/DropBox")) {
   ddir <- "c:/Users/User/DropBox/A_code/"
-} else {
+  } else {
   ddir <- "c:/Users/Malcolm/DropBox/A_code/"
 }
 #resdir <- paste0(ddir,"aMSEUse/conddata/generic2")
@@ -32,7 +32,7 @@ zoneCP <- out$zoneC
     ctrl <- zone$ctrl
     print(equiltime - starttime)
     print(midtime - equiltime)
-    propD <- getzoneprops(zone$zoneC,zoneDD,glb,year=1)
+    propD <- getzoneprops(zone$zoneC,zoneDD,zone$glb,year=1)
     round(propD,3)
 
 # Do the replicates ------------------------------------------------------------
@@ -47,8 +47,8 @@ ctrl$randseed <- 0
 midtime <- (Sys.time())
 #Rprof()
 source(paste0(resdir,"/alternative_HS.R"))
-applyHS <- mcdahcrnew
-mseproj <- doprojection(zoneCP,zoneDR,glb,ctrl,projC$projyrs,projC$inityrs)
+
+mseproj <- doprojection(zoneCP,zoneDR,glb,ctrl,projC$projyrs,applyHS=mcdahcrnew,projC$inityrs)
 sauzoneDP <- asSAU(mseproj,sauindex,saunames,B0,exB0)
 zoneproj <- aszone(sauzoneDP,zoneCP)
 #Rprof(NULL)

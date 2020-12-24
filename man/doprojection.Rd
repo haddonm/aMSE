@@ -10,6 +10,7 @@ doprojection(
   glob,
   ctrl,
   projyrs,
+  applyHS,
   inityrs = 10,
   wid = 4,
   targqnt = 0.55,
@@ -28,6 +29,8 @@ doprojection(
 \item{ctrl}{the ctrl object}
 
 \item{projyrs}{the number of years of projection}
+
+\item{applyHS}{the function describing the harvest strategy to be used}
 
 \item{inityrs}{the number of years kept from the period of conditioning,
 defult=10}

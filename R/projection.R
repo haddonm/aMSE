@@ -195,6 +195,7 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 #' @param glob the global variables object
 #' @param ctrl the ctrl object
 #' @param projyrs the number of years of projection
+#' @param applyHS the function describing the harvest strategy to be used
 #' @param inityrs the number of years kept from the period of conditioning,
 #'     defult=10
 #' @param wid the number of years for the gradient PM, default=4
@@ -212,7 +213,7 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 #' print("wait on data files")
 #' # zoneCP=zoneCP;zoneDP=zoneDR;glob=glb;ctrl=ctrl;projyrs=projC$projyrs;inityrs=projC$inityrs
 #' # wid=4;targqnt=0.55;pmwts=c(0.65, 0.25,0.1);hcr = c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2)
-doprojection <- function(zoneCP,zoneDP,glob,ctrl,projyrs,inityrs=10,wid = 4,
+doprojection <- function(zoneCP,zoneDP,glob,ctrl,projyrs,applyHS,inityrs=10,wid = 4,
                          targqnt = 0.55, pmwts = c(0.65, 0.25,0.1),
                          hcr = c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2),
                          recvar=TRUE) {

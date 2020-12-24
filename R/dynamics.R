@@ -72,7 +72,6 @@ depleteSAU <- function(zoneC,zoneD,glob,initdepl,product,len=15) {
   return(zoneDD)
 } # end of depleteSAU
 
-
 #' @title oneyear one year's harvest dynamics for one abpop
 #'
 #' @description oneyear do one year's dynamics for one input population.

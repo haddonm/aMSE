@@ -101,8 +101,7 @@ out <- prepareprojection(zone$zone1,zone$zoneC,zone$glb,zoneDD,zone$ctrl)
   exB0 <- tapply(sapply(zone$zoneC,"[[","ExB0"),sauindex,sum)
 
   midtime <- (Sys.time())
-  applyHS <- mcdahcr   # name the HS/HCR to be used
-mseproj <- doprojection(zoneCP,zoneDR,glb,ctrl,projC$projyrs,projC$inityrs)
+mseproj <- doprojection(zoneCP,zoneDR,glb,ctrl,projC$projyrs,applyHS=mcdahcr,projC$inityrs)
 sauzoneDP <- asSAU(mseproj,sauindex,saunames,B0,exB0)
   endtime <- (Sys.time())
   print(endtime - midtime)

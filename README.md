@@ -91,7 +91,7 @@ if (dir.exists("c:/Users/User/DropBox")) {
 }
 resdir <- paste0(ddir,"aMSEUse/conddata/generic")  # data and results directory
 dirExists(resdir,make=TRUE,verbose=TRUE)
-#> c:/Users/Malcolm/DropBox/A_code/aMSEUse/conddata/generic :  exists
+#> c:/Users/User/DropBox/A_code/aMSEUse/conddata/generic :  exists
 # equilibrium zone -------------------------------------------------------------
 # You now need to ensure that there is, at least, a control.csv, and a 
 # constantsdata.csv file in the data directory plus some other data .csv files
@@ -114,9 +114,9 @@ out <- prepareprojection(zone$zone1,zone$zoneC,zone$glb,zoneDD,zone$ctrl)
   glb <- zone$glb
   ctrl <- zone$ctrl
   print(equiltime - starttime)
-#> Time difference of 0.2902238 secs
+#> Time difference of 0.07679605 secs
   print(midtime - equiltime)
-#> Time difference of 4.600812 secs
+#> Time difference of 3.721049 secs
   propD <- getzoneprops(zone$zoneC,zoneDD,glb,year=1)
   # round(propD,3)
 # Do the replicates ------------------------------------------------------------
@@ -128,12 +128,11 @@ out <- prepareprojection(zone$zone1,zone$zoneC,zone$glb,zoneDD,zone$ctrl)
   exB0 <- tapply(sapply(zone$zoneC,"[[","ExB0"),sauindex,sum)
 
   midtime <- (Sys.time())
-  applyHS <- mcdahcr   # name the HS/HCR to be used
-mseproj <- doprojection(zoneCP,zoneDR,glb,ctrl,projC$projyrs,projC$inityrs)
+mseproj <- doprojection(zoneCP,zoneDR,glb,ctrl,projC$projyrs,applyHS=mcdahcr,projC$inityrs)
 sauzoneDP <- asSAU(mseproj,sauindex,saunames,B0,exB0)
   endtime <- (Sys.time())
   print(endtime - midtime)
-#> Time difference of 18.29913 secs
+#> Time difference of 14.77056 secs
 # Now plot some results
   plotC <- function(nsau,saunames,reps,projyrs,plts=c(4,2)) {
     return(list(nsau=nsau,saunames=saunames,reps=reps,projyrs=projyrs,plts=plts))
