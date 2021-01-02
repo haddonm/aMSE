@@ -593,6 +593,7 @@ makeequilzone <- function(resdir,ctrlfile="control.csv",cleanslate=FALSE) {
   zoneD <- out$zoneD
   glb <- out$glb             # glb now has the movement matrix
   product <- out$product     # important bits usually saved in resdir
+  zone1$globals <- glb
   # did the larval dispersal level disturb the equilibrium?
   zoneD <- testequil(zoneC,zoneD,glb)
   zoneC <- resetexB0(zoneC,zoneD) # rescale exploitB to avexplB after dynamics

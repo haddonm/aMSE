@@ -410,7 +410,7 @@ getzoneprod <- function(product) {
 #' @examples
 #' data(zone)
 #' round(getzoneprops(zone$zoneC,zone$zoneD,zone$glb),4)
-getzoneprops <- function(zoneC,zoneD,glb,year=1) {
+getzoneprops <- function(zoneC,zoneD,glb,year=1) { #zoneC=out$zoneC; zoneD=zoneDD;glb=zone$glb; year=1
   numpop <- glb$numpop
   Nclass <- glb$Nclass
   sau <- getvar(zoneC,"SAU")

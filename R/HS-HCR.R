@@ -2,7 +2,7 @@
 
 #' @title calibrateMCDA uses historical CPUE to calibrate the MCDA
 #'
-#' @description calibrateMCDA uses the projC$histCE to apply the getgrad1,
+#' @description calibrateMCDA uses the condC$histCE to apply the getgrad1,
 #'     getgrad4, and targscore functions so as to provide vewctors of
 #'     permance measure scores to enhance the calibration of the MCDA before
 #'     any projections are done. This is not absolutely required but improves
@@ -21,7 +21,7 @@
 #' @examples
 #' print("wait on example data being available")
 calibrateMCDA <- function(histCE,saunames) {
-  # histCE <- zone$zone1$projC$histCE; saunames=zone$zone1$SAUnames
+  # histCE <- zone$zone1$condC$histCE; saunames=zone$zone1$SAUnames
   nSAU <- length(saunames)
   yearCE <- as.numeric(rownames(histCE))
   yrce <- length(yearCE)

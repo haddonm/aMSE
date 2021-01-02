@@ -215,7 +215,7 @@ oneyearcat <- function(inpopC,inNt,Nclass,incat,yr) {  #
 #'     1 is the year of initiation.
 #' @param iter the specific replicate being considered
 #' @param sigmar the variation in recruitment dynamics, set to 1e-08
-#'     when searching for equilibria.
+#'     when searching for an equilibria.
 #' @param Ncl the number of size classes used to describe size, global Nclass
 #' @param npop the number of populations, the global numpop
 #' @param movem the larval dispersal movement matrix, global move
@@ -462,9 +462,9 @@ restart <- function(oldzoneD,nyrs,npop,N,zero=TRUE) { # oldzoneD=zoneD; nyrs=Nyr
   return(zoneD)
 } # end of restart
 
-#' @title runthree conducts the dynamics with constant catch 3 times
+#' @title runthreeH conducts the dynamics with constant catch 3 times
 #'
-#' @description runthree is used when searching numerically for an
+#' @description runthreeH is used when searching numerically for an
 #'     equilibrium and it conducts the Nyrs dynamics three times, each
 #'     time through it replaces year 1 with year Nyrs. Thus if Nyrs is
 #'     40 it conducts 3 * 39 years of dynamics (117 years). This is
@@ -500,5 +500,5 @@ runthreeH <- function(zoneC,zoneD,inHarv,glob,maxiter=3) {
     zoneD <- restart(oldzoneD=zoneD,nyrs=Nyrs,npop=npop,N=Nclass,zero=TRUE)
   }
   return(zoneD)
-} # end of runthree
+} # end of runthreeH
 

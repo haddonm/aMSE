@@ -34,7 +34,7 @@ population}
 \item{iter}{the specific replicate being considered}
 
 \item{sigmar}{the variation in recruitment dynamics, set to 1e-08
-when searching for equilibria.}
+when searching for an equilibria.}
 
 \item{Ncl}{the number of size classes used to describe size, global Nclass}
 

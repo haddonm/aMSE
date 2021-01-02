@@ -1,4 +1,85 @@
 
+#' @title oneyearsauC conducts one year's dynamics using catch not harvest
+#'
+#' @description oneyearsauC conducts one year's dynamics in the simulation
+#'     using historical SAU catches rather than harvest rates. The harvest rates
+#'     are estimated after first estimating the exploitable biomass.
+#'     returning the revised zoneD, which will have had a single year
+#'     of activity included in each of its components.
+#'
+#' @param zoneC the constant portion of the zone with a list of
+#'     properties for each population
+#' @param zoneDD the dynamics portion of the zone, with matrices and
+#'     arrays for the dynamic variables of the dynamics of the
+#'     operating model, potentially depleted prior to applciation of historical
+#'     catches.
+#' @param catchsau a vector of catches to be taken in the year from each SAU
+#' @param year the year of the dynamics, would start in year 2 as year
+#'     1 is the year of initiation.
+#' @param iter the specific replicate being considered
+#' @param sigmar the variation in recruitment dynamics, set to 1e-08
+#'     when searching for an equilibria.
+#' @param Ncl the number of size classes used to describe size, global Nclass
+#' @param sauindex the sau index for each population
+#' @param movem the larval dispersal movement matrix, global move
+#' @param recvar should recruitment variation be included, default=TRUE
+#'
+#' @return a list containing a revised dynamics list
+#' @export
+#'
+#' @examples
+#' print("Wait on new data")
+#' # data(zone)
+#' # zoneC <- zone$zoneC
+#' #  glb <- zone$glb
+#'  #zoneD <- zone$zoneD
+#'  #Nc <- glb$Nclass
+#'  #nyrs <- glb$Nyrs
+#'  #catch <- 900.0 # larger than total MSY ~ 870t
+#'  #B0 <- getvar(zoneC,"B0")
+#'  #totB0 <- sum(B0)
+#'  #prop <- B0/totB0
+#'  #catchpop <- catch * prop
+#'  #for (yr in 2:nyrs)
+#'  #  zoneD <- oneyearC(zoneC=zoneC,zoneD=zoneD,Ncl=Nc,
+#'  #                  catchp=catchpop,year=yr,sigmar=1e-08,
+#'  #                  npop=glb$numpop,movem=glb$move)
+#'  #str(zoneD)
+#'  #round(zoneD$catchN[60:105,1:5,1],1)
+oneyearsauC <- function(zoneC,zoneDD,catchsau,year,sigmar,Ncl,sauindex,movem,
+                        recvar=TRUE) {
+  exb <- zoneDD$exploitB[year-1,]
+  npop <- length(exb)
+  nSAU <- length(unique(sauindex))
+  sauexB <- numeric(nSAU)
+  for (mu in 1:nSAU) sauexB[mu] <- sum(exb[(sauindex==mu)],na.rm=T)
+  popC <- catchsau[sauindex] * (exb/sauexB[sauindex])
+  matb <- numeric(npop)
+  for (popn in 1:npop) {  # year=2
+    out <- oneyearcat(inpopC=zoneC[[popn]],inNt=zoneDD$Nt[,year-1,popn],
+                      Nclass=Ncl,incat=popC[popn],yr=year)
+    zoneDD$exploitB[year,popn] <- out$ExploitB
+    zoneDD$matureB[year,popn] <- out$MatureB
+    zoneDD$catch[year,popn] <- out$Catch
+    zoneDD$harvestR[year,popn] <- out$Harvest
+    zoneDD$cpue[year,popn] <- out$ce
+    zoneDD$Nt[,year,popn] <- out$Nt
+    zoneDD$catchN[,year,popn] <- out$CatchN
+    matb[popn] <- out$MatureB
+  }
+  steep <- getvect(zoneC,"steeph") #sapply(zoneC,"[[","popdef")["steeph",]
+  r0 <- getvar(zoneC,"R0") #sapply(zoneC,"[[","R0")
+  b0 <- getvar(zoneC,"B0") #sapply(zoneC,"[[","B0")
+  recs <- oneyearrec(steep,r0,b0,matb,sigR=sigmar,withvar = recvar)
+  newrecs <- movem %*% recs
+  zoneDD$recruit[year,] <- newrecs
+  zoneDD$Nt[1,year,] <- newrecs
+  zoneDD$deplsB[year,] <- zoneDD$matureB[year,]/b0
+  zoneDD$depleB[year,] <- zoneDD$exploitB[year,]/getvar(zoneC,"ExB0")
+  return(zoneDD)
+} # end of oneyearsauC
+
+
 #' @title dohistoricC imposes the historical catches on an unfished zone
 #'
 #' @description dohistoricC is used during the conditioning of the zone/region
@@ -17,17 +98,19 @@
 #'
 #' @examples
 #' print("wait on some data sets")
-dohistoricC <- function(zoneDD,zoneC,zone1) {
-  glb <- zone1$globals
-  histC <- zone1$histCatch
-  yrs <- zone1$histyr[,"year"]
+dohistoricC <- function(zoneDD,zoneC,glob,zone1) {
+   zoneC=zone$zoneC; zoneDD=zone$zoneD;glob=zone$glb;zone1=zone$zone1
+ #   catchsau=condC$histCatch[year,]
+   sigmar=1e-08; Ncl=glob$Nclass;sauindex=glob$sauindex;movem=glob$move; recvar=FALSE
+
+  histC <- zone1$condC$histCatch
+  yrs <- zone1$condC$histyr[,"year"]
   nyrs <- length(yrs)
   for (yr in 2:nyrs) {  # yr=2 # ignores the initial unfished year
-    year <- yrs[yr]
     catchpop <- histC[yr,]
-    zoneDD <- oneyearC(zoneC=zoneC,zoneD=zoneDD,Ncl=glb$Nclass,
-                       catchp=catchpop,year=yr,sigmar=1e-08,
-                       npop=glb$nSAU,movem=glb$move)
+    zoneDD <- oneyearsauC(zoneC=zoneC,zoneD=zoneDD,Ncl=glob$Nclass,
+                       catchsau=catchpop,year=yr,sigmar=1e-08,
+                       sauindex=glob$sauindex,movem=glob$move)
   }
   return(zoneDD)
 } # end of dohistoricC
@@ -208,159 +291,6 @@ ans <- matrix(0,nrow=reps,ncol=16)
 for (pop in 1:16) ans[,pop] <- rnorm(reps,mean=hr[pop],sd=0.003)
 
 ans
-
-
-
-# newreadctrlfile ---------------------------------------------------------
-
-readctrlfile2 <- function(datadir,infile="control.csv") {
-  # datadir=resdir; infile="control2.csv"
-  filenames <- dir(datadir)
-  if (length(grep(infile,filenames)) != 1)
-    stop(cat(infile," not found in datadir \n"))
-  filename <- filenametopath(datadir,infile)
-  indat <- readLines(filename)   # reads the whole file as character strings
-  begin <- grep("START",indat) + 1
-  runlabel <- getStr(indat[begin],1)
-  datafile <- getStr(indat[begin+1],1)
-  batch <- getsingleNum("batch",indat)
-  reps <- getsingleNum("replicates",indat)
-  withsigR <- getsingleNum("withsigR",indat)
-  withsigB <- getsingleNum("withsigB",indat)
-  withsigCE <- getsingleNum("withsigCE",indat)
-  Nyrs=40 # to set up equilibrium unfished population; could be read in
-  if (length(grep(datafile,filenames)) != 1)
-    stop("population data file not found \n")
-  cat("All required files appear to be present \n")
-  # Now read zone data
-  context <- "control_file"
-  nSAU <-  getsingleNum("nSAU",indat) # number of spatial management units
-  begin <- grep("SAUpop",indat)
-  SAUpop <-  getConst(indat[begin],nSAU) # how many populations per SAU
-  numpop <- sum(SAUpop)
-  SAUnames <- getStr(indat[begin+1],nSAU)
-  initdepl <- getConst(indat[begin+2],nSAU)
-  minc <-  getsingleNum("minc",indat) # minimum size class
-  cw    <- getsingleNum("cw",indat) # class width
-  Nclass <- getsingleNum("Nclass",indat) # number of classes
-  midpts <- seq(minc,minc+((Nclass-1)*cw),2)
-  larvdisp <- getsingleNum("larvdisp",indat)
-  randomseed <- getsingleNum("randomseed",indat)
-  randomseedP <- getsingleNum("randomseedP",indat)
-  initLML <- getsingleNum("initLML",indat)
-  projyrs <- getsingleNum("PROJECT",indat)
-  firstyear <- getsingleNum("firstyear",indat)
-  inityrs <- getsingleNum("inityrs",indat)
-  outyear <- c(projyrs,firstyear)
-  projLML <- NULL
-  HS <- NULL
-  histCatch <- NULL
-  histyr <- NULL
-  histCE <- NULL
-  yearCE <- NULL
-  compdat=NULL
-  if (projyrs > 0) {
-    projLML <- numeric(projyrs)
-    from <- grep("PROJLML",indat)
-    for (i in 1:projyrs) {
-      from <- from + 1
-      projLML[i] <- getConst(indat[from],1)
-    }
-    begin <- grep("HARVESTS",indat)
-    HS <- getStr(indat[begin],1)
-    if (HS == "MCDA") # if HSdetail=1 then get the CPUE calibration data
-      HSdetail <- getsingleNum("HSdetail",indat)
-    if ((HS == "MCDA") & (HSdetail == 1)) {
-      yrce <- getsingleNum("CEYRS",indat)
-      if (yrce == 0) {
-        warning("CPUE calibration has no data")
-      } else {
-        begin <- grep("CPUE",indat)
-        histCE <- matrix(NA,nrow=yrce,ncol=nSAU)
-        yearCE <- numeric(yrce) # of same length as nSAU
-        colnames(histCE) <- SAUnames
-        for (i in 1:yrce) {
-          begin <- begin + 1
-          cenum <- as.numeric(unlist(strsplit(indat[begin],",")))
-          yearCE[i] <- cenum[1]
-          histCE[i,] <- cenum[2:(nSAU+1)]
-        }
-        rownames(histCE) <- yearCE
-      }
-    } # end of if HSdetail test
-    if (HS == "constantCatch")  # get constant inTAC
-      HSdetail <- as.numeric(removeEmpty(unlist(strsplit(indat[begin+1],","))))
-  } # end of projyrs if test
-  catches <- getsingleNum("CATCHES",indat)
-  if (catches > 0) {
-     Nyrs <- catches  # don't forget to add an extra year for initiation
-     begin <- grep("CondYears",indat)
-     histCatch <- matrix(0,nrow=catches,ncol=nSAU)
-     colnames(histCatch) <- SAUnames
-     histyr <- matrix(0,nrow=Nyrs,ncol=2)
-     colnames(histyr) <- c("year","histLML")
-     for (i in 1:catches) {
-       begin <- begin + 1
-       asnum <- as.numeric(unlist(strsplit(indat[begin],",")))
-       histyr[i,] <- asnum[1:2]
-       histCatch[i,] <- asnum[3:(nSAU+2)]
-     }
-  } # end of catches loop
-  rownames(histCatch) <- histyr[,1]
-  rownames(histyr) <- histyr[,1]
-  yrce <- getsingleNum("CEYRS",indat)
-  if (yrce > 0) {
-    begin <- grep("CPUE",indat)
-    histCE <- matrix(NA,nrow=yrce,ncol=nSAU)
-    yearCE <- numeric(yrce) # of same length as nSAU
-    colnames(histCE) <- SAUnames
-    for (i in 1:yrce) {
-      begin <- begin + 1
-      cenum <- as.numeric(unlist(strsplit(indat[begin],",")))
-      yearCE[i] <- cenum[1]
-      histCE[i,] <- cenum[2:(nSAU+1)]
-    }
-  } # end of ceyrs loop
-  rownames(histCE) <- yearCE
-  sizecomp <- getsingleNum("SIZECOMP",indat)
-  compdat <- NULL
-  if (sizecomp > 0) {
-    lffiles <- NULL
-    locsizecomp <- grep("SIZECOMP",indat)
-    lffiles <- c(lffiles,getStr(indat[locsizecomp+i],1))
-    compdat <- vector("list",sizecomp)
-    for (i in 1:sizecomp) {
-      filename <- filenametopath(datadir,lffiles[i])
-      compdat[[i]] <- read.csv(file=filename,header=TRUE)
-    }
-  } # end of sizecomp loop
-  condC <- list(histCatch=histCatch,histyr=histyr,
-                histCE=histCE,yearCE=yearCE,initdepl=initdepl,
-                compdat=compdat,Sel=NULL,SelWt=NULL)
-  projC <- list(projLML=projLML,HS=HS,HSdetail=HSdetail,projyrs=projyrs,
-                inityrs=inityrs,Sel=NULL,SelWt=NULL,histCE=histCE)
-  outctrl <- list(runlabel,datafile,batch,reps,randomseed,randomseedP,
-                  withsigR,withsigB,withsigCE,catches,projyrs)
-  names(outctrl) <- c("runlabel","datafile","batch","reps","randseed",
-                      "randseedP","withsigR","withsigB","withsigCE",
-                      "catchyrs","projection")
-  globals <- list(numpop=numpop, nSAU=nSAU, midpts=midpts,
-                  Nclass=Nclass, Nyrs=Nyrs,larvdisp=larvdisp)
-  totans <- list(SAUnames,SAUpop,minc,cw,larvdisp,randomseed,
-                 initLML,condC,projC,globals,outctrl,catches,projyrs)
-  names(totans) <- c("SAUnames","SAUpop","minc","cw","larvdisp","randomseed",
-                     "initLML","condC","projC","globals","ctrl",
-                     "catchyrs","projyrs")
-  return(totans)
-} # end of readctrlfile2
-
-
-
-
-zone1 <- readctrlfile2(resdir,infile="control2.csv")
-ctrl <- zone1$ctrl
-glb <- zone1$globals     # glb without the movement matrix
-constants <- readdatafile(glb$numpop,resdir,ctrl$datafile)
 
 
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/dynamics.R
 \name{runthreeH}
 \alias{runthreeH}
-\title{runthree conducts the dynamics with constant catch 3 times}
+\title{runthreeH conducts the dynamics with constant catch 3 times}
 \usage{
 runthreeH(zoneC, zoneD, inHarv, glob, maxiter = 3)
 }
@@ -24,7 +24,7 @@ constant across all years.}
 a list containing a revised dynamics list, zoneD
 }
 \description{
-runthree is used when searching numerically for an
+runthreeH is used when searching numerically for an
     equilibrium and it conducts the Nyrs dynamics three times, each
     time through it replaces year 1 with year Nyrs. Thus if Nyrs is
     40 it conducts 3 * 39 years of dynamics (117 years). This is

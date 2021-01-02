@@ -32,7 +32,7 @@ zoneCP <- out$zoneC
     ctrl <- zone$ctrl
     print(equiltime - starttime)
     print(midtime - equiltime)
-    propD <- getzoneprops(zone$zoneC,zoneDD,zone$glb,year=1)
+    propD <- getzoneprops(zone$zoneCP,zoneDD,zone$glb,year=1)
     round(propD,3)
 
 # Do the replicates ------------------------------------------------------------
