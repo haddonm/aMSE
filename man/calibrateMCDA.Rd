@@ -18,7 +18,7 @@ a list of three matrices of performance measure scores used to
     condition the MCDA
 }
 \description{
-calibrateMCDA uses the projC$histCE to apply the getgrad1,
+calibrateMCDA uses the condC$histCE to apply the getgrad1,
     getgrad4, and targscore functions so as to provide vewctors of
     permance measure scores to enhance the calibration of the MCDA before
     any projections are done. This is not absolutely required but improves

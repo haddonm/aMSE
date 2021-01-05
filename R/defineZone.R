@@ -77,7 +77,7 @@ definepops <- function(inSAU,inSAUindex,const,glob) {
   Nyrs <- glob$Nyrs
   columns <- c("DLMax","L50","L95","SigMax","SaMa","SaMb","Wta","Wtb","Me",
                "L50C","deltaC","AvRec","SelP1","SelP2","Nyrs","steeph",
-               "MaxCE","L50mat","SAU")
+               "MaxCE","qmult","L50mat","SAU")
   popdefs <- matrix(0,nrow=numpop,ncol=length(columns),
                     dimnames=list(1:numpop,columns))
   popdefs[,"Nyrs"] <- rep(Nyrs,numpop) # Num Years - why is this here?
@@ -110,6 +110,7 @@ definepops <- function(inSAU,inSAUindex,const,glob) {
                                    const["sdefsteep",pop])
     popdefs[pop,"AvRec"] <- rlnorm(1,meanlog=const["AvRec",pop],
                                    const["sAvRec",pop])
+    popdefs[pop,"qmult"] <- const["qmult",pop]
     popdefs[pop,"MaxCE"] <- rnorm(1,mean=const["MaxCEpars",pop],
                                   const["sMaxCEpars",pop])
     popdefs[pop,"SAU"] <- const["SAU",pop]
@@ -195,6 +196,41 @@ dodepletion <- function(zoneC,zoneD,glob,depl,product,len=15) {
   zoneDD <- runthreeH(zoneC=zoneC,zoneD,inHarv=pickharv,glob)
   return(zoneDD)
 } # end of dodepletion
+
+#' @title dohistoricC imposes the historical catches on an unfished zone
+#'
+#' @description dohistoricC is used during the conditioning of the zone/region
+#'     and imposes the historical catches, held in the zone data object
+#'     obtained using readzonefile, onto an unfished initial zone, and it does
+#'     this by imposing the time-series of catches to each SAU/block. The
+#'     operation is through the use of oneyearC, which imposes one year's
+#'     catches, which are a vector of SAU catches for each year of the series.
+#'
+#' @param zoneDD The input unfished dynamic zone, zoneD, object
+#' @param zoneC the zone constants object, zoneC
+#' @param zone1 the zone data object obtained from readzonefile
+#'
+#' @return a zoneD object
+#' @export
+#'
+#' @examples
+#' print("wait on some data sets")
+dohistoricC <- function(zoneDD,zoneC,glob,zone1) {
+  zoneC=zone$zoneC; zoneDD=zone$zoneD;glob=zone$glb;zone1=zone$zone1
+  #   catchsau=condC$histCatch[year,]
+  sigmar=1e-08; Ncl=glob$Nclass;sauindex=glob$sauindex;movem=glob$move; recvar=FALSE
+
+  histC <- zone1$condC$histCatch
+  yrs <- zone1$condC$histyr[,"year"]
+  nyrs <- length(yrs)
+  for (yr in 2:nyrs) {  # yr=2 # ignores the initial unfished year
+    catchpop <- histC[yr,]
+    zoneDD <- oneyearsauC(zoneC=zoneC,zoneD=zoneDD,Ncl=glob$Nclass,
+                          catchsau=catchpop,year=yr,sigmar=1e-08,
+                          sauindex=glob$sauindex,movem=glob$move)
+  }
+  return(zoneDD)
+} # end of dohistoricC
 
 #' @title doproduction estimates a production curve for each population
 #'
@@ -768,7 +804,9 @@ makezone <- function(glob,zoneC) { #glob=glb; zoneC=zoneC;
     deplExB[1,pop] <- 1.0  # no depletion when first generating zones
     deplSpB[1,pop] <- 1.0
     Recruit[1,pop] <- recr[1]
-    zoneC[[pop]]$popq <- as.numeric(zoneC[[pop]]$popdef["MaxCE"]/ExplB[1,pop])
+    qcalc <- as.numeric(zoneC[[pop]]$popdef["MaxCE"]) *
+                        as.numeric(zoneC[[pop]]$popdef["qmult"])
+    zoneC[[pop]]$popq <- qcalc/ExplB[1,pop]
     cpue[1,pop] <- 1000.0 * zoneC[[pop]]$popq * ExplB[1,pop]
   }
   ans <- list(SAU=SAU,matureB=MatB,exploitB=ExplB,catch=Catch,
@@ -847,7 +885,85 @@ modzoneC <- function(zoneC,zoneD,glob,lowlim=0.0,uplim=0.4,inc=0.005) {
   return(list(zoneC=zoneC,product=production))
 } # end of modzoneC
 
-
+#' @title oneyearsauC conducts one year's dynamics using catch not harvest
+#'
+#' @description oneyearsauC conducts one year's dynamics in the simulation
+#'     using historical SAU catches rather than harvest rates. The harvest rates
+#'     are estimated after first estimating the exploitable biomass.
+#'     returning the revised zoneD, which will have had a single year
+#'     of activity included in each of its components.
+#'
+#' @param zoneC the constant portion of the zone with a list of
+#'     properties for each population
+#' @param zoneDD the dynamics portion of the zone, with matrices and
+#'     arrays for the dynamic variables of the dynamics of the
+#'     operating model, potentially depleted prior to applciation of historical
+#'     catches.
+#' @param catchsau a vector of catches to be taken in the year from each SAU
+#' @param year the year of the dynamics, would start in year 2 as year
+#'     1 is the year of initiation.
+#' @param iter the specific replicate being considered
+#' @param sigmar the variation in recruitment dynamics, set to 1e-08
+#'     when searching for an equilibria.
+#' @param Ncl the number of size classes used to describe size, global Nclass
+#' @param sauindex the sau index for each population
+#' @param movem the larval dispersal movement matrix, global move
+#' @param recvar should recruitment variation be included, default=TRUE
+#'
+#' @return a list containing a revised dynamics list
+#' @export
+#'
+#' @examples
+#' print("Wait on new data")
+#' # data(zone)
+#' # zoneC <- zone$zoneC
+#' #  glb <- zone$glb
+#'  #zoneD <- zone$zoneD
+#'  #Nc <- glb$Nclass
+#'  #nyrs <- glb$Nyrs
+#'  #catch <- 900.0 # larger than total MSY ~ 870t
+#'  #B0 <- getvar(zoneC,"B0")
+#'  #totB0 <- sum(B0)
+#'  #prop <- B0/totB0
+#'  #catchpop <- catch * prop
+#'  #for (yr in 2:nyrs)
+#'  #  zoneD <- oneyearC(zoneC=zoneC,zoneD=zoneD,Ncl=Nc,
+#'  #                  catchp=catchpop,year=yr,sigmar=1e-08,
+#'  #                  npop=glb$numpop,movem=glb$move)
+#'  #str(zoneD)
+#'  #round(zoneD$catchN[60:105,1:5,1],1)
+oneyearsauC <- function(zoneC,zoneDD,catchsau,year,sigmar,Ncl,sauindex,movem,
+                        recvar=TRUE) {
+  exb <- zoneDD$exploitB[year-1,]
+  npop <- length(exb)
+  nSAU <- length(unique(sauindex))
+  sauexB <- numeric(nSAU)
+  for (mu in 1:nSAU) sauexB[mu] <- sum(exb[(sauindex==mu)],na.rm=T)
+  popC <- catchsau[sauindex] * (exb/sauexB[sauindex])
+  matb <- numeric(npop)
+  for (popn in 1:npop) {  # year=2
+    out <- oneyearcat(inpopC=zoneC[[popn]],inNt=zoneDD$Nt[,year-1,popn],
+                      Nclass=Ncl,incat=popC[popn],yr=year)
+    zoneDD$exploitB[year,popn] <- out$ExploitB
+    zoneDD$matureB[year,popn] <- out$MatureB
+    zoneDD$catch[year,popn] <- out$Catch
+    zoneDD$harvestR[year,popn] <- out$Harvest
+    zoneDD$cpue[year,popn] <- out$ce
+    zoneDD$Nt[,year,popn] <- out$Nt
+    zoneDD$catchN[,year,popn] <- out$CatchN
+    matb[popn] <- out$MatureB
+  }
+  steep <- getvect(zoneC,"steeph") #sapply(zoneC,"[[","popdef")["steeph",]
+  r0 <- getvar(zoneC,"R0") #sapply(zoneC,"[[","R0")
+  b0 <- getvar(zoneC,"B0") #sapply(zoneC,"[[","B0")
+  recs <- oneyearrec(steep,r0,b0,matb,sigR=sigmar,withvar = recvar)
+  newrecs <- movem %*% recs
+  zoneDD$recruit[year,] <- newrecs
+  zoneDD$Nt[1,year,] <- newrecs
+  zoneDD$deplsB[year,] <- zoneDD$matureB[year,]/b0
+  zoneDD$depleB[year,] <- zoneDD$exploitB[year,]/getvar(zoneC,"ExB0")
+  return(zoneDD)
+} # end of oneyearsauC
 
 #' @title print.zoneDefinition S3 method for printing zonedef summary
 #'

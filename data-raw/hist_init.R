@@ -1,6 +1,7 @@
 
 
 
+
 starttime <- (Sys.time())
 library(aMSE)
 library(rutilsMH)
@@ -19,15 +20,18 @@ dirExists(resdir,make=TRUE,verbose=TRUE)
 zone <- makeequilzone(resdir,"control2.csv") # normally would read in a file
 equiltime <- (Sys.time())
 nyrs <- zone$glb$Nyrs
-
-zoneC <- zone$zoneC
-zoneD <- zone$zoneD
-glb <- zone$glb
-zone1 <- zone$zone1
-
+zoneC <- zone$zoneC; zoneD <- zone$zoneD
+glb <- zone$glb; zone1 <- zone$zone1
 zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,zone1)
+x <- getzoneprops(zoneC,zoneDD,glb,year=47)
+round(x[c(1,2,6,9),],3)
 
-getzoneprops(zoneC,zoneDD,glb,zone1)
+condce <- zone1$condC$histCE; round(condce,2)
+
+
+cpue <- zoneDD$cpue
+round(cpue,3)
+
 
 catchsau <- zone$zone1$condC$histCatch
 zoneD <- zone$zoneD

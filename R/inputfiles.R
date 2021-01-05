@@ -676,7 +676,7 @@ readdatafile <- function(numpop,indir,infile) {  # indir=datadir;infile="zone1sa
    rows <- c("popnum","SAU","DLMax","sMaxDL","L50","sL50","L50inc","sL50inc","SigMax",
              "sSigMax","LML","Wtb","sWtb","Wtbtoa","sWtbtoa","Me","sMe",
              "AvRec","sAvRec","defsteep","sdefsteep","L50C","sL50C",
-             "deltaC","sdeltaC","MaxCEpars","sMaxCEpars","selL50p",
+             "deltaC","sdeltaC","MaxCEpars","sMaxCEpars","qmult","selL50p",
              "selL95p","SaMa","L50Mat","sL50Mat")
    ans <- matrix(0,nrow=length(rows),ncol=numpop)
    begin <- begin + 1
