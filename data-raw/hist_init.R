@@ -28,19 +28,25 @@ round(x[c(1,2,6,9),],3)
 
 condce <- zone1$condC$histCE; round(condce,2)
 
+getDD <- function(x,sau) {
+  rownames(x) <- 1973:2019
+  colnames(x) <- sau
+  return(x)
+}
 
-cpue <- zoneDD$cpue
+cpue <- getDD(zoneDD$cpue,zoneD$SAU)
+catch <- getDD(zoneDD$catch,zoneD$SAU)
 round(cpue,3)
+round(catch,3)
 
 
-catchsau <- zone$zone1$condC$histCatch
-zoneD <- zone$zoneD
-glb <- zone$glb
-for (yr in 2:nyrs)
-  zoneD <- oneyearC(zoneC=zone$zoneC,zoneD=zoneD,Ncl=glb$Nclass,
-                  catchp=catchsau[yr,],year=yr,sigmar=1e-08,
-                  npop=glb$numpop,movem=glb$move)
-
+plotprep(width=8,height=7)
+parset(plots=c(4,4))
+for (i in 1:16) {
+  ymax <- getmax(cpue[,i])
+  plot(catch[,i],cpue[,i],type="p",pch=1,xlab=zoneD$SAU[i],ylab="",
+       ylim=c(0,650))
+}
 
 
 

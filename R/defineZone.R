@@ -77,7 +77,7 @@ definepops <- function(inSAU,inSAUindex,const,glob) {
   Nyrs <- glob$Nyrs
   columns <- c("DLMax","L50","L95","SigMax","SaMa","SaMb","Wta","Wtb","Me",
                "L50C","deltaC","AvRec","SelP1","SelP2","Nyrs","steeph",
-               "MaxCE","qmult","L50mat","SAU")
+               "MaxCE","L50mat","SAU")
   popdefs <- matrix(0,nrow=numpop,ncol=length(columns),
                     dimnames=list(1:numpop,columns))
   popdefs[,"Nyrs"] <- rep(Nyrs,numpop) # Num Years - why is this here?
@@ -110,7 +110,6 @@ definepops <- function(inSAU,inSAUindex,const,glob) {
                                    const["sdefsteep",pop])
     popdefs[pop,"AvRec"] <- rlnorm(1,meanlog=const["AvRec",pop],
                                    const["sAvRec",pop])
-    popdefs[pop,"qmult"] <- const["qmult",pop]
     popdefs[pop,"MaxCE"] <- rnorm(1,mean=const["MaxCEpars",pop],
                                   const["sMaxCEpars",pop])
     popdefs[pop,"SAU"] <- const["SAU",pop]
@@ -804,8 +803,7 @@ makezone <- function(glob,zoneC) { #glob=glb; zoneC=zoneC;
     deplExB[1,pop] <- 1.0  # no depletion when first generating zones
     deplSpB[1,pop] <- 1.0
     Recruit[1,pop] <- recr[1]
-    qcalc <- as.numeric(zoneC[[pop]]$popdef["MaxCE"]) *
-                        as.numeric(zoneC[[pop]]$popdef["qmult"])
+    qcalc <- as.numeric(zoneC[[pop]]$popdef["MaxCE"])
     zoneC[[pop]]$popq <- qcalc/ExplB[1,pop]
     cpue[1,pop] <- 1000.0 * zoneC[[pop]]$popq * ExplB[1,pop]
   }
