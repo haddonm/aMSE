@@ -4,10 +4,12 @@
 \alias{getsauzone}
 \title{getsauzone summarizes zoneD into MSU and zone}
 \usage{
-getsauzone(zoneD)
+getsauzone(zoneD, glb)
 }
 \arguments{
 \item{zoneD}{the zoneD after nyrs of dynamics}
+
+\item{glb}{the globals object}
 }
 \value{
 a list of six matrices of nSAU columns of SAU summaries,

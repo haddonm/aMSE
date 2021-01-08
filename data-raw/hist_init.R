@@ -22,9 +22,30 @@ equiltime <- (Sys.time())
 nyrs <- zone$glb$Nyrs
 zoneC <- zone$zoneC; zoneD <- zone$zoneD
 glb <- zone$glb; zone1 <- zone$zone1
-zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,zone1)
+zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,zone1,sigR=1e-08)
 x <- getzoneprops(zoneC,zoneDD,glb,year=47)
 round(x[c(1,2,6,9),],3)
+
+
+iter=200
+result <- matrix(0,nrow=iter,ncol=17)
+for (i in 1:iter) {
+  zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,zone1,sigR=0.15)
+  x <- getzoneprops(zoneC,zoneDD,glb,year=47)
+  result[i,] <- x[9,]
+}
+
+plotprep(width=8,height=7,newdev=FALSE)
+parset(plots=c(4,4))
+bins=seq(0,0.4,0.02)
+for (i in 1:16) {
+  hist(result[,i],ylab=glb$SAUpop[i],xlab="Depletion",breaks=bins,main="")
+}
+
+cpue <- zoneDD$cpue
+
+
+
 
 condce <- zone1$condC$histCE; round(condce,2)
 

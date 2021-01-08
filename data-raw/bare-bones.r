@@ -19,20 +19,30 @@ dirExists(resdir,make=TRUE,verbose=TRUE)
 zone <- makeequilzone(resdir,"control2.csv") # normally would read in a file
     equiltime <- (Sys.time())
     # origdepl <-  c(0.40,0.41,0.39,0.42,0.40,0.41,0.39,0.42)
-    origdepl <- c(0.32,0.29,0.3,0.31,0.28,0.32,0.33,0.3)
-zoneDD <- depleteSAU(zone$zoneC,zone$zoneD,zone$glb,origdepl,zone$product,len=12)
-  zone$ctrl$reps=100
-out <- prepareprojection(zone$zone1,zone$zoneC,zone$glb,zoneDD,zone$ctrl)
-zoneDR <- out$zoneDP
-projC <- out$projC
-zoneCP <- out$zoneC
+ #   origdepl <- c(0.32,0.29,0.3,0.31,0.28,0.32,0.33,0.3)
+#zoneDD <- depleteSAU(zone$zoneC,zone$zoneD,zone$glb,origdepl,zone$product,len=12)
+
+zoneDD <- dohistoricC(zone$zoneD,zone$zoneC,glob=zone$glb,zone$zone1)
+
+zone$ctrl$reps=100
+projC <- zone$zone1$projC
+reps <- zone$ctrl$reps
+
+sel <- calcprojsel(zoneC,zone1$projC,glb)
+zoneDP <- makezoneDP(projC$projyrs,reps,glb,zoneDD)
+
+# out <- prepareprojection(zone$zone1,zone$zoneC,zone$glb,zoneDD,zone$ctrl)
+# zoneDR <- out$zoneDP
+# projC <- out$projC
+# zoneCP <- out$zoneC
     midtime <- (Sys.time())
 
     glb <- zone$glb
     ctrl <- zone$ctrl
     print(equiltime - starttime)
     print(midtime - equiltime)
-    propD <- getzoneprops(zone$zoneCP,zoneDD,zone$glb,year=1)
+
+    propD <- getzoneprops(zone$zoneC,zoneDD,zone$glb,year=47)
     round(propD,3)
 
 # Do the replicates ------------------------------------------------------------
@@ -48,7 +58,11 @@ midtime <- (Sys.time())
 #Rprof()
 source(paste0(resdir,"/alternative_HS.R"))
 
-mseproj <- doprojection(zoneCP,zoneDR,glb,ctrl,projC$projyrs,applyHS=mcdahcrnew,projC$inityrs)
+HSargs <- list(wid = 4,targqnt = 0.55, pmwts = c(0.65, 0.25,0.1),
+               hcr = c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2),only=TRUE)
+
+mseproj <- doprojection(zoneCP,zoneDR,glb,ctrl,projC$projyrs,applyHS=mcdahcr,
+                        HSargs,projC$inityrs)
 sauzoneDP <- asSAU(mseproj,sauindex,saunames,B0,exB0)
 zoneproj <- aszone(sauzoneDP,zoneCP)
 #Rprof(NULL)
@@ -135,33 +149,13 @@ plotprod(zone$product,xname="MatB",xlab="Spawning Biomass t",
 #
 #  zoneCP=zoneCP;zoneDP=zoneDR;glob=glb;ctrl=ctrl;projyrs=projC$projyrs;inityrs=projC$inityrs;
 
-# NEW----------------------------------
-# condition on catch history-------------------------------------------------
-# setup run + resdir
-starttime <- (Sys.time())
-library(aMSE)
-library(rutilsMH)
-library(makehtml)
-library(knitr)
-# Obviously you should modify the resdir to suit your own computer
-if (dir.exists("c:/Users/User/DropBox")) {
-  ddir <- "c:/Users/User/DropBox/A_code/"
-} else {
-  ddir <- "c:/Users/Malcolm/DropBox/A_code/"
-}
-#resdir <- paste0(ddir,"aMSEUse/conddata/generic2")
-resdir <- paste0(ddir,"aMSEUse/conddata/generic")
-dirExists(resdir,make=TRUE,verbose=TRUE)
-
-ctrlfile <- "control2.csv"
-zone1 <- readctrlfile(resdir,infile=ctrlfile)
-ctrl <- zone1$ctrl
-glb <- zone1$globals     # glb without the movement matrix
-constants <- readdatafile(glb$numpop,resdir,ctrl$datafile)
 
 
+condC <- zone$zone1$condC
 
+histce <- condC$histCE
 
+cmcda <- calibrateMCDA(histce,saunames)
 
 
 

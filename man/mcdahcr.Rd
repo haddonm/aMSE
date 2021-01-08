@@ -49,4 +49,6 @@ mcdahcr conducts the MCDA on the basis of a vector of cpue and
 }
 \examples{
 print("wait on data and time")
+#  vectce=histce[,2];applyHS=mcdahcr;yr=5;targqnt=0.55;pmwts=c(0.65,0.25,0.1);
+#  hcr=c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2); only=TRUE
 }

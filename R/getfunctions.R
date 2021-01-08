@@ -211,6 +211,7 @@ getsingleNum <- function(varname,intxt,context="") {
 #'     from each population in either the SAU or the complete zone.
 #'
 #' @param zoneD the zoneD after nyrs of dynamics
+#' @param glb the globals object
 #'
 #' @return a list of six matrices of nSAU columns of SAU summaries,
 #'     and one column for the zone
@@ -218,8 +219,8 @@ getsingleNum <- function(varname,intxt,context="") {
 #'
 #' @examples
 #' print("wait on an example")
-getsauzone <- function(zoneD) { # zoneC=zoneC; zoneD=zoneD; glb=glb
-  iSAU <- zoneD$SAU
+getsauzone <- function(zoneD,glb) { # zoneD=zoneDD; glb=glb
+  iSAU <- glb$sauindex
   SAU <- unique(iSAU)
   nSAU <- length(SAU)
   matB <- getsum(zoneD$matureB,iSAU)
@@ -274,10 +275,11 @@ getStr <- function(inline,nb) {
 #' @param index a vector containing an index of populations within SAU
 #'
 #' @return an nSAU+1 column matrix summarizing each SAU and the zone
+#' @export
 #'
 #' @examples
 #' print("wait on an example")
-getsum <- function(inmat,index) {
+getsum <- function(inmat,index) { # inmat=zoneDD$mature; index=zoneDD$SAU
   nSAU <- length(unique(index))
   nyr <- nrow(inmat)
   matO <- matrix(0,nrow=nyr,ncol=(nSAU+1),

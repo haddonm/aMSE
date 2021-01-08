@@ -11,12 +11,10 @@ doprojection(
   ctrl,
   projyrs,
   applyHS,
+  HSargs,
   inityrs = 10,
-  wid = 4,
-  targqnt = 0.55,
-  pmwts = c(0.65, 0.25, 0.1),
-  hcr = c(0.25, 0.75, 0.8, 0.85, 0.9, 1, 1.05, 1.1, 1.15, 1.2),
-  recvar = TRUE
+  recvar = TRUE,
+  ...
 )
 }
 \arguments{
@@ -32,20 +30,13 @@ doprojection(
 
 \item{applyHS}{the function describing the harvest strategy to be used}
 
-\item{inityrs}{the number of years kept from the period of conditioning,
-defult=10}
+\item{HSargs}{a list of any arguments used by applyHS}
 
-\item{wid}{the number of years for the gradient PM, default=4}
-
-\item{targqnt}{the target quantile for the cpue target, default=0.55}
-
-\item{pmwts}{the relative weights given to the PMs when generating the score,
-default = c(0.65, 0.25, 0.1) targce, grad4, grad1}
-
-\item{hcr}{the TAC multiplier for each score default=c(0.25,0.75,0.8,0.85,
-0.9,1,1.05,1.1,1.15,1.2)}
+\item{inityrs}{the number of years kept from the period of conditioning,}
 
 \item{recvar}{should recruitment variation be included}
+
+\item{...}{the ellipsis should contain any additional arguments}
 }
 \value{
 the filled in zoneDP list
