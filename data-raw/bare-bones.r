@@ -20,6 +20,9 @@ if (dir.exists("c:/Users/User/DropBox")) {
 #resdir <- paste0(ddir,"aMSEUse/conddata/generic2")
 resdir <- paste0(ddir,"aMSEUse/conddata/generic")
 dirExists(resdir,make=TRUE,verbose=TRUE)
+
+source(paste0(resdir,"/TasmanianHS.R")) # include the harvest strategy to use
+
 #data(zone)
 zone <- makeequilzone(resdir,"control2.csv") # normally would read in a file
   equiltime <- (Sys.time())
@@ -45,7 +48,7 @@ condC <- zone1$condC
 # ans <- calibrateMCDA(zoneDD$catch,zoneDD$cpue,projC$inityrs:glb$Nyrs,
 #                      nsau=glb$nSAU,sauindex=glb$sauindex,pyrs=projC$projyrs)
 
-cmcda <- calibrateMCDA(histCE=condC$histCE, saunames=zone1$SAUnames)
+cmcda <- calibrateMCDA(histCE=condC$histCE, saunames=zone1$SAUnames,hsargs=hsargs)
 
 str(ans)
 
@@ -59,8 +62,7 @@ histyr <- projC$inityrs:lastyr
 ctrl <- zone$ctrl
 zoneC=zone$zoneC
 
-hsargs <- list(wid = 4,targqnt = 0.55, pmwts = c(0.65, 0.25,0.1),
-               hcr = c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2),only=TRUE)
+
 applyHS=mcdahcr;
 HSargs=hsargs;
 
@@ -89,7 +91,7 @@ exB0 <- tapply(sapply(zone$zoneC,"[[","ExB0"),sauindex,sum)
 
 
 
-# use depleteSAU --------------------------------------------------------
+# depleteSAU and histCE --------------------------------------------------------
 options("show.signif.stars"=FALSE,
         "stringsAsFactors"=FALSE,
         "max.print"=50000,
@@ -109,6 +111,9 @@ if (dir.exists("c:/Users/User/DropBox")) {
 #resdir <- paste0(ddir,"aMSEUse/conddata/generic2")
 resdir <- paste0(ddir,"aMSEUse/conddata/generic")
 dirExists(resdir,make=TRUE,verbose=TRUE)
+
+source(paste0(resdir,"/TasmanianHS.R")) # include the harvest strategy to use
+
 #data(zone)
 zone <- makeequilzone(resdir,"control2.csv") # normally would read in a file
 equiltime <- (Sys.time())
@@ -118,29 +123,31 @@ glb <- zone$glb
 zone1 <- zone$zone1
 projC <- zone1$projC
 condC <- zone1$condC
-HSargs <- list(wid = 4,targqnt = 0.55, pmwts = c(0.65, 0.25,0.1),
-               hcr = c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2),only=TRUE)
 
 # histCE <- zone$zone1$condC$histCE; saunames=zone$zone1$SAUnames
 
 # ans <- calibrateMCDA(zoneDD$catch,zoneDD$cpue,projC$inityrs:glb$Nyrs,
 #                      nsau=glb$nSAU,sauindex=glb$sauindex,pyrs=projC$projyrs)
 
+deplinit <- c(0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2)
+zoneDD <- depleteSAU(zone$zoneC,zone$zoneD,glob=glb,initdepl=deplinit,zone$product)
+propD <- getzoneprops(zone$zoneC,zoneDD,glb,year=1)
+round(propD,3)
+
 cmcda <- calibrateMCDA(histCE=condC$histCE, saunames=zone1$SAUnames,
-                       hcrargs=HSargs)
+                       hsargs=hsargs)
 str(cmcda)
 
-
+ans <- prepareprojection(zone1,zone$zoneC,glb,zoneDD,zone$ctrl)
+round(ans$zoneDP$cpue[1:20,,1],2)
 
 
 #Rprof()
-source(paste0(resdir,"/alternative_HS.R"))
+source(paste0(resdir,"/TasmanianHS.R"))
 
-HSargs <- list(wid = 4,targqnt = 0.55, pmwts = c(0.65, 0.25,0.1),
-               hcr = c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2),only=TRUE)
 
 mseproj <- doprojection(zoneC,zoneDP,glb,ctrl,projC$projyrs,applyHS=mcdahcr,
-                        HSargs)
+                        hsargs=hsargs)
 sauzoneDP <- asSAU(mseproj,sauindex,saunames,B0,exB0)
 zoneproj <- aszone(sauzoneDP,zoneCP)
 #Rprof(NULL)

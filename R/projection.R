@@ -61,7 +61,6 @@ addrecvar <- function(zoneC,zoneDR,inHt,glb,ctrl,nyrs=25,reset=TRUE) {
       zoneDR$depleB[year,,iter] <- zoneDR$exploitB[year,,iter]/getvar(zoneC,"ExB0")
     }   # year loop        zoneDR$matureB[,,1]
   }     # rep loop
-
   if (reset) {
     varzoneDR$matureB[1:10,,] <- zoneDR$matureB[(nyrs-9):nyrs,,]
     varzoneDR$exploitB[1:10,,] <- zoneDR$exploitB[(nyrs-9):nyrs,,]
