@@ -4,22 +4,25 @@
 \alias{targscore}
 \title{targscore generates the HCR score for the target PM}
 \usage{
-targscore(vectce, qnt = 0.55)
+targscore(vectce, qnt = 0.55, mult = 1.1)
 }
 \arguments{
 \item{vectce}{the vector of cpue to be assessed}
 
 \item{qnt}{the quantile of the input vector selected as the target,
 default = 0.55}
+
+\item{mult}{the multiplier on the bounds to expand them upwards and
+downwards. default value = 1.1 = 10 percent increase}
 }
 \value{
 a list of the final year's score, the internals to the calculations,
     and he target and limit reference points
 }
 \description{
-targscore takes in a vector of cpue and define the targ from
-    the complete series as well as the limit reference point and an upper
-    level that is symmetrically spaced around the
+targscore takes in a vector of cpue x years and defines the targ
+    from the complete series, and the limit reference point. This differs
+    from the two getgradone and getgradwid in needing multiple years at once.
 }
 \examples{
 print("wait on suitable data")

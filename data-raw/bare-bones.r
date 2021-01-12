@@ -1,6 +1,11 @@
 # Used in readme.Rmd to illustrate the running of aMSE
 
-# setup run + resdir  --------------------------------------------------------
+options("show.signif.stars"=FALSE,
+        "stringsAsFactors"=FALSE,
+        "max.print"=50000,
+        "width"=240)
+
+# use dohistoricC  --------------------------------------------------------
 starttime <- (Sys.time())
 library(aMSE)
 library(rutilsMH)
@@ -17,52 +22,125 @@ resdir <- paste0(ddir,"aMSEUse/conddata/generic")
 dirExists(resdir,make=TRUE,verbose=TRUE)
 #data(zone)
 zone <- makeequilzone(resdir,"control2.csv") # normally would read in a file
-    equiltime <- (Sys.time())
-    # origdepl <-  c(0.40,0.41,0.39,0.42,0.40,0.41,0.39,0.42)
- #   origdepl <- c(0.32,0.29,0.3,0.31,0.28,0.32,0.33,0.3)
-#zoneDD <- depleteSAU(zone$zoneC,zone$zoneD,zone$glb,origdepl,zone$product,len=12)
+  equiltime <- (Sys.time())
+zoneDD <- dohistoricC(zone$zoneD,zone$zoneC,glob=zone$glb,zone$zone1$condC)
+  midtime <- (Sys.time())
 
-zoneDD <- dohistoricC(zone$zoneD,zone$zoneC,glob=zone$glb,zone$zone1)
+  print(equiltime - starttime)
+  print(midtime - equiltime)
 
-zone$ctrl$reps=100
-projC <- zone$zone1$projC
-reps <- zone$ctrl$reps
-
-sel <- calcprojsel(zoneC,zone1$projC,glb)
-zoneDP <- makezoneDP(projC$projyrs,reps,glb,zoneDD)
-
-# out <- prepareprojection(zone$zone1,zone$zoneC,zone$glb,zoneDD,zone$ctrl)
-# zoneDR <- out$zoneDP
-# projC <- out$projC
-# zoneCP <- out$zoneC
-    midtime <- (Sys.time())
-
-    glb <- zone$glb
-    ctrl <- zone$ctrl
-    print(equiltime - starttime)
-    print(midtime - equiltime)
-
-    propD <- getzoneprops(zone$zoneC,zoneDD,zone$glb,year=47)
-    round(propD,3)
+  propD <- getzoneprops(zone$zoneC,zoneDD,zone$glb,year=47)
+  round(propD,3)
 
 # Do the replicates ------------------------------------------------------------
-inityr <- zone$zone1$projC$inityrs
-saunames <- zone$zone1$SAUnames
-sauindex <- zone$glb$sauindex
-pyrs <- projC$projyrs + projC$inityr
-B0 <- tapply(sapply(zone$zoneC,"[[","B0"),sauindex,sum)
-exB0 <- tapply(sapply(zone$zoneC,"[[","ExB0"),sauindex,sum)
-ctrl$randseed <- 0
 
 midtime <- (Sys.time())
+
+glb <- zone$glb
+zone1 <- zone$zone1
+projC <- zone1$projC
+condC <- zone1$condC
+# histCE <- zone$zone1$condC$histCE; saunames=zone$zone1$SAUnames
+
+# ans <- calibrateMCDA(zoneDD$catch,zoneDD$cpue,projC$inityrs:glb$Nyrs,
+#                      nsau=glb$nSAU,sauindex=glb$sauindex,pyrs=projC$projyrs)
+
+cmcda <- calibrateMCDA(histCE=condC$histCE, saunames=zone1$SAUnames)
+
+str(ans)
+
+saucpue <- ans$saucpue
+saucatch <- ans$saucatch
+lastyr <- glb$Nyrs
+histyr <- projC$inityrs:lastyr
+
+
+
+ctrl <- zone$ctrl
+zoneC=zone$zoneC
+
+hsargs <- list(wid = 4,targqnt = 0.55, pmwts = c(0.65, 0.25,0.1),
+               hcr = c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2),only=TRUE)
+applyHS=mcdahcr;
+HSargs=hsargs;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+saunames <- zone$zone1$SAUnames
+sauindex <- glb$sauindex
+pyrs <- projC$projyrs
+B0 <- tapply(sapply(zone$zoneC,"[[","B0"),sauindex,sum)
+exB0 <- tapply(sapply(zone$zoneC,"[[","ExB0"),sauindex,sum)
+
+
+
+# use depleteSAU --------------------------------------------------------
+options("show.signif.stars"=FALSE,
+        "stringsAsFactors"=FALSE,
+        "max.print"=50000,
+        "width"=240)
+
+starttime <- (Sys.time())
+library(aMSE)
+library(rutilsMH)
+library(makehtml)
+library(knitr)
+# Obviously you should modify the resdir to suit your own computer
+if (dir.exists("c:/Users/User/DropBox")) {
+  ddir <- "c:/Users/User/DropBox/A_code/"
+} else {
+  ddir <- "c:/Users/Malcolm/DropBox/A_code/"
+}
+#resdir <- paste0(ddir,"aMSEUse/conddata/generic2")
+resdir <- paste0(ddir,"aMSEUse/conddata/generic")
+dirExists(resdir,make=TRUE,verbose=TRUE)
+#data(zone)
+zone <- makeequilzone(resdir,"control2.csv") # normally would read in a file
+equiltime <- (Sys.time())
+
+
+glb <- zone$glb
+zone1 <- zone$zone1
+projC <- zone1$projC
+condC <- zone1$condC
+HSargs <- list(wid = 4,targqnt = 0.55, pmwts = c(0.65, 0.25,0.1),
+               hcr = c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2),only=TRUE)
+
+# histCE <- zone$zone1$condC$histCE; saunames=zone$zone1$SAUnames
+
+# ans <- calibrateMCDA(zoneDD$catch,zoneDD$cpue,projC$inityrs:glb$Nyrs,
+#                      nsau=glb$nSAU,sauindex=glb$sauindex,pyrs=projC$projyrs)
+
+cmcda <- calibrateMCDA(histCE=condC$histCE, saunames=zone1$SAUnames,
+                       hcrargs=HSargs)
+str(cmcda)
+
+
+
+
 #Rprof()
 source(paste0(resdir,"/alternative_HS.R"))
 
 HSargs <- list(wid = 4,targqnt = 0.55, pmwts = c(0.65, 0.25,0.1),
                hcr = c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2),only=TRUE)
 
-mseproj <- doprojection(zoneCP,zoneDR,glb,ctrl,projC$projyrs,applyHS=mcdahcr,
-                        HSargs,projC$inityrs)
+mseproj <- doprojection(zoneC,zoneDP,glb,ctrl,projC$projyrs,applyHS=mcdahcr,
+                        HSargs)
 sauzoneDP <- asSAU(mseproj,sauindex,saunames,B0,exB0)
 zoneproj <- aszone(sauzoneDP,zoneCP)
 #Rprof(NULL)

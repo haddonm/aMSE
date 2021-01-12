@@ -4,34 +4,15 @@
 \alias{mcdahcr}
 \title{mcdahcr conducts the MCDA and returns the TAC multiplier and details}
 \usage{
-mcdahcr(
-  vectce,
-  yr,
-  wid = 4,
-  targqnt = 0.55,
-  pmwts = c(0.65, 0.25, 0.1),
-  hcr = c(0.25, 0.75, 0.8, 0.85, 0.9, 1, 1.05, 1.1, 1.15, 1.2),
-  only = TRUE
-)
+mcdahcr(vectce, yr, hsargs)
 }
 \arguments{
 \item{vectce}{the vector of cpue that forms the basis of the assessment}
 
 \item{yr}{the year for which a score is required}
 
-\item{wid}{the number of years to use in grad4, default=4}
-
-\item{targqnt}{the quantile for the cpue target level, default=0.55}
-
-\item{pmwts}{performance measure weights, default = 0.65, 0.25, 0.1 for the
-target, grad4, and grad1 PMs respectively. So the order matters.}
-
-\item{hcr}{the harvest control rule scales that transform the combined score
-into a TAC multiplier. A vector of 1 - 10 where each cell index
-represents the upper limit of the the combined score.}
-
-\item{only}{should the function only return the score or all details. TRUE
-implies only return the score}
+\item{hsargs}{the arguments used within the Harvest strategy's HCR. See the
+description for details.}
 }
 \value{
 a list of the TAC multiplier, the score, and all the details
@@ -45,10 +26,19 @@ mcdahcr conducts the MCDA on the basis of a vector of cpue and
      rounded up to the nearest integer and that is the index within hcr.
      Thus a score of <=1 points to the first cell, >1 and <=2 points to the
      second cell, and so on, up to a score between >9 and <=10 which points
-     to the last cell.
+     to the last cell. All the arguments used within the mcda are brought in,
+     and hence are flexible, inside a list names hcrargs. This list includes
+     the 'wid', the number of years to use in grad4, default=4; the
+     'targqnt', the quantile for the cpue target level, default=0.55, the
+     'pmwts', performance measure weights, default = 0.65, 0.25, 0.1 for the
+     target, grad4, and grad1 PMs respectively, so the order matters; the
+     'hcr', the harvest control rule scales that transform the combined score
+     into a TAC multiplier. A vector of 1 - 10 where each cell index
+     represents the upper limit of the the combined score; and 'only', which
+     is a boolean that determines whether the function only returns the score
+     or all details. TRUE implies only return the score
 }
 \examples{
 print("wait on data and time")
-#  vectce=histce[,2];applyHS=mcdahcr;yr=5;targqnt=0.55;pmwts=c(0.65,0.25,0.1);
-#  hcr=c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2); only=TRUE
+#  vectce=saucpue[1:28,8]; yr=28; hcrargs=HSargs
 }

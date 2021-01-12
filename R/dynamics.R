@@ -84,7 +84,7 @@ depleteSAU <- function(zoneC,zoneD,glob,initdepl,product,len=15) {
 #' @param zoneDD The input unfished dynamic zone, zoneD, object
 #' @param zoneC the zone constants object, zoneC
 #' @param glob the globals object
-#' @param zone1 the zone data object obtained from readzonefile
+#' @param condC from the zone1 object, contains historical fisheries data plus
 #' @param sigR the recruitment variation included
 #'
 #' @return a zoneD object
@@ -92,16 +92,16 @@ depleteSAU <- function(zoneC,zoneD,glob,initdepl,product,len=15) {
 #'
 #' @examples
 #' print("wait on some data sets")
-dohistoricC <- function(zoneDD,zoneC,glob,zone1,sigR=1e-08) {
+dohistoricC <- function(zoneDD,zoneC,glob,condC,sigR=1e-08) {
   # zoneC=zone$zoneC; zoneDD=zone$zoneD;glob=zone$glb;zone1=zone$zone1
   # #   catchsau=condC$histCatch[year,]
   # sigmar=1e-08; Ncl=glob$Nclass;sauindex=glob$sauindex;movem=glob$move; recvar=FALSE
-  histC <- zone1$condC$histCatch
-  yrs <- zone1$condC$histyr[,"year"]
+  histC <- condC$histCatch
+  yrs <- condC$histyr[,"year"]
   nyrs <- length(yrs)
   for (yr in 2:nyrs) {  # yr=2 # ignores the initial unfished year
     catchpop <- histC[yr,]
-    zoneDD <- oneyearsauC(zoneC=zoneC,zoneD=zoneDD,Ncl=glob$Nclass,
+    zoneDD <- oneyearsauC(zoneC=zoneC,zoneDD=zoneDD,Ncl=glob$Nclass,
                           catchsau=catchpop,year=yr,sigmar=sigR,
                           sauindex=glob$sauindex,movem=glob$move)
   }
@@ -251,7 +251,6 @@ oneyearcat <- function(inpopC,inNt,Nclass,incat,yr) {  #
 #' @param catchsau a vector of catches to be taken in the year from each SAU
 #' @param year the year of the dynamics, would start in year 2 as year
 #'     1 is the year of initiation.
-#' @param iter the specific replicate being considered
 #' @param sigmar the variation in recruitment dynamics, set to 1e-08
 #'     when searching for an equilibria.
 #' @param Ncl the number of size classes used to describe size, global Nclass

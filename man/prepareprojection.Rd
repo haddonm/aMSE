@@ -4,11 +4,10 @@
 \alias{prepareprojection}
 \title{prepareprojection high level function that sets up a projection}
 \usage{
-prepareprojection(projC, zoneC, glb, zoneDep, ctrl)
+prepareprojection(zone1, zoneC, glb, zoneDep, ctrl)
 }
 \arguments{
-\item{projC}{the projection object from inside zone1, originally from
-readctrlfile}
+\item{zone1}{the original zone1 object from readctrlfile}
 
 \item{zoneC}{the constant part of the zone}
 

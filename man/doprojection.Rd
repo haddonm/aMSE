@@ -11,8 +11,8 @@ doprojection(
   ctrl,
   projyrs,
   applyHS,
-  HSargs,
-  inityrs = 10,
+  hsargs,
+  inityrs,
   recvar = TRUE,
   ...
 )
@@ -30,7 +30,7 @@ doprojection(
 
 \item{applyHS}{the function describing the harvest strategy to be used}
 
-\item{HSargs}{a list of any arguments used by applyHS}
+\item{hsargs}{a list of any arguments used by applyHS}
 
 \item{inityrs}{the number of years kept from the period of conditioning,}
 

@@ -40,8 +40,6 @@ when searching for an equilibria.}
 \item{movem}{the larval dispersal movement matrix, global move}
 
 \item{recvar}{should recruitment variation be included, default=TRUE}
-
-\item{iter}{the specific replicate being considered}
 }
 \value{
 a list containing a revised dynamics list

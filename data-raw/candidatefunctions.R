@@ -1,5 +1,64 @@
 
 
+doproj <- function(zoneC,zoneDD,glb,ctrl,projC,applyHS=mcdahcr,HSargs,recvar=TRUE) {
+  ans <- calcprojsel(zoneC,projC,glb) # calculate selectivity for projections
+  sel <- ans$projSel
+  selwt <- ans$projSelWt
+  reps <- ctrl$reps
+  zoneDP <- makezoneDP(projC$projyrs,reps,glb,zoneDD) # make object to hold projections
+  sigmar <- 1e-08
+  if (recvar) sigmar <- ctrl$withsigR # needed to add recruitment variation
+  npop <- glb$numpop
+  nsau <- glb$nSAU
+  Ncl <- glb$Nclass
+  pyrs <- projC$projyrs
+  lastyr <- glb$Nyrs
+  histyrs <- projC$inityrs:lastyr
+  movem <- glb$move
+  reps <- ctrl$reps
+  matb <- numeric(npop)
+  origTAC <- sum(zoneDD$catch[lastyr,]) # Assumes the TAC is always caught!
+  sauindex <- glb$sauindex
+  saucatch <- array(0,dim=c(pyrs,nsau,reps))
+  saucpue <- saucatch
+  grad4 <- array(0,dim=c(pyrs,nsau,reps)) # declare arrays to store PMs
+  grad1 <- grad4
+  targsc <- grad4
+  targetce <- numeric(nsau)
+  for (iter in 1:reps) {
+    for (year in 1:pyrs) {  # iter=1; year = 1
+      ans <- getmcdadatap(zoneDD$catch,zoneDD$cpue,
+                          zoneDP$catch[,,iter],zoneDP$cpue[,,iter],
+                          histyrs,year)
+
+
+    }
+  }
+  #calibrate the HCR on zoneDD before the projections
+  for (yr in 1:inityrs) { # iter=1; yr=4
+    saucatch[yr,,iter] <- tapply(zoneDP$catch[yr,,iter],sauindex,sum,na.rm=TRUE)
+    wts <- zoneDP$catch[yr,,iter]/(saucatch[yr,sauindex,iter])
+    saucpue[yr,,iter] <- tapply((zoneDP$cpue[yr,,iter] * wts),sauindex,sum,na.rm=TRUE)
+    if (yr >= wid) {
+      grad1[yr,,iter] <- apply(saucpue[1:yr,,iter],2,getgradone,yr=yr)
+      grad4[yr,,iter] <- apply(saucpue[1:yr,,iter],2,getgradwid,yr=yr)
+    }
+  }
+  for (sau in 1:nsau)
+    targetce[sau] <- targscore(saucpue[1:inityrs,sau,iter],qnt=targqnt)$result
+  targsc[1:inityrs,,iter] <- targetce
+
+
+}
+
+
+
+
+
+
+
+
+
 #' @title plotCPUE plots the scaled historic cpue against the predicted CPUe
 #'
 #' @description plotCPUE rescales the predicted CPUE from the OM to match the

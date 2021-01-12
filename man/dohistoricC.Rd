@@ -4,7 +4,7 @@
 \alias{dohistoricC}
 \title{dohistoricC imposes the historical catches on an unfished zone}
 \usage{
-dohistoricC(zoneDD, zoneC, glob, zone1, sigR = 1e-08)
+dohistoricC(zoneDD, zoneC, glob, condC, sigR = 1e-08)
 }
 \arguments{
 \item{zoneDD}{The input unfished dynamic zone, zoneD, object}
@@ -13,7 +13,7 @@ dohistoricC(zoneDD, zoneC, glob, zone1, sigR = 1e-08)
 
 \item{glob}{the globals object}
 
-\item{zone1}{the zone data object obtained from readzonefile}
+\item{condC}{from the zone1 object, contains historical fisheries data plus}
 
 \item{sigR}{the recruitment variation included}
 }
