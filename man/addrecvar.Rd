@@ -27,7 +27,8 @@ required variation}
 reps trajectories when exposed to recruitment variation are passed out}
 }
 \value{
-a revised zoneDR object
+a revised zoneDR object with the first row filled with the last row
+    from addrecvar
 }
 \description{
 addrecvar conducts projyrs of simulation at the same constant

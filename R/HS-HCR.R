@@ -16,15 +16,13 @@
 #' @param ctrl the control object
 #' @param projyrs the number of years of projection from projC$projyrs
 #' @param inityrs the initial number of years used to express starting variation
-#' @param recvar should recruitment variation be included, default=TRUE
 #'
 #' @return a revised zoneDP now containing the dynamics of each replicate run
 #' @export
 #'
 #' @examples
 #' print("wait on new data")
-constCatch <- function(inTAC,zoneCP,zoneDP,glob,ctrl,projyrs,inityrs=10,
-                       recvar=TRUE) {
+constCatch <- function(inTAC,zoneCP,zoneDP,glob,ctrl,projyrs,inityrs=10) {
   sigmar <- ctrl$withsigR
   npop <- glob$numpop
   Ncl <- glob$Nclass
@@ -55,7 +53,7 @@ constCatch <- function(inTAC,zoneCP,zoneDP,glob,ctrl,projyrs,inityrs=10,
       steep <- getvect(zoneCP,"steeph")
       r0 <- sapply(zoneCP,"[[","R0")
       b0 <- sapply(zoneCP,"[[","B0")
-      recs <- oneyearrec(steep,r0,b0,matb,sigR=sigmar,withvar=recvar)
+      recs <- oneyearrec(steep,r0,b0,matb,sigR=sigmar)
       newrecs <- movem %*% recs
       zoneDP$recruit[year,,iter] <- newrecs
       zoneDP$Nt[1,year,,iter] <- newrecs

@@ -22,14 +22,14 @@ hsargs <- list(mult=1.1, wid = 4,targqnt = 0.55, pmwts = c(0.65, 0.25,0.1),
 #' @param hsargs the arguments used within the Harvest strategy's HCR. See the
 #'     description for details.
 #'
-#' @return a list of the three PM values, the three PM scores, and the total
-#'     scores, the TAC multipliers, and the Target cpue target and limit.
+#' @return a list of the list of the PMs, the next aspirational catches, and the
+#'     targce refpts, then a list of all the scores, and the multTAC values.
 #' @export
 #'
 #' @examples
 #' print("wait on example data being available")
 calibrateMCDA <- function(histCE,saunames,hsargs) {
-  # histCE <- zone$zone1$condC$histCE; saunames=zone$zone1$SAUnames; hsargs=HSargs
+  # condC=condC; saunames=zone$zone1$SAUnames; hsargs=HSargs
   #  for (i in 1:length(hsargs)) assign(names(hsargs)[i],hsargs[[i]])
   nSAU <- length(saunames)
   yearCE <- as.numeric(rownames(histCE))
@@ -69,9 +69,10 @@ calibrateMCDA <- function(histCE,saunames,hsargs) {
     multTAC[,sau] <- hsargs$hcr[pick]
     refpts[sau,] <- tmp3$details
   }
-  ans <- list(grad1val=grad1val,grad4val=grad4val,targval=targval,
-              score1=score1,score4=score4,scoret=scoret,scoretot=scoretot,
-              multTAC=multTAC,refpts=refpts)
+  pms <- list(grad1val=grad1val,grad4val=grad4val,targval=targval,
+              multTAC=multTAC[yrce,],refpts=refpts)
+  scores <- list(score1=score1,score4=score4,scoret=scoret,scoretot=scoretot)
+  ans <- list(pms=pms,scores=scores,yrmultTAC=multTAC)
   return(ans)
 } # end of calibrateMCDA
 

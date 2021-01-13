@@ -21,7 +21,8 @@ if (dir.exists("c:/Users/User/DropBox")) {
 resdir <- paste0(ddir,"aMSEUse/conddata/generic")
 dirExists(resdir,make=TRUE,verbose=TRUE)
 
-source(paste0(resdir,"/TasmanianHS.R")) # include the harvest strategy to use
+# this should be in resdir, but during development is in data-raw
+source(paste0(ddir,"aMSE/data-raw/","TasmanianHS.R"))
 
 #data(zone)
 zone <- makeequilzone(resdir,"control2.csv") # normally would read in a file
@@ -111,10 +112,10 @@ if (dir.exists("c:/Users/User/DropBox")) {
 #resdir <- paste0(ddir,"aMSEUse/conddata/generic2")
 resdir <- paste0(ddir,"aMSEUse/conddata/generic")
 dirExists(resdir,make=TRUE,verbose=TRUE)
+# this should be in resdir, but during development is in data-raw
+source(paste0(ddir,"aMSE/data-raw/","TasmanianHS.R"))
+# source(paste0(resdir,"/TasmanianHS.R"))
 
-source(paste0(resdir,"/TasmanianHS.R")) # include the harvest strategy to use
-
-#data(zone)
 zone <- makeequilzone(resdir,"control2.csv") # normally would read in a file
 equiltime <- (Sys.time())
 
@@ -124,12 +125,13 @@ zone1 <- zone$zone1
 projC <- zone1$projC
 condC <- zone1$condC
 
+
 # histCE <- zone$zone1$condC$histCE; saunames=zone$zone1$SAUnames
 
 # ans <- calibrateMCDA(zoneDD$catch,zoneDD$cpue,projC$inityrs:glb$Nyrs,
 #                      nsau=glb$nSAU,sauindex=glb$sauindex,pyrs=projC$projyrs)
 
-deplinit <- c(0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2)
+deplinit <- c(0.23,0.23,0.23,0.23,0.23,0.23,0.23,0.23)
 zoneDD <- depleteSAU(zone$zoneC,zone$zoneD,glob=glb,initdepl=deplinit,zone$product)
 propD <- getzoneprops(zone$zoneC,zoneDD,glb,year=1)
 round(propD,3)
@@ -138,12 +140,20 @@ cmcda <- calibrateMCDA(histCE=condC$histCE, saunames=zone1$SAUnames,
                        hsargs=hsargs)
 str(cmcda)
 
-ans <- prepareprojection(zone1,zone$zoneC,glb,zoneDD,zone$ctrl)
-round(ans$zoneDP$cpue[1:20,,1],2)
+ctrl <- zone$ctrl
+ctrl$withsigR <- 0.1
+ans <- prepareprojection(zone1,zone$zoneC,glb,zoneDD,ctrl,multC=cmcda$pms$multTAC)
+str(ans$zoneDP,max.level = 1)
 
+zoneDP <- ans$zoneDP
+var <- "deplsB"
+
+plotprep(width=7, height=7,newdev=FALSE)
+hist(zoneDP$deplsB[1,,],main="")
 
 #Rprof()
-source(paste0(resdir,"/TasmanianHS.R"))
+# this should be in resdir, but during development is in data-raw
+source(paste0(ddir,"aMSE/data-raw/","TasmanianHS.R"))
 
 
 mseproj <- doprojection(zoneC,zoneDP,glb,ctrl,projC$projyrs,applyHS=mcdahcr,

@@ -22,7 +22,8 @@
 #'     10 rows of the initial variation run. default = TRUE. If FALSE the
 #'     reps trajectories when exposed to recruitment variation are passed out
 #'
-#' @return a revised zoneDR object
+#' @return a revised zoneDR object with the first row filled with the last row
+#'     from addrecvar
 #' @export
 #'
 #' @examples
@@ -62,16 +63,16 @@ addrecvar <- function(zoneC,zoneDR,inHt,glb,ctrl,nyrs=25,reset=TRUE) {
     }   # year loop        zoneDR$matureB[,,1]
   }     # rep loop
   if (reset) {
-    varzoneDR$matureB[1:10,,] <- zoneDR$matureB[(nyrs-9):nyrs,,]
-    varzoneDR$exploitB[1:10,,] <- zoneDR$exploitB[(nyrs-9):nyrs,,]
-    varzoneDR$catch[1:10,,] <- zoneDR$catch[(nyrs-9):nyrs,,]
-    varzoneDR$harvestR[1:10,,] <- zoneDR$harvestR[(nyrs-9):nyrs,,]
-    varzoneDR$cpue[1:10,,] <- zoneDR$cpue[(nyrs-9):nyrs,,]
-    varzoneDR$recruit[1:10,,] <- zoneDR$recruit[(nyrs-9):nyrs,,]
-    varzoneDR$deplsB[1:10,,] <- zoneDR$deplsB[(nyrs-9):nyrs,,]
-    varzoneDR$depleB[1:10,,] <- zoneDR$depleB[(nyrs-9):nyrs,,]
-    varzoneDR$catchN[,1:10,,] <- zoneDR$catchN[,(nyrs-9):nyrs,,]
-    varzoneDR$Nt[,1:10,,] <- zoneDR$Nt[,(nyrs-9):nyrs,,]
+    varzoneDR$matureB[1,,] <- zoneDR$matureB[nyrs,,]
+    varzoneDR$exploitB[1,,] <- zoneDR$exploitB[nyrs,,]
+    varzoneDR$catch[1,,] <- zoneDR$catch[nyrs,,]
+    varzoneDR$harvestR[1,,] <- zoneDR$harvestR[nyrs,,]
+    varzoneDR$cpue[1,,] <- 0 #zoneDR$cpue[nyrs,,]
+    varzoneDR$recruit[1,,] <- zoneDR$recruit[nyrs,,]
+    varzoneDR$deplsB[1,,] <- zoneDR$deplsB[nyrs,,]
+    varzoneDR$depleB[1,,] <- zoneDR$depleB[nyrs,,]
+    varzoneDR$catchN[,1,,] <- zoneDR$catchN[,nyrs,,]
+    varzoneDR$Nt[,1,,] <- zoneDR$Nt[,nyrs,,]
   } else {
     varzoneDR <- zoneDR
   }
@@ -237,7 +238,6 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 #' @param applyHS the function describing the harvest strategy to be used
 #' @param hsargs a list of any arguments used by applyHS
 #' @param inityrs the number of years kept from the period of conditioning,
-#' @param recvar should recruitment variation be included
 #' @param ... the ellipsis should contain any additional arguments
 #'
 #' @return the filled in zoneDP list
@@ -248,9 +248,8 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 #' # zoneCP=zoneCP;zoneDP=zoneDR;glob=glb;ctrl=ctrl;projyrs=projC$projyrs;inityrs=projC$inityrs
 #' # wid=4;targqnt=0.55;pmwts=c(0.65, 0.25,0.1);hcr = c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2)
 doprojection <- function(zoneCP,zoneDP,glob,ctrl,projyrs,applyHS,hsargs,
-                         inityrs,recvar=TRUE,...) {
-  sigmar <- 1e-08
-  if (recvar) sigmar <- ctrl$withsigR # needed to add recruitment variation
+                         inityrs,...) {
+  sigmar <- ctrl$withsigR # needed to add recruitment variation
   npop <- glob$numpop
   nsau <- glob$nSAU
   Ncl <- glob$Nclass
@@ -309,7 +308,7 @@ doprojection <- function(zoneCP,zoneDP,glob,ctrl,projyrs,applyHS,hsargs,
       steep <- getvect(zoneCP,"steeph")
       r0 <- sapply(zoneCP,"[[","R0")
       b0 <- sapply(zoneCP,"[[","B0")
-      recs <- oneyearrec(steep,r0,b0,matb,sigR=sigmar,withvar=recvar)
+      recs <- oneyearrec(steep,r0,b0,matb,sigR=sigmar)
       newrecs <- movem %*% recs
       zoneDP$recruit[year,,iter] <- newrecs
       zoneDP$Nt[1,year,,iter] <- newrecs
@@ -397,6 +396,7 @@ makezoneDP <- function(projyr,iter,glb,inzoneD) {
 #' @param iter the number of replicates
 #' @param glb the global object
 #' @param inzoneD the zoneD object after any preliminary depletion
+#' @param multC the TAC multiplier from the last year of conditioning
 #'
 #' @return a large list containing an object ready for the projection dynamics
 #' @export
@@ -404,11 +404,12 @@ makezoneDP <- function(projyr,iter,glb,inzoneD) {
 #' @examples
 #' print("Could add variation to the harvest rates so that when ")
 #' print("prepareprojection was run the range of initial H values would increase ")
-makezoneDR <- function(projyr,iter,glb,inzoneD) {
+makezoneDR <- function(projyr,iter,glb,inzoneD,multC) {
   # projyr=projyrs; iter=reps; glob=glb; inzoneD=zoneDD
   numpop <- glb$numpop
   nSAU <- glb$nSAU
   N <- glb$Nclass
+  sauindex <- glb$sauindex
   namedims <- list(1:projyr,1:numpop,1:iter)
   namendims <- list(glb$midpts,1:projyr,1:numpop,1:iter)
   SAU <- inzoneD$SAU #as.numeric(sapply(zoneC,"[[","SAU"))
@@ -418,17 +419,17 @@ makezoneDR <- function(projyr,iter,glb,inzoneD) {
   ExplB[1,,] <- inzoneD$exploitB[1,]
   Catch <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
   Catch[1,,] <- inzoneD$catch[1,]
+  aCatch <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims) #aspirational
+  aCatch[1,,] <- Catch[1,,] * multC[sauindex]
   Harvest <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
   Harvest[1,,] <- inzoneD$harvestR[1,]
   cpue <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
-  cpue[1,,] <- inzoneD$cpue[1,]
-  sauindex <- glb$sauindex
   cesau <- array(0,dim=c(projyr,nSAU,iter),
                  dimnames=list(1:projyr,1:nSAU,1:iter))
-  catwt <- tapply(inzoneD$catch[1,],sauindex,sum)
-  wts <- inzoneD$catch[1,] / catwt[sauindex]
-  for (i in 1:nSAU)
-    cesau[1,i,] <- sum(inzoneD$cpue[1,(sauindex==i)] * wts[(sauindex==i)])
+  # catwt <- tapply(inzoneD$catch[1,],sauindex,sum)
+  # wts <- inzoneD$catch[1,] / catwt[sauindex]
+  # for (i in 1:nSAU)
+  #   cesau[1,i,] <- sum(inzoneD$cpue[1,(sauindex==i)] * wts[(sauindex==i)])
   Recruit <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
   Recruit[1,,] <- inzoneD$recruit[1,]
   deplSpB <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
@@ -439,7 +440,7 @@ makezoneDR <- function(projyr,iter,glb,inzoneD) {
   CatchN[,1,,] <- inzoneD$catchN[,1,]
   Nt <- array(data=0,dim=c(N,projyr,numpop,iter),dimnames=namendims)
   Nt[,1,,] <- inzoneD$Nt[,1,]
-  zoneDP <- list(SAU=SAU,matureB=MatB,exploitB=ExplB,catch=Catch,
+  zoneDP <- list(SAU=SAU,matureB=MatB,exploitB=ExplB,catch=Catch,acatch=aCatch,
                  harvestR=Harvest,cpue=cpue,cesau=cesau,recruit=Recruit,
                  deplsB=deplSpB,depleB=deplExB,catchN=CatchN,Nt=Nt)
   return(zoneDP)
@@ -545,16 +546,18 @@ poptosau <- function(catvect,cpuevect,sauindex) {
 #' @description prepareprojection is a high level function that restructures
 #'     zoneC by including the projected selectivity (in case the LML changes),
 #'     and also selectivity x weight-at-size (for computational speed). It
-#'     then generates a new zoneD with room for all replicates. Finally, it
-#'     adds recruitment variabilkity to each of the replicates and keeps
-#'     zone1$projC$inityrs of each replicates series as the start of each
-#'     replicate projection.
+#'     then generates a new zoneD with room for all replicates as well as the
+#'     aspirational catches from each HS. Finally, it adds recruitment variation
+#'     to each of the replicates and keeps the last year of each iteration of
+#'     the addrecvar function as the start of each replicate projection, with
+#'     zeros in the catch, cpue, and cesau arrays
 #'
 #' @param zone1 the original zone1 object from readctrlfile
 #' @param zoneC the constant part of the zone
 #' @param glb the global variables
 #' @param zoneDep the zone after initial depletion
 #' @param ctrl the ctrl object
+#' @param multC the TAC multiplier from the last year of conditioning
 #'
 #' @return a list of the dynamic zone object as a list of arrays of projyrs x
 #'     populations x replicates, plus the revised projC and revised zoneC
@@ -562,18 +565,15 @@ poptosau <- function(catvect,cpuevect,sauindex) {
 #'
 #' @examples
 #' print("wait on data files")
-prepareprojection <- function(zone1,zoneC,glb,zoneDep,ctrl) {
+prepareprojection <- function(zone1,zoneC,glb,zoneDep,ctrl,multC) {
   # zone1=zone$zone1;zoneC=zone$zoneC; glb=glb; zoneDep=zoneDD; ctrl=ctrl
-  projyrs <- zone1$projC$projyrs + zone1$projC$inityrs
+  projyrs <- zone1$projC$projyrs
   projC <- modprojC(zoneC,glb,zone1) # include selectivity into projC
   zoneC <- modzoneCSel(zoneC,projC$Sel,projC$SelWt,glb,projyrs)
-  zoneDR <- makezoneDR(projyrs,ctrl$reps,glb,zoneDep) # zoneDReplicates
+  zoneDR <- makezoneDR(projyrs,ctrl$reps,glb,zoneDep,multC) # zoneDReplicates
   zoneDRp <- addrecvar(zoneC,zoneDR,zoneDR$harvestR,glb,ctrl)
   return(list(zoneDP=zoneDRp,projC=projC,zoneC=zoneC))
 } # end of prepareprojection
-
-
-
 
 
 #' @title scaleto1 scales an input vector of CPUE to a mean of one x avCE

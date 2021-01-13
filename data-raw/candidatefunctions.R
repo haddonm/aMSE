@@ -1,13 +1,13 @@
 
 
-doproj <- function(zoneC,zoneDD,glb,ctrl,projC,applyHS=mcdahcr,HSargs,recvar=TRUE) {
+doproj <- function(zoneC,zoneDD,glb,ctrl,projC,applyHS=mcdahcr,HSargs,
+                   histpms) {
   ans <- calcprojsel(zoneC,projC,glb) # calculate selectivity for projections
   sel <- ans$projSel
   selwt <- ans$projSelWt
   reps <- ctrl$reps
   zoneDP <- makezoneDP(projC$projyrs,reps,glb,zoneDD) # make object to hold projections
-  sigmar <- 1e-08
-  if (recvar) sigmar <- ctrl$withsigR # needed to add recruitment variation
+  sigmar <- ctrl$withsigR # needed to add recruitment variation
   npop <- glb$numpop
   nsau <- glb$nSAU
   Ncl <- glb$Nclass
@@ -235,16 +235,6 @@ ans <- matrix(0,nrow=reps,ncol=16)
 for (pop in 1:16) ans[,pop] <- rnorm(reps,mean=hr[pop],sd=0.003)
 
 ans
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -4,7 +4,7 @@
 \alias{prepareprojection}
 \title{prepareprojection high level function that sets up a projection}
 \usage{
-prepareprojection(zone1, zoneC, glb, zoneDep, ctrl)
+prepareprojection(zone1, zoneC, glb, zoneDep, ctrl, multC)
 }
 \arguments{
 \item{zone1}{the original zone1 object from readctrlfile}
@@ -16,6 +16,8 @@ prepareprojection(zone1, zoneC, glb, zoneDep, ctrl)
 \item{zoneDep}{the zone after initial depletion}
 
 \item{ctrl}{the ctrl object}
+
+\item{multC}{the TAC multiplier from the last year of conditioning}
 }
 \value{
 a list of the dynamic zone object as a list of arrays of projyrs x
@@ -25,10 +27,11 @@ a list of the dynamic zone object as a list of arrays of projyrs x
 prepareprojection is a high level function that restructures
     zoneC by including the projected selectivity (in case the LML changes),
     and also selectivity x weight-at-size (for computational speed). It
-    then generates a new zoneD with room for all replicates. Finally, it
-    adds recruitment variabilkity to each of the replicates and keeps
-    zone1$projC$inityrs of each replicates series as the start of each
-    replicate projection.
+    then generates a new zoneD with room for all replicates as well as the
+    aspirational catches from each HS. Finally, it adds recruitment variation
+    to each of the replicates and keeps the last year of each iteration of
+    the addrecvar function as the start of each replicate projection, with
+    zeros in the catch, cpue, and cesau arrays
 }
 \examples{
 print("wait on data files")
