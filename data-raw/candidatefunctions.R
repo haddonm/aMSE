@@ -6,12 +6,13 @@ doproj <- function(zoneC,zoneDD,glb,ctrl,projC,applyHS=mcdahcr,HSargs,
   sel <- ans$projSel
   selwt <- ans$projSelWt
   reps <- ctrl$reps
-  zoneDP <- makezoneDP(projC$projyrs,reps,glb,zoneDD) # make object to hold projections
+  pyrs <- projC$projyrs
+  zoneDP <- makezoneDP(pyrs,reps,glb,zoneDD) # make object to hold projections
   sigmar <- ctrl$withsigR # needed to add recruitment variation
   npop <- glb$numpop
   nsau <- glb$nSAU
   Ncl <- glb$Nclass
-  pyrs <- projC$projyrs
+
   lastyr <- glb$Nyrs
   histyrs <- projC$inityrs:lastyr
   movem <- glb$move

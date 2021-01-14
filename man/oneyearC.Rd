@@ -4,18 +4,7 @@
 \alias{oneyearC}
 \title{oneyearC conducts one year's dynamics using catch not harvest}
 \usage{
-oneyearC(
-  zoneC,
-  zoneDP,
-  catchp,
-  year,
-  iter,
-  sigmar,
-  Ncl,
-  npop,
-  movem,
-  recvar = TRUE
-)
+oneyearC(zoneC, zoneDP, catchp, year, iter, sigmar, Ncl, npop, movem)
 }
 \arguments{
 \item{zoneC}{the constant portion of the zone with a list of
@@ -41,8 +30,6 @@ when searching for an equilibria.}
 \item{npop}{the number of populations, the global numpop}
 
 \item{movem}{the larval dispersal movement matrix, global move}
-
-\item{recvar}{should recruitment variation be included, default=TRUE}
 }
 \value{
 a list containing a revised dynamics list

@@ -1,6 +1,22 @@
 
-hsargs <- list(mult=1.1, wid = 4,targqnt = 0.55, pmwts = c(0.65, 0.25,0.1),
-               hcr = c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2),only=TRUE)
+# mult the multiplier on the performance measure bounds to expand them both
+#      upwards and downwards. default value = 1.1 = 10 percent increase.
+# wid  the number of years over which to calculate the gradient, default value
+#      = 4, meaning four years
+# targqnts what quantile of the distribution of cpue to use as the target,
+#      default value = 0.55
+# pmwts what weights to give to each of the performance measures. Their order
+#      is targetCE, grad4, and grad1 with default values = c(0.65, 0.25,0.1)
+# hcr  is used to translate the overall score between 0 - 10, into a
+#      multiplier for the previous aspirational catch
+
+
+hsargs <- list(mult=1.1,
+               wid = 4,
+               targqnt = 0.55,
+               pmwts = c(0.65, 0.25,0.1),
+               hcr = c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2)
+               )
 
 
 #' @title calibrateMCDA uses historical CPUE to calibrate the MCDA
@@ -21,6 +37,7 @@ hsargs <- list(mult=1.1, wid = 4,targqnt = 0.55, pmwts = c(0.65, 0.25,0.1),
 #' @param saunames the names of each SAU (from zone1$SAUnames)
 #' @param hsargs the arguments used within the Harvest strategy's HCR. See the
 #'     description for details.
+#' @param pyrs the number of years of projection
 #'
 #' @return a list of the list of the PMs, the next aspirational catches, and the
 #'     targce refpts, then a list of all the scores, and the multTAC values.
@@ -29,7 +46,7 @@ hsargs <- list(mult=1.1, wid = 4,targqnt = 0.55, pmwts = c(0.65, 0.25,0.1),
 #' @examples
 #' print("wait on example data being available")
 calibrateMCDA <- function(histCE,saunames,hsargs) {
-  # condC=condC; saunames=zone$zone1$SAUnames; hsargs=HSargs
+  # histCE=condC$histCE; saunames=zone$zone1$SAUnames; hsargs=hsargs; pyrs=projC$projyrs
   #  for (i in 1:length(hsargs)) assign(names(hsargs)[i],hsargs[[i]])
   nSAU <- length(saunames)
   yearCE <- as.numeric(rownames(histCE))
@@ -257,6 +274,50 @@ getscore <- function(pm,mult=1.1) { # pm=scoret$ans[,"targval"];mult=hsargs$mult
 } # end of getscore
 
 
+#' @title makeprojpm creates arrays to hold the projection PMs and HCR results
+#'
+#' @description makeprojpm creates the arrays required to hold the three
+#'     performance measures, grad1val, grad4val, and targval, used in MCDA
+#'     calculations. It also creates arrays to hold the multipliers for the
+#'     aspirational catches in each SAU, as well as those to hold the updated
+#'     values of the target and limit cpue. These are then all output ready to
+#'     be used as an argument in doprojection
+#'
+#' @param histpms the historical performance measure estimates from
+#'     calibrateMCDA
+#' @param reps the number of replicate projections
+#' @param projyrs the number of years of projection
+#'
+#' @return a list of arrays for the three PMs, the result of the MCDA, and the
+#'     updated limit and target reference points for cpue. Finally the number
+#'     of years of historical values used.
+#' @export
+#'
+#' @examples
+#' print("Wait on suitable internal zone data")
+makeprojpm <- function(histpms,reps,projyrs) {
+# glb=glb; histpms=cmcda$pms; reps=ctrl$reps; projyrs=projC$projyrs
+  saunames <- colnames(histpms$grad1val)
+  nSAU <- length(saunames)
+  yearCE <- as.numeric(rownames(histpms$grad1val))
+  yrce <- length(yearCE)
+  allyrs <- yrce + projyrs
+  projname <- (yearCE[yrce]+1):(yearCE[yrce]+projyrs)
+  yearnames <- c(yearCE,projname)
+  grad1val <- array(0,dim=c(allyrs,nSAU,reps),
+                    dimnames=list(yearnames,saunames,1:reps))
+  grad4val <- targval <- grad1val
+  grad1val[1:yrce,,] <- histpms$grad1val
+  grad4val[1:yrce,,] <- histpms$grad4val
+  targval[1:yrce,,] <- histpms$targval
+  multTAC <- array(0,dim=c(projyrs,nSAU,reps),
+                   dimnames=list(projname,saunames,1:reps))
+  trpCE <- lrpCE <- multTAC
+  ans <- list(grad1val=grad1val,grad4val=grad4val,targval=targval,
+              multTAC=multTAC,trpCE=trpCE,lrpCE=lrpCE,histyr=yrce)
+  return(ans)
+} # end of makeprojpm
+
 #' @title mcdahcr conducts the MCDA and returns the TAC multiplier and details
 #'
 #' @description mcdahcr conducts the MCDA on the basis of a vector of cpue and
@@ -275,9 +336,7 @@ getscore <- function(pm,mult=1.1) { # pm=scoret$ans[,"targval"];mult=hsargs$mult
 #'      target, grad4, and grad1 PMs respectively, so the order matters; the
 #'      'hcr', the harvest control rule scales that transform the combined score
 #'      into a TAC multiplier. A vector of 1 - 10 where each cell index
-#'      represents the upper limit of the the combined score; and 'only', which
-#'      is a boolean that determines whether the function only returns the score
-#'      or all details. TRUE implies only return the score
+#'      represents the upper limit of the the combined score.
 #'
 #' @param vectce the vector of cpue that forms the basis of the assessment
 #' @param yr the year for which a score is required

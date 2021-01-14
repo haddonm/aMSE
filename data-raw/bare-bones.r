@@ -91,7 +91,7 @@ B0 <- tapply(sapply(zone$zoneC,"[[","B0"),sauindex,sum)
 exB0 <- tapply(sapply(zone$zoneC,"[[","ExB0"),sauindex,sum)
 
 
-
+# l -----------------------------------------------------------------------------
 # depleteSAU and histCE --------------------------------------------------------
 options("show.signif.stars"=FALSE,
         "stringsAsFactors"=FALSE,
@@ -136,14 +136,23 @@ zoneDD <- depleteSAU(zone$zoneC,zone$zoneD,glob=glb,initdepl=deplinit,zone$produ
 propD <- getzoneprops(zone$zoneC,zoneDD,glb,year=1)
 round(propD,3)
 
-cmcda <- calibrateMCDA(histCE=condC$histCE, saunames=zone1$SAUnames,
-                       hsargs=hsargs)
+
+cmcda <- calibrateMCDA(histCE=condC$histCE,saunames=zone1$SAUnames,
+                       hsargs=hsargs,pyrs=procC$projyrs)
 str(cmcda)
 
+projpms <- makeprojpm(cmcda$pms,ctrl$reps,projC$projyrs)
+
 ctrl <- zone$ctrl
-ctrl$withsigR <- 0.1
-ans <- prepareprojection(zone1,zone$zoneC,glb,zoneDD,ctrl,multC=cmcda$pms$multTAC)
+ctrl$withsigR <- 1e-08  # all starting points are effectively identical
+ans <- prepareprojection(zone1,zone$zoneC,glb,zoneDD,ctrl,
+                         multC=cmcda$pms$multTAC)
 str(ans$zoneDP,max.level = 1)
+ctrl$withsigR <- 0.3
+
+
+
+
 
 zoneDP <- ans$zoneDP
 var <- "deplsB"
@@ -154,6 +163,9 @@ hist(zoneDP$deplsB[1,,],main="")
 #Rprof()
 # this should be in resdir, but during development is in data-raw
 source(paste0(ddir,"aMSE/data-raw/","TasmanianHS.R"))
+
+# Now do Projection ------------------------------------------------------------
+
 
 
 mseproj <- doprojection(zoneC,zoneDP,glb,ctrl,projC$projyrs,applyHS=mcdahcr,

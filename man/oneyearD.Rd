@@ -4,7 +4,7 @@
 \alias{oneyearD}
 \title{oneyearD conducts one year's dynamics on zoneD in the MSE}
 \usage{
-oneyearD(zoneC, zoneD, inHt, year, sigmar, Ncl, npop, movem, recvar = TRUE)
+oneyearD(zoneC, zoneD, inHt, year, sigmar, Ncl, npop, movem)
 }
 \arguments{
 \item{zoneC}{the constant portion of the zone with a list of
@@ -28,8 +28,6 @@ when searching for equilibria.}
 \item{npop}{the number of populations, the global numpop}
 
 \item{movem}{the larval dispersal movement matrix}
-
-\item{recvar}{should recruitment variation be included, default=TRUE}
 }
 \value{
 a list containing a revised dynamics list

@@ -12,8 +12,8 @@ doprojection(
   projyrs,
   applyHS,
   hsargs,
+  histpms,
   inityrs,
-  recvar = TRUE,
   ...
 )
 }
@@ -33,8 +33,6 @@ doprojection(
 \item{hsargs}{a list of any arguments used by applyHS}
 
 \item{inityrs}{the number of years kept from the period of conditioning,}
-
-\item{recvar}{should recruitment variation be included}
 
 \item{...}{the ellipsis should contain any additional arguments}
 }

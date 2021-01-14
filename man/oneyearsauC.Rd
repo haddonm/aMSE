@@ -4,17 +4,7 @@
 \alias{oneyearsauC}
 \title{oneyearsauC conducts one year's dynamics using catch not harvest}
 \usage{
-oneyearsauC(
-  zoneC,
-  zoneDD,
-  catchsau,
-  year,
-  sigmar,
-  Ncl,
-  sauindex,
-  movem,
-  recvar = TRUE
-)
+oneyearsauC(zoneC, zoneDD, catchsau, year, sigmar, Ncl, sauindex, movem)
 }
 \arguments{
 \item{zoneC}{the constant portion of the zone with a list of
@@ -38,8 +28,6 @@ when searching for an equilibria.}
 \item{sauindex}{the sau index for each population}
 
 \item{movem}{the larval dispersal movement matrix, global move}
-
-\item{recvar}{should recruitment variation be included, default=TRUE}
 }
 \value{
 a list containing a revised dynamics list

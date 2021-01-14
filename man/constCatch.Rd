@@ -4,16 +4,7 @@
 \alias{constCatch}
 \title{constCatch implements a constant TAC harvest strategy}
 \usage{
-constCatch(
-  inTAC,
-  zoneCP,
-  zoneDP,
-  glob,
-  ctrl,
-  projyrs,
-  inityrs = 10,
-  recvar = TRUE
-)
+constCatch(inTAC, zoneCP, zoneDP, glob, ctrl, projyrs, inityrs = 10)
 }
 \arguments{
 \item{inTAC}{the constant catch for the zone, from projC$HSdetail}
@@ -30,8 +21,6 @@ makezoneDR and then had variation added using addrecvar}
 \item{projyrs}{the number of years of projection from projC$projyrs}
 
 \item{inityrs}{the initial number of years used to express starting variation}
-
-\item{recvar}{should recruitment variation be included, default=TRUE}
 }
 \value{
 a revised zoneDP now containing the dynamics of each replicate run

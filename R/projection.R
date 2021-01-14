@@ -54,7 +54,7 @@ addrecvar <- function(zoneC,zoneDR,inHt,glb,ctrl,nyrs=25,reset=TRUE) {
       steep <- getvect(zoneC,"steeph") #sapply(zoneC,"[[","popdef")["steeph",]
       r0 <- getvar(zoneC,"R0") #sapply(zoneC,"[[","R0")
       b0 <- getvar(zoneC,"B0") #sapply(zoneC,"[[","B0")
-      recs <- oneyearrec(steep,r0,b0,matb,sigR=sigmar,withvar=TRUE)
+      recs <- oneyearrec(steep,r0,b0,matb,sigR=sigmar)
       newrecs <- movem %*% recs
       zoneDR$recruit[year,,iter] <- newrecs
       zoneDR$Nt[1,year,,iter] <- newrecs
@@ -67,7 +67,7 @@ addrecvar <- function(zoneC,zoneDR,inHt,glb,ctrl,nyrs=25,reset=TRUE) {
     varzoneDR$exploitB[1,,] <- zoneDR$exploitB[nyrs,,]
     varzoneDR$catch[1,,] <- zoneDR$catch[nyrs,,]
     varzoneDR$harvestR[1,,] <- zoneDR$harvestR[nyrs,,]
-    varzoneDR$cpue[1,,] <- 0 #zoneDR$cpue[nyrs,,]
+    varzoneDR$cpue[1,,] <- zoneDR$cpue[nyrs,,]
     varzoneDR$recruit[1,,] <- zoneDR$recruit[nyrs,,]
     varzoneDR$deplsB[1,,] <- zoneDR$deplsB[nyrs,,]
     varzoneDR$depleB[1,,] <- zoneDR$depleB[nyrs,,]
@@ -248,37 +248,44 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 #' # zoneCP=zoneCP;zoneDP=zoneDR;glob=glb;ctrl=ctrl;projyrs=projC$projyrs;inityrs=projC$inityrs
 #' # wid=4;targqnt=0.55;pmwts=c(0.65, 0.25,0.1);hcr = c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2)
 doprojection <- function(zoneCP,zoneDP,glob,ctrl,projyrs,applyHS,hsargs,
+                         histpms,
                          inityrs,...) {
-  sigmar <- ctrl$withsigR # needed to add recruitment variation
+  # get  important constants
+  sigmaR <- ctrl$withsigR # needed to add recruitment variation
   npop <- glob$numpop
   nsau <- glob$nSAU
   Ncl <- glob$Nclass
-  nyrs <- projyrs + inityrs
+  nyrs <- projyrs
   movem <- glob$move
   reps <- ctrl$reps
-  matb <- numeric(npop)                   # use the same initial TAC for all reps
-  origTAC <- mean(colSums(zoneDP$catch[inityrs,,])) # mean sum of catches in last year
   sauindex <- glob$sauindex
+  matb <- numeric(npop)                   # use the same initial TAC for all reps
+  origTAC <- mean(colSums(zoneDP$catch[1,,])) # mean sum of catches in last year
+
   saucatch <- array(0,dim=c(nyrs,nsau,reps))
   saucpue <- saucatch
-  grad4 <- array(0,dim=c(projyrs,nsau,reps)) # declare arrays to store PMs
-  grad1 <- grad4
-  targsc <- grad4
+  # expand arrays to store PMs
+  grad1 <- histpms$grad1val  # histpms <- cmcda$pms
+  columns <- colnames(grad1)
+  numcol <- ncol(grad1)
+  grad1val <- array(0,dim=c(nyrs,nsau,reps),dimnames=list(1:nyrs,columns,1:reps))
+  grad4val <- grad1val
+  targval <- grad1val
   targetce <- numeric(nsau)
-  for (iter in 1:reps) { # generate SAU total catches and catch-weighted cpue iter=1
-    for (yr in 1:inityrs) { # iter=1; yr=4
-      saucatch[yr,,iter] <- tapply(zoneDP$catch[yr,,iter],sauindex,sum,na.rm=TRUE)
-      wts <- zoneDP$catch[yr,,iter]/(saucatch[yr,sauindex,iter])
-      saucpue[yr,,iter] <- tapply((zoneDP$cpue[yr,,iter] * wts),sauindex,sum,na.rm=TRUE)
-      if (yr >= hsargs$wid) {
-        grad1[yr,,iter] <- apply(saucpue[1:yr,,iter],2,getgradone,yr=yr)
-        grad4[yr,,iter] <- apply(saucpue[1:yr,,iter],2,getgradwid,yr=yr,wid=hsargs$wid)
-      }
-    }
-    for (sau in 1:nsau)
-      targetce[sau] <- targscore(saucpue[1:inityrs,sau,iter],qnt=hsargs$targqnt)
-    targsc[1:inityrs,,iter] <- targetce
-  }
+  # for (iter in 1:reps) { # generate SAU total catches and catch-weighted cpue iter=1
+  #   for (yr in 1:inityrs) { # iter=1; yr=4
+  #     saucatch[yr,,iter] <- tapply(zoneDP$catch[yr,,iter],sauindex,sum,na.rm=TRUE)
+  #     wts <- zoneDP$catch[yr,,iter]/(saucatch[yr,sauindex,iter])
+  #     saucpue[yr,,iter] <- tapply((zoneDP$cpue[yr,,iter] * wts),sauindex,sum,na.rm=TRUE)
+  #     if (yr >= hsargs$wid) {
+  #       grad1[yr,,iter] <- apply(saucpue[1:yr,,iter],2,getgradone,yr=yr)
+  #       grad4[yr,,iter] <- apply(saucpue[1:yr,,iter],2,getgradwid,yr=yr,wid=hsargs$wid)
+  #     }
+  #   }
+  #   for (sau in 1:nsau)
+  #     targetce[sau] <- targscore(saucpue[1:inityrs,sau,iter],qnt=hsargs$targqnt)
+  #   targsc[1:inityrs,,iter] <- targetce
+  # }
   # now do replicates, updating saucatch and saucpue each year
   if(ctrl$randseedP > 0) set.seed(ctrl$randseedP) # set random seed if desired
   for (iter in 1:reps) {
@@ -566,13 +573,13 @@ poptosau <- function(catvect,cpuevect,sauindex) {
 #' @examples
 #' print("wait on data files")
 prepareprojection <- function(zone1,zoneC,glb,zoneDep,ctrl,multC) {
-  # zone1=zone$zone1;zoneC=zone$zoneC; glb=glb; zoneDep=zoneDD; ctrl=ctrl
+  # zone1=zone$zone1;zoneC=zone$zoneC; glb=glb; zoneDep=zoneDD; ctrl=ctrl; multC=cmcda$pms$multTAC
   projyrs <- zone1$projC$projyrs
   projC <- modprojC(zoneC,glb,zone1) # include selectivity into projC
   zoneC <- modzoneCSel(zoneC,projC$Sel,projC$SelWt,glb,projyrs)
   zoneDR <- makezoneDR(projyrs,ctrl$reps,glb,zoneDep,multC) # zoneDReplicates
   zoneDRp <- addrecvar(zoneC,zoneDR,zoneDR$harvestR,glb,ctrl)
-  return(list(zoneDP=zoneDRp,projC=projC,zoneC=zoneC))
+  return(list(zoneDP=zoneDRp,projC=projC,zoneCP=zoneC))
 } # end of prepareprojection
 
 
