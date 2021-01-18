@@ -4,7 +4,7 @@
 \alias{prepareprojection}
 \title{prepareprojection high level function that sets up a projection}
 \usage{
-prepareprojection(zone1, zoneC, glb, zoneDep, ctrl, multC)
+prepareprojection(zone1, zoneC, glb, zoneDep, ctrl)
 }
 \arguments{
 \item{zone1}{the original zone1 object from readctrlfile}
@@ -16,8 +16,6 @@ prepareprojection(zone1, zoneC, glb, zoneDep, ctrl, multC)
 \item{zoneDep}{the zone after initial depletion}
 
 \item{ctrl}{the ctrl object}
-
-\item{multC}{the TAC multiplier from the last year of conditioning}
 }
 \value{
 a list of the dynamic zone object as a list of arrays of projyrs x

@@ -136,36 +136,44 @@ zoneDD <- depleteSAU(zone$zoneC,zone$zoneD,glob=glb,initdepl=deplinit,zone$produ
 propD <- getzoneprops(zone$zoneC,zoneDD,glb,year=1)
 round(propD,3)
 
+ctrl <- zone$ctrl
+ctrl$withsigR <- 0.1 # all starting points are effectively identical
+ans <- prepareprojection(zone1,zone$zoneC,glb,zoneDD,ctrl)
+str(ans$zoneDP,max.level = 1)
 
 cmcda <- calibrateMCDA(histCE=condC$histCE,saunames=zone1$SAUnames,
-                       hsargs=hsargs,pyrs=procC$projyrs)
-str(cmcda)
+                       hsargs=hsargs,zoneDP=ans$zoneDP,glb$sauindex)
+
+str(cmcda,max.level = 2)
+zoneDP <- cmcda$zoneDP
+histpms <- cmcda$pms
+
 
 projpms <- makeprojpm(cmcda$pms,ctrl$reps,projC$projyrs)
 
-ctrl <- zone$ctrl
-ctrl$withsigR <- 1e-08  # all starting points are effectively identical
-ans <- prepareprojection(zone1,zone$zoneC,glb,zoneDD,ctrl,
-                         multC=cmcda$pms$multTAC)
-str(ans$zoneDP,max.level = 1)
 ctrl$withsigR <- 0.3
 
+source(paste0(ddir,"aMSE/data-raw/","TasmanianHS.R"))
+
+# Now do Projection -------------------------------------------------------
 
 
 
 
-zoneDP <- ans$zoneDP
-var <- "deplsB"
+
+
+
+
+
+zoneDP <- cmcda$zoneDP
+
+tac <- colSums(zoneDP$catch[1,,])
 
 plotprep(width=7, height=7,newdev=FALSE)
 hist(zoneDP$deplsB[1,,],main="")
 
 #Rprof()
 # this should be in resdir, but during development is in data-raw
-source(paste0(ddir,"aMSE/data-raw/","TasmanianHS.R"))
-
-# Now do Projection ------------------------------------------------------------
-
 
 
 mseproj <- doprojection(zoneC,zoneDP,glb,ctrl,projC$projyrs,applyHS=mcdahcr,

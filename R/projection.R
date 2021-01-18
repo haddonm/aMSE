@@ -248,8 +248,7 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 #' # zoneCP=zoneCP;zoneDP=zoneDR;glob=glb;ctrl=ctrl;projyrs=projC$projyrs;inityrs=projC$inityrs
 #' # wid=4;targqnt=0.55;pmwts=c(0.65, 0.25,0.1);hcr = c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2)
 doprojection <- function(zoneCP,zoneDP,glob,ctrl,projyrs,applyHS,hsargs,
-                         histpms,
-                         inityrs,...) {
+                         projpms,inityrs,...) {
   # get  important constants
   sigmaR <- ctrl$withsigR # needed to add recruitment variation
   npop <- glob$numpop
@@ -264,14 +263,7 @@ doprojection <- function(zoneCP,zoneDP,glob,ctrl,projyrs,applyHS,hsargs,
 
   saucatch <- array(0,dim=c(nyrs,nsau,reps))
   saucpue <- saucatch
-  # expand arrays to store PMs
-  grad1 <- histpms$grad1val  # histpms <- cmcda$pms
-  columns <- colnames(grad1)
-  numcol <- ncol(grad1)
-  grad1val <- array(0,dim=c(nyrs,nsau,reps),dimnames=list(1:nyrs,columns,1:reps))
-  grad4val <- grad1val
-  targval <- grad1val
-  targetce <- numeric(nsau)
+
   # for (iter in 1:reps) { # generate SAU total catches and catch-weighted cpue iter=1
   #   for (yr in 1:inityrs) { # iter=1; yr=4
   #     saucatch[yr,,iter] <- tapply(zoneDP$catch[yr,,iter],sauindex,sum,na.rm=TRUE)
@@ -403,7 +395,6 @@ makezoneDP <- function(projyr,iter,glb,inzoneD) {
 #' @param iter the number of replicates
 #' @param glb the global object
 #' @param inzoneD the zoneD object after any preliminary depletion
-#' @param multC the TAC multiplier from the last year of conditioning
 #'
 #' @return a large list containing an object ready for the projection dynamics
 #' @export
@@ -411,7 +402,7 @@ makezoneDP <- function(projyr,iter,glb,inzoneD) {
 #' @examples
 #' print("Could add variation to the harvest rates so that when ")
 #' print("prepareprojection was run the range of initial H values would increase ")
-makezoneDR <- function(projyr,iter,glb,inzoneD,multC) {
+makezoneDR <- function(projyr,iter,glb,inzoneD) {
   # projyr=projyrs; iter=reps; glob=glb; inzoneD=zoneDD
   numpop <- glb$numpop
   nSAU <- glb$nSAU
@@ -427,7 +418,7 @@ makezoneDR <- function(projyr,iter,glb,inzoneD,multC) {
   Catch <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
   Catch[1,,] <- inzoneD$catch[1,]
   aCatch <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims) #aspirational
-  aCatch[1,,] <- Catch[1,,] * multC[sauindex]
+ #aCatch[1,,] <- Catch[1,,] * multC[sauindex]
   Harvest <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
   Harvest[1,,] <- inzoneD$harvestR[1,]
   cpue <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
@@ -564,7 +555,6 @@ poptosau <- function(catvect,cpuevect,sauindex) {
 #' @param glb the global variables
 #' @param zoneDep the zone after initial depletion
 #' @param ctrl the ctrl object
-#' @param multC the TAC multiplier from the last year of conditioning
 #'
 #' @return a list of the dynamic zone object as a list of arrays of projyrs x
 #'     populations x replicates, plus the revised projC and revised zoneC
@@ -572,12 +562,12 @@ poptosau <- function(catvect,cpuevect,sauindex) {
 #'
 #' @examples
 #' print("wait on data files")
-prepareprojection <- function(zone1,zoneC,glb,zoneDep,ctrl,multC) {
-  # zone1=zone$zone1;zoneC=zone$zoneC; glb=glb; zoneDep=zoneDD; ctrl=ctrl; multC=cmcda$pms$multTAC
+prepareprojection <- function(zone1,zoneC,glb,zoneDep,ctrl) {
+  # zone1=zone$zone1;zoneC=zone$zoneC; glb=glb; zoneDep=zoneDD; ctrl=ctrl;
   projyrs <- zone1$projC$projyrs
   projC <- modprojC(zoneC,glb,zone1) # include selectivity into projC
   zoneC <- modzoneCSel(zoneC,projC$Sel,projC$SelWt,glb,projyrs)
-  zoneDR <- makezoneDR(projyrs,ctrl$reps,glb,zoneDep,multC) # zoneDReplicates
+  zoneDR <- makezoneDR(projyrs,ctrl$reps,glb,zoneDep) # zoneDReplicates
   zoneDRp <- addrecvar(zoneC,zoneDR,zoneDR$harvestR,glb,ctrl)
   return(list(zoneDP=zoneDRp,projC=projC,zoneCP=zoneC))
 } # end of prepareprojection

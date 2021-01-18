@@ -4,7 +4,7 @@
 \alias{makezoneDR}
 \title{makezoneDR generates the container for the projection dynamics}
 \usage{
-makezoneDR(projyr, iter, glb, inzoneD, multC)
+makezoneDR(projyr, iter, glb, inzoneD)
 }
 \arguments{
 \item{projyr}{the number of years of the projection}
@@ -14,8 +14,6 @@ makezoneDR(projyr, iter, glb, inzoneD, multC)
 \item{glb}{the global object}
 
 \item{inzoneD}{the zoneD object after any preliminary depletion}
-
-\item{multC}{the TAC multiplier from the last year of conditioning}
 }
 \value{
 a large list containing an object ready for the projection dynamics

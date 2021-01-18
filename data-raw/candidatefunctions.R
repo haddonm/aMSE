@@ -1,5 +1,72 @@
 
 
+allocateCZone <- function(sauexB,TAC)
+
+
+
+
+
+doprojection <- function(zoneCP,zoneDP,glob,ctrl,projyrs,applyHS,hsargs,
+                         projpms,inityrs,...) {
+  # get  important constants
+  sigmaR <- ctrl$withsigR # needed to add recruitment variation
+  npop <- glob$numpop
+  nsau <- glob$nSAU
+  Ncl <- glob$Nclass
+  nyrs <- projyrs
+  movem <- glob$move
+  reps <- ctrl$reps
+  sauindex <- glob$sauindex
+  matb <- numeric(npop)
+  origTAC <- colSums(zoneDP$catch[1,,]) # mean sum of catches in last year
+
+  # now do replicates, updating saucatch and saucpue each year
+  if(ctrl$randseedP > 0) set.seed(ctrl$randseedP) # set random seed if desired
+  for (iter in 1:reps) {
+    TAC <- origTAC[iter]
+
+    for (year in (2:nyrs) { # iter=1; year=11
+      #  catpop <- colSums(zoneDP$catch[1:(year - 1),,iter])
+      inexpB <- zoneDP$exploitB[(year - 1),,iter]
+      sauexpB <- tapply(inexpB,sauindex,sum,na.rm=TRUE)
+      catbysau <- TAC * sauexpB/sum(sauexpB)  # no error initially
+      multh <- apply(saucpue[1:(year-1),,1],2,applyHS,yr=(year-1)) # apply mcdahcr
+      TAC <- sum(catbysau * multh)
+      divererr <- sauexpB * exp(rnorm(nsau,mean=0,sd=ctrl$withsigB))
+      catbysau <- TAC * (divererr/sum(divererr)) # currently no error on TAC
+      catbypop <- catbysau[sauindex] * (inexpB/sauexpB[sauindex]) # no error on pops
+      for (popn in 1:npop) { # year=11; iter=1; pop=1
+        out <- oneyearcat(inpopC=zoneCP[[popn]],inNt=zoneDP$Nt[,year-1,popn,iter],
+                          Nclass=Ncl,incat=catbypop[popn],yr=year)
+        zoneDP$exploitB[year,popn,iter] <- out$ExploitB
+        zoneDP$matureB[year,popn,iter] <- out$MatureB
+        zoneDP$catch[year,popn,iter] <- out$Catch
+        zoneDP$harvestR[year,popn,iter] <- out$Harvest
+        zoneDP$cpue[year,popn,iter] <- out$ce
+        zoneDP$Nt[,year,popn,iter] <- out$Nt
+        zoneDP$catchN[,year,popn,iter] <- out$CatchN
+        matb[popn] <- out$MatureB
+      } # pop
+      steep <- getvect(zoneCP,"steeph")
+      r0 <- sapply(zoneCP,"[[","R0")
+      b0 <- sapply(zoneCP,"[[","B0")
+      recs <- oneyearrec(steep,r0,b0,matb,sigR=sigmar)
+      newrecs <- movem %*% recs
+      zoneDP$recruit[year,,iter] <- newrecs
+      zoneDP$Nt[1,year,,iter] <- newrecs
+      zoneDP$deplsB[year,,iter] <- zoneDP$matureB[year,,iter]/b0
+      zoneDP$depleB[year,,iter] <- zoneDP$exploitB[year,,iter]/sapply(zoneCP,"[[","ExB0")
+      saucatch[year,,iter] <- tapply(zoneDP$catch[year,,iter],sauindex,sum,na.rm=TRUE)
+      wts <- zoneDP$catch[year,,iter]/(saucatch[year,sauindex,iter])
+      saucpue[year,,iter] <- tapply((zoneDP$cpue[year,,iter] * wts),sauindex,sum,na.rm=TRUE)
+    }   # year loop        zoneDR$matureB[,,1]
+  }     # rep loop
+  zoneDP$cesau <- saucpue
+  return(zoneDP=zoneDP)
+} # end of doprojection
+
+
+
 doproj <- function(zoneC,zoneDD,glb,ctrl,projC,applyHS=mcdahcr,HSargs,
                    histpms) {
   ans <- calcprojsel(zoneC,projC,glb) # calculate selectivity for projections

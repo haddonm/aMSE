@@ -38,6 +38,11 @@ hsargs <- list(mult=1.1,
 #' @param hsargs the arguments used within the Harvest strategy's HCR. See the
 #'     description for details.
 #' @param pyrs the number of years of projection
+#' @param zoneDP the projection object containing the dynamics, introduced
+#'     here to update the aspirational catches based on the last historical
+#'     year's actual catches
+#' @param sauindex the SAU index for each population used to identify which SAU
+#'     each population is found within.
 #'
 #' @return a list of the list of the PMs, the next aspirational catches, and the
 #'     targce refpts, then a list of all the scores, and the multTAC values.
@@ -45,9 +50,9 @@ hsargs <- list(mult=1.1,
 #'
 #' @examples
 #' print("wait on example data being available")
-calibrateMCDA <- function(histCE,saunames,hsargs) {
-  # histCE=condC$histCE; saunames=zone$zone1$SAUnames; hsargs=hsargs; pyrs=projC$projyrs
-  #  for (i in 1:length(hsargs)) assign(names(hsargs)[i],hsargs[[i]])
+calibrateMCDA <- function(histCE,saunames,hsargs,zoneDP,sauindex) {
+  # histCE=condC$histCE; saunames=zone$zone1$SAUnames; hsargs=hsargs;
+  # zoneDP=ans$zoneDP; sauindex=glb$sauindex
   nSAU <- length(saunames)
   yearCE <- as.numeric(rownames(histCE))
   yrce <- length(yearCE)
@@ -86,13 +91,13 @@ calibrateMCDA <- function(histCE,saunames,hsargs) {
     multTAC[,sau] <- hsargs$hcr[pick]
     refpts[sau,] <- tmp3$details
   }
+  zoneDP$acatch[1,,] <- zoneDP$catch[1,,] * multTAC[yrce,sauindex]
   pms <- list(grad1val=grad1val,grad4val=grad4val,targval=targval,
-              multTAC=multTAC[yrce,],refpts=refpts)
+              refpts=refpts)
   scores <- list(score1=score1,score4=score4,scoret=scoret,scoretot=scoretot)
-  ans <- list(pms=pms,scores=scores,yrmultTAC=multTAC)
-  return(ans)
+  return(list(pms=pms,zoneDP=zoneDP,scores=scores,yrmultTAC=multTAC))
 } # end of calibrateMCDA
-
+#    aCatch[1,,] <- Catch[1,,] * multC[sauindex]  # need to generalize this
 
 #' @title getgrad1 calculates the one year gradient score for all years of cpue
 #'
