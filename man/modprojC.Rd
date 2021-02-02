@@ -4,17 +4,17 @@
 \alias{modprojC}
 \title{modprojC produces three objects used to condition the zone}
 \usage{
-modprojC(zoneC, glob, inzone)
+modprojC(zoneC, glob, projC)
 }
 \arguments{
 \item{zoneC}{the constant part of the zone}
 
 \item{glob}{the globals for the simulation}
 
-\item{inzone}{the zone object from readctrlfile}
+\item{projC}{the project definition object from zone1 from readctrlfile}
 }
 \value{
-a list of projSel and projSelWt within the projC object from inzone
+an updated projC with projSel and projSelWt completed
 }
 \description{
 modprojC produces an object used to condition the zone when

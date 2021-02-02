@@ -38,9 +38,9 @@ hsargs <- list(mult=1.1,
 #' @param hsargs the arguments used within the Harvest strategy's HCR. See the
 #'     description for details.
 #' @param pyrs the number of years of projection
-#' @param zoneDP the projection object containing the dynamics, introduced
-#'     here to update the aspirational catches based on the last historical
-#'     year's actual catches
+#' @param endcatch the final year's catches from the fishery conditioned zone.
+#'     These are required to generate the aspiration catches by population for
+#'     the first year of the projections (zoneDD$catch[endyr,])
 #' @param sauindex the SAU index for each population used to identify which SAU
 #'     each population is found within.
 #'
@@ -50,12 +50,13 @@ hsargs <- list(mult=1.1,
 #'
 #' @examples
 #' print("wait on example data being available")
-calibrateMCDA <- function(histCE,saunames,hsargs,zoneDP,sauindex) {
+calibrateMCDA <- function(histCE,saunames,hsargs,endcatch,sauindex) {
   # histCE=condC$histCE; saunames=zone$zone1$SAUnames; hsargs=hsargs;
   # zoneDP=ans$zoneDP; sauindex=glb$sauindex
   nSAU <- length(saunames)
   yearCE <- as.numeric(rownames(histCE))
   yrce <- length(yearCE)
+  # define storage matrices
   grad1val <- matrix(0,nrow=yrce,ncol=nSAU,dimnames=list(yearCE,saunames))
   grad4val <- targval <- score1 <- score4 <- scoret <- scoretot <- grad1val
   multTAC <- grad1val
@@ -91,13 +92,34 @@ calibrateMCDA <- function(histCE,saunames,hsargs,zoneDP,sauindex) {
     multTAC[,sau] <- hsargs$hcr[pick]
     refpts[sau,] <- tmp3$details
   }
-  zoneDP$acatch[1,,] <- zoneDP$catch[1,,] * multTAC[yrce,sauindex]
+  acatch <- endcatch * multTAC[yrce,sauindex]
   pms <- list(grad1val=grad1val,grad4val=grad4val,targval=targval,
               refpts=refpts)
   scores <- list(score1=score1,score4=score4,scoret=scoret,scoretot=scoretot)
-  return(list(pms=pms,zoneDP=zoneDP,scores=scores,yrmultTAC=multTAC))
+  return(list(pms=pms,acatch=acatch,scores=scores,yrmultTAC=multTAC))
 } # end of calibrateMCDA
-#    aCatch[1,,] <- Catch[1,,] * multC[sauindex]  # need to generalize this
+
+#' @title catchbysau calculates the catch by sau without error for Tasmania
+#'
+#' @description catchbysau calculates the catch by sau without error for the
+#'     Tasmanian HS. This takes the sum of the aspirational catches as the TAC,
+#'     which is multiplied by the proportion of exploitable biomass for each SAU,
+#'     currently known without error (which might be changed).
+#'
+#' @param inexpB a particular years' exploitable biomass by population
+#' @param sauindex a vector containing the sau index number for each population
+#' @param TAC the sum of the aspirational catches for a given year
+#'
+#' @return a vector of the catches by sau
+#' @export
+#'
+#' @examples
+#' print("wait on suitable internal data")
+catchbysau <- function(inexpB,sauindex,TAC) {
+  sauexpB <- tapply(inexpB,sauindex,sum,na.rm=TRUE)
+  catbysau <- TAC * sauexpB/sum(sauexpB) # no error yet.
+  return(catbysau)
+} # end of catchbysau
 
 #' @title getgrad1 calculates the one year gradient score for all years of cpue
 #'

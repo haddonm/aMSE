@@ -4,7 +4,7 @@
 \alias{addrecvar}
 \title{addrecvar adds recruitment variation to start of generic simulation}
 \usage{
-addrecvar(zoneC, zoneDR, inHt, glb, ctrl, nyrs = 25, reset = TRUE)
+addrecvar(zoneC, zoneDR, inHt, glb, ctrl, aspcatch, nyrs = 25, reset = TRUE)
 }
 \arguments{
 \item{zoneC}{the constant zone object. Its selectivity patterns should be
@@ -18,6 +18,8 @@ using makezoneDR}
 \item{glb}{the globals object}
 
 \item{ctrl}{the ctrl object}
+
+\item{aspcatch}{the aspirational catches for the first year of projection}
 
 \item{nyrs}{defaults to 25, which appears to be enough to produce the
 required variation}

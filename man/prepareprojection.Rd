@@ -4,7 +4,7 @@
 \alias{prepareprojection}
 \title{prepareprojection high level function that sets up a projection}
 \usage{
-prepareprojection(zone1, zoneC, glb, zoneDep, ctrl)
+prepareprojection(zone1, zoneC, glb, zoneDep, aspcatch)
 }
 \arguments{
 \item{zone1}{the original zone1 object from readctrlfile}
@@ -15,7 +15,7 @@ prepareprojection(zone1, zoneC, glb, zoneDep, ctrl)
 
 \item{zoneDep}{the zone after initial depletion}
 
-\item{ctrl}{the ctrl object}
+\item{aspcatch}{the aspirational catch for the first year of every projection}
 }
 \value{
 a list of the dynamic zone object as a list of arrays of projyrs x

@@ -12,7 +12,7 @@ doprojection(
   projyrs,
   applyHS,
   hsargs,
-  histpms,
+  projpms,
   inityrs,
   ...
 )

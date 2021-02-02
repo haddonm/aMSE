@@ -1,14 +1,8 @@
 
 
-allocateCZone <- function(sauexB,TAC)
 
-
-
-
-
-doprojection <- function(zoneCP,zoneDP,glob,ctrl,projyrs,applyHS,hsargs,
-                         projpms,inityrs,...) {
-  # get  important constants
+doprojection <- function(zoneCP,zoneDP,glob,ctrl,projyrs,applyHS,hsargs,projpms,inityrs) {
+  # get important constants
   sigmaR <- ctrl$withsigR # needed to add recruitment variation
   npop <- glob$numpop
   nsau <- glob$nSAU
@@ -19,17 +13,12 @@ doprojection <- function(zoneCP,zoneDP,glob,ctrl,projyrs,applyHS,hsargs,
   sauindex <- glob$sauindex
   matb <- numeric(npop)
   origTAC <- colSums(zoneDP$catch[1,,]) # mean sum of catches in last year
-
   # now do replicates, updating saucatch and saucpue each year
-  if(ctrl$randseedP > 0) set.seed(ctrl$randseedP) # set random seed if desired
+  if (ctrl$randseedP > 0) set.seed(ctrl$randseedP) # set random seed if desired
   for (iter in 1:reps) {
     TAC <- origTAC[iter]
-
-    for (year in (2:nyrs) { # iter=1; year=11
-      #  catpop <- colSums(zoneDP$catch[1:(year - 1),,iter])
-      inexpB <- zoneDP$exploitB[(year - 1),,iter]
-      sauexpB <- tapply(inexpB,sauindex,sum,na.rm=TRUE)
-      catbysau <- TAC * sauexpB/sum(sauexpB)  # no error initially
+    for (year in 2:nyrs) { # iter=1; year=11
+      catbysau <- catchbysau(inexpB=zoneDP$exploitB[(year - 1),,iter],sauindex,TAC) # no error initially
       multh <- apply(saucpue[1:(year-1),,1],2,applyHS,yr=(year-1)) # apply mcdahcr
       TAC <- sum(catbysau * multh)
       divererr <- sauexpB * exp(rnorm(nsau,mean=0,sd=ctrl$withsigB))
@@ -64,6 +53,7 @@ doprojection <- function(zoneCP,zoneDP,glob,ctrl,projyrs,applyHS,hsargs,
   zoneDP$cesau <- saucpue
   return(zoneDP=zoneDP)
 } # end of doprojection
+
 
 
 
@@ -115,7 +105,6 @@ doproj <- function(zoneC,zoneDD,glb,ctrl,projC,applyHS=mcdahcr,HSargs,
   for (sau in 1:nsau)
     targetce[sau] <- targscore(saucpue[1:inityrs,sau,iter],qnt=targqnt)$result
   targsc[1:inityrs,,iter] <- targetce
-
 
 }
 

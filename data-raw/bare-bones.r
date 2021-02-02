@@ -27,6 +27,7 @@ source(paste0(ddir,"aMSE/data-raw/","TasmanianHS.R"))
 #data(zone)
 zone <- makeequilzone(resdir,"control2.csv") # normally would read in a file
   equiltime <- (Sys.time())
+  # condition on the historic catches
 zoneDD <- dohistoricC(zone$zoneD,zone$zoneC,glob=zone$glb,zone$zone1$condC)
   midtime <- (Sys.time())
 
@@ -44,28 +45,19 @@ glb <- zone$glb
 zone1 <- zone$zone1
 projC <- zone1$projC
 condC <- zone1$condC
-# histCE <- zone$zone1$condC$histCE; saunames=zone$zone1$SAUnames
+zoneC <- zone$zoneC
 
-# ans <- calibrateMCDA(zoneDD$catch,zoneDD$cpue,projC$inityrs:glb$Nyrs,
-#                      nsau=glb$nSAU,sauindex=glb$sauindex,pyrs=projC$projyrs)
+cmcda <- calibrateMCDA(histCE=condC$histCE, saunames=zone1$SAUnames,hsargs=hsargs,
+                       endcatch=zoneDD$catch[47,],sauindex=glb$sauindex)
 
-cmcda <- calibrateMCDA(histCE=condC$histCE, saunames=zone1$SAUnames,hsargs=hsargs)
-
-str(ans)
-
-saucpue <- ans$saucpue
-saucatch <- ans$saucatch
-lastyr <- glb$Nyrs
-histyr <- projC$inityrs:lastyr
+str(cmcda)
 
 
+out <- prepareprojection(zone1,zoneC,glb,zoneDD,cmcda$acatch)
 
-ctrl <- zone$ctrl
-zoneC=zone$zoneC
-
-
-applyHS=mcdahcr;
-HSargs=hsargs;
+zoneDP <- out$zoneDP
+projC <- out$projC
+zoneCP <- out$zoneCP
 
 
 

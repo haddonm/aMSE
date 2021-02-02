@@ -16,6 +16,7 @@
 #' @param inHt the initial harvest strategy that was used to deplete the zone
 #' @param glb the globals object
 #' @param ctrl the ctrl object
+#' @param aspcatch the aspirational catches for the first year of projection
 #' @param nyrs defaults to 25, which appears to be enough to produce the
 #'     required variation
 #' @param reset should the first ten rows of the each output be set to the last
@@ -28,8 +29,9 @@
 #'
 #' @examples
 #' print("wait on suitable data")
-addrecvar <- function(zoneC,zoneDR,inHt,glb,ctrl,nyrs=25,reset=TRUE) {
-  # zoneC=zoneC;zoneDR=zoneDR;inHt=zoneDR$harvestR;glb=glb;ctrl=ctrl
+addrecvar <- function(zoneC,zoneDR,inHt,glb,ctrl,aspcatch,nyrs=25,reset=TRUE) {
+  # zoneC=zoneC;zoneDR=zoneDR;inHt=zoneDR$harvestR;glb=glb;ctrl=ctrl;aspcatch=cmcda$acatch
+  # nyrs=25; reset=TRUE
   varzoneDR <- zoneDR
   sigmar <- ctrl$withsigR
   npop <- glb$numpop
@@ -66,6 +68,7 @@ addrecvar <- function(zoneC,zoneDR,inHt,glb,ctrl,nyrs=25,reset=TRUE) {
     varzoneDR$matureB[1,,] <- zoneDR$matureB[nyrs,,]
     varzoneDR$exploitB[1,,] <- zoneDR$exploitB[nyrs,,]
     varzoneDR$catch[1,,] <- zoneDR$catch[nyrs,,]
+    varzoneDR$acatch[1,,] <- aspcatch
     varzoneDR$harvestR[1,,] <- zoneDR$harvestR[nyrs,,]
     varzoneDR$cpue[1,,] <- zoneDR$cpue[nyrs,,]
     varzoneDR$recruit[1,,] <- zoneDR$recruit[nyrs,,]
@@ -388,8 +391,9 @@ makezoneDP <- function(projyr,iter,glb,inzoneD) {
 #' @description makezoneDR generates an object designed to hold the outputs
 #'     from each replicate within a set of projections. This is identical to
 #'     zoneD except it contains a repeat for each iteration and now includes
-#'     a cesau, which is the population-catch-weighted cpue for each SAU.
-#'     Variation should be added by addrecvar.
+#'     a cesau and a acatch, which is the population-catch-weighted cpue for
+#'     each SAU, and the aspirational catch. Variation should be added by
+#'     addrecvar.
 #'
 #' @param projyr the number of years of the projection
 #' @param iter the number of replicates
@@ -408,19 +412,19 @@ makezoneDR <- function(projyr,iter,glb,inzoneD) {
   nSAU <- glb$nSAU
   N <- glb$Nclass
   sauindex <- glb$sauindex
+  endyr <- nrow(inzoneD$catch)
   namedims <- list(1:projyr,1:numpop,1:iter)
   namendims <- list(glb$midpts,1:projyr,1:numpop,1:iter)
   SAU <- inzoneD$SAU #as.numeric(sapply(zoneC,"[[","SAU"))
   MatB <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
-  MatB[1,,] <- inzoneD$matureB[1,]
+  MatB[1,,] <- inzoneD$matureB[endyr,]
   ExplB <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
-  ExplB[1,,] <- inzoneD$exploitB[1,]
+  ExplB[1,,] <- inzoneD$exploitB[endyr,]
   Catch <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
-  Catch[1,,] <- inzoneD$catch[1,]
+  Catch[1,,] <- inzoneD$catch[endyr,]
   aCatch <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims) #aspirational
- #aCatch[1,,] <- Catch[1,,] * multC[sauindex]
   Harvest <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
-  Harvest[1,,] <- inzoneD$harvestR[1,]
+  Harvest[1,,] <- inzoneD$harvestR[endyr,]
   cpue <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
   cesau <- array(0,dim=c(projyr,nSAU,iter),
                  dimnames=list(1:projyr,1:nSAU,1:iter))
@@ -429,15 +433,15 @@ makezoneDR <- function(projyr,iter,glb,inzoneD) {
   # for (i in 1:nSAU)
   #   cesau[1,i,] <- sum(inzoneD$cpue[1,(sauindex==i)] * wts[(sauindex==i)])
   Recruit <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
-  Recruit[1,,] <- inzoneD$recruit[1,]
+  Recruit[1,,] <- inzoneD$recruit[endyr,]
   deplSpB <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
-  deplSpB[1,,] <- inzoneD$deplsB[1,]
+  deplSpB[1,,] <- inzoneD$deplsB[endyr,]
   deplExB <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
-  deplExB[1,,] <- inzoneD$depleB[1,]
+  deplExB[1,,] <- inzoneD$depleB[endyr,]
   CatchN <- array(data=0,dim=c(N,projyr,numpop,iter),dimnames=namendims)
-  CatchN[,1,,] <- inzoneD$catchN[,1,]
+  CatchN[,1,,] <- inzoneD$catchN[,endyr,]
   Nt <- array(data=0,dim=c(N,projyr,numpop,iter),dimnames=namendims)
-  Nt[,1,,] <- inzoneD$Nt[,1,]
+  Nt[,1,,] <- inzoneD$Nt[,endyr,]
   zoneDP <- list(SAU=SAU,matureB=MatB,exploitB=ExplB,catch=Catch,acatch=aCatch,
                  harvestR=Harvest,cpue=cpue,cesau=cesau,recruit=Recruit,
                  deplsB=deplSpB,depleB=deplExB,catchN=CatchN,Nt=Nt)
@@ -458,28 +462,27 @@ makezoneDR <- function(projyr,iter,glb,inzoneD) {
 #'
 #' @param zoneC the constant part of the zone
 #' @param glob the globals for the simulation
-#' @param inzone the zone object from readctrlfile
+#' @param projC the project definition object from zone1 from readctrlfile
 #'
-#' @return a list of projSel and projSelWt within the projC object from inzone
+#' @return an updated projC with projSel and projSelWt completed
 #' @export
 #'
 #' @examples
 #' print("wait on new example data")
-modprojC <- function(zoneC,glob,inzone) { # zoneC=zoneC; glob=glb; inzone=zone1
+modprojC <- function(zoneC,glob,projC) { # zoneC=zone$zoneC; glob=glb; projC=zone1$projC
   numpop <- glob$numpop
   popdefs <- getlistvar(zoneC,"popdef")
   sau <- getvar(zoneC,"SAU")
   midpts <- glob$midpts
   projSel <- matrix(0,nrow=glob$Nclass,ncol=numpop,dimnames=list(midpts,sau))
   projSelWt <- matrix(0,nrow=glob$Nclass,ncol=numpop,dimnames=list(midpts,sau))
-  pLML <- inzone$projC$projLML[1] # needs development to allow variation in projLML
+  pLML <- projC$projLML[1] # needs development to allow variation in projLML
   for (pop in 1:numpop) {
     selL50 <- popdefs["SelP1",pop]
     selL95 <- popdefs["SelP2",pop]
     projSel[,pop] <- logistic((pLML + selL50),selL95,midpts)
     projSelWt[,pop] <- projSel[,pop] * zoneC[[pop]]$WtL
   }
-  projC <- inzone$projC
   projC$Sel <- projSel
   projC$SelWt <- projSelWt
   return(projC=projC)
@@ -554,7 +557,7 @@ poptosau <- function(catvect,cpuevect,sauindex) {
 #' @param zoneC the constant part of the zone
 #' @param glb the global variables
 #' @param zoneDep the zone after initial depletion
-#' @param ctrl the ctrl object
+#' @param aspcatch the aspirational catch for the first year of every projection
 #'
 #' @return a list of the dynamic zone object as a list of arrays of projyrs x
 #'     populations x replicates, plus the revised projC and revised zoneC
@@ -562,13 +565,15 @@ poptosau <- function(catvect,cpuevect,sauindex) {
 #'
 #' @examples
 #' print("wait on data files")
-prepareprojection <- function(zone1,zoneC,glb,zoneDep,ctrl) {
-  # zone1=zone$zone1;zoneC=zone$zoneC; glb=glb; zoneDep=zoneDD; ctrl=ctrl;
-  projyrs <- zone1$projC$projyrs
-  projC <- modprojC(zoneC,glb,zone1) # include selectivity into projC
+prepareprojection <- function(zone1,zoneC,glb,zoneDep,aspcatch) {
+  # zone1=zone$zone1;zoneC=zone$zoneC; glb=glb; zoneDep=zoneDD; aspcatch=cmcda$acatch
+  ctrl <- zone1$ctrl
+  projC <- modprojC(zoneC,glb,zone1$projC) # include selectivity into projC
+  projyrs <- projC$projyrs
   zoneC <- modzoneCSel(zoneC,projC$Sel,projC$SelWt,glb,projyrs)
+  # need to add aspirational catches to zoneDRp
   zoneDR <- makezoneDR(projyrs,ctrl$reps,glb,zoneDep) # zoneDReplicates
-  zoneDRp <- addrecvar(zoneC,zoneDR,zoneDR$harvestR,glb,ctrl)
+  zoneDRp <- addrecvar(zoneC,zoneDR,zoneDR$harvestR,glb,ctrl,aspcatch)
   return(list(zoneDP=zoneDRp,projC=projC,zoneCP=zoneC))
 } # end of prepareprojection
 
