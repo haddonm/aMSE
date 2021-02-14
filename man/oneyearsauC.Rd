@@ -4,7 +4,17 @@
 \alias{oneyearsauC}
 \title{oneyearsauC conducts one year's dynamics using catch not harvest}
 \usage{
-oneyearsauC(zoneC, zoneDD, catchsau, year, sigmar, Ncl, sauindex, movem)
+oneyearsauC(
+  zoneC,
+  zoneDD,
+  catchsau,
+  year,
+  sigmar,
+  Ncl,
+  sauindex,
+  movem,
+  sigmaF
+)
 }
 \arguments{
 \item{zoneC}{the constant portion of the zone with a list of
@@ -21,13 +31,17 @@ catches.}
 1 is the year of initiation.}
 
 \item{sigmar}{the variation in recruitment dynamics, set to 1e-08
-when searching for an equilibria.}
+when searching for an equilibrium.}
 
 \item{Ncl}{the number of size classes used to describe size, global Nclass}
 
 \item{sauindex}{the sau index for each population}
 
-\item{movem}{the larval dispersal movement matrix, global move}
+\item{movem}{the larval dispersal movement matrix, global move
+#param imperr the function that introduces implementation error}
+
+\item{sigmaF}{the variability introduced to the catches by population by
+fishers not knowing the distribution of exploitable biomass exactly.}
 }
 \value{
 a list containing a revised dynamics list
@@ -54,8 +68,10 @@ print("Wait on new data")
  #catchpop <- catch * prop
  #for (yr in 2:nyrs)
  #  zoneD <- oneyearC(zoneC=zoneC,zoneD=zoneD,Ncl=Nc,
- #                  catchp=catchpop,year=yr,sigmar=1e-08,
+ #                  catchp=catchpop,year=yr,sigmar=1e-08,sigmaF=1e-08,
  #                  npop=glb$numpop,movem=glb$move)
  #str(zoneD)
  #round(zoneD$catchN[60:105,1:5,1],1)
+ zoneC=zone$zoneC; zoneDD=zone$zoneD;catchsau=condC$histCatch[2,],year=2;
+ sigmar=1e-08; Ncl=glb$Nclass; sauindex=glb$sauindex;movem=glb$movem; sigmaF=1e-08
 }

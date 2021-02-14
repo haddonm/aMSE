@@ -1,4 +1,4 @@
-library(diagram)
+
 library(rutilsMH)
 
 

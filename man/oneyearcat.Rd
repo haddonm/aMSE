@@ -25,8 +25,8 @@ is generated when the zone is defined or when it is initially
 depleted. All dynamics are appllied from year 2 - Nyrs; scalar}
 }
 \value{
-a list containing ExploitB, MatureB, Catch, Harvest, Nt,
-    ce, and CatchN used to update the given pop in yr + 1
+a list containing a vector of ExploitB, MatureB, Catch, and ce, and
+    a matrix NaL containing Nt and CatchN used to update a pop in yr + 1
 }
 \description{
 oneyear does one year's dynamics for one input

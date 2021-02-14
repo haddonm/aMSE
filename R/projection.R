@@ -240,6 +240,7 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 #' @param projyrs the number of years of projection
 #' @param applyHS the function describing the harvest strategy to be used
 #' @param hsargs a list of any arguments used by applyHS
+#' @param projpms the matrices of performance measures from calibrateHS
 #' @param inityrs the number of years kept from the period of conditioning,
 #' @param ... the ellipsis should contain any additional arguments
 #'
@@ -310,7 +311,7 @@ doprojection <- function(zoneCP,zoneDP,glob,ctrl,projyrs,applyHS,hsargs,
       steep <- getvect(zoneCP,"steeph")
       r0 <- sapply(zoneCP,"[[","R0")
       b0 <- sapply(zoneCP,"[[","B0")
-      recs <- oneyearrec(steep,r0,b0,matb,sigR=sigmar)
+      recs <- oneyearrec(steep,r0,b0,matb,sigR=ctrl$withsigR)
       newrecs <- movem %*% recs
       zoneDP$recruit[year,,iter] <- newrecs
       zoneDP$Nt[1,year,,iter] <- newrecs
@@ -336,7 +337,6 @@ doprojection <- function(zoneCP,zoneDP,glob,ctrl,projyrs,applyHS,hsargs,
 #' @param projyr the number of years of the projection
 #' @param iter the number of replicates
 #' @param glb the global object
-#' @param inzoneD the zoneD object after any preliminary depletion
 #'
 #' @return a large list containing an object ready for the projection dynamics
 #' @export
@@ -344,27 +344,29 @@ doprojection <- function(zoneCP,zoneDP,glob,ctrl,projyrs,applyHS,hsargs,
 #' @examples
 #' print("Could add variation to the harvest rates so that when ")
 #' print("prepareprojection was run the range of initial H values would increase ")
-makezoneDP <- function(projyr,iter,glb,inzoneD) {
-  # projyr=projyrs; iter=reps; glb=glb; inzoneD=zoneDD
+makezoneDP <- function(projyr,iter,glb) {
+  # projyr=projyrs; iter=reps; glb=glb;
   numpop <- glb$numpop
   nSAU <- glb$nSAU
   N <- glb$Nclass
+  SAU <- glb$SAUpop
   namedims <- list(1:projyr,1:numpop,1:iter)
   namendims <- list(glb$midpts,1:projyr,1:numpop,1:iter)
-  SAU <- inzoneD$SAU #as.numeric(sapply(zoneC,"[[","SAU"))
   MatB <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
  # MatB[1,,] <- inzoneD$matureB[1,]
   ExplB <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
 #  ExplB[1,,] <- inzoneD$exploitB[1,]
   catch <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
 #  Catch[1,,] <- inzoneD$catch[1,]
+  acatch <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims) #aspirational
   harvest <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
 #  Harvest[1,,] <- inzoneD$harvestR[1,]
   cpue <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
 #  cpue[1,,] <- inzoneD$cpue[1,]
-  sauindex <- glb$sauindex
   cesau <- array(0,dim=c(projyr,nSAU,iter),
                  dimnames=list(1:projyr,1:nSAU,1:iter))
+  catsau <- array(0,dim=c(projyr,nSAU,iter),
+                  dimnames=list(1:projyr,1:nSAU,1:iter))
   # catwt <- tapply(inzoneD$catch[1,],sauindex,sum)
   # wts <- inzoneD$catch[1,] / catwt[sauindex]
   # for (i in 1:nSAU) {
@@ -380,8 +382,8 @@ makezoneDP <- function(projyr,iter,glb,inzoneD) {
 #  CatchN[,1,,] <- inzoneD$catchN[,1,]
   Nt <- array(data=0,dim=c(N,projyr,numpop,iter),dimnames=namendims)
 #  Nt[,1,,] <- inzoneD$Nt[,1,]
-  zoneDP <- list(SAU=SAU,matureB=MatB,exploitB=ExplB,catch=catch,
-                 harvestR=harvest,cpue=cpue,cesau=cesau,recruit=recruit,
+  zoneDP <- list(SAU=SAU,matureB=MatB,exploitB=ExplB,catch=catch,harvestR=harvest,
+                 cpue=cpue,cesau=cesau,catsau=catsau,recruit=recruit,
                  deplsB=deplSpB,depleB=deplExB,catchN=catchN,Nt=Nt)
   return(zoneDP)
 } # end of makezoneDP
@@ -404,7 +406,7 @@ makezoneDP <- function(projyr,iter,glb,inzoneD) {
 #' @export
 #'
 #' @examples
-#' print("Could add variation to the harvest rates so that when ")
+#' print("Could add variation to the harvest rates so that when the ")
 #' print("prepareprojection was run the range of initial H values would increase ")
 makezoneDR <- function(projyr,iter,glb,inzoneD) {
   # projyr=projyrs; iter=reps; glob=glb; inzoneD=zoneDD
@@ -428,10 +430,13 @@ makezoneDR <- function(projyr,iter,glb,inzoneD) {
   cpue <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
   cesau <- array(0,dim=c(projyr,nSAU,iter),
                  dimnames=list(1:projyr,1:nSAU,1:iter))
-  # catwt <- tapply(inzoneD$catch[1,],sauindex,sum)
-  # wts <- inzoneD$catch[1,] / catwt[sauindex]
-  # for (i in 1:nSAU)
-  #   cesau[1,i,] <- sum(inzoneD$cpue[1,(sauindex==i)] * wts[(sauindex==i)])
+  catsau <- array(0,dim=c(projyr,nSAU,iter),
+                             dimnames=list(1:projyr,1:nSAU,1:iter))
+  catwt <- tapply(inzoneD$catch[endyr,],sauindex,sum,na.rm=TRUE)
+  catsau[1,,] <- catwt
+  wts <- inzoneD$catch[endyr,] / catwt[sauindex]
+  for (i in 1:nSAU)
+     cesau[1,i,] <- sum(inzoneD$cpue[endyr,(sauindex==i)] * wts[(sauindex==i)])
   Recruit <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
   Recruit[1,,] <- inzoneD$recruit[endyr,]
   deplSpB <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
@@ -443,8 +448,9 @@ makezoneDR <- function(projyr,iter,glb,inzoneD) {
   Nt <- array(data=0,dim=c(N,projyr,numpop,iter),dimnames=namendims)
   Nt[,1,,] <- inzoneD$Nt[,endyr,]
   zoneDP <- list(SAU=SAU,matureB=MatB,exploitB=ExplB,catch=Catch,acatch=aCatch,
-                 harvestR=Harvest,cpue=cpue,cesau=cesau,recruit=Recruit,
-                 deplsB=deplSpB,depleB=deplExB,catchN=CatchN,Nt=Nt)
+                 catsau=catsau,harvestR=Harvest,cpue=cpue,cesau=cesau,
+                 recruit=Recruit,deplsB=deplSpB,depleB=deplExB,catchN=CatchN,
+                 Nt=Nt)
   return(zoneDP)
 } # end of makezoneDR
 
@@ -572,9 +578,9 @@ prepareprojection <- function(zone1,zoneC,glb,zoneDep,aspcatch) {
   projyrs <- projC$projyrs
   zoneC <- modzoneCSel(zoneC,projC$Sel,projC$SelWt,glb,projyrs)
   # need to add aspirational catches to zoneDRp
-  zoneDR <- makezoneDR(projyrs,ctrl$reps,glb,zoneDep) # zoneDReplicates
-  zoneDRp <- addrecvar(zoneC,zoneDR,zoneDR$harvestR,glb,ctrl,aspcatch)
-  return(list(zoneDP=zoneDRp,projC=projC,zoneCP=zoneC))
+  zoneDR <- makezoneDP(projyrs,ctrl$reps,glb) #,zoneDep) # zoneDReplicates
+ # zoneDRp <- addrecvar(zoneC,zoneDR,zoneDR$harvestR,glb,ctrl,aspcatch)
+  return(list(zoneDP=zoneDR,projC=projC,zoneCP=zoneC))
 } # end of prepareprojection
 
 

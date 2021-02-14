@@ -28,5 +28,5 @@ makeequilzone is a high level function that merely hides the
     directory, resdir, ready to receive files.
 }
 \examples{
-print("wait on datafiles")
+print("wait on datafiles")  #  resdir=resdir; ctrlfile="control2.csv"; cleanslate=FALSE
 }

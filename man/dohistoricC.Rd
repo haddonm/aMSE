@@ -4,7 +4,7 @@
 \alias{dohistoricC}
 \title{dohistoricC imposes the historical catches on an unfished zone}
 \usage{
-dohistoricC(zoneDD, zoneC, glob, condC, sigR = 1e-08)
+dohistoricC(zoneDD, zoneC, glob, condC, sigR = 1e-08, sigF = 1e-08)
 }
 \arguments{
 \item{zoneDD}{The input unfished dynamic zone, zoneD, object}
@@ -16,6 +16,11 @@ dohistoricC(zoneDD, zoneC, glob, condC, sigR = 1e-08)
 \item{condC}{from the zone1 object, contains historical fisheries data plus}
 
 \item{sigR}{the recruitment variation included}
+
+\item{sigF}{the variability introduced to the catches by population by
+fishers not knowing the distribution of exploitable biomass exactly. What
+this value should be is unknown, the default=1e-08, is arbitrary but
+avoids any effective fisher allocation error between populations.}
 }
 \value{
 a zoneD object

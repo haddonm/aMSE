@@ -4,7 +4,7 @@
 \alias{makezoneDP}
 \title{makezoneDP generates the container for the projection dynamics}
 \usage{
-makezoneDP(projyr, iter, glb, inzoneD)
+makezoneDP(projyr, iter, glb)
 }
 \arguments{
 \item{projyr}{the number of years of the projection}
@@ -12,8 +12,6 @@ makezoneDP(projyr, iter, glb, inzoneD)
 \item{iter}{the number of replicates}
 
 \item{glb}{the global object}
-
-\item{inzoneD}{the zoneD object after any preliminary depletion}
 }
 \value{
 a large list containing an object ready for the projection dynamics

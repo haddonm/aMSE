@@ -581,7 +581,7 @@ makeabpop <- function(popparam,midpts,projLML) {
 #' @export
 #'
 #' @examples
-#' print("wait on datafiles")
+#' print("wait on datafiles")  #  resdir=resdir; ctrlfile="control2.csv"; cleanslate=FALSE
 makeequilzone <- function(resdir,ctrlfile="control.csv",cleanslate=FALSE) {
   zone1 <- readctrlfile(resdir,infile=ctrlfile)
   ctrl <- zone1$ctrl
@@ -994,7 +994,7 @@ resetexB0 <- function(zoneC,zoneD) {
 #' str(glb)
 #' }
 setupzone <- function(constants,zone1,uplim=0.4,inc=0.005) {
-  # constants=constants; zone1=zone1; uplim=0.4; inc=0.005
+  # constants=zone$constants; zone1=zone$zone1; uplim=0.4; inc=0.005
   ans <- makezoneC(zone1,constants) # classical equilibrium
   zoneC <- ans$zoneC
   glb <- ans$glb

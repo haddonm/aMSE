@@ -141,6 +141,3 @@ allfilesort <- allfiles[order(allfiles[,"function"]),]
 outfile <- paste0(ddir,"aMSE/data-raw/allfile.csv")
 write.csv(allfilesort,file = outfile)
 
-sapply(abb,"class")
-
-

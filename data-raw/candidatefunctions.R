@@ -1,9 +1,19 @@
 
 
 
-doprojection <- function(zoneCP,zoneDP,glob,ctrl,projyrs,applyHS,hsargs,projpms,inityrs) {
+doprojection <- function(zoneCP,zoneDP,glob,ctrl,projyrs,applyHS,hsargs,
+                         projpms) {
+  zoneCP=zoneCP
+  zoneDP=zoneDP
+  glob=glb
+  ctrl=ctrl
+  projyrs=projC$projyrs
+  applyHS=mcdahcr
+  hsargs=hsargs
+  projpms=cmcda
   # get important constants
   sigmaR <- ctrl$withsigR # needed to add recruitment variation
+  sigmaF <- ctrl$withsigB
   npop <- glob$numpop
   nsau <- glob$nSAU
   Ncl <- glob$Nclass

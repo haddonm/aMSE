@@ -86,13 +86,17 @@ depleteSAU <- function(zoneC,zoneD,glob,initdepl,product,len=15) {
 #' @param glob the globals object
 #' @param condC from the zone1 object, contains historical fisheries data plus
 #' @param sigR the recruitment variation included
+#' @param sigF the variability introduced to the catches by population by
+#'     fishers not knowing the distribution of exploitable biomass exactly. What
+#'     this value should be is unknown, the default=1e-08, is arbitrary but
+#'     avoids any effective fisher allocation error between populations.
 #'
 #' @return a zoneD object
 #' @export
 #'
 #' @examples
 #' print("wait on some data sets")
-dohistoricC <- function(zoneDD,zoneC,glob,condC,sigR=1e-08) {
+dohistoricC <- function(zoneDD,zoneC,glob,condC,sigR=1e-08,sigF=1e-08) {
   # zoneC=zone$zoneC; zoneDD=zone$zoneD;glob=zone$glb;zone1=zone$zone1
   # #   catchsau=condC$histCatch[year,]
   # sigmar=1e-08; Ncl=glob$Nclass;sauindex=glob$sauindex;movem=glob$move;
@@ -102,7 +106,7 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,sigR=1e-08) {
   for (yr in 2:nyrs) {  # yr=2 # ignores the initial unfished year
     catchpop <- histC[yr,]
     zoneDD <- oneyearsauC(zoneC=zoneC,zoneDD=zoneDD,Ncl=glob$Nclass,
-                          catchsau=catchpop,year=yr,sigmar=sigR,
+                          catchsau=catchpop,year=yr,sigmar=sigR,sigmaF=sigF,
                           sauindex=glob$sauindex,movem=glob$move)
   }
   return(zoneDD)
@@ -199,8 +203,8 @@ oneyear <- function(inpopC,inNt,Nclass,inH,yr) {  #
 #'     is generated when the zone is defined or when it is initially
 #'     depleted. All dynamics are appllied from year 2 - Nyrs; scalar
 #'
-#' @return a list containing ExploitB, MatureB, Catch, Harvest, Nt,
-#'     ce, and CatchN used to update the given pop in yr + 1
+#' @return a list containing a vector of ExploitB, MatureB, Catch, and ce, and
+#'     a matrix NaL containing Nt and CatchN used to update a pop in yr + 1
 #' @export
 #'
 #' @examples
@@ -220,16 +224,15 @@ oneyearcat <- function(inpopC,inNt,Nclass,incat,yr) {  #
   #oldExpB <- ExploitB   # ExploitB after growth and 0.5NatM
   estH <- min(incat/ExploitB,0.8) # no more than 0.8 harvest rate
   Fish <- 1-(estH*selyr)
-  newNt <- (Os * (Fish * NumNe)) #+ Rec # Nt - catch - 0.5M, and + Rec
+  newNt <- (Os * (Fish * NumNe))
   Cat <- (estH*selyr) * NumNe  #numbers at size in the catch
   newExpB <- (sum(SelectWt * newNt) + ExploitB)/2.0 #av start and end
-  MatureB <- sum(MatWt*newNt) #+ MatBC
+  MatureB <- sum(MatWt*newNt)
   Catch <- sum(inpopC$WtL*Cat)/1e06
  # Harvest <- min(Catch/ExploitB,0.8)  # average of the start and end
   ce <- inpopC$popq * newExpB * 1000.0  #ExploitB
-  ans <- list(ExploitB,MatureB,Catch,estH,newNt,ce,Cat)
-  names(ans) <- c("ExploitB","MatureB","Catch","Harvest","Nt","ce",
-                  "CatchN")
+  vect <- c(exploitb=ExploitB,matureb=MatureB,catch=Catch,cpue=ce)
+  ans <- list(vect=vect,NaL=newNt,catchN=Cat)
   return(ans)
 } # End of oneyearcat
 
@@ -252,10 +255,13 @@ oneyearcat <- function(inpopC,inNt,Nclass,incat,yr) {  #
 #' @param year the year of the dynamics, would start in year 2 as year
 #'     1 is the year of initiation.
 #' @param sigmar the variation in recruitment dynamics, set to 1e-08
-#'     when searching for an equilibria.
+#'     when searching for an equilibrium.
 #' @param Ncl the number of size classes used to describe size, global Nclass
 #' @param sauindex the sau index for each population
 #' @param movem the larval dispersal movement matrix, global move
+#'     #param imperr the function that introduces implementation error
+#' @param sigmaF the variability introduced to the catches by population by
+#'     fishers not knowing the distribution of exploitable biomass exactly.
 #'
 #' @return a list containing a revised dynamics list
 #' @export
@@ -275,30 +281,37 @@ oneyearcat <- function(inpopC,inNt,Nclass,incat,yr) {  #
 #'  #catchpop <- catch * prop
 #'  #for (yr in 2:nyrs)
 #'  #  zoneD <- oneyearC(zoneC=zoneC,zoneD=zoneD,Ncl=Nc,
-#'  #                  catchp=catchpop,year=yr,sigmar=1e-08,
+#'  #                  catchp=catchpop,year=yr,sigmar=1e-08,sigmaF=1e-08,
 #'  #                  npop=glb$numpop,movem=glb$move)
 #'  #str(zoneD)
 #'  #round(zoneD$catchN[60:105,1:5,1],1)
-oneyearsauC <- function(zoneC,zoneDD,catchsau,year,sigmar,Ncl,sauindex,movem) {
+#'  zoneC=zone$zoneC; zoneDD=zone$zoneD;catchsau=condC$histCatch[2,];year=2;
+#'  sigmar=1e-08; Ncl=glb$Nclass; sauindex=glb$sauindex;movem=glb$movem; sigmaF=1e-08
+oneyearsauC <- function(zoneC,zoneDD,catchsau,year,sigmar,Ncl,
+                        sauindex,movem,sigmaF) {
   exb <- zoneDD$exploitB[year-1,]
+  totexb <- sum(exb,na.rm=TRUE)
   npop <- length(exb)
   nSAU <- length(unique(sauindex))
   sauexB <- numeric(nSAU)
   for (mu in 1:nSAU) sauexB[mu] <- sum(exb[(sauindex==mu)],na.rm=T)
+  sauexB <- sauexB * exp(rnorm(nSAU,mean=0,sd=sigmaF))
+  totsau <- sum(sauexB,na.rm=TRUE)
+  sauexB <- sauexB * (totexb/totsau)
   popC <- catchsau[sauindex] * (exb/sauexB[sauindex])
   matb <- numeric(npop)
   for (popn in 1:npop) {  # year=2
     out <- oneyearcat(inpopC=zoneC[[popn]],inNt=zoneDD$Nt[,year-1,popn],
                       Nclass=Ncl,incat=popC[popn],yr=year)
-    zoneDD$exploitB[year,popn] <- out$ExploitB
-    zoneDD$matureB[year,popn] <- out$MatureB
-    zoneDD$catch[year,popn] <- out$Catch
-    zoneDD$harvestR[year,popn] <- out$Harvest
-    zoneDD$cpue[year,popn] <- out$ce
-    zoneDD$Nt[,year,popn] <- out$Nt
-    zoneDD$catchN[,year,popn] <- out$CatchN
-    matb[popn] <- out$MatureB
   }
+  zoneDD$exploitB[year,] <-  out$vect["catch",]
+  zoneDD$matureB[year,] <- out$vect["matureb",]
+  zoneDD$catch[year,] <- out$vect["catch",]
+  zoneDD$harvestR[year,] <-  out$vect["catch",]/out$vect["catch",]
+  zoneDD$cpue[year,] <- out$vect["cpue",]
+  zoneDD$Nt[,year,] <- out$NaL
+  zoneDD$catchN[,year,] <- out$catchN
+  matb <- out$vect["matureb",]
   steep <- getvect(zoneC,"steeph") #sapply(zoneC,"[[","popdef")["steeph",]
   r0 <- getvar(zoneC,"R0") #sapply(zoneC,"[[","R0")
   b0 <- getvar(zoneC,"B0") #sapply(zoneC,"[[","B0")

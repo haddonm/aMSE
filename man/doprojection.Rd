@@ -32,6 +32,8 @@ doprojection(
 
 \item{hsargs}{a list of any arguments used by applyHS}
 
+\item{projpms}{the matrices of performance measures from calibrateHS}
+
 \item{inityrs}{the number of years kept from the period of conditioning,}
 
 \item{...}{the ellipsis should contain any additional arguments}

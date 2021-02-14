@@ -40,7 +40,5 @@ blockE13 is a fishery data-set for blacklip abalone
 
 \examples{
 data(blockE13)
-nyr <- length(blockE13$year)
-grad1 <- getgrad1(blockE13$cpue)
-print(grad1)
+blockE13
 }
