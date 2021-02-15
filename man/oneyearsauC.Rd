@@ -5,43 +5,43 @@
 \title{oneyearsauC conducts one year's dynamics using catch not harvest}
 \usage{
 oneyearsauC(
-  zoneC,
-  zoneDD,
+  zoneCC,
+  exb,
+  inN,
   catchsau,
   year,
-  sigmar,
   Ncl,
   sauindex,
   movem,
-  sigmaF
+  sigmar = 1e-08,
+  sigmaF = 1e-08
 )
 }
 \arguments{
-\item{zoneC}{the constant portion of the zone with a list of
+\item{zoneCC}{the constant portion of the zone with a list of
 properties for each population}
 
-\item{zoneDD}{the dynamics portion of the zone, with matrices and
-arrays for the dynamic variables of the dynamics of the
-operating model, potentially depleted prior to applciation of historical
-catches.}
+\item{exb}{the vector of exploitable biomass for each population for the
+previous year}
+
+\item{inN}{the numbers-at-length for each population for the previous year}
 
 \item{catchsau}{a vector of catches to be taken in the year from each SAU}
 
-\item{year}{the year of the dynamics, would start in year 2 as year
-1 is the year of initiation.}
+\item{year}{the year of the dynamics the exb and inN would be from year-1}
+
+\item{Ncl}{the number of size classes used to describe size, global Nclass}
+
+\item{sauindex}{the sau index for each population from glb}
+
+\item{movem}{the larval dispersal movement matrix, global move}
 
 \item{sigmar}{the variation in recruitment dynamics, set to 1e-08
 when searching for an equilibrium.}
 
-\item{Ncl}{the number of size classes used to describe size, global Nclass}
-
-\item{sauindex}{the sau index for each population}
-
-\item{movem}{the larval dispersal movement matrix, global move
-#param imperr the function that introduces implementation error}
-
 \item{sigmaF}{the variability introduced to the catches by population by
-fishers not knowing the distribution of exploitable biomass exactly.}
+fishers not knowing the distribution of exploitable biomass exactly.
+Initial default value=1e-08}
 }
 \value{
 a list containing a revised dynamics list
@@ -51,27 +51,11 @@ oneyearsauC conducts one year's dynamics in the simulation
     using historical SAU catches rather than harvest rates. The harvest rates
     are estimated after first estimating the exploitable biomass.
     returning the revised zoneD, which will have had a single year
-    of activity included in each of its components.
+    of activity included in each of its components. uses the function
+    imperr to introduce implementation error to the actual catches.
 }
 \examples{
 print("Wait on new data")
-# data(zone)
-# zoneC <- zone$zoneC
-#  glb <- zone$glb
- #zoneD <- zone$zoneD
- #Nc <- glb$Nclass
- #nyrs <- glb$Nyrs
- #catch <- 900.0 # larger than total MSY ~ 870t
- #B0 <- getvar(zoneC,"B0")
- #totB0 <- sum(B0)
- #prop <- B0/totB0
- #catchpop <- catch * prop
- #for (yr in 2:nyrs)
- #  zoneD <- oneyearC(zoneC=zoneC,zoneD=zoneD,Ncl=Nc,
- #                  catchp=catchpop,year=yr,sigmar=1e-08,sigmaF=1e-08,
- #                  npop=glb$numpop,movem=glb$move)
- #str(zoneD)
- #round(zoneD$catchN[60:105,1:5,1],1)
- zoneC=zone$zoneC; zoneDD=zone$zoneD;catchsau=condC$histCatch[2,],year=2;
- sigmar=1e-08; Ncl=glb$Nclass; sauindex=glb$sauindex;movem=glb$movem; sigmaF=1e-08
+# zoneCC=zone$zoneC; exb=exb ;catchsau=zone$zone1$condC$histCatch[2,];year=2;
+# sigmar=1e-08; Ncl=zone$glb$Nclass; sauindex=zone$glb$sauindex;movem=zone$glb$movem; sigmaF=1e-08
 }

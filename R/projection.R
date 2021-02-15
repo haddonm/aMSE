@@ -345,7 +345,6 @@ doprojection <- function(zoneCP,zoneDP,glob,ctrl,projyrs,applyHS,hsargs,
 #' print("Could add variation to the harvest rates so that when ")
 #' print("prepareprojection was run the range of initial H values would increase ")
 makezoneDP <- function(projyr,iter,glb) {
-  # projyr=projyrs; iter=reps; glb=glb;
   numpop <- glb$numpop
   nSAU <- glb$nSAU
   N <- glb$Nclass
@@ -353,38 +352,25 @@ makezoneDP <- function(projyr,iter,glb) {
   namedims <- list(1:projyr,1:numpop,1:iter)
   namendims <- list(glb$midpts,1:projyr,1:numpop,1:iter)
   MatB <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
- # MatB[1,,] <- inzoneD$matureB[1,]
   ExplB <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
-#  ExplB[1,,] <- inzoneD$exploitB[1,]
   catch <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
-#  Catch[1,,] <- inzoneD$catch[1,]
-  acatch <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims) #aspirational
+  acatch <- array(0,dim=c(projyr,nSAU,iter),
+                  dimnames=list(1:projyr,1:nSAU,1:iter)) #aspirational catches
   harvest <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
-#  Harvest[1,,] <- inzoneD$harvestR[1,]
   cpue <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
-#  cpue[1,,] <- inzoneD$cpue[1,]
   cesau <- array(0,dim=c(projyr,nSAU,iter),
                  dimnames=list(1:projyr,1:nSAU,1:iter))
   catsau <- array(0,dim=c(projyr,nSAU,iter),
                   dimnames=list(1:projyr,1:nSAU,1:iter))
-  # catwt <- tapply(inzoneD$catch[1,],sauindex,sum)
-  # wts <- inzoneD$catch[1,] / catwt[sauindex]
-  # for (i in 1:nSAU) {
-  #   cesau[1,i,] <- sum(inzoneD$cpue[1,(sauindex==i)] * wts[(sauindex==i)])
-  # }
   recruit <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
-#  Recruit[1,,] <- inzoneD$recruit[1,]
   deplSpB <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
-#  deplSpB[1,,] <- inzoneD$deplsB[1,]
   deplExB <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
-#  deplExB[1,,] <- inzoneD$depleB[1,]
   catchN <- array(data=0,dim=c(N,projyr,numpop,iter),dimnames=namendims)
-#  CatchN[,1,,] <- inzoneD$catchN[,1,]
   Nt <- array(data=0,dim=c(N,projyr,numpop,iter),dimnames=namendims)
-#  Nt[,1,,] <- inzoneD$Nt[,1,]
-  zoneDP <- list(SAU=SAU,matureB=MatB,exploitB=ExplB,catch=catch,harvestR=harvest,
-                 cpue=cpue,cesau=cesau,catsau=catsau,recruit=recruit,
-                 deplsB=deplSpB,depleB=deplExB,catchN=catchN,Nt=Nt)
+  zoneDP <- list(SAU=SAU,matureB=MatB,exploitB=ExplB,catch=catch,acatch=acatch,
+                 harvestR=harvest,cpue=cpue,cesau=cesau,catsau=catsau,
+                 recruit=recruit,deplsB=deplSpB,depleB=deplExB,catchN=catchN,
+                 Nt=Nt)
   return(zoneDP)
 } # end of makezoneDP
 

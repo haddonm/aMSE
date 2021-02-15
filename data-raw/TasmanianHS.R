@@ -19,9 +19,9 @@ hsargs <- list(mult=1.1,
                )
 
 
-#' @title calibrateMCDA uses historical CPUE to calibrate the MCDA
+#' @title calibrateHCR uses historical CPUE to calibrate the MCDA
 #'
-#' @description calibrateMCDA uses the condC$histCE to apply the getgrad1,
+#' @description calibrateHCR uses the condC$histCE to apply the getgrad1,
 #'     getgrad4, and targscore functions so as to provide vectors of
 #'     performance measure scores to enhance the calibration of the MCDA before
 #'     any projections are done. This is not absolutely required but improves
@@ -47,7 +47,7 @@ hsargs <- list(mult=1.1,
 #'
 #' @examples
 #' print("wait on example data being available")
-calibrateMCDA <- function(histCE,saunames,hsargs,sauindex,projyrs) {
+calibrateHCR <- function(histCE,saunames,hsargs,sauindex,projyrs) {
   # histCE=condC$histCE; saunames=zone$zone1$SAUnames; hsargs=hsargs;
   #  sauindex=glb$sauindex; projyrs=projC$projyrs
   nSAU <- length(saunames)
@@ -95,7 +95,7 @@ calibrateMCDA <- function(histCE,saunames,hsargs,sauindex,projyrs) {
               refpts=refpts)
   scores <- list(score1=score1,score4=score4,scoret=scoret,scoretot=scoretot)
   return(list(pms=pms,scores=scores,yrmultTAC=multTAC))
-} # end of calibrateMCDA
+} # end of calibrateHCR
 
 #' @title catchbysau calculates the catch by sau with error for Tasmania
 #'
@@ -311,42 +311,6 @@ getscore <- function(pm,mult=1.1) { # pm=scoret$ans[,"targval"];mult=hsargs$mult
   return(score)
 } # end of getscore
 
-#' @title imperr calculates population catches from sau catches with error
-#'
-#' @description imperr converts predicted sau catches into population level
-#'     catches while introducing management implementation error at the same
-#'     time. Here it is implemented as Log-Normal errors on diver intuitions
-#'     concerning the relative abundance in each population. The error is
-#'     imposed separately on the populations in each SAU.
-#'
-#' @param catchsau the predicted catch per SAU from the Harvest control rule
-#' @param exb the exploitable biomass at the end of the previous year. In the
-#'     first year of the projections this would be the last year of the
-#'     conditioning.
-#' @param sauindex the SAU index for each population
-#' @param sigmaF the Log-Normal standard deviation of implementation error. The
-#'     default value = 1e-08, which effectively means no errors.
-#'
-#' @return a vector of population catches for the year after the exploitable
-#'     biomass estimates
-#' @export
-#'
-#' @examples
-#' print("wait on suitable internal data sets")
-imperr <- function(catchsau,exb,sauindex,sigmaF=1e-08) {
-  # exb=zoneDD$exploitB[endyr,]; suaindex=glb$sauindex; sigmaF=0.1; catchsau=acatch
-  TAC <- sum(catchsau,na.rm=TRUE)
-  totexb <- sum(exb,na.rm=TRUE)
-  npop <- length(exb)
-  nSAU <- length(catchsau)
-  sauexb <- tapply(exb,sauindex,sum,na.rm=TRUE) * exp(rnorm(nSAU,mean=0,sd=sigmaF))
-  sauexb <- sauexb * (totexb/sum(sauexb,na.rm=TRUE))
-  popC <- catchsau[sauindex] * (exb/sauexb[sauindex])
-  popC <- popC * TAC/sum(popC)
-  return(popC)
-} # end of imperr
-
-
 #' @title makeprojpm creates arrays to hold the projection PMs and HCR results
 #'
 #' @description makeprojpm creates the arrays required to hold the three
@@ -422,26 +386,32 @@ makeprojpm <- function(histpms,reps,projyrs) {
 #'
 #' @examples
 #' print("wait on data and time")
-#' #  arrce=condC$histCE; yr=28; hcrargs=hsargs
-mcdahcr <- function(arrce,yr,hsargs) {
-  # put all the objects in hcrargs into the functions environment
-  # for (i in 1:length(hcrargs)) assign(names(hcrargs)[i],hcrargs[[i]])
+#' #  arrce=condC$histCE; yr=28;
+mcdahcr <- function(arrce,hsargs,yearnames,saunames) {
+  # arrce=rbind(condC$histCE,zoneDP$cesau[year-1,,iter]); hsargs=hsargs; year=2
+  # oldyrs=as.numeric(rownames(condC$histCE)); yearnames=c(oldyrs,tail(oldyrs,1)+1:(year-1))
+  # saunames=sort(unique(glb$SAUpop))
   nsau <- ncol(arrce)
   yrce <- nrow(arrce)
   pmwts <- hsargs$pmwts
+  # define storage matrices
+  grad1val <- matrix(0,nrow=yrce,ncol=nsau,dimnames=list(yearnames,saunames))
+  grad4val <- targval <- score1 <- score4 <- scoret <- scoretot <- grad1val
+  multTAC <- grad1val
+  refpts <- matrix(0,nrow=nsau,ncol=2,dimnames=list(saunames,c("trp","lrp")))
   for (sau in 1:nsau) {  #  sau=1
     pickce <- which(!is.na(arrce[,sau]))
-    tmp <- getgrad1(arrce[pickce,sau])
+    tmp <- getgrad1(arrce[pickce,sau])                      # grad1
     nec <- length(tmp)
     if (nec < yrce) tmp <- c(rep(NA,(yrce-nec)),tmp)
     grad1val[1:yrce,sau] <- tmp
     score1[1:yrce,sau] <- getscore(grad1val[1:yrce,sau],mult=hsargs$mult)
-    tmp2 <- getgrad4(histCE[pickce,sau],wid=hsargs$wid)
+    tmp2 <- getgrad4(arrce[pickce,sau],wid=hsargs$wid)      # grad4
     nec2 <- length(tmp2)
     if (nec2 < yrce) tmp2 <- c(rep(NA,(yrce-nec2)),tmp2)
     grad4val[1:yrce,sau] <- tmp2
     score4[1:yrce,sau] <- getscore(grad4val[1:yrce,sau],mult=hsargs$mult)
-    tmp3 <- targscore(histCE[pickce,sau],qnt=hsargs$targqnt,mult=hsargs$mult)
+    tmp3 <- targscore(arrce[pickce,sau],qnt=hsargs$targqnt,mult=hsargs$mult) #targ
     values <- tmp3$ans[,"targval"]
     scrs <- tmp3$ans[,"targsc"]
     nec3 <- length(values)
@@ -459,7 +429,8 @@ mcdahcr <- function(arrce,yr,hsargs) {
     multTAC[1:yrce,sau] <- hsargs$hcr[pick]
     refpts[sau,] <- tmp3$details
   }
-  details <- list(grad4=grad4val,score4=score4,grad1=grad1val,score1=score1,scoret=scoret)
+  details <- list(grad4=grad4val,score4=score4,grad1=grad1val,score1=score1,
+                  scoret=scoret)
   out <- list(multTAC=multTAC,details=details,refpts=refpts)
   return(out)
 } # end of mcdahcr

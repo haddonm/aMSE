@@ -27,10 +27,13 @@ source(paste0(ddir,"aMSE/data-raw/","TasmanianHS.R"))
 #data(zone)
 zone <- makeequilzone(resdir,"control2.csv") # normally would read in a file
   equiltime <- (Sys.time())
+  print(equiltime - starttime)
+
   # condition on the historic catches
 zoneDD <- dohistoricC(zone$zoneD,zone$zoneC,glob=zone$glb,zone$zone1$condC)
+midtime <- (Sys.time())
+print(midtime - equiltime)
 
-  print(equiltime - starttime)
 
   propD <- getzoneprops(zone$zoneC,zoneDD,zone$glb,year=47)
   round(propD,3)
@@ -42,7 +45,7 @@ midtime <- (Sys.time())
 
 glb <- zone$glb
 ctrl <- zone$ctrl
-ctrl$sigmaF <- 0.05   #MODIFY INPUT FILE AND CTRLREAD TO INCLUDE sigmaF
+ctrl$sigmaF <- 0.1  #MODIFY INPUT FILE AND CTRLREAD TO INCLUDE sigmaF
 zone1 <- zone$zone1
 projC <- zone1$projC
 condC <- zone1$condC
@@ -51,7 +54,7 @@ zoneC <- zone$zoneC
 #   source(paste0(ddir,"aMSE/data-raw/","TasmanianHS.R"))
 
 
-cmcda <- calibrateMCDA(histCE=condC$histCE, saunames=zone1$SAUnames,
+cmcda <- calibrateHCR(histCE=condC$histCE, saunames=zone1$SAUnames,
                        hsargs=hsargs,sauindex=glb$sauindex,projyrs=projC$projyrs)
 
 str(cmcda)
@@ -100,58 +103,82 @@ origTAC <- sum(zoneDD$catch[yrce,]) # mean sum of catches in last year
 if (ctrl$randseedP > 0) set.seed(ctrl$randseedP) # set random seed if desired
 endcatch <- tapply(zoneDD$catch[endyr,],sauindex,sum,na.rm=TRUE)
 acatch <- endcatch * multTAC[yrce,]
-
-# for (iter in 1:reps) {
-iter <- 1
-TAC <- sum(acatch)
-#for (year in 2:nyrs) { # iter=1; year=11
- year <- 1
- exb <- zoneDD$exploitB[endyr,]
- inN <- zoneDD$Nt[,endyr,]
- zoneCC <- zoneCP
- catchsau=acatch
- sigmar <- ctrl$withsigR # needed to add recruitment variation
- sigmaF <- ctrl$withsigB
+  exb <- zoneDD$exploitB[endyr,]
+  inN <- zoneDD$Nt[,endyr,]
+  sigmar <- ctrl$withsigR # needed to add recruitment variation
+  sigmaf <- 0.1 #ctrl$withsigB
 
 
- oneyearsauC2 <- function(zoneCC,exb,inN,catchsau,year,sigmar,Ncl,
-                         sauindex,movem,sigmaF) {
-   popC <- imperr(catchsau,exb,sauindex,sigmaF)
-   matb <- numeric(npop)
-   ans <- vector("list",npop)
-   for (popn in 1:npop) {  # popn=1
-     ans[[popn]] <- oneyearcat(inpopC=zoneCC[[popn]],inNt=inN[,popn],
-                       Nclass=Ncl,incat=popC[popn],yr=year)
-   }
-   dyn <- sapply(ans,"[[","vect")
-   steep <- getvect(zoneCC,"steeph") #sapply(zoneC,"[[","popdef")["steeph",]
-   r0 <- getvar(zoneCC,"R0") #sapply(zoneC,"[[","R0")
-   b0 <- getvar(zoneCC,"B0") #sapply(zoneC,"[[","B0")
-   recs <- oneyearrec(steep,r0,b0,dyn["matureb",],sigR=sigmar)
-   newrecs <- as.numeric(movem %*% recs)
-   deplsB <- dyn["matureb",]/b0
-   depleB <- dyn["exploitb",]/getvar(zoneCC,"ExB0")
-   dyn <- rbind(dyn,newrecs,deplsB,depleB)
-   NaL <-  sapply(ans,"[[","NaL")
-   NaL[1,] <- newrecs
-   catchN <-  sapply(ans,"[[","catchN")
-   return(list(dyn=dyn,NaL=NaL,catchN=catchN))
- } # end of oneyearsauC2
+  zoneDP <- initiateHS(zoneDP,zoneCP,exb,inN,acatch,sigmar,sigmaf,glb)
 
-out <- oneyearsauC2(zoneCP,exb=zoneDD$exploitB[endyr,],inN=zoneDD$Nt[,endyr,],
-                    catchsau=acatch,year=1,sigmar=ctrl$withsigR,Ncl=glb$Nclass,
-                    sauindex=sauindex,movem=glb$move,sigmaF=ctrl$withsigR)
-
-zoneDP$exploitB[year,,iter] <- out$dyn["exploitb",]
-zoneDP$matureB[year,,iter] <- out$dyn["matureb",]
-zoneDP$catch[year,,iter] <- out$dyn["catch",]
-zoneDP$catsau[year,,iter] <- acatch
-zoneDP$harvestR[year,,iter] <- out$dyn["catch",]/out$dyn["exploitb",]
-zoneDP$cpue[year,,iter] <- out$ce
-zoneDP$Nt[,year,,iter] <- out$Nt
-zoneDP$catchN[,year,,iter] <- out$CatchN
+range(zoneDP$matureB[1,,],na.rm=TRUE)
 
 
+plotprep(width=8, height=8,newdev=FALSE)
+parset(plots=c(4,4))
+bins=seq(25,575,5)
+for (pop in 1:16) {
+  hist(zoneDP$matureB[1,pop,],main="",ylab=pop,xlab="matureb",breaks=bins)
+
+}
+
+
+# doprojections
+# str(cmcda)
+begintime <- Sys.time()
+pms <- cmcda$pms
+multTAC <- cmcda$yrmultTAC
+oldyrs=as.numeric(rownames(condC$histCE))
+Nclass <- glb$Nclass
+sauindex <- glb$sauindex
+movem <- glb$move
+sigmar <- ctrl$withsigR
+sigmaf <- 0.1 #ctrl$withsigB
+
+for (iter in 1:reps) {
+  for (year in 2:projyrs) {
+    arrce=rbind(condC$histCE,zoneDP$cesau[1:(year-1),,iter])
+    lnce <- nrow(arrce)
+    yearnames=c(oldyrs,tail(oldyrs,1)+1:(year-1))
+    hcrout <- mcdahcr(arrce=arrce,hsargs,yearnames,saunames=6:13)
+    acatch <- zoneDP$acatch[year-1,,iter] * hcrout$multTAC[lnce,]
+    zoneDP$acatch[year,,iter] <- acatch
+
+    outy <- oneyearsauC(zoneCC=zoneCP,exb=zoneDP$exploitB[year-1,,iter],
+                        inN=zoneDP$Nt[,year-1,,iter],catchsau=acatch,year=year,
+                        Ncl=Nclass,sauindex=sauindex,movem=movem,
+                        sigmar=sigmar,sigmaF=sigmaf)
+    dyn <- outy$dyn
+    saudyn <- poptosau(dyn["catch",],dyn["cpue",],sauindex)
+    zoneDP$exploitB[year,,iter] <- dyn["exploitb",]
+    zoneDP$matureB[year,,iter] <- dyn["matureb",]
+    zoneDP$catch[year,,iter] <- dyn["catch",]
+    zoneDP$acatch[year,,iter] <- acatch
+    zoneDP$catsau[year,,iter] <- saudyn$saucatch
+    zoneDP$harvestR[year,,iter] <- dyn["catch",]/dyn["exploitb",]
+    zoneDP$cpue[year,,iter] <- dyn["cpue",]
+    zoneDP$cesau[year,,iter] <- saudyn$saucpue
+    zoneDP$recruit[year,,iter] <- dyn["recruits",]
+    zoneDP$deplsB[year,,iter] <- dyn["deplsB",]
+    zoneDP$depleB[year,,iter] <- dyn["depleB",]
+    zoneDP$Nt[,year,,iter] <- outy$NaL
+    zoneDP$catchN[,year,,iter] <- outy$catchN
+  } # year loop
+}   # iter loop
+projtime <- Sys.time()
+print(projtime - begintime)
+
+
+
+
+plotprep(width=8, height=8,newdev=FALSE)
+parset(plots=c(4,2),byrow=FALSE)
+ymax <- getmax(zoneDP$cesau[,,1])
+for (sau in 1:8) {
+  plot(1:30,zoneDP$cesau[,sau,1],type="l",lwd=1,col="grey",panel.first = grid(),
+       ylim=c(0,ymax),ylab=paste0("CPUE  ",sau),xlab="year")
+  for (i in 1:reps) lines(1:30,zoneDP$cesau[,sau,i],lwd=1,col="grey")
+}
 
 
  catbysau <- catchbysau(inexpB=zoneDP$exploitB[(year - 1),,iter],sauindex,
