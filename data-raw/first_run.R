@@ -42,7 +42,7 @@ round(propD,3)
 
 zoneDD$harvestR[45:47,]
 popdefs <- getlistvar(zone$zoneC,"popdef")
-round(popdefs,3)
+round(popdefs,2)
 
 plotprep(width=7, height=6,newdev=FALSE)
 parset()
