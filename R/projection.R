@@ -227,105 +227,74 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
   return(res)
 } # end of calcsau
 
-#' @title doprojection applies the Tasmanian MCDA to a simulated zone
+
+
+#' @title doTASprojections conducts the replicate model runs for Tasmania
 #'
-#' @description doprojection applies the Tasmanian MCDA to a simulated zone. It
-#'     is still in need of optimization as 1000 iterations would currently take
-#'     about 20 minutes.
+#' @description doTASprojections conducts the replicate model runs for
+#'     Tasmania using the mcdahcr and the input hsargs
 #'
-#' @param zoneCP the modified zoneC object ready for projections
-#' @param zoneDP the modified zoneD object ready for projections
-#' @param glob the global variables object
-#' @param ctrl the ctrl object
-#' @param projyrs the number of years of projection
-#' @param applyHS the function describing the harvest strategy to be used
-#' @param hsargs a list of any arguments used by applyHS
-#' @param projpms the matrices of performance measures from calibrateHS
-#' @param inityrs the number of years kept from the period of conditioning,
-#' @param ... the ellipsis should contain any additional arguments
+#' @param ctrl the ctrl object from readctrlfile
+#' @param zoneDP the object used to contain the dynamics from the replicate
+#'     model runs
+#' @param zoneCP the object used to contain the constants for each population
+#'     used in model dynamics
+#' @param histCE the historical CPUE data used to condition the model prior to
+#'     running the replicates. This is appended to new predicted cpue data from
+#'     each replicate to calibrate the HCR within the current HS
+#' @param glb the object containing the global constants for the given run
+#' @param mcdahcr the name of the harvest control rule that is used to
+#'     calculate the multiplier for the previous aspirational catches so as to
+#'     estimate the aspirational catches for the following year
+#' @param hsargs the constants used to define the workings of the hcr
 #'
-#' @return the filled in zoneDP list
+#' @return a replacement for zoneDP containing the dynamics of all replicates
+#'     for all projection years
 #' @export
 #'
 #' @examples
-#' print("wait on data files")
-#' # zoneCP=zoneCP;zoneDP=zoneDR;glob=glb;ctrl=ctrl;projyrs=projC$projyrs;inityrs=projC$inityrs
-#' # wid=4;targqnt=0.55;pmwts=c(0.65, 0.25,0.1);hcr = c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2)
-doprojection <- function(zoneCP,zoneDP,glob,ctrl,projyrs,applyHS,hsargs,
-                         projpms,inityrs,...) {
-  # get  important constants
-  sigmaR <- ctrl$withsigR # needed to add recruitment variation
-  npop <- glob$numpop
-  nsau <- glob$nSAU
-  Ncl <- glob$Nclass
-  nyrs <- projyrs
-  movem <- glob$move
+#' print("wait on suitable internal data sets")
+doTASprojections <- function(ctrl,zoneDP,zoneCP,histCE,glb,mcdahcr,hsargs) {
   reps <- ctrl$reps
-  sauindex <- glob$sauindex
-  matb <- numeric(npop)                   # use the same initial TAC for all reps
-  origTAC <- mean(colSums(zoneDP$catch[1,,])) # mean sum of catches in last year
-
-  saucatch <- array(0,dim=c(nyrs,nsau,reps))
-  saucpue <- saucatch
-
-  # for (iter in 1:reps) { # generate SAU total catches and catch-weighted cpue iter=1
-  #   for (yr in 1:inityrs) { # iter=1; yr=4
-  #     saucatch[yr,,iter] <- tapply(zoneDP$catch[yr,,iter],sauindex,sum,na.rm=TRUE)
-  #     wts <- zoneDP$catch[yr,,iter]/(saucatch[yr,sauindex,iter])
-  #     saucpue[yr,,iter] <- tapply((zoneDP$cpue[yr,,iter] * wts),sauindex,sum,na.rm=TRUE)
-  #     if (yr >= hsargs$wid) {
-  #       grad1[yr,,iter] <- apply(saucpue[1:yr,,iter],2,getgradone,yr=yr)
-  #       grad4[yr,,iter] <- apply(saucpue[1:yr,,iter],2,getgradwid,yr=yr,wid=hsargs$wid)
-  #     }
-  #   }
-  #   for (sau in 1:nsau)
-  #     targetce[sau] <- targscore(saucpue[1:inityrs,sau,iter],qnt=hsargs$targqnt)
-  #   targsc[1:inityrs,,iter] <- targetce
-  # }
-  # now do replicates, updating saucatch and saucpue each year
-  if(ctrl$randseedP > 0) set.seed(ctrl$randseedP) # set random seed if desired
+  projyrs <- ctrl$projection
+  sigmar <- ctrl$withsigR
+  sigmab <- ctrl$withsigB
+  oldyrs <- as.numeric(rownames(histCE))
+  sauindex <- glb$sauindex
+  saunames <- glb$saunames
+  Nclass <- glb$Nclass
+  movem <- glb$move
   for (iter in 1:reps) {
-    TAC <- origTAC  # use the same original TAC for each replicate
-    for (year in (inityrs+1):nyrs) { # iter=1; year=11
-      #  catpop <- colSums(zoneDP$catch[1:(year - 1),,iter])
-      inexpB <- zoneDP$exploitB[(year - 1),,iter]
-      sauexpB <- tapply(inexpB,sauindex,sum,na.rm=TRUE)
-      catbysau <- TAC * sauexpB/sum(sauexpB)  # no error initially
-      multh <- apply(saucpue[1:(year-1),,1],2,applyHS,yr=(year-1)) # apply mcdahcr
-      TAC <- sum(catbysau * multh)
-      divererr <- sauexpB * exp(rnorm(nsau,mean=0,sd=ctrl$withsigB))
-      catbysau <- TAC * (divererr/sum(divererr)) # currently no error on TAC
-      catbypop <- catbysau[sauindex] * (inexpB/sauexpB[sauindex]) # no error on pops
-      for (popn in 1:npop) { # year=11; iter=1; pop=1
-        out <- oneyearcat(inpopC=zoneCP[[popn]],inNt=zoneDP$Nt[,year-1,popn,iter],
-                          Nclass=Ncl,incat=catbypop[popn],yr=year)
-        zoneDP$exploitB[year,popn,iter] <- out$ExploitB
-        zoneDP$matureB[year,popn,iter] <- out$MatureB
-        zoneDP$catch[year,popn,iter] <- out$Catch
-        zoneDP$harvestR[year,popn,iter] <- out$Harvest
-        zoneDP$cpue[year,popn,iter] <- out$ce
-        zoneDP$Nt[,year,popn,iter] <- out$Nt
-        zoneDP$catchN[,year,popn,iter] <- out$CatchN
-        matb[popn] <- out$MatureB
-      } # pop
-      steep <- getvect(zoneCP,"steeph")
-      r0 <- sapply(zoneCP,"[[","R0")
-      b0 <- sapply(zoneCP,"[[","B0")
-      recs <- oneyearrec(steep,r0,b0,matb,sigR=ctrl$withsigR)
-      newrecs <- movem %*% recs
-      zoneDP$recruit[year,,iter] <- newrecs
-      zoneDP$Nt[1,year,,iter] <- newrecs
-      zoneDP$deplsB[year,,iter] <- zoneDP$matureB[year,,iter]/b0
-      zoneDP$depleB[year,,iter] <- zoneDP$exploitB[year,,iter]/sapply(zoneCP,"[[","ExB0")
-      saucatch[year,,iter] <- tapply(zoneDP$catch[year,,iter],sauindex,sum,na.rm=TRUE)
-      wts <- zoneDP$catch[year,,iter]/(saucatch[year,sauindex,iter])
-      saucpue[year,,iter] <- tapply((zoneDP$cpue[year,,iter] * wts),sauindex,sum,na.rm=TRUE)
-    }   # year loop        zoneDR$matureB[,,1]
-  }     # rep loop
-  zoneDP$cesau <- saucpue
-  return(zoneDP=zoneDP)
-} # end of doprojection
-
+    for (year in 2:projyrs) {
+      arrce=rbind(histCE,zoneDP$cesau[1:(year-1),,iter])
+      lnce <- nrow(arrce)
+      yearnames=c(oldyrs,tail(oldyrs,1)+1:(year-1))
+      hcrout <- mcdahcr(arrce=arrce,hsargs,yearnames,saunames=glb$saunames)
+      acatch <- zoneDP$acatch[year-1,,iter] * hcrout$multTAC[lnce,]
+      zoneDP$acatch[year,,iter] <- acatch
+      outy <- oneyearsauC(zoneCC=zoneCP,exb=zoneDP$exploitB[year-1,,iter],
+                          inN=zoneDP$Nt[,year-1,,iter],catchsau=acatch,year=year,
+                          Ncl=Nclass,sauindex=sauindex,movem=movem,
+                          sigmar=sigmar,sigmab=sigmab)
+      dyn <- outy$dyn
+      saudyn <- poptosau(dyn["catch",],dyn["cpue",],sauindex)
+      zoneDP$exploitB[year,,iter] <- dyn["exploitb",]
+      zoneDP$matureB[year,,iter] <- dyn["matureb",]
+      zoneDP$catch[year,,iter] <- dyn["catch",]
+      zoneDP$acatch[year,,iter] <- acatch
+      zoneDP$catsau[year,,iter] <- saudyn$saucatch
+      zoneDP$harvestR[year,,iter] <- dyn["catch",]/dyn["exploitb",]
+      zoneDP$cpue[year,,iter] <- dyn["cpue",]
+      zoneDP$cesau[year,,iter] <- saudyn$saucpue
+      zoneDP$recruit[year,,iter] <- dyn["recruits",]
+      zoneDP$deplsB[year,,iter] <- dyn["deplsB",]
+      zoneDP$depleB[year,,iter] <- dyn["depleB",]
+      zoneDP$Nt[,year,,iter] <- outy$NaL
+      zoneDP$catchN[,year,,iter] <- outy$catchN
+    } # year loop
+  }   # iter loop
+  return(zoneDP)
+} # end of doTASprojections
 
 #' @title makezoneDP generates the container for the projection dynamics
 #'

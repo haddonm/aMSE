@@ -102,12 +102,12 @@ calibrateHCR <- function(histCE,saunames,hsargs,sauindex,projyrs) {
 #' @description catchbysau calculates the catch by sau with error for the
 #'     Tasmanian HS. This takes the sum of the aspirational catches as the TAC,
 #'     which is multiplied by the proportion of exploitable biomass for each SAU,
-#'     which has log-Normal error included with sd=sigmaF.
+#'     which has log-Normal error included with sd=sigmaB.
 #'
 #' @param inexpB a particular years' exploitable biomass by population
 #' @param sauindex a vector containing the sau index number for each population
 #' @param TAC the sum of the aspirational catches for a given year
-#' @param sigmaF the sd of the log-normal errors included in the estimates of
+#' @param sigmab the sd of the log-normal errors included in the estimates of
 #'     the exploitable biomass by SAU
 #'
 #' @return a vector of the catches by sau
@@ -115,20 +115,17 @@ calibrateHCR <- function(histCE,saunames,hsargs,sauindex,projyrs) {
 #'
 #' @examples
 #' print("wait on suitable internal data")
-catchbysau <- function(inexpB,sauindex,TAC,sigmaF) {
+catchbysau <- function(inexpB,sauindex,TAC,sigmab) {
   #  iter=1;year=2
-  # inexpB=zoneDP$exploitB[(year - 1),,iter];sauindex=sauindex;TAC=origTAC[iter]; sigmaF=0.05
+  # inexpB=zoneDP$exploitB[(year - 1),,iter];sauindex=sauindex;TAC=origTAC[iter]; sigmab=0.05
   totexB <- sum(inexpB,na.rm=TRUE)
   sauexpB <- tapply(inexpB,sauindex,sum,na.rm=TRUE)
   nSAU <- length(sauexpB)
   npop <- length(inexpB)
-  sauexpB <- sauexpB * exp(rnorm(nSAU,mean=0,sd=sigmaF))
+  sauexpB <- sauexpB * exp(rnorm(nSAU,mean=0,sd=sigmab))
   totsau <- sum(sauexpB,na.rm=TRUE)
   sauexpB <- sauexpB * (totexB/totsau)
   catbysau <- TAC * sauexpB/sum(sauexpB)
-  # obsexpB <- inexpB  * exp(rnorm(npop,mean=0,sd=sigmaF))
-  # obsexpB <- totexB  * obsexpB/sum(obsexpB,na.rm=TRUE)
-  # popC <- catbysau[sauindex] * (obsexpB/sauexpB[sauindex])
   return(catbysau)
 } # end of catchbysau
 

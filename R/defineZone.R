@@ -677,7 +677,11 @@ makezoneC <- function(zone,const) { # zone=zone1; const=constants
   SAUindex <- defineBlock(nSAU,blkdef,numpop)
   glb$sauindex <- SAUindex
   SAU <- as.numeric(const["SAU",])
-  if (zone$randomseed > 0) set.seed(zone$randomseed)
+  if (zone$randomseed > 0) {
+      set.seed(zone$randomseed)
+    } else {
+      set.seed()
+  }
   if (zone$catches > 0) {
      initialLML <- zone$condC$histyr[,2]
      glb$Nyrs <- length(initialLML)
@@ -698,6 +702,7 @@ makezoneC <- function(zone,const) { # zone=zone1; const=constants
   move <- makemove(numpop,recs,larvdisp)
   glb$move <- as.matrix(move)
   glb$SAUpop <- as.vector(const["SAU",])
+  glb$saunames <- sort(unique(glb$SAUpop))
   class(zoneC) <- "zoneC"
   ans <- list(zoneC=zoneC,glb=glb,popdefs=popdefs)
   return(ans)

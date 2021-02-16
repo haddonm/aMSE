@@ -14,7 +14,7 @@ oneyearsauC(
   sauindex,
   movem,
   sigmar = 1e-08,
-  sigmaF = 1e-08
+  sigmab = 1e-08
 )
 }
 \arguments{
@@ -39,7 +39,7 @@ previous year}
 \item{sigmar}{the variation in recruitment dynamics, set to 1e-08
 when searching for an equilibrium.}
 
-\item{sigmaF}{the variability introduced to the catches by population by
+\item{sigmab}{the variability introduced to the catches by population by
 fishers not knowing the distribution of exploitable biomass exactly.
 Initial default value=1e-08}
 }
@@ -57,5 +57,5 @@ oneyearsauC conducts one year's dynamics in the simulation
 \examples{
 print("Wait on new data")
 # zoneCC=zone$zoneC; exb=exb ;catchsau=zone$zone1$condC$histCatch[2,];year=2;
-# sigmar=1e-08; Ncl=zone$glb$Nclass; sauindex=zone$glb$sauindex;movem=zone$glb$movem; sigmaF=1e-08
+# sigmar=1e-08; Ncl=zone$glb$Nclass; sauindex=zone$glb$sauindex;movem=zone$glb$movem; sigmab=1e-08
 }

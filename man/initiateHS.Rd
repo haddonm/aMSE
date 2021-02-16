@@ -4,7 +4,7 @@
 \alias{initiateHS}
 \title{initiateHS runs the HS for the first year}
 \usage{
-initiateHS(zoneDP, zoneCP, exb, inN, acatch, sigmar, sigmaf, glb)
+initiateHS(zoneDP, zoneCP, exb, inN, acatch, sigmar, sigmab, glb)
 }
 \arguments{
 \item{zoneDP}{the empty dynamics object used in teh projections}
@@ -22,7 +22,7 @@ of the HS based on the historical or fishery conditioning data}
 
 \item{sigmar}{the recruitment variability (sd) to be used in the projections}
 
-\item{sigmaf}{the variability (sd) applied to the exploitable biomass
+\item{sigmab}{the variability (sd) applied to the exploitable biomass
 estimates to introduce a form of implmentation error on the distribution
 of catches among SAU}
 

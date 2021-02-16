@@ -57,6 +57,22 @@ summarizeprod <- function(product,saunames) { # product=zone$product; saunames=z
   return(ans)
 } # end of summarizeprod
 
+#' @title sumpop2sau gathers population data into sau data using sauindex
+#'
+#' @param invect a vector of population values for a given variable
+#' @param sauindex the indices of each sau for each population
+#'
+#' @return a vector of length nsau containing the sum of population values
+#'     for each sau
+#' @export
+#'
+#' @examples
+#' vect <- c(5.8,6.2,13.2,23.8,3.3,3.7,29.7,26.3,38.9,9.1)
+#' sauind <- c(1,1,2,2,3,3,4,4,5,5)
+#' sumpop2sau(vect,sauind)   # should be 12 37 7 56 48
+sumpop2sau <- function(invect,sauindex) {
+  return(tapply(invect,sauindex,sum,na.rm=TRUE))
+} # end of sumpop2sau
 
 #' @title wtedmean calculates the weighted mean of a set of values and weights
 #'

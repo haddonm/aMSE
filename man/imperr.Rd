@@ -4,7 +4,7 @@
 \alias{imperr}
 \title{imperr calculates population catches from sau catches with error}
 \usage{
-imperr(catchsau, exb, sauindex, sigmaF = 1e-08)
+imperr(catchsau, exb, sauindex, sigmab = 1e-08)
 }
 \arguments{
 \item{catchsau}{the predicted catch per SAU from the Harvest control rule}
@@ -15,7 +15,7 @@ conditioning.}
 
 \item{sauindex}{the SAU index for each population}
 
-\item{sigmaF}{the Log-Normal standard deviation of implementation error. The
+\item{sigmab}{the Log-Normal standard deviation of implementation error. The
 default value = 1e-08, which effectively means no errors.}
 }
 \value{

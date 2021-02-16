@@ -4,7 +4,7 @@
 \alias{dohistoricC}
 \title{dohistoricC imposes the historical catches on an unfished zone}
 \usage{
-dohistoricC(zoneDD, zoneC, glob, condC, sigR = 1e-08, sigF = 1e-08)
+dohistoricC(zoneDD, zoneC, glob, condC, sigR = 1e-08, sigB = 1e-08)
 }
 \arguments{
 \item{zoneDD}{The input unfished dynamic zone, zoneD, object}

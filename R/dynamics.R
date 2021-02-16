@@ -96,19 +96,19 @@ depleteSAU <- function(zoneC,zoneD,glob,initdepl,product,len=15) {
 #'
 #' @examples
 #' print("wait on some data sets")
-dohistoricC <- function(zoneDD,zoneC,glob,condC,sigR=1e-08,sigF=1e-08) {
+dohistoricC <- function(zoneDD,zoneC,glob,condC,sigR=1e-08,sigB=1e-08) {
   # zoneC=zone$zoneC; zoneDD=zone$zoneD;glob=zone$glb;zone1=zone$zone1; condC=zone$zone1$condC
-  # sigR=1e-08; sigF=1e-08; Ncl=glob$Nclass;sauindex=glob$sauindex;movem=glob$move;
+  # sigR=1e-08; sigB=1e-08; Ncl=glob$Nclass;sauindex=glob$sauindex;movem=glob$move;
   histC <- condC$histCatch
   yrs <- condC$histyr[,"year"]
   nyrs <- length(yrs)
-  for (year in 2:nyrs) {  # year=2 # ignores the initial unfished year
+  for (year in 2:46) {  # year=2 # ignores the initial unfished year
     catchsau <- histC[year,]
     exb <- zoneDD$exploitB[year-1,]
     inN <- zoneDD$Nt[,year-1,]
     out <- oneyearsauC(zoneCC=zoneC,exb=exb,inN=inN,catchsau=catchsau,
-                        year=year,sigmar=sigR,Ncl=glob$Nclass,
-                        sauindex=glob$sauindex,movem=glob$move,sigmaF=sigF)
+                       year=year,Ncl=glob$Nclass,sauindex=glob$sauindex,
+                       movem=glob$move,sigmar=sigR,sigmab=sigB)
     dyn <- out$dyn
     zoneDD$exploitB[year,] <- dyn["exploitb",]
     zoneDD$matureB[year,] <- dyn["matureb",]
@@ -137,7 +137,7 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,sigR=1e-08,sigF=1e-08) {
 #'     first year of the projections this would be the last year of the
 #'     conditioning.
 #' @param sauindex the SAU index for each population
-#' @param sigmaF the Log-Normal standard deviation of implementation error. The
+#' @param sigmab the Log-Normal standard deviation of implementation error. The
 #'     default value = 1e-08, which effectively means no errors.
 #'
 #' @return a vector of population catches for the year after the exploitable
@@ -146,13 +146,13 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,sigR=1e-08,sigF=1e-08) {
 #'
 #' @examples
 #' print("wait on suitable internal data sets")
-imperr <- function(catchsau,exb,sauindex,sigmaF=1e-08) {
-  # exb=zoneDD$exploitB[endyr,]; suaindex=glb$sauindex; sigmaF=0.1; catchsau=acatch
+imperr <- function(catchsau,exb,sauindex,sigmab=1e-08) {
+  # exb=zoneDD$exploitB[endyr,]; suaindex=glb$sauindex; sigmaB=0.1; catchsau=acatch
   TAC <- sum(catchsau,na.rm=TRUE)
   totexb <- sum(exb,na.rm=TRUE)
   npop <- length(exb)
   nSAU <- length(catchsau)
-  sauexb <- tapply(exb,sauindex,sum,na.rm=TRUE) * exp(rnorm(nSAU,mean=0,sd=sigmaF))
+  sauexb <- tapply(exb,sauindex,sum,na.rm=TRUE) * exp(rnorm(nSAU,mean=0,sd=sigmab))
   sauexb <- sauexb * (totexb/sum(sauexb,na.rm=TRUE))
   popC <- catchsau[sauindex] * (exb/sauexb[sauindex])
   popC <- popC * TAC/sum(popC)
@@ -175,7 +175,7 @@ imperr <- function(catchsau,exb,sauindex,sigmaF=1e-08) {
 #' @param acatch the aspirational catches per SAU derived from the conditioning
 #'     of the HS based on the historical or fishery conditioning data
 #' @param sigmar the recruitment variability (sd) to be used in the projections
-#' @param sigmaf the variability (sd) applied to the exploitable biomass
+#' @param sigmab the variability (sd) applied to the exploitable biomass
 #'     estimates to introduce a form of implmentation error on the distribution
 #'     of catches among SAU
 #' @param glb the globals object
@@ -186,12 +186,12 @@ imperr <- function(catchsau,exb,sauindex,sigmaF=1e-08) {
 #'
 #' @examples
 #' print("wait on suitable internal data sets")
-initiateHS <- function(zoneDP,zoneCP,exb,inN,acatch,sigmar,sigmaf,glb) {
+initiateHS <- function(zoneDP,zoneCP,exb,inN,acatch,sigmar,sigmab,glb) {
   reps <- dim(zoneDP$matureB)[3]
   for (iter in 1:reps) {
     outy <- oneyearsauC(zoneCC=zoneCP,exb=exb,inN=inN,catchsau=acatch,year=1,
                         Ncl=glb$Nclass,sauindex=glb$sauindex,movem=glb$move,
-                        sigmar=sigmar,sigmaF=sigmaf)
+                        sigmar=sigmar,sigmab=sigmab)
     dyn <- outy$dyn
     saudyn <- poptosau(dyn["catch",],dyn["cpue",],sauindex)
     zoneDP$exploitB[1,,iter] <- dyn["exploitb",]
@@ -356,7 +356,7 @@ oneyearcat <- function(inpopC,inNt,Nclass,incat,yr) {  #
 #' @param movem the larval dispersal movement matrix, global move
 #' @param sigmar the variation in recruitment dynamics, set to 1e-08
 #'     when searching for an equilibrium.
-#' @param sigmaF the variability introduced to the catches by population by
+#' @param sigmab the variability introduced to the catches by population by
 #'     fishers not knowing the distribution of exploitable biomass exactly.
 #'     Initial default value=1e-08
 #'
@@ -365,15 +365,15 @@ oneyearcat <- function(inpopC,inNt,Nclass,incat,yr) {  #
 #'
 #' @examples
 #' print("Wait on new data")
-#' # zoneCC=zone$zoneC; exb=exb ;catchsau=zone$zone1$condC$histCatch[2,];year=2;
-#' # sigmar=1e-08; Ncl=zone$glb$Nclass; sauindex=zone$glb$sauindex;movem=zone$glb$movem; sigmaF=1e-08
+#' # zoneCC=zone$zoneC; exb=exb ;catchsau=zone$zone1$condC$histCatch[46,];year=46;
+#' # sigmar=1e-08; Ncl=zone$glb$Nclass; sauindex=zone$glb$sauindex;movem=zone$glb$movem; sigmab=1e-08
 oneyearsauC <- function(zoneCC,exb,inN,catchsau,year,Ncl,
-                         sauindex,movem,sigmar=1e-08,sigmaF=1e-08) {
-  popC <- imperr(catchsau,exb,sauindex,sigmaF)
+                         sauindex,movem,sigmar=1e-08,sigmab=1e-08) {
+  popC <- imperr(catchsau,exb,sauindex,sigmab)
   npop <- length(popC)
   matb <- numeric(npop)
   ans <- vector("list",npop)
-  for (popn in 1:npop) {  # popn=1
+  for (popn in 1:npop) {  # popn=14
     ans[[popn]] <- oneyearcat(inpopC=zoneCC[[popn]],inNt=inN[,popn],
                               Nclass=Ncl,incat=popC[popn],yr=year)
   }
@@ -392,38 +392,6 @@ oneyearsauC <- function(zoneCC,exb,inN,catchsau,year,Ncl,
   return(list(dyn=dyn,NaL=NaL,catchN=catchN))
 } # end of oneyearsauC
 
-
-oneyearsauCold <- function(zoneC,zoneDD,catchsau,year,sigmar,Ncl,
-                        sauindex,movem,sigmaF) {
-  exb <- zoneDD$exploitB[year-1,]
-  popC <- imperr(catchsau,exb,sauindex,sigmaF=1e-08) # no implementation error
-  npop <- length(popC)
-  ans <- vector("list",npop)
-  for (popn in 1:npop) {  # year=2
-    ans[[popn]] <- oneyearcat(inpopC=zoneC[[popn]],inNt=zoneDD$Nt[,year-1,popn],
-                      Nclass=Ncl,incat=popC[popn],yr=year)
-  }
-  dyn <- sapply(ans,"[[","vect")
-  steep <- getvect(zoneC,"steeph") #sapply(zoneC,"[[","popdef")["steeph",]
-  r0 <- getvar(zoneC,"R0") #sapply(zoneC,"[[","R0")
-  b0 <- getvar(zoneC,"B0") #sapply(zoneC,"[[","B0")
-  recs <- oneyearrec(steep,r0,b0,matb,sigR=sigmar)
-  newrecs <- movem %*% recs
-
-  zoneDD$exploitB[year,] <-  out$dyn["exploitb",]
-  zoneDD$matureB[year,] <- out$vect["matureb"]
-  zoneDD$catch[year,] <- out$vect["catch",]
-  zoneDD$harvestR[year,] <-  out$vect["catch",]/out$vect["catch",]
-  zoneDD$cpue[year,] <- out$vect["cpue",]
-  zoneDD$Nt[,year,] <- out$NaL
-  zoneDD$catchN[,year,] <- out$catchN
-  matb <- out$vect["matureb",]
-  zoneDD$recruit[year,] <- newrecs
-  zoneDD$Nt[1,year,] <- newrecs
-  zoneDD$deplsB[year,] <- zoneDD$matureB[year,]/b0
-  zoneDD$depleB[year,] <- zoneDD$exploitB[year,]/getvar(zoneC,"ExB0")
-  return(zoneDD)
-} # end of oneyearsauC
 
 #' @title oneyearC conducts one year's dynamics using catch not harvest
 #'
