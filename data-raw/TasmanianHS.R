@@ -11,7 +11,7 @@
 #      multiplier for the previous aspirational catch
 
 
-hsargs <- list(mult=1.1,
+hsargs <- list(mult=0.1,
                wid = 4,
                targqnt = 0.55,
                pmwts = c(0.65, 0.25,0.1),
@@ -38,8 +38,6 @@ hsargs <- list(mult=1.1,
 #' @param hsargs the arguments used within the Harvest strategy's HCR. See the
 #'     description for details.
 #' @param pyrs the number of years of projection
-#' @param sauindex the SAU index for each population used to identify which SAU
-#'     each population is found within.
 #'
 #' @return a list of the list of the PMs, the targce refpts, and then a list of
 #'     all the scores, and the multTAC values.
@@ -47,16 +45,15 @@ hsargs <- list(mult=1.1,
 #'
 #' @examples
 #' print("wait on example data being available")
-calibrateHCR <- function(histCE,saunames,hsargs,sauindex,projyrs) {
+calibrateHCR <- function(histCE,saunames,hsargs) {
   # histCE=condC$histCE; saunames=zone$zone1$SAUnames; hsargs=hsargs;
-  #  sauindex=glb$sauindex; projyrs=projC$projyrs
+  #  sauindex=glb$sauindex;
+  #  DEPRECATED
   nSAU <- length(saunames)
   yearCE <- as.numeric(rownames(histCE))
-  yearname <- c(yearCE,tail(yearCE,1)+1:projyrs)
   yrce <- length(yearCE)
-  allyrs <- yrce + projyrs
   # define storage matrices
-  grad1val <- matrix(0,nrow=allyrs,ncol=nSAU,dimnames=list(yearname,saunames))
+  grad1val <- matrix(0,nrow=yrce,ncol=nSAU,dimnames=list(yearCE,saunames))
   grad4val <- targval <- score1 <- score4 <- scoret <- scoretot <- grad1val
   multTAC <- grad1val
   refpts <- matrix(0,nrow=nSAU,ncol=2,dimnames=list(saunames,c("trp","lrp")))
@@ -66,13 +63,13 @@ calibrateHCR <- function(histCE,saunames,hsargs,sauindex,projyrs) {
     tmp <- getgrad1(histCE[pickce,sau])
     nec <- length(tmp)
     if (nec < yrce) tmp <- c(rep(NA,(yrce-nec)),tmp)
-    grad1val[1:yrce,sau] <- tmp
-    score1[1:yrce,sau] <- getscore(grad1val[1:yrce,sau],mult=hsargs$mult)
+    grad1val[,sau] <- tmp
+    score1[,sau] <- getscore(grad1val[,sau],mult=hsargs$mult)
     tmp2 <- getgrad4(histCE[pickce,sau],wid=hsargs$wid)
     nec2 <- length(tmp2)
     if (nec2 < yrce) tmp2 <- c(rep(NA,(yrce-nec2)),tmp2)
-    grad4val[1:yrce,sau] <- tmp2
-    score4[1:yrce,sau] <- getscore(grad4val[1:yrce,sau],mult=hsargs$mult)
+    grad4val[,sau] <- tmp2
+    score4[,sau] <- getscore(grad4val[,sau],mult=hsargs$mult)
     tmp3 <- targscore(histCE[pickce,sau],qnt=hsargs$targqnt,mult=hsargs$mult)
     values <- tmp3$ans[,"targval"]
     scrs <- tmp3$ans[,"targsc"]
@@ -81,14 +78,14 @@ calibrateHCR <- function(histCE,saunames,hsargs,sauindex,projyrs) {
       values <- c(rep(NA,(yrce-nec3)),values)
       scrs <-  c(rep(NA,(yrce-nec3)),scrs)
     }
-    targval[1:yrce,sau] <- values
-    scoret[1:yrce,sau] <- scrs
+    targval[,sau] <- values
+    scoret[,sau] <- scrs
     scoretot[,sau] <- pmwts[1]*scoret[,sau] + pmwts[2]*score4[,sau] +
       pmwts[3]*score1[,sau]
-    pick <- ceiling(scoretot[1:yrce,sau])
+    pick <- ceiling(scoretot[,sau])
     pick[pick < 1] <- 1
     pick[pick > 10] <- 10
-    multTAC[1:yrce,sau] <- hsargs$hcr[pick]
+    multTAC[,sau] <- hsargs$hcr[pick]
     refpts[sau,] <- tmp3$details
   }
   pms <- list(grad1val=grad1val,grad4val=grad4val,targval=targval,
@@ -96,6 +93,10 @@ calibrateHCR <- function(histCE,saunames,hsargs,sauindex,projyrs) {
   scores <- list(score1=score1,score4=score4,scoret=scoret,scoretot=scoretot)
   return(list(pms=pms,scores=scores,yrmultTAC=multTAC))
 } # end of calibrateHCR
+
+
+
+
 
 #' @title catchbysau calculates the catch by sau with error for Tasmania
 #'
@@ -291,8 +292,8 @@ getlmcoef <- function(y,x) {
 #' grad1 <- getgrad1(blockE13$cpue)
 #' score1 <- getscore(grad1)
 #' cbind(blockE13$year[2:nyr],grad1,score1)
-getscore <- function(pm,mult=1.1) { # pm=scoret$ans[,"targval"];mult=hsargs$mult
-  bounds <- round((range(pm,na.rm=TRUE) * mult),2)
+getscore <- function(pm,mult=0.1) { # pm=scoret$ans[,"targval"];mult=hsargs$mult
+  bounds <- round(extendrange(pm,range(pm,na.rm=TRUE),f=mult),2)
   if (bounds[1] > -0.05) bounds[1] <- -0.05
   if (bounds[2] <= 0) bounds[2] <- 0.05
   low <- seq(bounds[1],0.0,length=6)
@@ -401,13 +402,13 @@ mcdahcr <- function(arrce,hsargs,yearnames,saunames) {
     tmp <- getgrad1(arrce[pickce,sau])                      # grad1
     nec <- length(tmp)
     if (nec < yrce) tmp <- c(rep(NA,(yrce-nec)),tmp)
-    grad1val[1:yrce,sau] <- tmp
-    score1[1:yrce,sau] <- getscore(grad1val[1:yrce,sau],mult=hsargs$mult)
+    grad1val[,sau] <- tmp
+    score1[,sau] <- getscore(grad1val[,sau],mult=hsargs$mult)
     tmp2 <- getgrad4(arrce[pickce,sau],wid=hsargs$wid)      # grad4
     nec2 <- length(tmp2)
     if (nec2 < yrce) tmp2 <- c(rep(NA,(yrce-nec2)),tmp2)
-    grad4val[1:yrce,sau] <- tmp2
-    score4[1:yrce,sau] <- getscore(grad4val[1:yrce,sau],mult=hsargs$mult)
+    grad4val[,sau] <- tmp2
+    score4[,sau] <- getscore(grad4val[,sau],mult=hsargs$mult)
     tmp3 <- targscore(arrce[pickce,sau],qnt=hsargs$targqnt,mult=hsargs$mult) #targ
     values <- tmp3$ans[,"targval"]
     scrs <- tmp3$ans[,"targsc"]
@@ -416,14 +417,14 @@ mcdahcr <- function(arrce,hsargs,yearnames,saunames) {
       values <- c(rep(NA,(yrce-nec3)),values)
       scrs <-  c(rep(NA,(yrce-nec3)),scrs)
     }
-    targval[1:yrce,sau] <- values
-    scoret[1:yrce,sau] <- scrs
+    targval[,sau] <- values
+    scoret[,sau] <- scrs
     scoretot[,sau] <- pmwts[1]*scoret[,sau] + pmwts[2]*score4[,sau] +
       pmwts[3]*score1[,sau]
-    pick <- ceiling(scoretot[1:yrce,sau])
+    pick <- ceiling(scoretot[,sau])
     pick[pick < 1] <- 1
     pick[pick > 10] <- 10
-    multTAC[1:yrce,sau] <- hsargs$hcr[pick]
+    multTAC[,sau] <- hsargs$hcr[pick]
     refpts[sau,] <- tmp3$details
   }
   details <- list(grad4=grad4val,score4=score4,grad1=grad1val,score1=score1,
@@ -450,7 +451,7 @@ mcdahcr <- function(arrce,hsargs,yearnames,saunames) {
 #'
 #' @examples
 #' print("wait on suitable data")
-targscore <- function(vectce,qnt=0.55,mult=1.1) { # vectce=vectce;qnt=0.55
+targscore <- function(vectce,qnt=0.55,mult=1.1) { # vectce=arrce[,2];qnt=0.55
   nyr <- length(vectce)
   targ <- quantile(vectce,probs=c(qnt),na.rm=TRUE)
   limrp <- min(vectce,na.rm=TRUE)*0.9

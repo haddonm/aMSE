@@ -506,10 +506,15 @@ poptosau <- function(catvect,cpuevect,sauindex) {
 #' @title prepareprojection high level function that sets up a projection
 #'
 #' @description prepareprojection is a high level function that restructures
-#'     zoneC by including the projected selectivity (in case the LML changes),
-#'     and also selectivity x weight-at-size (for computational speed). It
-#'     then generates a new zoneD with room for all replicates as well as the
-#'     aspirational catches from each HS. Finally, it adds recruitment variation
+#'     zoneC by including the projected selectivity (in case the LML is set to
+#'     change during the projections), and also selectivity x weight-at-size
+#'     (for computational speed). It then generates a new zoneD with room for
+#'     all replicates as well as the aspirational catches from each HS. It does
+#'     this by converting the arrays of year x pop, to year x pop x replicate.
+#'     It then uses the conditioned data in zoneDep to predict the first
+#'     aspirational ctaches for the projections and conducts the initial
+#'     replicate, thus starting the application of the HS.
+#'     Finally, it adds recruitment variation
 #'     to each of the replicates and keeps the last year of each iteration of
 #'     the addrecvar function as the start of each replicate projection, with
 #'     zeros in the catch, cpue, and cesau arrays
@@ -518,7 +523,6 @@ poptosau <- function(catvect,cpuevect,sauindex) {
 #' @param zoneC the constant part of the zone
 #' @param glb the global variables
 #' @param zoneDep the zone after initial depletion
-#' @param aspcatch the aspirational catch for the first year of every projection
 #'
 #' @return a list of the dynamic zone object as a list of arrays of projyrs x
 #'     populations x replicates, plus the revised projC and revised zoneC
@@ -526,18 +530,23 @@ poptosau <- function(catvect,cpuevect,sauindex) {
 #'
 #' @examples
 #' print("wait on data files")
-prepareprojection <- function(zone1,zoneC,glb,zoneDep,aspcatch) {
-  # zone1=zone$zone1;zoneC=zone$zoneC; glb=glb; zoneDep=zoneDD; aspcatch=cmcda$acatch
-  ctrl <- zone1$ctrl
-  projC <- modprojC(zoneC,glb,zone1$projC) # include selectivity into projC
+prepareprojection <- function(projC,zoneC,glb,zoneDep,ctrl,multTAC) {
+  # projC=projC;zoneC=zone$zoneC; glb=glb; zoneDep=zoneDD; ctrl=ctrl;multTAC=multTAC
+  if (ctrl$randseedP > 0) set.seed(ctrl$randseedP)
   projyrs <- projC$projyrs
+  projC <- modprojC(zoneC,glb,projC) # include selectivity into projC
   zoneC <- modzoneCSel(zoneC,projC$Sel,projC$SelWt,glb,projyrs)
-  # need to add aspirational catches to zoneDRp
   zoneDR <- makezoneDP(projyrs,ctrl$reps,glb) #,zoneDep) # zoneDReplicates
+  endyr <- nrow(zoneDep$matureB)
+  endcatch <- tapply(zoneDep$catch[endyr,],glb$sauindex,sum,na.rm=TRUE)
+  yrce <- nrow(multTAC)
+  acatch <- endcatch * multTAC[yrce,]  # predicted aspirational catches
+  zoneDR <- initiateHS(zoneDP=zoneDR,zoneCP=zoneC,exb=zoneDep$exploitB[endyr,],
+                       inN=zoneDep$Nt[,endyr,],acatch=acatch,
+                       sigmar=ctrl$withsigR,sigmab=ctrl$withsigB,glb=glb)
  # zoneDRp <- addrecvar(zoneC,zoneDR,zoneDR$harvestR,glb,ctrl,aspcatch)
   return(list(zoneDP=zoneDR,projC=projC,zoneCP=zoneC))
 } # end of prepareprojection
-
 
 #' @title scaleto1 scales an input vector of CPUE to a mean of one x avCE
 #'

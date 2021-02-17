@@ -86,7 +86,7 @@ depleteSAU <- function(zoneC,zoneD,glob,initdepl,product,len=15) {
 #' @param glob the globals object
 #' @param condC from the zone1 object, contains historical fisheries data plus
 #' @param sigR the recruitment variation included
-#' @param sigF the variability introduced to the catches by population by
+#' @param sigB the variability introduced to the catches by population by
 #'     fishers not knowing the distribution of exploitable biomass exactly. What
 #'     this value should be is unknown, the default=1e-08, is arbitrary but
 #'     avoids any effective fisher allocation error between populations.
@@ -102,7 +102,7 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,sigR=1e-08,sigB=1e-08) {
   histC <- condC$histCatch
   yrs <- condC$histyr[,"year"]
   nyrs <- length(yrs)
-  for (year in 2:46) {  # year=2 # ignores the initial unfished year
+  for (year in 2:nyrs) {  # year=2 # ignores the initial unfished year
     catchsau <- histC[year,]
     exb <- zoneDD$exploitB[year-1,]
     inN <- zoneDD$Nt[,year-1,]
@@ -193,7 +193,7 @@ initiateHS <- function(zoneDP,zoneCP,exb,inN,acatch,sigmar,sigmab,glb) {
                         Ncl=glb$Nclass,sauindex=glb$sauindex,movem=glb$move,
                         sigmar=sigmar,sigmab=sigmab)
     dyn <- outy$dyn
-    saudyn <- poptosau(dyn["catch",],dyn["cpue",],sauindex)
+    saudyn <- poptosau(dyn["catch",],dyn["cpue",],glb$sauindex)
     zoneDP$exploitB[1,,iter] <- dyn["exploitb",]
     zoneDP$matureB[1,,iter] <- dyn["matureb",]
     zoneDP$catch[1,,iter] <- dyn["catch",]

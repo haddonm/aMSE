@@ -4,18 +4,16 @@
 \alias{prepareprojection}
 \title{prepareprojection high level function that sets up a projection}
 \usage{
-prepareprojection(zone1, zoneC, glb, zoneDep, aspcatch)
+prepareprojection(projC, zoneC, glb, zoneDep, ctrl, multTAC)
 }
 \arguments{
-\item{zone1}{the original zone1 object from readctrlfile}
-
 \item{zoneC}{the constant part of the zone}
 
 \item{glb}{the global variables}
 
 \item{zoneDep}{the zone after initial depletion}
 
-\item{aspcatch}{the aspirational catch for the first year of every projection}
+\item{zone1}{the original zone1 object from readctrlfile}
 }
 \value{
 a list of the dynamic zone object as a list of arrays of projyrs x
@@ -23,10 +21,15 @@ a list of the dynamic zone object as a list of arrays of projyrs x
 }
 \description{
 prepareprojection is a high level function that restructures
-    zoneC by including the projected selectivity (in case the LML changes),
-    and also selectivity x weight-at-size (for computational speed). It
-    then generates a new zoneD with room for all replicates as well as the
-    aspirational catches from each HS. Finally, it adds recruitment variation
+    zoneC by including the projected selectivity (in case the LML is set to
+    change during the projections), and also selectivity x weight-at-size
+    (for computational speed). It then generates a new zoneD with room for
+    all replicates as well as the aspirational catches from each HS. It does
+    this by converting the arrays of year x pop, to year x pop x replicate.
+    It then uses the conditioned data in zoneDep to predict the first
+    aspirational ctaches for the projections and conducts the initial
+    replicate, thus starting the application of the HS.
+    Finally, it adds recruitment variation
     to each of the replicates and keeps the last year of each iteration of
     the addrecvar function as the start of each replicate projection, with
     zeros in the catch, cpue, and cesau arrays
