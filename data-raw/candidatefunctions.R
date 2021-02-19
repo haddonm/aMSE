@@ -101,3 +101,39 @@ lines(yrs,ans$outmat[1:nce,"predCE"],lwd=2,col=2)
 ans$msy
 
 
+
+
+
+
+
+
+
+x <- c(0,5)
+y <- c(40,75)
+x1 <- c(6,10)
+y1 <- c(75,115)
+
+low <- approx(x,y,xout=0:5)
+high <- approx(x1,y1,xout=c(6:10))
+
+bounds <- c(40,115)
+low <- seq(bounds[1],0.0,length=6)
+high <- seq(0.0,bounds[2],length=6)
+
+
+vars <- getlmcoef(0:5,seq(40,75,length=6))
+var1 <- getlmcoef(6:10,seq(75,115,length=5))
+
+
+histCE <- condC$histCE
+
+vectce <- histCE[,2]; qnt=0.55; mult=0.1; maxtarg=150.0
+
+
+
+
+ans <- targscore(vectce=histCE[,2])
+
+
+
+

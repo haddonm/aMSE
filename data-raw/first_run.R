@@ -79,7 +79,7 @@ projtime <- Sys.time()
 print(projtime - begintime); print(projtime - starttime)
 
 invar <- zoneDP$cesau
-lab1 <- "Catch"
+lab1 <- "CPUE"
 plotprep(width=8, height=8,newdev=FALSE)
 parset(plots=c(4,2),byrow=FALSE)
 label <- glb$saunames
@@ -93,36 +93,28 @@ for (sau in 1:8) {
 str(zoneDP,max.level = 1)
 
 
-arrce <- rbind(condC$histCE,zoneDP$cesau[,,1])
-rownames(arrce) <- 1992:2049
 
-pm <- mcdahcr(arrce,hsargs,yearnames=1992:2049,saunames=glb$saunames)
-
-f <- 0.05
-rge <- range(condC$histCE[,2])
-rge
-adjust <- (rge[2]-rge[1])*f
-rge + c(-adjust,adjust)
-
-
-
-
-
-
-#' @title
-#'
-#' @param a
-#' @param b
-#' @param d
-#' @param f
-#'
-#' @return
-#' @export
-#'
-#' @examples
-extrange <- function(a,b,d,f) {
-
-
+plotprep(width=8, height=8,newdev=FALSE)
+parset(plots=c(4,2),byrow=FALSE)
+label <- glb$saunames
+arrce <- zoneDP$cesau[,,1]
+rownames(arrce) <- 2020:2049
+yrs <- 2020:2049
+reps <- 100
+pm <- mcdahcr(arrce,hsargs,yearnames=yrs,saunames=glb$saunames)
+first <- pm$multTAC
+for (sau in 1:8) {
+  plot(yrs,first[,sau],type="l",lwd=1,col="grey",xlab="",ylab=label[sau],
+       ylim=c(0,1.2),panel.first=grid())
+  for (i in 2:reps) {
+    arrce <- zoneDP$cesau[,,i]
+    pm <- mcdahcr(arrce,hsargs,yearnames=yrs,saunames=glb$saunames)
+    lines(yrs,pm$multTAC[,sau])
+  }
 }
+
+
+
+
 
 

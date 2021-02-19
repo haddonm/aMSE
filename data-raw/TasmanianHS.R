@@ -14,6 +14,7 @@
 hsargs <- list(mult=0.1,
                wid = 4,
                targqnt = 0.55,
+               maxtarg = c(150.0,150.0,150.0,150.0,150.0,150.0,150.0,150.0),
                pmwts = c(0.65, 0.25,0.1),
                hcr = c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2)
                )
@@ -294,8 +295,6 @@ getlmcoef <- function(y,x) {
 #' cbind(blockE13$year[2:nyr],grad1,score1)
 getscore <- function(pm,mult=0.1) { # pm=scoret$ans[,"targval"];mult=hsargs$mult
   bounds <- round(extendrange(pm,range(pm,na.rm=TRUE),f=mult),2)
-  if (bounds[1] > -0.05) bounds[1] <- -0.05
-  if (bounds[2] <= 0) bounds[2] <- 0.05
   low <- seq(bounds[1],0.0,length=6)
   high <- seq(0.0,bounds[2],length=6)
   xax <- c(low[1:5],high)
@@ -386,9 +385,8 @@ makeprojpm <- function(histpms,reps,projyrs) {
 #' print("wait on data and time")
 #' #  arrce=condC$histCE; yr=28;
 mcdahcr <- function(arrce,hsargs,yearnames,saunames) {
-  # arrce=rbind(condC$histCE,zoneDP$cesau[year-1,,iter]); hsargs=hsargs; year=2
-  # oldyrs=as.numeric(rownames(condC$histCE)); yearnames=c(oldyrs,tail(oldyrs,1)+1:(year-1))
-  # saunames=sort(unique(glb$SAUpop))
+  # arrce=condC$histCE; hsargs=hsargs;
+  # oldyrs=as.numeric(rownames(condC$histCE)); yearnames=oldyrs; saunames=glb$saunames
   nsau <- ncol(arrce)
   yrce <- nrow(arrce)
   pmwts <- hsargs$pmwts
@@ -396,7 +394,7 @@ mcdahcr <- function(arrce,hsargs,yearnames,saunames) {
   grad1val <- matrix(0,nrow=yrce,ncol=nsau,dimnames=list(yearnames,saunames))
   grad4val <- targval <- score1 <- score4 <- scoret <- scoretot <- grad1val
   multTAC <- grad1val
-  refpts <- matrix(0,nrow=nsau,ncol=2,dimnames=list(saunames,c("trp","lrp")))
+  refpts <- matrix(0,nrow=nsau,ncol=3,dimnames=list(saunames,c("low","trp","high")))
   for (sau in 1:nsau) {  #  sau=1
     pickce <- which(!is.na(arrce[,sau]))
     tmp <- getgrad1(arrce[pickce,sau])                      # grad1
@@ -409,26 +407,22 @@ mcdahcr <- function(arrce,hsargs,yearnames,saunames) {
     if (nec2 < yrce) tmp2 <- c(rep(NA,(yrce-nec2)),tmp2)
     grad4val[,sau] <- tmp2
     score4[,sau] <- getscore(grad4val[,sau],mult=hsargs$mult)
-    tmp3 <- targscore(arrce[pickce,sau],qnt=hsargs$targqnt,mult=hsargs$mult) #targ
-    values <- tmp3$ans[,"targval"]
-    scrs <- tmp3$ans[,"targsc"]
-    nec3 <- length(values)
-    if (nec3 < yrce) {
-      values <- c(rep(NA,(yrce-nec3)),values)
-      scrs <-  c(rep(NA,(yrce-nec3)),scrs)
-    }
-    targval[,sau] <- values
+    tmp3 <- targscore(arrce[pickce,sau],qnt=hsargs$targqnt,mult=hsargs$mult,
+                      maxtarg=hsargs$maxtarg[sau]) #targ
+    nec3 <- length(pickce)
+    scrs <- tmp3$scores
+    if (nec3 < yrce) scrs <-  c(rep(NA,(yrce-nec3)),scrs)
     scoret[,sau] <- scrs
     scoretot[,sau] <- pmwts[1]*scoret[,sau] + pmwts[2]*score4[,sau] +
       pmwts[3]*score1[,sau]
-    pick <- ceiling(scoretot[,sau])
+    pick <- floor(scoretot[,sau]) + 1 # add one to get correct hcr[index]
     pick[pick < 1] <- 1
     pick[pick > 10] <- 10
-    multTAC[,sau] <- hsargs$hcr[pick]
-    refpts[sau,] <- tmp3$details
+    multTAC[,sau] <- hsargs$hcr[pick] # index implies scores less than index
+    refpts[sau,] <- tmp3$rp
   }
   details <- list(grad4=grad4val,score4=score4,grad1=grad1val,score1=score1,
-                  scoret=scoret)
+                  scoret=scoret,scoretot=scoretot)
   out <- list(multTAC=multTAC,details=details,refpts=refpts)
   return(out)
 } # end of mcdahcr
@@ -438,12 +432,15 @@ mcdahcr <- function(arrce,hsargs,yearnames,saunames) {
 #' @description targscore takes in a vector of cpue x years and defines the targ
 #'     from the complete series, and the limit reference point. This differs
 #'     from the two getgradone and getgradwid in needing multiple years at once.
+#'     One meta-rule is that the target cpue should not rise above
 #'
 #' @param vectce the vector of cpue to be assessed
 #' @param qnt the quantile of the input vector selected as the target,
 #'     default = 0.55
 #' @param mult the multiplier on the bounds to expand them upwards and
 #'     downwards. default value = 1.1 = 10 percent increase
+#' @param maxtarg a meta-rule that sets an upper limit on the target cpue, the
+#'     default=150kg/hr
 #'
 #' @return a list of the final year's score, the internals to the calculations,
 #'     and he target and limit reference points
@@ -451,10 +448,33 @@ mcdahcr <- function(arrce,hsargs,yearnames,saunames) {
 #'
 #' @examples
 #' print("wait on suitable data")
-targscore <- function(vectce,qnt=0.55,mult=1.1) { # vectce=arrce[,2];qnt=0.55
+targscore <- function(vectce,qnt=0.55,mult=0.1,maxtarg=150.0) { #
   nyr <- length(vectce)
   targ <- quantile(vectce,probs=c(qnt),na.rm=TRUE)
-  limrp <- min(vectce,na.rm=TRUE)*0.9
+  if (targ > maxtarg) targ <- maxtarg
+  bounds <- round(extendrange(vectce,range(vectce,na.rm=TRUE),f=mult),3)
+  low <- seq(bounds[1],targ,length=6)
+  high <- seq(targ,bounds[2],length=6)
+  xax <- c(low[1:5],high)
+  vars <- getlmcoef(0:5,xax[1:6])
+  score <- numeric(length(vectce))
+  pickl <- which(vectce <= targ)
+  score[pickl] <- vectce[pickl]*vars[2] + vars[1]
+  vars2 <- getlmcoef(5:10,xax[6:11])
+  pickh <- which(vectce >= targ)
+  score[pickh] <- vectce[pickh]*vars2[2] + vars2[1]
+  rp <- c(bounds[1],targ,bounds[2]); names(rp)=c("lower","target","upper")
+  result <- tail(score,1)
+  return(list(result=result,scores=score,rp=rp))
+} # end of targscore
+
+
+
+targscoreold <- function(vectce,qnt=0.55,mult=0.1,maxtarg=150.0) { # vectce=arrce[,2];qnt=0.55
+  nyr <- length(vectce)
+  targ <- quantile(vectce,probs=c(qnt),na.rm=TRUE)
+  if (targ > maxtarg) targ <- maxtarg
+  bounds <- round(extendrange(pm,range(pm,na.rm=TRUE),f=mult),2)
   targval <- vectce - targ
   targsc <- getscore(targval,mult=mult)
   ans <- as.matrix(cbind(vectce,targval,targsc))

@@ -13,6 +13,10 @@ prepareprojection(projC, zoneC, glb, zoneDep, ctrl, multTAC)
 
 \item{zoneDep}{the zone after initial depletion}
 
+\item{ctrl}{the ctrl object for the scenario run}
+
+\item{multTAC}{the TAC multiplication matrix from the HCR}
+
 \item{zone1}{the original zone1 object from readctrlfile}
 }
 \value{

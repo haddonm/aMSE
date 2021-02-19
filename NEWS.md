@@ -81,3 +81,5 @@
 * 12/01/2021 0.0.0.6200 Increasing generality now have calibrateMCDA and dohistoricC, plus extra HS related functions. More to come.
 
 * 16/02/2021 0.0.0.6000 Now all components are currently operational.
+
+* 19/02/2021 0.0.0.5750 Starting to improve the HCR to more closely match current usage

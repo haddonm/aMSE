@@ -523,6 +523,8 @@ poptosau <- function(catvect,cpuevect,sauindex) {
 #' @param zoneC the constant part of the zone
 #' @param glb the global variables
 #' @param zoneDep the zone after initial depletion
+#' @param ctrl the ctrl object for the scenario run
+#' @param multTAC the TAC multiplication matrix from the HCR
 #'
 #' @return a list of the dynamic zone object as a list of arrays of projyrs x
 #'     populations x replicates, plus the revised projC and revised zoneC
