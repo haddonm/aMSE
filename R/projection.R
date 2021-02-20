@@ -277,7 +277,7 @@ doTASprojections <- function(ctrl,zoneDP,zoneCP,histCE,glb,mcdahcr,hsargs) {
                           Ncl=Nclass,sauindex=sauindex,movem=movem,
                           sigmar=sigmar,sigmab=sigmab)
       dyn <- outy$dyn
-      saudyn <- poptosau(dyn["catch",],dyn["cpue",],sauindex)
+      saudyn <- popcetosauce(dyn["catch",],dyn["cpue",],sauindex)
       zoneDP$exploitB[year,,iter] <- dyn["exploitb",]
       zoneDP$matureB[year,,iter] <- dyn["matureb",]
       zoneDP$catch[year,,iter] <- dyn["catch",]
@@ -480,9 +480,9 @@ modzoneCSel <- function(zoneC,sel,selwt,glb,yrs) {
   return(zoneC)
 } # end of modzoneCSel
 
-#' @title poptosau combines population cpue into sau as catch weighted sums
+#' @title popcetosauce combines population cpue into sau as catch weighted sums
 #'
-#' @description poptosau combines the cpue from separate populations into their
+#' @description popcetosauce combines cpue from separate populations into their
 #'     respective sau using a catch-weighted strategy. The sauindex is used to
 #'     identify which populations to apply the sau total catches to.
 #'
@@ -495,13 +495,12 @@ modzoneCSel <- function(zoneC,sel,selwt,glb,yrs) {
 #'
 #' @examples
 #' print("wait on appropriate built-in data files")
-poptosau <- function(catvect,cpuevect,sauindex) {
+popcetosauce <- function(catvect,cpuevect,sauindex) {
   outvect <- tapply(catvect,sauindex,sum,na.rm=TRUE)
   wts <- catvect/outvect[sauindex]
   saucpue <- tapply((cpuevect * wts),sauindex,sum,na.rm=TRUE)
   return(list(saucpue=saucpue,saucatch=outvect))
-} # end of poptosau
-
+} # end of popcetosauce
 
 #' @title prepareprojection high level function that sets up a projection
 #'

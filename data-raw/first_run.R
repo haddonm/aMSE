@@ -79,15 +79,47 @@ projtime <- Sys.time()
 print(projtime - begintime); print(projtime - starttime)
 
 invar <- zoneDP$cesau
-lab1 <- "CPUE"
+lab1 <- "catch"
+
+
+poptosau <- function(invar,glb) {  # invar=zoneDP$matureB; glb=glb
+  numpop <- glb$numpop
+  nsau <- glb$nSAU
+  nyrs <- dim(invar)[1]
+  reps <- dim(invar)[3]
+  sauindex <- glb$sauindex
+  result <- array(0,dim=c(nyrs,nsau,reps),
+                 dimnames=list(1:nyrs,1:nsau,1:reps)) #aspirational catches
+  for (iter in 1:reps)
+    for (yr in 1:nyrs)
+      result[yr,,iter] <- tapply(invar[yr,,iter],sauindex,sum,na.rm=TRUE)
+  return(result)
+} # end of
+
+result <- poptosau(zoneDP$catch,glb=glb)
+
+
+
+
 plotprep(width=8, height=8,newdev=FALSE)
 parset(plots=c(4,2),byrow=FALSE)
 label <- glb$saunames
 for (sau in 1:8) {
-  ymax <- getmax(invar[,sau,])
-  plot(1:30,invar[,sau,1],type="l",lwd=1,col="grey",panel.first = grid(),
+  ymax <- getmax(result[,sau,])
+  plot(1:30,result[,sau,1],type="l",lwd=1,col="grey",panel.first = grid(),
        ylim=c(0,ymax),yaxs="i",ylab=paste0(lab1,"    ",label[sau]),xlab="year")
-  for (i in 1:ctrl$reps) lines(1:30,invar[,sau,i],lwd=1,col="grey")
+  for (i in 1:ctrl$reps) lines(1:30,result[,sau,i],lwd=1,col="grey")
+}
+
+
+
+
+plotsau <- function(invar,glb) { # invar=zoneDP$matureB; glb=glb
+  nsau <- glb$nSAU
+  label <- glb$saunames
+
+
+
 }
 
 str(zoneDP,max.level = 1)

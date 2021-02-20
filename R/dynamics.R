@@ -97,12 +97,12 @@ depleteSAU <- function(zoneC,zoneD,glob,initdepl,product,len=15) {
 #' @examples
 #' print("wait on some data sets")
 dohistoricC <- function(zoneDD,zoneC,glob,condC,sigR=1e-08,sigB=1e-08) {
-  # zoneC=zone$zoneC; zoneDD=zone$zoneD;glob=zone$glb;zone1=zone$zone1; condC=zone$zone1$condC
+  # zoneC=zone$zoneC; zoneDD=zone$zoneD;glob=zone$glb;condC=zone$zone1$condC
   # sigR=1e-08; sigB=1e-08; Ncl=glob$Nclass;sauindex=glob$sauindex;movem=glob$move;
   histC <- condC$histCatch
   yrs <- condC$histyr[,"year"]
   nyrs <- length(yrs)
-  for (year in 2:46) {  # year=2 # ignores the initial unfished year
+  for (year in 2:nyrs) {  # year=2 # ignores the initial unfished year
     catchsau <- histC[year,]
     exb <- zoneDD$exploitB[year-1,]
     inN <- zoneDD$Nt[,year-1,]
@@ -193,7 +193,7 @@ initiateHS <- function(zoneDP,zoneCP,exb,inN,acatch,sigmar,sigmab,glb) {
                         Ncl=glb$Nclass,sauindex=glb$sauindex,movem=glb$move,
                         sigmar=sigmar,sigmab=sigmab)
     dyn <- outy$dyn
-    saudyn <- poptosau(dyn["catch",],dyn["cpue",],glb$sauindex)
+    saudyn <- popcetosauce(dyn["catch",],dyn["cpue",],glb$sauindex)
     zoneDP$exploitB[1,,iter] <- dyn["exploitb",]
     zoneDP$matureB[1,,iter] <- dyn["matureb",]
     zoneDP$catch[1,,iter] <- dyn["catch",]
