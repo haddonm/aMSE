@@ -78,49 +78,43 @@ zoneDP <- doTASprojections(ctrl,zoneDP,zoneCP,condC$histCE,glb,mcdahcr,hsargs)
 projtime <- Sys.time()
 print(projtime - begintime); print(projtime - starttime)
 
-invar <- zoneDP$cesau
-lab1 <- "catch"
 
+result <- poptosau(zoneDP$matureB,glb=glb)
+lab1 <- "Mature Biomass"
 
-poptosau <- function(invar,glb) {  # invar=zoneDP$matureB; glb=glb
-  numpop <- glb$numpop
-  nsau <- glb$nSAU
-  nyrs <- dim(invar)[1]
-  reps <- dim(invar)[3]
-  sauindex <- glb$sauindex
-  result <- array(0,dim=c(nyrs,nsau,reps),
-                 dimnames=list(1:nyrs,1:nsau,1:reps)) #aspirational catches
-  for (iter in 1:reps)
-    for (yr in 1:nyrs)
-      result[yr,,iter] <- tapply(invar[yr,,iter],sauindex,sum,na.rm=TRUE)
-  return(result)
-} # end of
-
-result <- poptosau(zoneDP$catch,glb=glb)
-
-
+plotprep(width=8, height=8,newdev=FALSE)
+plotsau(invar=result,glb=glb,plots=c(4,2),ylab=lab1,medcol=1,addCI=TRUE)
 
 
 plotprep(width=8, height=8,newdev=FALSE)
-parset(plots=c(4,2),byrow=FALSE)
-label <- glb$saunames
-for (sau in 1:8) {
-  ymax <- getmax(result[,sau,])
-  plot(1:30,result[,sau,1],type="l",lwd=1,col="grey",panel.first = grid(),
-       ylim=c(0,ymax),yaxs="i",ylab=paste0(lab1,"    ",label[sau]),xlab="year")
-  for (i in 1:ctrl$reps) lines(1:30,result[,sau,i],lwd=1,col="grey")
-}
+plotsau(invar=zoneDP$catsau,glb=glb,plots=c(4,2),ylab="sau catch",medcol=1,addCI=TRUE)
 
 
 
 
-plotsau <- function(invar,glb) { # invar=zoneDP$matureB; glb=glb
-  nsau <- glb$nSAU
-  label <- glb$saunames
+
+
+plotprep(width=7, height=4,newdev=FALSE)
+parset()
+hist(zoneDP$catsau[1,1,])
 
 
 
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 str(zoneDP,max.level = 1)
 
@@ -144,6 +138,37 @@ for (sau in 1:8) {
     lines(yrs,pm$multTAC[,sau])
   }
 }
+
+invar=zoneDP$catch;
+
+lt5 <- function(invect) {  invect <- sumc
+  n <- length(invect)
+  divvect <- abs(1- invect[1:(n-1)]/invect[2:n])
+  pick <- which(divvect < 0.05)
+  return(pick)
+}
+
+
+fivep <- function(invar,glb) { #  invar <- zoneDP$catsau; glb=glb
+  numpop <- glb$numpop
+  nsau <- glb$nSAU
+  nyrs <- dim(invar)[1]
+  reps <- dim(invar)[3]
+  meta5 <- matrix(0,nrow=nyrs,ncol=reps,dimnames=list(1:nyrs,1:reps))
+  TAC <- meta5
+  for (iter in 1:reps) {  # iter=1
+    sumc <- rowSums(invar[,,iter])
+    TAC[,iter] <- sumc
+    meta5[lt5(sumc),iter] <- 1
+  }
+  return(list(meta5=meta5,TAC=TAC))
+}
+
+out <- fivep(zoneDP$catch,glb)
+
+
+
+
 
 
 

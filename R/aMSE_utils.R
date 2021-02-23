@@ -2,6 +2,41 @@
 
 # rutilsMH::listFunctions("C:/Users/User/Dropbox/A_code/aMSE/aMSE_utils.R")
 
+
+#' @title poptosau converts projected population dynamics to SAU scale results
+#'
+#' @description poptosau the MSE dynamics are run at the population level but
+#'     all management decisions are made at the SAU level, hence the results of
+#'     the projections need to be translated into results at the SAU level.
+#'     poptosau uses the sauindex to sum the variables that can be summed, which
+#'     include matureB, exploitB, catch, and recruit, and combines their
+#'     population results to form their respective SAU results. Thus, for an
+#'     input array of dimensions [projyrs,numpop,reps] one receives an array of
+#'     [projyrs, nSAU,reps]
+#'
+#' @param invar either zoneDP$ matureB, exploitB, catch, or recruit
+#' @param glb the global constants object
+#'
+#' @return a results array of dimnesion [projyrs, nSAU,reps]
+#' @export
+#'
+#' @examples
+#' print("wait on appropriate internal datasets")
+poptosau <- function(invar,glb) {  # invar=zoneDP$matureB; glb=glb
+  numpop <- glb$numpop
+  nsau <- glb$nSAU
+  nyrs <- dim(invar)[1]
+  reps <- dim(invar)[3]
+  sauindex <- glb$sauindex
+  result <- array(0,dim=c(nyrs,nsau,reps),
+                  dimnames=list(1:nyrs,1:nsau,1:reps)) #aspirational catches
+  for (iter in 1:reps)
+    for (yr in 1:nyrs)
+      result[yr,,iter] <- tapply(invar[yr,,iter],sauindex,sum,na.rm=TRUE)
+  return(result)
+} # end of poptosa
+
+
 #' @title summarizeprod generates a summary of the productivity properties
 #'
 #' @description summarizeprod generates a summary of the productivity properties

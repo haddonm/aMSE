@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotfuns.r
 \name{plotproj}
 \alias{plotproj}
-\title{plotproj aids the polotting of a projected variable}
+\title{plotproj aids the plotting of a projected variable}
 \usage{
 plotproj(
   invar,
