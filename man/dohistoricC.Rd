@@ -17,7 +17,7 @@ dohistoricC(zoneDD, zoneC, glob, condC, sigR = 1e-08, sigB = 1e-08)
 
 \item{sigR}{the recruitment variation included}
 
-\item{sigF}{the variability introduced to the catches by population by
+\item{sigB}{the variability introduced to the catches by population by
 fishers not knowing the distribution of exploitable biomass exactly. What
 this value should be is unknown, the default=1e-08, is arbitrary but
 avoids any effective fisher allocation error between populations.}

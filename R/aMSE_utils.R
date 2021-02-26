@@ -2,6 +2,36 @@
 
 # rutilsMH::listFunctions("C:/Users/User/Dropbox/A_code/aMSE/aMSE_utils.R")
 
+#' @title alltosau sums population properties to form SAU totals
+#'
+#' @description alltosau sums the projected values for matureB, exploitB,
+#'     acatch, catch, and recruit, by population, into totals by SAU, using
+#'     sauindex from glb
+#'
+#' @param zoneDR the dynamics projeciton object
+#' @param glb the global constants object
+#'
+#' @return a list of some SAU properties
+#' @export
+#'
+#' @examples
+#' print("wait on appropriate internal data sets")
+alltosau <- function(zoneDR,glb) {  # zoneDR=zoneDP; glb=glb
+  saunames <- glb$saunames
+  matB <- poptosau(zoneDR$matureB,glb=glb)
+  exB <- poptosau(zoneDR$exploitB,glb=glb)
+  recruit <- poptosau(zoneDR$recruit,glb=glb)
+  catsau=zoneDR$catsau
+  dimnames(catsau)[[2]] <- saunames
+  acatch=zoneDR$acatch
+  dimnames(acatch)[[2]] <- saunames
+  cesau=zoneDR$cesau
+  dimnames(cesau)[[2]] <- saunames
+  sumsau <- list(matureB=matB,exploitB=exB,catsau=catsau,acatch=acatch,
+                 cesau=cesau,recruit=recruit)
+  return(sumsau)
+} # end of alltosau
+
 
 #' @title poptosau converts projected population dynamics to SAU scale results
 #'
@@ -28,8 +58,9 @@ poptosau <- function(invar,glb) {  # invar=zoneDP$matureB; glb=glb
   nyrs <- dim(invar)[1]
   reps <- dim(invar)[3]
   sauindex <- glb$sauindex
+  saunames <- glb$saunames
   result <- array(0,dim=c(nyrs,nsau,reps),
-                  dimnames=list(1:nyrs,1:nsau,1:reps)) #aspirational catches
+                  dimnames=list(1:nyrs,saunames,1:reps)) #aspirational catches
   for (iter in 1:reps)
     for (yr in 1:nyrs)
       result[yr,,iter] <- tapply(invar[yr,,iter],sauindex,sum,na.rm=TRUE)

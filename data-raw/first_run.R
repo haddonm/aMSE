@@ -37,27 +37,35 @@ projC <- zone1$projC
 condC <- zone1$condC
 zoneC <- zone$zoneC
 zoneD <- zone$zoneD
+product <- zone$product
+# save objects to resdir
+save(ctrl,file=filenametopath(resdir,"ctrl.RData"))
+save(glb,file=filenametopath(resdir,"glb.RData"))
+save(product,file=filenametopath(resdir,"product.RData"))
+save(zoneC,file=filenametopath(resdir,"zoneC.RData"))
+save(condC,file=filenametopath(resdir,"condC.RData"))
 
 # condition on the historic catches
 zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,condC,sigR=1e-08,sigB=1e-08)
 midtime <- (Sys.time())
 print(equiltime - starttime)
+save(zoneDD,file=filenametopath(resdir,"zoneDD.RData"))
 # Illustrate productivity
 propD <- getzoneprops(zoneC,zoneDD,glb,year=47)
-round(propD,3)
-zoneDD$harvestR[45:47,]
+addtable(round(propD,4),"propertyDD.csv",resdir,category="zoneDD",caption=
+           "Properties of zoneD after conditioning on historical catches.")
+addtable(round(t(zoneDD$harvestR[45:47,]),4),"final_harvestR.csv",resdir,
+         category="zoneDD",caption="Last three years of harvest rate.")
 popdefs <- getlistvar(zone$zoneC,"popdef")
-round(popdefs,2)
-# plotprep(width=7, height=6,newdev=FALSE)
-# parset()
-# plot(propD["B0",1:16],popdefs["L50mat",],type="p",cex=1.1)
+addtable(round(t(popdefs),3),"popdefs.csv",resdir,category="zoneDD",caption=
+           "Population specific definitions")
 
 # Do the replicates ------------------------------------------------------------
 midtime <- (Sys.time()); print(midtime - starttime)
 
 cmcda <- mcdahcr(arrce=condC$histCE,hsargs=hsargs,
                  yearnames=rownames(condC$histCE),saunames=glb$saunames)
-str(cmcda)
+#  str(cmcda)
 pms <- cmcda$pms
 multTAC <- cmcda$multTAC
 
@@ -66,6 +74,8 @@ out <- prepareprojection(projC,zoneC,glb,zoneDD,ctrl,multTAC)
 zoneDP <- out$zoneDP
 projC <- out$projC
 zoneCP <- out$zoneCP
+save(zoneCP,file=filenametopath(resdir,"zoneCP.RData"))
+save(projC,file=filenametopath(resdir,"projC.RData"))
 
 endtime <- Sys.time(); print(endtime - midtime)
 
@@ -77,13 +87,14 @@ zoneDP <- doTASprojections(ctrl,zoneDP,zoneCP,condC$histCE,glb,mcdahcr,hsargs)
 
 projtime <- Sys.time()
 print(projtime - begintime); print(projtime - starttime)
+save(zoneDP,file=filenametopath(resdir,"zoneDP.RData"))
 
 
-result <- poptosau(zoneDP$matureB,glb=glb)
-lab1 <- "Mature Biomass"
+result <- alltosau(zoneDP,glb)
+
 
 plotprep(width=8, height=8,newdev=FALSE)
-plotsau(invar=result,glb=glb,plots=c(4,2),ylab=lab1,medcol=1,addCI=TRUE)
+plotsau(invar=result$cesau,glb=glb,plots=c(4,2),ylab="CPUE",medcol=1,addCI=TRUE)
 
 
 plotprep(width=8, height=8,newdev=FALSE)

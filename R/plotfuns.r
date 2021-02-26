@@ -149,7 +149,7 @@ plotsau <- function(invar,glb,plots,ylab="Catch",xlab="Year",col="grey",
     ymax <- getmax(invar[,sau,])
     plot(yrs,invar[,sau,1],type="l",lwd=1,col=col,panel.first = grid(),
          ylim=c(0,ymax),yaxs="i",ylab=paste0(ylab,"    ",label[sau]),xlab="")
-    for (i in 1:ctrl$reps) lines(1:projyrs,invar[,sau,i],lwd=1,col=col)
+    for (i in 1:reps) lines(1:projyrs,invar[,sau,i],lwd=1,col=col)
     for (yr in 1:projyrs) saumedian[yr,sau] <- median(invar[yr,sau,])
     lines(yrs,saumedian[,sau],lwd=2,col=medcol)
     if (addCI) {

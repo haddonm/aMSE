@@ -496,10 +496,10 @@ modzoneCSel <- function(zoneC,sel,selwt,glb,yrs) {
 #' @examples
 #' print("wait on appropriate built-in data files")
 popcetosauce <- function(catvect,cpuevect,sauindex) {
-  outvect <- tapply(catvect,sauindex,sum,na.rm=TRUE)
-  wts <- catvect/outvect[sauindex]
+  saucatch <- tapply(catvect,sauindex,sum,na.rm=TRUE)
+  wts <- catvect/saucatch[sauindex]
   saucpue <- tapply((cpuevect * wts),sauindex,sum,na.rm=TRUE)
-  return(list(saucpue=saucpue,saucatch=outvect))
+  return(list(saucpue=saucpue,saucatch=saucatch))
 } # end of popcetosauce
 
 #' @title prepareprojection high level function that sets up a projection
@@ -511,14 +511,14 @@ popcetosauce <- function(catvect,cpuevect,sauindex) {
 #'     all replicates as well as the aspirational catches from each HS. It does
 #'     this by converting the arrays of year x pop, to year x pop x replicate.
 #'     It then uses the conditioned data in zoneDep to predict the first
-#'     aspirational ctaches for the projections and conducts the initial
+#'     aspirational catches for the projections and conducts the initial
 #'     replicate, thus starting the application of the HS.
 #'     Finally, it adds recruitment variation
 #'     to each of the replicates and keeps the last year of each iteration of
 #'     the addrecvar function as the start of each replicate projection, with
 #'     zeros in the catch, cpue, and cesau arrays
 #'
-#' @param zone1 the original zone1 object from readctrlfile
+#' @param projC the projection object from readctrlfile
 #' @param zoneC the constant part of the zone
 #' @param glb the global variables
 #' @param zoneDep the zone after initial depletion

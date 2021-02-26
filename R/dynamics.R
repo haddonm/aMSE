@@ -86,7 +86,7 @@ depleteSAU <- function(zoneC,zoneD,glob,initdepl,product,len=15) {
 #' @param glob the globals object
 #' @param condC from the zone1 object, contains historical fisheries data plus
 #' @param sigR the recruitment variation included
-#' @param sigF the variability introduced to the catches by population by
+#' @param sigB the variability introduced to the catches by population by
 #'     fishers not knowing the distribution of exploitable biomass exactly. What
 #'     this value should be is unknown, the default=1e-08, is arbitrary but
 #'     avoids any effective fisher allocation error between populations.

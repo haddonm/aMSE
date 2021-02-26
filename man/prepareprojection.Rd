@@ -7,6 +7,8 @@
 prepareprojection(projC, zoneC, glb, zoneDep, ctrl, multTAC)
 }
 \arguments{
+\item{projC}{the projection object from readctrlfile}
+
 \item{zoneC}{the constant part of the zone}
 
 \item{glb}{the global variables}
@@ -16,8 +18,6 @@ prepareprojection(projC, zoneC, glb, zoneDep, ctrl, multTAC)
 \item{ctrl}{the ctrl object for the scenario run}
 
 \item{multTAC}{the TAC multiplication matrix from the HCR}
-
-\item{zone1}{the original zone1 object from readctrlfile}
 }
 \value{
 a list of the dynamic zone object as a list of arrays of projyrs x
@@ -31,7 +31,7 @@ prepareprojection is a high level function that restructures
     all replicates as well as the aspirational catches from each HS. It does
     this by converting the arrays of year x pop, to year x pop x replicate.
     It then uses the conditioned data in zoneDep to predict the first
-    aspirational ctaches for the projections and conducts the initial
+    aspirational catches for the projections and conducts the initial
     replicate, thus starting the application of the HS.
     Finally, it adds recruitment variation
     to each of the replicates and keeps the last year of each iteration of

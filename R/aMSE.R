@@ -2,7 +2,7 @@
 #' @importFrom grDevices palette dev.off
 #' @importFrom graphics grid hist lines mtext par plot points title
 #' @importFrom graphics legend abline
-#' @importFrom stats dnorm pnorm rlnorm rnorm quantile sd lm coef
+#' @importFrom stats dnorm pnorm rlnorm rnorm quantile sd lm coef median
 #' @importFrom utils object.size browseURL packageDescription read.csv
 #' @importFrom utils write.table head tail
 #' @importFrom rutilsMH getmax getmin setpalette plotprep removeEmpty
