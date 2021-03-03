@@ -27,7 +27,7 @@ source(paste0(ddir,"aMSE/data-raw/","TasmanianHS.R"))
 
 #data(zone)
 starttime <- (Sys.time())
-zone <- makeequilzone(resdir,"control2.csv") # normally would read in a file
+zone <- makeequilzone(resdir,"control2.csv",cleanslate = TRUE) # normally would read in a file
 equiltime <- (Sys.time()); print(equiltime - starttime)
 
 glb <- zone$glb
@@ -39,12 +39,15 @@ zoneC <- zone$zoneC
 zoneD <- zone$zoneD
 product <- zone$product
 # save objects to resdir
-save(ctrl,file=filenametopath(resdir,"ctrl.RData"))
-save(glb,file=filenametopath(resdir,"glb.RData"))
-save(product,file=filenametopath(resdir,"product.RData"))
-save(zoneC,file=filenametopath(resdir,"zoneC.RData"))
-save(condC,file=filenametopath(resdir,"condC.RData"))
+# save(ctrl,file=filenametopath(resdir,"ctrl.RData"))
+# save(glb,file=filenametopath(resdir,"glb.RData"))
+# save(product,file=filenametopath(resdir,"product.RData"))
+# save(zoneC,file=filenametopath(resdir,"zoneC.RData"))
+# save(condC,file=filenametopath(resdir,"condC.RData"))
 
+biology_plots(resdir, glb, zoneC)
+plotproductivity(resdir,product,glb)
+numbersatsize(resdir, glb, zoneD)
 # condition on the historic catches
 zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,condC,sigR=1e-08,sigB=1e-08)
 midtime <- (Sys.time())
@@ -52,7 +55,7 @@ print(equiltime - starttime)
 save(zoneDD,file=filenametopath(resdir,"zoneDD.RData"))
 # Illustrate productivity
 propD <- getzoneprops(zoneC,zoneDD,glb,year=47)
-addtable(round(propD,4),"propertyDD.csv",resdir,category="zoneDD",caption=
+addtable(round(t(propD),4),"propertyDD.csv",resdir,category="zoneDD",caption=
            "Properties of zoneD after conditioning on historical catches.")
 addtable(round(t(zoneDD$harvestR[45:47,]),4),"final_harvestR.csv",resdir,
          category="zoneDD",caption="Last three years of harvest rate.")
@@ -87,27 +90,24 @@ zoneDP <- doTASprojections(ctrl,zoneDP,zoneCP,condC$histCE,glb,mcdahcr,hsargs)
 
 projtime <- Sys.time()
 print(projtime - begintime); print(projtime - starttime)
-save(zoneDP,file=filenametopath(resdir,"zoneDP.RData"))
+#save(zoneDP,file=filenametopath(resdir,"zoneDP.RData"))
+
+plotbysau(zoneDP,glb)
 
 
-result <- alltosau(zoneDP,glb)
-
-
-plotprep(width=8, height=8,newdev=FALSE)
-plotsau(invar=result$cesau,glb=glb,plots=c(4,2),ylab="CPUE",medcol=1,addCI=TRUE)
-
-
-plotprep(width=8, height=8,newdev=FALSE)
-plotsau(invar=zoneDP$catsau,glb=glb,plots=c(4,2),ylab="sau catch",medcol=1,addCI=TRUE)
-
-
-
+make_html(
+  replist = NULL,
+  resdir = resdir,
+  width = 500,
+  openfile = TRUE,
+  runnotes = NULL,
+  verbose = TRUE,
+  packagename = "aMSE",
+  htmlname = "aMSE"
+)
 
 
 
-plotprep(width=7, height=4,newdev=FALSE)
-parset()
-hist(zoneDP$catsau[1,1,])
 
 
 

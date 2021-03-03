@@ -60,7 +60,7 @@ biology_plots <- function(resdir, glb, zoneC) {
   plotprep(width=7,height=4,newdev=FALSE,filename=filen,cex=0.9,
            verbose=FALSE)
   plot(mids,emerg[,1],type="l",lwd=2,xlab="Shell Length mm",
-       ylab="Weight Kg",panel.first=grid(),xlim=c(110,145))
+       ylab="Emergence",panel.first=grid(),xlim=c(110,145))
   for (pop in 2:numpop) lines(mids,emerg[,pop],lwd=2,col=pop)
   legend("topleft",paste0("P",1:numpop),lwd=3,col=c(1:numpop),bty="n",cex=1.2)
   caption <- "The emergence-at-length for each population. The x-axis is constrained to emphasize differences."
@@ -98,7 +98,7 @@ biology_plots <- function(resdir, glb, zoneC) {
   #   results["MSYDepl",(numpop + mu)] <- sum(MSYD[pickcol]*wtmu)
   #   results["bLML",(numpop + mu)] <- sum(bLML[pickcol]*wtmu)
   # }
-  res <- round(resultpop,3)
+  res <- round(t(resultpop),3)
   filen <- paste0("zonebiology.csv")
   caption <- "Population Biological Properties."
   addtable(res,filen,resdir=resdir,category="Tables",caption)
@@ -462,3 +462,59 @@ plotproductivity <- function(resdir,product,glb) {
               "harvest rate.")
   addplot(filen,resdir=resdir,category="Production",caption)
 } # end of plotproductivity
+
+
+#' @title plotbysau plots a collection of projections by SAU
+#'
+#' @description plotbysau generates and store plots in resir
+#'
+#' @param zoneDP the dynamic object produced by the projections
+#' @param glb the object containing the gloabl variables
+#' @param resdir the results directory
+#'
+#' @return nothing by it does add 6 plots to resdir
+#' @export
+#'
+#' @examples
+#' print("wait on suitable data-sets")
+plotbysau <- function(zoneDP,glb.resdir) {
+  result <- alltosau(zoneDP,glb)
+  #CPUE
+  filen <- filenametopath(resdir,"proj_cpue_SAU.png")
+  plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
+  plotsau(invar=result$cesau,glb=glb,plots=c(4,2),ylab="SAU CPUE",medcol=1,addCI=TRUE)
+  caption <- "The CPUE projections for each SAU."
+  addplot(filen,resdir=resdir,category="ProjSAU",caption)
+  #Catches
+  filen <- filenametopath(resdir,"proj_catch_SAU.png")
+  plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
+  plotsau(invar=zoneDP$catsau,glb=glb,plots=c(4,2),ylab="SAU catch (t)",medcol=1,addCI=TRUE)
+  caption <- "The catch projections for each SAU."
+  addplot(filen,resdir=resdir,category="ProjSAU",caption)
+  #Aspirational catches
+  filen <- filenametopath(resdir,"proj_aspcatch_SAU.png")
+  plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
+  plotsau(invar=zoneDP$catsau,glb=glb,plots=c(4,2),ylab="SAU Asp_catch (t)",medcol=1,addCI=TRUE)
+  caption <- "The Aspirational catch projections for each SAU."
+  addplot(filen,resdir=resdir,category="ProjSAU",caption)
+  #MatureBiomass
+  filen <- filenametopath(resdir,"proj_matureB_SAU.png")
+  plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
+  plotsau(invar=zoneDP$matureB,glb=glb,plots=c(4,2),ylab="SAU MatureB (t)",medcol=1,addCI=TRUE)
+  caption <- "The mature biomass projections for each SAU."
+  addplot(filen,resdir=resdir,category="ProjSAU",caption)
+  #exploitable biomass
+  filen <- filenametopath(resdir,"proj_exploitB_SAU.png")
+  plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
+  plotsau(invar=zoneDP$exploitB,glb=glb,plots=c(4,2),ylab="SAU ExploitableB (t)",medcol=1,addCI=TRUE)
+  caption <- "The exploitable biomass projections for each SAU."
+  addplot(filen,resdir=resdir,category="ProjSAU",caption)
+  #recruitment
+  filen <- filenametopath(resdir,"proj_recruit_SAU.png")
+  plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
+  plotsau(invar=zoneDP$exploitB,glb=glb,plots=c(4,2),ylab="SAU Recruitment",medcol=1,addCI=TRUE)
+  caption <- "The recruitment projections for each SAU."
+  addplot(filen,resdir=resdir,category="ProjSAU",caption)
+}# end of plotbysau
+
+
