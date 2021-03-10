@@ -2,14 +2,14 @@
 % Please edit documentation in R/dynamics.R
 \name{initiateHS}
 \alias{initiateHS}
-\title{initiateHS runs the HS for the first year}
+\title{initiateHS applies HS to the last years of the historical conditioning}
 \usage{
 initiateHS(zoneDP, zoneCP, exb, inN, acatch, sigmar, sigmab, glb)
 }
 \arguments{
-\item{zoneDP}{the empty dynamics object used in teh projections}
+\item{zoneDP}{the empty dynamics object used in the projections}
 
-\item{zoneCP}{the constnat object after modification for projections}
+\item{zoneCP}{the constant object after modification for projections}
 
 \item{exb}{a vector of exploitable biomass for each population from the last
 year of the conditioning on the fishery or historical fishery data}
@@ -23,7 +23,7 @@ of the HS based on the historical or fishery conditioning data}
 \item{sigmar}{the recruitment variability (sd) to be used in the projections}
 
 \item{sigmab}{the variability (sd) applied to the exploitable biomass
-estimates to introduce a form of implmentation error on the distribution
+estimates to introduce a form of implementation error on the distribution
 of catches among SAU}
 
 \item{glb}{the globals object}
@@ -33,10 +33,10 @@ a revised zoneDP object with the first year filled in for each
     replicate
 }
 \description{
-initiateHS uses the outcome of the conditioning on the fishery
-    to run the HS for the first year. This fills in the first row of each
-    of the variables in the dynamic object for each of the proposed
-    iterations.
+initiateHS uses the last years of fishery conditioning to run
+    the HS for the first year of the projections. This fills in the first
+    row of each of the variables in the dynamic object for each of the
+    proposed iterations.
 }
 \examples{
 print("wait on suitable internal data sets")

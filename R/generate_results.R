@@ -463,7 +463,6 @@ plotproductivity <- function(resdir,product,glb) {
   addplot(filen,resdir=resdir,category="Production",caption)
 } # end of plotproductivity
 
-
 #' @title plotbysau plots a collection of projections by SAU
 #'
 #' @description plotbysau generates and store plots in resir
@@ -472,49 +471,115 @@ plotproductivity <- function(resdir,product,glb) {
 #' @param glb the object containing the gloabl variables
 #' @param resdir the results directory
 #'
-#' @return nothing by it does add 6 plots to resdir
+#' @return adds 6 plots to resdir and returns a list of qauntile for 6
+#'     variables
 #' @export
 #'
 #' @examples
 #' print("wait on suitable data-sets")
 plotbysau <- function(zoneDP,glb.resdir) {
   result <- alltosau(zoneDP,glb)
+  out <- vector("list",6)
+  names(out) <- c("cpue","catch","acatch","matureB","exploitB","recruit")
   #CPUE
   filen <- filenametopath(resdir,"proj_cpue_SAU.png")
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
-  plotsau(invar=result$cesau,glb=glb,plots=c(4,2),ylab="SAU CPUE",medcol=1,addCI=TRUE)
+  CI <- plotsau(invar=result$cesau,glb=glb,plots=c(4,2),ylab="SAU CPUE",
+                medcol=1,addCI=TRUE)
   caption <- "The CPUE projections for each SAU."
   addplot(filen,resdir=resdir,category="ProjSAU",caption)
+  out[[1]] <- CI
   #Catches
   filen <- filenametopath(resdir,"proj_catch_SAU.png")
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
-  plotsau(invar=zoneDP$catsau,glb=glb,plots=c(4,2),ylab="SAU catch (t)",medcol=1,addCI=TRUE)
+  CI <- plotsau(invar=zoneDP$catsau,glb=glb,plots=c(4,2),ylab="SAU catch (t)",
+                medcol=1,addCI=TRUE)
   caption <- "The catch projections for each SAU."
   addplot(filen,resdir=resdir,category="ProjSAU",caption)
+  out[[2]] <- CI
   #Aspirational catches
   filen <- filenametopath(resdir,"proj_aspcatch_SAU.png")
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
-  plotsau(invar=zoneDP$catsau,glb=glb,plots=c(4,2),ylab="SAU Asp_catch (t)",medcol=1,addCI=TRUE)
+  CI <- plotsau(invar=zoneDP$catsau,glb=glb,plots=c(4,2),ylab="SAU Asp_catch (t)",
+                medcol=1,addCI=TRUE)
   caption <- "The Aspirational catch projections for each SAU."
   addplot(filen,resdir=resdir,category="ProjSAU",caption)
+  out[[3]] <- CI
   #MatureBiomass
   filen <- filenametopath(resdir,"proj_matureB_SAU.png")
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
-  plotsau(invar=zoneDP$matureB,glb=glb,plots=c(4,2),ylab="SAU MatureB (t)",medcol=1,addCI=TRUE)
+  CI <- plotsau(invar=zoneDP$matureB,glb=glb,plots=c(4,2),ylab="SAU MatureB (t)",
+                medcol=1,addCI=TRUE)
   caption <- "The mature biomass projections for each SAU."
   addplot(filen,resdir=resdir,category="ProjSAU",caption)
+  out[[4]] <- CI
   #exploitable biomass
   filen <- filenametopath(resdir,"proj_exploitB_SAU.png")
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
-  plotsau(invar=zoneDP$exploitB,glb=glb,plots=c(4,2),ylab="SAU ExploitableB (t)",medcol=1,addCI=TRUE)
+  CI <- plotsau(invar=zoneDP$exploitB,glb=glb,plots=c(4,2),ylab="SAU ExploitableB (t)",medcol=1,addCI=TRUE)
   caption <- "The exploitable biomass projections for each SAU."
   addplot(filen,resdir=resdir,category="ProjSAU",caption)
+  out[[5]] <- CI
   #recruitment
   filen <- filenametopath(resdir,"proj_recruit_SAU.png")
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
-  plotsau(invar=zoneDP$exploitB,glb=glb,plots=c(4,2),ylab="SAU Recruitment",medcol=1,addCI=TRUE)
+  CI <- plotsau(invar=zoneDP$exploitB,glb=glb,plots=c(4,2),ylab="SAU Recruitment",medcol=1,addCI=TRUE)
   caption <- "The recruitment projections for each SAU."
   addplot(filen,resdir=resdir,category="ProjSAU",caption)
+  out[[6]] <- CI
+  return(invisible(out))
 }# end of plotbysau
 
-
+#' @title plotsau generates nSAU plots in one figure for a given variable
+#'
+#' @description plotsau summarizes a single variable from the dynamic object
+#'     produced by the replicate projections by generating nSAU plots in a
+#'     single figure. These are all lineplots in grey (change using col), with
+#'     the median in red (change using medcol).
+#'
+#' @param invar the three dimensional array containing the variable to plot
+#' @param glb the global object
+#' @param plots the number of plots.eg for 8 plots one might put c(4,2)
+#' @param ylab the prefix for the Y labels, which will have the SAU number
+#'     added to it. Default="Catch"
+#' @param xlab The single X label for the bottom of the plot, default="Year"
+#' @param col the colour for the reps replicate projection lines, default="grey"
+#' @param medcol the colour for the median line, default="red", set to 0 or NA
+#'     to avoid adding to the plots.
+#' @param addCI should quantile confidence bounds be included on the plots,
+#'     default=FALSE
+#' @param CIcol if CI are to be included let their colour be this, default=blue
+#' @param CIprobs the CI quantiles. defaults are c(0.05,0.95), the inner 90 perc
+#'
+#' @return invisibly the 5, 50, and 95 percent quantiles by year for each SAU
+#' @export
+#'
+#' @examples
+#' print("wait on appropriate internal data sets")
+plotsau <- function(invar,glb,plots,ylab="Catch",xlab="Year",col="grey",
+                    medcol="red",addCI=FALSE,CIcol="blue",
+                    CIprobs=c(0.05,0.5,0.95)) {
+  parset(plots=plots,byrow=FALSE,margin=c(0.25,0.5,0.1,0.1),outmargin=c(1,0,0,0))
+  nsau <- glb$nSAU
+  label <- glb$saunames
+  projyrs <- dim(invar)[1]
+  yrs <- 1:projyrs
+  reps <- dim(invar)[3]
+  sauCI <- vector("list",nsau)
+  names(sauCI) <- label
+  for (sau in 1:nsau) {  # sau=1
+    ymax <- getmax(invar[,sau,])
+    plot(yrs,invar[,sau,1],type="l",lwd=1,col=col,panel.first = grid(),
+         ylim=c(0,ymax),yaxs="i",ylab=paste0(ylab,"    ",label[sau]),xlab="")
+    for (i in 1:reps) lines(1:projyrs,invar[,sau,i],lwd=1,col=col)
+    CI <- apply(invar[,sau,],1,quantile,probs=CIprobs)
+    lines(yrs,CI[2,],lwd=2,col=medcol)
+    if (addCI) {
+      lines(yrs,CI[1,],lwd=1,col=CIcol)
+      lines(yrs,CI[3,],lwd=1,col=CIcol)
+    }
+    sauCI[[sau]] <- CI
+  }
+  mtext(text=xlab,side=1,line=-0.1,outer=TRUE,cex=1.1)
+  return(invisible(sauCI))
+} # end of plotsau

@@ -2,45 +2,57 @@
 % Please edit documentation in R/projection.R
 \name{addrecvar}
 \alias{addrecvar}
-\title{addrecvar adds recruitment variation to start of generic simulation}
+\title{addrecvar adds recruitment variation to end of conditioning step}
 \usage{
-addrecvar(zoneC, zoneDR, inHt, glb, ctrl, aspcatch, nyrs = 25, reset = TRUE)
+addrecvar(
+  zoneDD,
+  zoneDP,
+  zoneC,
+  glob,
+  condC,
+  ctrl,
+  varyrs,
+  sigR = 1e-08,
+  sigB = 1e-08,
+  lastsigR = 0.3
+)
 }
 \arguments{
-\item{zoneC}{the constant zone object. Its selectivity patterns should be
-altered to reflect the projection conditions using modzoneCSel}
+\item{zoneDD}{the dynamic zone after historical fishery data has been used
+to finalize the conditioning}
 
-\item{zoneDR}{the dynamic zone object expanded to include all replicates,
-using makezoneDR}
+\item{zoneDP}{the empty dynamic zone object ready to receive its first year}
 
-\item{inHt}{the initial harvest strategy that was used to deplete the zone}
+\item{zoneC}{the zone's constants object for each population}
 
-\item{glb}{the globals object}
+\item{glob}{the object containing the global constants}
 
-\item{ctrl}{the ctrl object}
+\item{condC}{the object containing the historical fishery data}
 
-\item{aspcatch}{the aspirational catches for the first year of projection}
+\item{ctrl}{the control object}
 
-\item{nyrs}{defaults to 25, which appears to be enough to produce the
-required variation}
+\item{varyrs}{the number of years at the end of the historical period to
+which recruitment variation is to be added}
 
-\item{reset}{should the first ten rows of the each output be set to the last
-10 rows of the initial variation run. default = TRUE. If FALSE the
-reps trajectories when exposed to recruitment variation are passed out}
+\item{sigR}{the initial recruitment variation default=1e-08}
+
+\item{sigB}{the initial biomass cpuie variation default = 1e-08}
+
+\item{lastsigR}{the recruitment variation to be added to the final varyrs}
 }
 \value{
-a revised zoneDR object with the first row filled with the last row
-    from addrecvar
+an initialized dynamics zone object for the projecitons with the
+    first year populated
 }
 \description{
-addrecvar conducts projyrs of simulation at the same constant
-    harvest rate used to deplete each population to the desired level, only
-    it does this with recruitment variability turned on, which sets up a
-    series of replicates with different starting positions. The final step
-    is to take the final 10 yearly values from each population and replicate
-    and place them in the first ten years of the projection matrices within
-    the zoneDR object
+addrecvar replicates the historical depletion step in zoneDD
+    reps times and copies the first Nyrs - varyrs of values into each
+    replicate. Then it steps through each replicate adding recruitment
+    variation to the dynamics for the last varyrs years. This is so that
+    when the projections begin each replicate will already have recruitment
+    variability fully developed and there will be no time lag on the
+    recruitment and subsequent dynamics.
 }
 \examples{
-print("wait on suitable data")
+print"wait on suitable data-sets")
 }

@@ -14,7 +14,8 @@ plotbysau(zoneDP, glb.resdir)
 \item{resdir}{the results directory}
 }
 \value{
-nothing by it does add 6 plots to resdir
+adds 6 plots to resdir and returns a list of qauntile for 6
+    variables
 }
 \description{
 plotbysau generates and store plots in resir

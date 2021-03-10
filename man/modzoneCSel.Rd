@@ -23,9 +23,8 @@ the zoneC object modified ready for projection
 \description{
 modzoneCSel  changes the selectivity characteristics in zoneC
     which is necessary when making a projection under a different LML.
-    Currently this function is designed to allow only a single LML during any
-    projections. It will obviously need modification if it is desired to
-    explore the option of gradually changing an LML
+    This function is designed to allow multiple LML during any
+    projections.
 }
 \examples{
 print("wait on suitable data")

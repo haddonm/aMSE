@@ -110,58 +110,6 @@ plotproj <- function(invar,varlabel,plotconst,miny=0,
   mtext(varlabel,side=2,line=-0.1,outer=TRUE,cex=1.0,font=7)
 } # end of plotproj
 
-#' @title plotsau generates nSAU plots in one figure for a given variable
-#'
-#' @description plotsau summarizes a single variable from the dynamic object
-#'     produced by the replicate projections by generating nSAU plots in a
-#'     single figure. These are all lineplots in grey (change using col), with
-#'     the median in red (change using medcol).
-#'
-#' @param invar the three dimensional array containing the variable to plot
-#' @param glb the global object
-#' @param plots the number of plots.eg for 8 plots one might put c(4,2)
-#' @param ylab the prefix for the Y labels, which will have the SAU number
-#'     added to it. Default="Catch"
-#' @param xlab The single X label for the bottom of the plot, default="Year"
-#' @param col the colour for the reps replicate projection lines, default="grey"
-#' @param medcol the colour for the median line, default="red", set to 0 or NA
-#'     to avoid adding to the plots.
-#' @param addCI should quantile confidence bounds be included on the plots,
-#'     default=FALSE
-#' @param CIcol if CI are to be included let their colour be this, default=blue
-#' @param CIprobs the CI quantiles. defaults are c(0.05,0.95), the inner 90 perc
-#'
-#' @return invisibly the median line for each SAU
-#' @export
-#'
-#' @examples
-#' print("wait on appropriate internal data sets")
-plotsau <- function(invar,glb,plots,ylab="Catch",xlab="Year",col="grey",
-                    medcol="red",addCI=FALSE,CIcol="blue",CIprobs=c(0.05,0.95)) {
-  parset(plots=plots,byrow=FALSE,margin=c(0.25,0.5,0.1,0.1),outmargin=c(1,0,0,0))
-  nsau <- glb$nSAU
-  label <- glb$saunames
-  projyrs <- dim(invar)[1]
-  yrs <- 1:projyrs
-  reps <- dim(invar)[3]
-  saumedian <- matrix(0,nrow=projyrs,ncol=nsau,dimnames=list(yrs),label)
-  for (sau in 1:nsau) {  # sau=1
-    ymax <- getmax(invar[,sau,])
-    plot(yrs,invar[,sau,1],type="l",lwd=1,col=col,panel.first = grid(),
-         ylim=c(0,ymax),yaxs="i",ylab=paste0(ylab,"    ",label[sau]),xlab="")
-    for (i in 1:reps) lines(1:projyrs,invar[,sau,i],lwd=1,col=col)
-    for (yr in 1:projyrs) saumedian[yr,sau] <- median(invar[yr,sau,])
-    lines(yrs,saumedian[,sau],lwd=2,col=medcol)
-    if (addCI) {
-      CI <- apply(invar[,sau,],1,quantile,probs=CIprobs)
-      lines(yrs,CI[1,],lwd=1,col=CIcol)
-      lines(yrs,CI[2,],lwd=1,col=CIcol)
-    }
-  }
-  mtext(text=xlab,side=1,line=-0.1,outer=TRUE,cex=1.1)
-  return(invisible(saumedian))
-} # end of plotsau
-
 
 #' @title plotzoneproj plots the replicates of a single zone-wide variable
 #'

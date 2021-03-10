@@ -159,15 +159,15 @@ imperr <- function(catchsau,exb,sauindex,sigmab=1e-08) {
   return(popC)
 } # end of imperr
 
-#' @title initiateHS runs the HS for the first year
+#' @title initiateHS applies HS to the last years of the historical conditioning
 #'
-#' @description initiateHS uses the outcome of the conditioning on the fishery
-#'     to run the HS for the first year. This fills in the first row of each
-#'     of the variables in the dynamic object for each of the proposed
-#'     iterations.
+#' @description initiateHS uses the last years of fishery conditioning to run
+#'     the HS for the first year of the projections. This fills in the first
+#'     row of each of the variables in the dynamic object for each of the
+#'     proposed iterations.
 #'
-#' @param zoneDP the empty dynamics object used in teh projections
-#' @param zoneCP the constnat object after modification for projections
+#' @param zoneDP the empty dynamics object used in the projections
+#' @param zoneCP the constant object after modification for projections
 #' @param exb a vector of exploitable biomass for each population from the last
 #'     year of the conditioning on the fishery or historical fishery data
 #' @param inN an array of the numbers-at-length for each population from the
@@ -176,7 +176,7 @@ imperr <- function(catchsau,exb,sauindex,sigmab=1e-08) {
 #'     of the HS based on the historical or fishery conditioning data
 #' @param sigmar the recruitment variability (sd) to be used in the projections
 #' @param sigmab the variability (sd) applied to the exploitable biomass
-#'     estimates to introduce a form of implmentation error on the distribution
+#'     estimates to introduce a form of implementation error on the distribution
 #'     of catches among SAU
 #' @param glb the globals object
 #'

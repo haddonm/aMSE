@@ -391,17 +391,3 @@ targscore <- function(vectce,qnt=0.55,mult=0.1,maxtarg=150.0) { #
 
 
 
-targscoreold <- function(vectce,qnt=0.55,mult=0.1,maxtarg=150.0) { # vectce=arrce[,2];qnt=0.55
-  nyr <- length(vectce)
-  targ <- quantile(vectce,probs=c(qnt),na.rm=TRUE)
-  if (targ > maxtarg) targ <- maxtarg
-  bounds <- round(extendrange(pm,range(pm,na.rm=TRUE),f=mult),2)
-  targval <- vectce - targ
-  targsc <- getscore(targval,mult=mult)
-  ans <- as.matrix(cbind(vectce,targval,targsc))
-  dimnames(ans) <- list(1:length(vectce),c("cpue","targval","targsc"))
-  details <- c(targ,limrp); names(details)=c("target","limit")
-  result <- tail(targsc,1)
-  return(list(result=result,ans=ans,details=details))
-} # end of targscore
-
