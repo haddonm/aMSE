@@ -12,6 +12,7 @@ addrecvar(
   condC,
   ctrl,
   varyrs,
+  multTAC,
   sigR = 1e-08,
   sigB = 1e-08,
   lastsigR = 0.3
@@ -34,6 +35,8 @@ to finalize the conditioning}
 \item{varyrs}{the number of years at the end of the historical period to
 which recruitment variation is to be added}
 
+\item{multTAC}{the TAC multiplication matrix from the HCR}
+
 \item{sigR}{the initial recruitment variation default=1e-08}
 
 \item{sigB}{the initial biomass cpuie variation default = 1e-08}
@@ -54,5 +57,5 @@ addrecvar replicates the historical depletion step in zoneDD
     recruitment and subsequent dynamics.
 }
 \examples{
-print"wait on suitable data-sets")
+print("wait on suitable data-sets")
 }

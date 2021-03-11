@@ -193,7 +193,7 @@ initiateHS <- function(zoneDP,zoneCP,exb,inN,acatch,sigmar,sigmab,glb) {
                         Ncl=glb$Nclass,sauindex=glb$sauindex,movem=glb$move,
                         sigmar=sigmar,sigmab=sigmab)
     dyn <- outy$dyn
-    saudyn <- popcetosauce(dyn["catch",],dyn["cpue",],glb$sauindex)
+    saudyn <- poptosauCE(dyn["catch",],dyn["cpue",],glb$sauindex)
     zoneDP$exploitB[1,,iter] <- dyn["exploitb",]
     zoneDP$matureB[1,,iter] <- dyn["matureb",]
     zoneDP$catch[1,,iter] <- dyn["catch",]

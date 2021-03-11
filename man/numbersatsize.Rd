@@ -4,10 +4,10 @@
 \alias{numbersatsize}
 \title{numbersatsize plots details of the numbers-at-size}
 \usage{
-numbersatsize(resdir, glb, zoneD)
+numbersatsize(rundir, glb, zoneD)
 }
 \arguments{
-\item{resdir}{the results directory, if set to "" then plot is sent to
+\item{rundir}{the results directory, if set to "" then plot is sent to
 the console instead}
 
 \item{glb}{the globals list}

@@ -4,10 +4,10 @@
 \alias{biology_plots}
 \title{biology_plots generates a series of stored plots and tables}
 \usage{
-biology_plots(resdir, glb, zoneC)
+biology_plots(rundir, glb, zoneC)
 }
 \arguments{
-\item{resdir}{the results directory}
+\item{rundir}{the results directory}
 
 \item{glb}{the globals list}
 

@@ -5,7 +5,7 @@
 \title{numbersatsizeSAU plots the numbers-at-size for a given SAU}
 \usage{
 numbersatsizeSAU(
-  resdir,
+  rundir,
   glb,
   zoneC,
   zoneD,
@@ -18,7 +18,7 @@ numbersatsizeSAU(
 )
 }
 \arguments{
-\item{resdir}{the results directory, if set to "" then plot is sent to
+\item{rundir}{the results directory, if set to "" then plot is sent to
 the console instead}
 
 \item{glb}{the globals list}

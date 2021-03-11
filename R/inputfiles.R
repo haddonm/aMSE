@@ -27,7 +27,7 @@
 #'  control <- readctrlfile(yourdir,"testctrl.csv")
 #'  str(control,max.level=1)
 #' }
-ctrlzonetemplate <- function(indir,filename="control.csv") { # indir=resdir; filename="control2.csv"
+ctrlzonetemplate <- function(indir,filename="control.csv") { # indir=rundir; filename="control2.csv"
    filename <- filenametopath(indir,filename)
    cat("DESCRIPTION \n",
        file=filename,append=FALSE)
@@ -492,14 +492,14 @@ read_conddata <- function(filename) {  # filename=filen
 #' @examples
 #' \dontrun{
 #' # this has sinoce been modified and needs updating
-#' resdir <- tempdir()
-#' ctrlzonetemplate(resdir)
-#' datafiletemplate(6,resdir,filename="zone1sau2pop6.csv")
-#' ctrl <- readctrlfile(resdir)
+#' rundir <- tempdir()
+#' ctrlzonetemplate(rundir)
+#' datafiletemplate(6,rundir,filename="zone1sau2pop6.csv")
+#' ctrl <- readctrlfile(rundir)
 #' ctrl
 #' }
 readctrlfile <- function(datadir,infile="control.csv") {
-   # datadir=resdir; infile="control2.csv"
+   # datadir=rundir; infile="control2.csv"
    filenames <- dir(datadir)
    if (length(grep(infile,filenames)) != 1)
       stop(cat(infile," not found in datadir \n"))

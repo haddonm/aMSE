@@ -26,10 +26,10 @@ readctrlfile checks datadir contains the required csv
 \examples{
 \dontrun{
 # this has sinoce been modified and needs updating
-resdir <- tempdir()
-ctrlzonetemplate(resdir)
-datafiletemplate(6,resdir,filename="zone1sau2pop6.csv")
-ctrl <- readctrlfile(resdir)
+rundir <- tempdir()
+ctrlzonetemplate(rundir)
+datafiletemplate(6,rundir,filename="zone1sau2pop6.csv")
+ctrl <- readctrlfile(rundir)
 ctrl
 }
 }

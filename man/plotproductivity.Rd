@@ -4,17 +4,17 @@
 \alias{plotproductivity}
 \title{plotproductivity characterizes each population's yield curve}
 \usage{
-plotproductivity(resdir, product, glb)
+plotproductivity(rundir, product, glb)
 }
 \arguments{
-\item{resdir}{the results directory}
+\item{rundir}{the results directory}
 
 \item{product}{the productivity 3-D array}
 
 \item{glb}{the globals list}
 }
 \value{
-nothing but it does place five png files into resdir
+nothing but it does place five png files into rundir
 }
 \description{
 plotproductivity characterizes each population's yield curve, it

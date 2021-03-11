@@ -28,7 +28,7 @@ getunFished - extracts all data relating to year 1;
 }
 \examples{
 \dontrun{
-  data(zone) # would normally use zone <- makeequilzone(resdir,"control.csv")
+  data(zone) # would normally use zone <- makeequilzone(rundir,"control.csv")
   unfish <- getunFished(zone$zoneC,zone$zoneD,zone$glb)
   str(unfish,max.level=1)
 }

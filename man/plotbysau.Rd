@@ -4,17 +4,17 @@
 \alias{plotbysau}
 \title{plotbysau plots a collection of projections by SAU}
 \usage{
-plotbysau(zoneDP, glb.resdir)
+plotbysau(zoneDP, glb, rundir)
 }
 \arguments{
 \item{zoneDP}{the dynamic object produced by the projections}
 
-\item{glb}{the object containing the gloabl variables}
+\item{glb}{the object containing the global variables}
 
-\item{resdir}{the results directory}
+\item{rundir}{the results directory}
 }
 \value{
-adds 6 plots to resdir and returns a list of qauntile for 6
+adds 6 plots to rundir and returns a list of qauntile for 6
     variables
 }
 \description{

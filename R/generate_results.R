@@ -9,7 +9,7 @@
 #'     addition, it also tabulates the biological properties of each
 #'     population and SAU and the total zone
 #'
-#' @param resdir the results directory
+#' @param rundir the results directory
 #' @param glb the globals list
 #' @param zoneC the zonal constants by population, zoneC
 #'
@@ -18,7 +18,7 @@
 #'
 #' @examples
 #' print("this will be quite long when I get to it")
-biology_plots <- function(resdir, glb, zoneC) {
+biology_plots <- function(rundir, glb, zoneC) {
   mids <- glb$midpts
   numpop <- glb$numpop
   popdef <- getlistvar(zoneC,"popdef")
@@ -28,7 +28,7 @@ biology_plots <- function(resdir, glb, zoneC) {
   # maturation uses zoneC
   matur <- getlistvar(zoneC,"Maturity")
   rownames(matur) <- mids
-  filen <- filenametopath(resdir,"maturity_v_Length_pop.png")
+  filen <- filenametopath(rundir,"maturity_v_Length_pop.png")
   plotprep(width=7,height=4,newdev=FALSE,filename=filen,cex=0.9,
            verbose=FALSE)
   plot(mids,matur[,1],type="l",lwd=2,xlab="Shell Length mm",
@@ -37,12 +37,12 @@ biology_plots <- function(resdir, glb, zoneC) {
   legend("topright",paste0("P",1:numpop),lwd=3,col=c(1:numpop),bty="n",
          cex=1.2)
   caption <- "The maturity vs length for each population."
-  addplot(filen,resdir=resdir,category="Biology",caption)
+  addplot(filen,rundir=rundir,category="Biology",caption)
 
   # weight-at-length using zoneC--------------------------------------
   WtL <- getlistvar(zoneC,"WtL")
   rownames(WtL) <- mids
-  filen <- filenametopath(resdir,"Weight_at_Length_pop.png")
+  filen <- filenametopath(rundir,"Weight_at_Length_pop.png")
   plotprep(width=7,height=4,newdev=FALSE,filename=filen,cex=0.9,
            verbose=FALSE)
   plot(mids,WtL[,1],type="l",lwd=2,xlab="Shell Length mm",
@@ -51,12 +51,12 @@ biology_plots <- function(resdir, glb, zoneC) {
   legend("topleft",paste0("P",1:numpop),lwd=3,col=c(1:numpop),bty="n",cex=1.2)
   caption <- paste0("The weight-at-length for each population. ",
                       "The x-axis is constrained to encompass legal sizes.")
-  addplot(filen,resdir=resdir,category="Biology",caption)
+  addplot(filen,rundir=rundir,category="Biology",caption)
 
   # emergence uses zoneC----------------------------------------------
   emerg <- getlistvar(zoneC,"Emergent")
   rownames(emerg) <- mids
-  filen <- filenametopath(resdir,"Emergence_at_Length_pop.png")
+  filen <- filenametopath(rundir,"Emergence_at_Length_pop.png")
   plotprep(width=7,height=4,newdev=FALSE,filename=filen,cex=0.9,
            verbose=FALSE)
   plot(mids,emerg[,1],type="l",lwd=2,xlab="Shell Length mm",
@@ -64,7 +64,7 @@ biology_plots <- function(resdir, glb, zoneC) {
   for (pop in 2:numpop) lines(mids,emerg[,pop],lwd=2,col=pop)
   legend("topleft",paste0("P",1:numpop),lwd=3,col=c(1:numpop),bty="n",cex=1.2)
   caption <- "The emergence-at-length for each population. The x-axis is constrained to emphasize differences."
-  addplot(filen,resdir=resdir,category="Biology",caption)
+  addplot(filen,rundir=rundir,category="Biology",caption)
   # Tabulate biological properties uses zoneC-------------------------
   rows <- c("SAU","M","R0","B0","ExB0","MSY","MSYDepl","bLML",
             "MaxDL","L50","L95","AvRec","steep")
@@ -101,7 +101,7 @@ biology_plots <- function(resdir, glb, zoneC) {
   res <- round(t(resultpop),3)
   filen <- paste0("zonebiology.csv")
   caption <- "Population Biological Properties."
-  addtable(res,filen,resdir=resdir,category="Tables",caption)
+  addtable(res,filen,rundir=rundir,category="Tables",caption)
   return(invisible(resultpop))
 } # end of biology_plots
 
@@ -116,7 +116,7 @@ biology_plots <- function(resdir, glb, zoneC) {
 #' @param yr the year of the dynamics
 #' @param depl the depletion level of the current n-a-s
 #' @param LML the legal minimum length in teh comparison year
-#' @param resdir the results directory, default = "" leading to no
+#' @param rundir the results directory, default = "" leading to no
 #'     .png file, just a plot to the screen.
 #'
 #' @return invisibly the filename ready for logfilename
@@ -124,12 +124,12 @@ biology_plots <- function(resdir, glb, zoneC) {
 #'
 #' @examples
 #' print("still to be developed")
-#' # unfN=unfN; curN=depN;glb=glb; yr=1; depl=0.3993; LML=132; resdir=resdir
-compzoneN <- function(unfN,curN,glb,yr,depl,LML=0,resdir="") {
+#' # unfN=unfN; curN=depN;glb=glb; yr=1; depl=0.3993; LML=132; rundir=rundir
+compzoneN <- function(unfN,curN,glb,yr,depl,LML=0,rundir="") {
   usecl=5:glb$Nclass
   mids <- glb$midpts
   filen <- paste0("zone_n-at-size_yr",yr,".png")
-  filen <- filenametopath(resdir,filen)
+  filen <- filenametopath(rundir,filen)
   plotprep(width=7, height=4.5, filename=filen,verbose=FALSE)
   plot(mids[usecl],unfN[usecl,"zone"]/1000.0,type="l",lwd=2,
        panel.first=grid(),xlab="Shell Length (mm)",
@@ -147,7 +147,7 @@ compzoneN <- function(unfN,curN,glb,yr,depl,LML=0,resdir="") {
 #'     at-size distribution, omitting the first four size classes to
 #'     avoid the recruitment numbers dominating the plot.
 #'
-#' @param resdir the results directory, if set to "" then plot is sent to
+#' @param rundir the results directory, if set to "" then plot is sent to
 #'     the console instead
 #' @param glb the globals list
 #' @param zoneD the dynamic part of the zone, zoneD
@@ -157,15 +157,15 @@ compzoneN <- function(unfN,curN,glb,yr,depl,LML=0,resdir="") {
 #'
 #' @examples
 #' print("this will be quite long when I get to it")
-numbersatsize <- function(resdir, glb, zoneD) {
+numbersatsize <- function(rundir, glb, zoneD) {
   # some globals
   mids <- glb$midpts
   numpop <- glb$numpop
   # initial numbers-at-size uses zoneD--
   Nt <- zoneD$Nt[,1,]/1000.0
   Ntt <- rowSums(zoneD$Nt[,1,])/1000.0  # totals
-  if (nchar(resdir) > 0) {
-    filen <- file.path(resdir,"Initial_N-at-Size.png")
+  if (nchar(rundir) > 0) {
+    filen <- file.path(rundir,"Initial_N-at-Size.png")
   } else {
     filen <- ""
   }
@@ -180,11 +180,11 @@ numbersatsize <- function(resdir, glb, zoneD) {
   abline(h=0.0,col="darkgrey")
   legend("topright",paste0("P",1:numpop),lwd=3,col=c(1:numpop),bty="n",
          cex=1.2)
-  if (nchar(resdir) > 0) {
+  if (nchar(rundir) > 0) {
     caption <- paste0("The numbers-at-size for the whole zone and for each ",
                       "population separately. The recruitment numbers are",
                       " omitted for clarity.")
-    addplot(filen,resdir=resdir,category="NumSize",caption)
+    addplot(filen,rundir=rundir,category="NumSize",caption)
   }
 } # end of numbersatsize
 
@@ -194,7 +194,7 @@ numbersatsize <- function(resdir, glb, zoneD) {
 #'     at-size distribution for a given SAU, omitting the first four size
 #'     classes to avoid the recruitment numbers dominating the plot.
 #'
-#' @param resdir the results directory, if set to "" then plot is sent to
+#' @param rundir the results directory, if set to "" then plot is sent to
 #'     the console instead
 #' @param glb the globals list
 #' @param zoneC the constant part of the zpne structure
@@ -214,10 +214,10 @@ numbersatsize <- function(resdir, glb, zoneD) {
 #'
 #' @examples
 #' print("this will be quite long when I get to it")
-numbersatsizeSAU <- function(resdir, glb, zoneC, zoneD, sau, yr=1,
+numbersatsizeSAU <- function(rundir, glb, zoneC, zoneD, sau, yr=1,
                              defpar=TRUE, exploit=TRUE, mature=TRUE,
                              filename="Numbers-at-Size_Year1.png") {
-  # some globals resdir=""; glb=glb; zoneD=zoneD; sau=8; defpar=TRUE
+  # some globals rundir=""; glb=glb; zoneD=zoneD; sau=8; defpar=TRUE
   mids <- glb$midpts
   picksau <- which(zoneD$SAU == as.character(sau))
   Nt <- as.matrix(zoneD$Nt[,yr,picksau]/1000.0)
@@ -226,8 +226,8 @@ numbersatsizeSAU <- function(resdir, glb, zoneC, zoneD, sau, yr=1,
   } else {
     Ntt <- Nt
   }
-  if (nchar(resdir) > 0) {
-    filen <- file.path(resdir,filename)
+  if (nchar(rundir) > 0) {
+    filen <- file.path(rundir,filename)
   } else {
     filen <- ""
   }
@@ -242,13 +242,13 @@ numbersatsizeSAU <- function(resdir, glb, zoneC, zoneD, sau, yr=1,
   if (mature)
     lines(mids[5:105],zoneC[[pickzC]]$Maturity[5:105] * Ntt[5:105],col=2,lwd=2)
   legend("topright",legend=as.character(sau),lwd=0,col=0,bty="n",cex=1.2)
-  if (nchar(resdir) > 0) {
+  if (nchar(rundir) > 0) {
     addm <- ""; adde <- ""
     if (mature) addm <- " The red line is mature numbers-at-size. "
     if (exploit) adde <- " The blue line is exploitable numbers-at-size."
     caption <- paste0("The numbers-at-size for the SAU ",sau," the recruitment ",
                       "numbers are omitted for clarity.",addm,adde)
-    addplot(filen,resdir=resdir,category="NumSize",caption)
+    addplot(filen,rundir=rundir,category="NumSize",caption)
   }
 } # end of numbersatsizeSAU
 
@@ -263,18 +263,18 @@ numbersatsizeSAU <- function(resdir, glb, zoneC, zoneD, sau, yr=1,
 #'     of populations by providing the indices of the populations to be
 #'     included. Thus if there were 8 populations the pops=c(1,2,3,8), would
 #'     plot the first three and the last population.
-#' @param resdir the results directory used by makehtml to store plots and
+#' @param rundir the results directory used by makehtml to store plots and
 #'     tables. If set to "", the default, then it plots to the console
 #' @param defpar define the plot parameters. Set to FALSE if using
 #'     plothistcatch to add a plot to a multiple plot
 #'
-#' @return nothing, it adds a plot into resdir and modifies resultTable.csv
+#' @return nothing, it adds a plot into rundir and modifies resultTable.csv
 #' @export
 #'
 #' @examples
 #' print("wait until I have altered the internals data sets")
-plothistcatch <- function(zone1,pops=NULL,resdir="",defpar=TRUE) {
-  # zone1=zone1; pops=c(1,2,3,8); defpar=FALSE;  resdir=resdir
+plothistcatch <- function(zone1,pops=NULL,rundir="",defpar=TRUE) {
+  # zone1=zone1; pops=c(1,2,3,8); defpar=FALSE;  rundir=rundir
   glb <- zone1$globals
   if (length(pops) > 0) {
     histcatch <- as.matrix(zone1$histCatch[,pops])
@@ -292,8 +292,8 @@ plothistcatch <- function(zone1,pops=NULL,resdir="",defpar=TRUE) {
   yearCE <- zone1$yearCE
   yearC <- histyr[,"year"]
   pngfile <- paste0("Historical_Catches_",addlab,".png")
-  if (nchar(resdir) > 0) {
-    filen <- filenametopath(resdir,pngfile)
+  if (nchar(rundir) > 0) {
+    filen <- filenametopath(rundir,pngfile)
   } else { filen <- "" }
   if (defpar)
       plotprep(width=7,height=4,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
@@ -303,9 +303,9 @@ plothistcatch <- function(zone1,pops=NULL,resdir="",defpar=TRUE) {
   if (numpop > 1) for (pop in 2:numpop)
     lines(yearC,histcatch[,pop],lwd=2,col=pop)
   legend("topright",label,lwd=3,col=c(1:numpop),bty="n",cex=1.2)
-  if (nchar(resdir) > 0) {
+  if (nchar(rundir) > 0) {
     caption <- "The historical catch used for conditioning for each population."
-    addplot(filen,resdir=resdir,category="history",caption)
+    addplot(filen,rundir=rundir,category="history",caption)
   }
 } # end of plothistcatch
 
@@ -320,15 +320,15 @@ plothistcatch <- function(zone1,pops=NULL,resdir="",defpar=TRUE) {
 #'     of populations by providing the indices of the populations to be
 #'     included. Thus if there were 8 populations the pops=c(1,2,3,8), would
 #'     plot the first three and the last population.
-#' @param resdir the results directory used by makehtml to store plots and
+#' @param rundir the results directory used by makehtml to store plots and
 #'     tables.
 #'
-#' @return nothing, it adds a plot into resdir and modifies resultTable.csv
+#' @return nothing, it adds a plot into rundir and modifies resultTable.csv
 #' @export
 #'
 #' @examples
 #' print("wait until I have altered the internals data sets")
-plothistCE <- function(zone1,pops=NULL,resdir="") {
+plothistCE <- function(zone1,pops=NULL,rundir="") {
   # zone1=zone1; pops=c(1,2,3,8);
   glb <- zone1$globals
   numpop <- glb$numpop
@@ -342,7 +342,7 @@ plothistCE <- function(zone1,pops=NULL,resdir="") {
   }
   yearCE <- zone1$yearCE
   pngfile <- paste0("Historical_CPUE_",addlab,".png")
-  filen <- filenametopath(resdir,pngfile)
+  filen <- filenametopath(rundir,pngfile)
   plotprep(width=7,height=4,newdev=FALSE,filename=filen,cex=0.9,
            verbose=FALSE)
   ymax <- getmax(histCE)
@@ -353,7 +353,7 @@ plothistCE <- function(zone1,pops=NULL,resdir="") {
   label <- colnames(histCE)
   legend("topright",label,lwd=3,col=c(1:numpop),bty="n",cex=1.2)
   caption <- "The historical CPUE used for conditioning for each population."
-  addplot(filen,resdir=resdir,category="history",caption)
+  addplot(filen,rundir=rundir,category="history",caption)
 } # end of plothistCE
 
 #' @title plotproductivity characterizes each population's yield curve
@@ -361,51 +361,51 @@ plothistCE <- function(zone1,pops=NULL,resdir="") {
 #' @description plotproductivity characterizes each population's yield curve, it
 #'   also describes the total productivity of the zone.
 #'
-#' @param resdir the results directory
+#' @param rundir the results directory
 #' @param product the productivity 3-D array
 #' @param glb the globals list
 #'
-#' @return nothing but it does place five png files into resdir
+#' @return nothing but it does place five png files into rundir
 #' @export
 #'
 #' @examples
 #' print("this will be quite long when I get to it")
-plotproductivity <- function(resdir,product,glb) {
+plotproductivity <- function(rundir,product,glb) {
   # All these plots only use the product array
   xval <- findmsy(product)
   numpop <- glb$numpop
   # Yield vs Spawning biomass --------
-  filen <- filenametopath(resdir,"production_SpB.png")
+  filen <- filenametopath(rundir,"production_SpB.png")
   plotprod(product,xname="MatB",xlab="Spawning Biomass t",
            ylab="Production t",filename = filen,devoff=FALSE)
   caption <- paste0("The production curve relative to each population's ",
                     "spawning biomass. The vertical lines identify the ",
                     "Bmsy values.")
-  addplot(filen,resdir=resdir,category="Production",caption)
+  addplot(filen,rundir=rundir,category="Production",caption)
 
   # Yield vs Annual Harvest Rate
-  filen <- filenametopath(resdir,"production_AnnH.png")
+  filen <- filenametopath(rundir,"production_AnnH.png")
   plotprod(product,xname="AnnH",xlab="Annual Harvest Rate",filename = filen,
            devoff=FALSE)
   caption <- paste0("The production curve relative to the Annual ",
                     "Harvest Rate applied to each population. The ",
                     "vertical lines identify the Hmsy values.")
-  addplot(filen,resdir=resdir,category="Production",caption)
+  addplot(filen,rundir=rundir,category="Production",caption)
 
   # plot of Yield vs population depletion
-  filen <- filenametopath(resdir,"production_Deplet.png")
+  filen <- filenametopath(rundir,"production_Deplet.png")
   plotprod(product,xname="Deplet",xlab="Population Depletion Level",
            filename = filen,devoff=FALSE)
   for (pop in 1:numpop) abline(v=xval[pop,"Deplet"],lwd=2,col=pop)
   caption <- paste0("The production curve relative to the depletion ",
               "level of each population. The vertical lines identify ",
               "the Depletion level giving rise to the MSY.")
-  addplot(filen,resdir=resdir,category="Production",caption)
+  addplot(filen,rundir=rundir,category="Production",caption)
 
   # plot of Yield vs population depletion but constrained to within
   # 0.2 and 0.35 levels, to illustrate nearly flat rpoduction curve
   # and more clearly identify the population depletion at MSY
-  filen <- filenametopath(resdir,"production_Deplet_0.2_0.35.png")
+  filen <- filenametopath(rundir,"production_Deplet_0.2_0.35.png")
   plotprod(product,xname="Deplet",xlab="Population Depletion Level",
            xlimit=c(0.2,0.35),filename = filen,devoff=FALSE)
   for (pop in 1:numpop) abline(v=xval[pop,"Deplet"],lwd=2,col=pop)
@@ -413,7 +413,7 @@ plotproductivity <- function(resdir,product,glb) {
                     "level of each population. Here the x-axis is ",
                     "shortened to clarify the flatness of the production ",
                     "curve about the MSY points.")
-  addplot(filen,resdir=resdir,category="Production",caption)
+  addplot(filen,rundir=rundir,category="Production",caption)
 
   # Now do total production --------------------------------------------
   yield <- rowSums(product[,"Catch",])
@@ -423,7 +423,7 @@ plotproductivity <- function(resdir,product,glb) {
   pickmsy <- which.max(yield)
   maxy <- getmax(yield)
 
-  filen <- filenametopath(resdir,"production_SpB_Total.png")
+  filen <- filenametopath(rundir,"production_SpB_Total.png")
   plotprep(width=7,height=6,newdev=FALSE,filename=filen,verbose=FALSE)
   parset(plots=c(3,2),cex=0.9)
   plot(spb,yield,type="l",lwd=2,col=1,xlab="Spawning Biomass t",
@@ -460,7 +460,7 @@ plotproductivity <- function(resdir,product,glb) {
   caption <- paste0("The production curves for the zone. Also the ",
               "relationships between spawning biomass depletion and ",
               "harvest rate.")
-  addplot(filen,resdir=resdir,category="Production",caption)
+  addplot(filen,rundir=rundir,category="Production",caption)
 } # end of plotproductivity
 
 #' @title plotbysau plots a collection of projections by SAU
@@ -468,64 +468,64 @@ plotproductivity <- function(resdir,product,glb) {
 #' @description plotbysau generates and store plots in resir
 #'
 #' @param zoneDP the dynamic object produced by the projections
-#' @param glb the object containing the gloabl variables
-#' @param resdir the results directory
+#' @param glb the object containing the global variables
+#' @param rundir the results directory
 #'
-#' @return adds 6 plots to resdir and returns a list of qauntile for 6
+#' @return adds 6 plots to rundir and returns a list of qauntile for 6
 #'     variables
 #' @export
 #'
 #' @examples
 #' print("wait on suitable data-sets")
-plotbysau <- function(zoneDP,glb.resdir) {
+plotbysau <- function(zoneDP,glb,rundir) {
   result <- alltosau(zoneDP,glb)
   out <- vector("list",6)
   names(out) <- c("cpue","catch","acatch","matureB","exploitB","recruit")
   #CPUE
-  filen <- filenametopath(resdir,"proj_cpue_SAU.png")
+  filen <- filenametopath(rundir,"proj_cpue_SAU.png")
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
   CI <- plotsau(invar=result$cesau,glb=glb,plots=c(4,2),ylab="SAU CPUE",
                 medcol=1,addCI=TRUE)
   caption <- "The CPUE projections for each SAU."
-  addplot(filen,resdir=resdir,category="ProjSAU",caption)
+  addplot(filen,rundir=rundir,category="ProjSAU",caption)
   out[[1]] <- CI
   #Catches
-  filen <- filenametopath(resdir,"proj_catch_SAU.png")
+  filen <- filenametopath(rundir,"proj_catch_SAU.png")
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
   CI <- plotsau(invar=zoneDP$catsau,glb=glb,plots=c(4,2),ylab="SAU catch (t)",
                 medcol=1,addCI=TRUE)
   caption <- "The catch projections for each SAU."
-  addplot(filen,resdir=resdir,category="ProjSAU",caption)
+  addplot(filen,rundir=rundir,category="ProjSAU",caption)
   out[[2]] <- CI
   #Aspirational catches
-  filen <- filenametopath(resdir,"proj_aspcatch_SAU.png")
+  filen <- filenametopath(rundir,"proj_aspcatch_SAU.png")
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
   CI <- plotsau(invar=zoneDP$catsau,glb=glb,plots=c(4,2),ylab="SAU Asp_catch (t)",
                 medcol=1,addCI=TRUE)
   caption <- "The Aspirational catch projections for each SAU."
-  addplot(filen,resdir=resdir,category="ProjSAU",caption)
+  addplot(filen,rundir=rundir,category="ProjSAU",caption)
   out[[3]] <- CI
   #MatureBiomass
-  filen <- filenametopath(resdir,"proj_matureB_SAU.png")
+  filen <- filenametopath(rundir,"proj_matureB_SAU.png")
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
   CI <- plotsau(invar=zoneDP$matureB,glb=glb,plots=c(4,2),ylab="SAU MatureB (t)",
                 medcol=1,addCI=TRUE)
   caption <- "The mature biomass projections for each SAU."
-  addplot(filen,resdir=resdir,category="ProjSAU",caption)
+  addplot(filen,rundir=rundir,category="ProjSAU",caption)
   out[[4]] <- CI
   #exploitable biomass
-  filen <- filenametopath(resdir,"proj_exploitB_SAU.png")
+  filen <- filenametopath(rundir,"proj_exploitB_SAU.png")
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
   CI <- plotsau(invar=zoneDP$exploitB,glb=glb,plots=c(4,2),ylab="SAU ExploitableB (t)",medcol=1,addCI=TRUE)
   caption <- "The exploitable biomass projections for each SAU."
-  addplot(filen,resdir=resdir,category="ProjSAU",caption)
+  addplot(filen,rundir=rundir,category="ProjSAU",caption)
   out[[5]] <- CI
   #recruitment
-  filen <- filenametopath(resdir,"proj_recruit_SAU.png")
+  filen <- filenametopath(rundir,"proj_recruit_SAU.png")
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
   CI <- plotsau(invar=zoneDP$exploitB,glb=glb,plots=c(4,2),ylab="SAU Recruitment",medcol=1,addCI=TRUE)
   caption <- "The recruitment projections for each SAU."
-  addplot(filen,resdir=resdir,category="ProjSAU",caption)
+  addplot(filen,rundir=rundir,category="ProjSAU",caption)
   out[[6]] <- CI
   return(invisible(out))
 }# end of plotbysau

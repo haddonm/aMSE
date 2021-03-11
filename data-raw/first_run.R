@@ -11,19 +11,19 @@ library(aMSE)
 library(rutilsMH)
 library(makehtml)
 library(knitr)
-# Obviously you should modify the resdir to suit your own computer
+# Obviously you should modify the rundir to suit your own computer
 if (dir.exists("c:/Users/User/DropBox")) {
   ddir <- "c:/Users/User/DropBox/A_code/"
 } else {
   ddir <- "c:/Users/Malcolm/DropBox/A_code/"
 }
-resdir <- paste0(ddir,"aMSEUse/conddata/generic")
-dirExists(resdir,make=TRUE,verbose=TRUE)
-# this should be in resdir, but during development is in data-raw
+rundir <- paste0(ddir,"aMSEUse/conddata/generic")
+dirExists(rundir,make=TRUE,verbose=TRUE)
+# this should be in rundir, but during development is in data-raw
 source(paste0(ddir,"aMSE/data-raw/","TasmanianHS.R"))
 # generate equilibrium zone ----------------------------------------------------
 starttime2 <- (Sys.time())
-zone <- makeequilzone(resdir,"control2.csv",cleanslate = TRUE) # normally would read in a file
+zone <- makeequilzone(rundir,"control2.csv",cleanslate = TRUE) # normally would read in a file
 equiltime <- (Sys.time()); print(equiltime - starttime2)
 # declare main objects ---------------------------------------------------------
 glb <- zone$glb
@@ -35,53 +35,53 @@ zoneC <- zone$zoneC
 zoneD <- zone$zoneD
 product <- zone$product
 # save equil results -----------------------------------------------------------
-# save objects to resdir
-# save(ctrl,file=filenametopath(resdir,"ctrl.RData"))
-# save(glb,file=filenametopath(resdir,"glb.RData"))
-# save(product,file=filenametopath(resdir,"product.RData"))
-# save(zoneC,file=filenametopath(resdir,"zoneC.RData"))
-# save(condC,file=filenametopath(resdir,"condC.RData"))
-biology_plots(resdir, glb, zoneC)
-plotproductivity(resdir,product,glb)
-numbersatsize(resdir, glb, zoneD)
+# save objects to rundir
+# save(ctrl,file=filenametopath(rundir,"ctrl.RData"))
+# save(glb,file=filenametopath(rundir,"glb.RData"))
+# save(product,file=filenametopath(rundir,"product.RData"))
+# save(zoneC,file=filenametopath(rundir,"zoneC.RData"))
+# save(condC,file=filenametopath(rundir,"condC.RData"))
+biology_plots(rundir, glb, zoneC)
+plotproductivity(rundir,product,glb)
+numbersatsize(rundir, glb, zoneD)
 # Condition on Fishery ---------------------------------------------------------
 zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,condC,sigR=1e-08,sigB=1e-08)
 # save conditioned results -----------------------------------------------------
-save(zoneDD,file=filenametopath(resdir,"zoneDD.RData"))
+save(zoneDD,file=filenametopath(rundir,"zoneDD.RData"))
 # Illustrate productivity
 propD <- getzoneprops(zoneC,zoneDD,glb,year=47)
-addtable(round(t(propD),4),"propertyDD.csv",resdir,category="zoneDD",caption=
+addtable(round(t(propD),4),"propertyDD.csv",rundir,category="zoneDD",caption=
            "Properties of zoneD after conditioning on historical catches.")
-addtable(round(t(zoneDD$harvestR[45:47,]),4),"final_harvestR.csv",resdir,
+addtable(round(t(zoneDD$harvestR[45:47,]),4),"final_harvestR.csv",rundir,
          category="zoneDD",caption="Last three years of harvest rate.")
 popdefs <- getlistvar(zone$zoneC,"popdef")
-addtable(round(t(popdefs),3),"popdefs.csv",resdir,category="zoneDD",caption=
+addtable(round(t(popdefs),3),"popdefs.csv",rundir,category="zoneDD",caption=
            "Population specific definitions")
 # Prepare projections ----------------------------------------------------------
 cmcda <- mcdahcr(arrce=condC$histCE,hsargs=hsargs,
                  yearnames=rownames(condC$histCE),saunames=glb$saunames)
 pms <- cmcda$pms
 multTAC <- cmcda$multTAC
-out <- prepareprojection(projC,zoneC,glb,zoneDD,ctrl,multTAC)
-# out <- prepareprojectionnew(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
-#                             zoneDep=zoneDD,ctrl=ctrl,varyrs=6,lastsigR = 0.075)
+#out <- prepareprojection(projC,zoneC,glb,zoneDD,ctrl,multTAC)
+out <- prepareprojectionnew(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
+                            zoneDD=zoneDD,ctrl=ctrl,varyrs=6,lastsigR = 0.2)
 
 zoneDP <- out$zoneDP
 projC <- out$projC
 zoneCP <- out$zoneCP
-#zoneDDR <- out$zoneDDR
+zoneDDR <- out$zoneDDR
 
-save(zoneCP,file=filenametopath(resdir,"zoneCP.RData"))
-save(projC,file=filenametopath(resdir,"projC.RData"))
+save(zoneCP,file=filenametopath(rundir,"zoneCP.RData"))
+save(projC,file=filenametopath(rundir,"projC.RData"))
 
 # do projections ---------------------------------------------------------------
 
 zoneDP <- doTASprojections(ctrl,zoneDP,zoneCP,condC$histCE,glb,mcdahcr,hsargs)
 
-#save(zoneDP,file=filenametopath(resdir,"zoneDP.RData"))
+#save(zoneDP,file=filenametopath(rundir,"zoneDP.RData"))
 
-# save results to resdir -------------------------------------------------------
-out <- plotbysau(zoneDP,glb)
+# save results to rundir -------------------------------------------------------
+out <- plotbysau(zoneDP,glb,rundir)
 
 projtime <- Sys.time()
 print(projtime - starttime)
@@ -90,7 +90,7 @@ print(projtime - starttime)
 replist <- list(starttime=as.character(starttime),endtime=as.character(projtime))
 make_html(
   replist = replist,
-  resdir = resdir,
+  rundir = rundir,
   width = 500,
   openfile = TRUE,
   runnotes = NULL,
@@ -111,7 +111,12 @@ str(zoneDP,max.level = 1)
 
 str(zoneDDR,max.level = 1)
 
-invar <- "cpue"
+
+nsau <- glb$nSAU
+reps <- dim(prerep)[3]
+label <- glb$saunames
+
+invar <- "catch"
 startyr <- 35
 prerep <- poptosau(zoneDDR[[invar]],glb)
 plotprep(width=8, height=8,newdev=FALSE)
@@ -130,7 +135,10 @@ plot(startyr:47,zoneDDR$harvestR[startyr:47,,1],type="l")
 
 cats[startyr:47,,1]/exB[startyr:47,,1]
 
-
+# Combined trajectories ------------------------------------------------------
+invar <- "recruit"
+startyr <- 35
+prerep <- poptosau(zoneDDR[[invar]],glb)
 allrep <- poptosau(zoneDP[[invar]],glb)
 preyrs <- dim(prerep)[1]
 postyrs <- ctrl$projection
@@ -193,14 +201,17 @@ for (sau in 1:8) {
   abline(h=1.0,col=2,lwd=2)
 }
 
-# plot cesau -------------------------------------------------------------------
+# plot zoneDDR cesau -------------------------------------------------------------------
+
+cesau <- zoneDDR$cesau
+
 plotprep(width=8, height=8,newdev=FALSE)
 parset(plots=c(4,2),byrow=FALSE)
 label <- glb$saunames
-yrs <- 2020:2049
+yrs <- 2020:2064
 reps <- 100
 for (sau in 1:8) {
-  ymax <- getmax(zoneDP$cesau[,sau,])
+  ymax <- getmax(zoneDDR$cesau[,sau,])
   plot(yrs,zoneDP$cesau[,sau,1],type="l",lwd=1,col="grey",xlab="",ylab=label[sau],
        ylim=c(0,ymax),panel.first=grid())
   for (i in 2:reps) {

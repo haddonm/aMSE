@@ -28,20 +28,20 @@ library(aMSE)
 library(rutilsMH)
 library(makehtml)
 library(knitr)
-# Obviously you should modify the resdir to suit your own computer
+# Obviously you should modify the rundir to suit your own computer
 if (dir.exists("c:/Users/User/DropBox")) {
   ddir <- "c:/Users/User/DropBox/A_code/"
 } else {
   ddir <- "c:/Users/Malcolm/DropBox/A_code/"
 }
-#resdir <- paste0(ddir,"aMSEUse/conddata/generic2")
-resdir <- paste0(ddir,"aMSEUse/conddata/generic")
-dirExists(resdir,make=TRUE,verbose=TRUE)
-# this should be in resdir, but during development is in data-raw
+#rundir <- paste0(ddir,"aMSEUse/conddata/generic2")
+rundir <- paste0(ddir,"aMSEUse/conddata/generic")
+dirExists(rundir,make=TRUE,verbose=TRUE)
+# this should be in rundir, but during development is in data-raw
 source(paste0(ddir,"aMSE/data-raw/","TasmanianHS.R"))
-# source(paste0(resdir,"/TasmanianHS.R"))
+# source(paste0(rundir,"/TasmanianHS.R"))
 
-zone <- makeequilzone(resdir,"control2.csv") # normally would read in a file
+zone <- makeequilzone(rundir,"control2.csv") # normally would read in a file
 equiltime <- (Sys.time())
 
 
@@ -98,7 +98,7 @@ plotprep(width=7, height=7,newdev=FALSE)
 hist(zoneDP$deplsB[1,,],main="")
 
 #Rprof()
-# this should be in resdir, but during development is in data-raw
+# this should be in rundir, but during development is in data-raw
 
 
 mseproj <- doprojection(zoneC,zoneDP,glb,ctrl,projC$projyrs,applyHS=mcdahcr,
@@ -157,11 +157,11 @@ plotprod(zone$product,xname="MatB",xlab="Spawning Biomass t",
 
 
 # equilibrium zone characterization---------------------------------------------
-# resfile <- setuphtml(resdir)# prepare to save and log results
+# resfile <- setuphtml(rundir)# prepare to save and log results
 #
-# plotproductivity(resdir,product,glb)
-# biology_plots(resdir, glb, zoneC)
-# numbersatsize(resdir, glb, zoneD)
+# plotproductivity(rundir,product,glb)
+# biology_plots(rundir, glb, zoneC)
+# numbersatsize(rundir, glb, zoneD)
 #
 # endtime <- as.character(Sys.time())
 #
@@ -170,8 +170,8 @@ plotprod(zone$product,xname="MatB",xlab="Spawning Biomass t",
 #                    glb=glb,constants=constants)
 # runnotes <- "This is a bare-bones example."
 # # If you unhash this component it will generate a local website inside
-# # resdir and open it so you can see the results so far.
-# make_html(replist=reportlist,resdir=resdir,width=500,
+# # rundir and open it so you can see the results so far.
+# make_html(replist=reportlist,rundir=rundir,width=500,
 #           openfile=TRUE,runnotes=runnotes,verbose=FALSE,
 #           packagename = "aMSE",htmlname="testrun")
 
@@ -184,7 +184,7 @@ plotprod(zone$product,xname="MatB",xlab="Spawning Biomass t",
 # if (projC$HS == "MCDA") {
 #   hsFunc <- doMCDA
 #   mcdafile <- projC$HSdetail
-#   optCE <- MCDAdata(resdir,mcdafile,zone1$SAUnames)
+#   optCE <- MCDAdata(rundir,mcdafile,zone1$SAUnames)
 # }
 #
 #  zoneCP=zoneCP;zoneDP=zoneDR;glob=glb;ctrl=ctrl;projyrs=projC$projyrs;inityrs=projC$inityrs;

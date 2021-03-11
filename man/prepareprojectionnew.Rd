@@ -9,9 +9,10 @@ prepareprojectionnew(
   condC,
   zoneC,
   glb,
-  zoneDep,
+  zoneDD,
   ctrl,
   varyrs,
+  multTAC,
   lastsigR = 0.3
 )
 }
@@ -24,12 +25,14 @@ prepareprojectionnew(
 
 \item{glb}{the global variables}
 
-\item{zoneDep}{the zone after initial depletion}
+\item{zoneDD}{the zone after initial depletion through conditioning on the
+fishery}
 
-\item{ctrl}{the ctrl object for the scenario run
-####param multTAC the TAC multiplication matrix from the HCR}
+\item{ctrl}{the ctrl object for the scenario run}
 
 \item{varyrs}{how many years at the end to add recruitment variation}
+
+\item{multTAC}{the TAC multiplication matrix from the HCR}
 
 \item{lastsigR}{recruitment variation for when it is applied for varyrs}
 }

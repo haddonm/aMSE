@@ -4,7 +4,7 @@
 \alias{plothistCE}
 \title{plothistCE plots the historical cpue used for conditioning}
 \usage{
-plothistCE(zone1, pops = NULL, resdir = "")
+plothistCE(zone1, pops = NULL, rundir = "")
 }
 \arguments{
 \item{zone1}{The zonewide properties as in readzonefile(indir,ctrl$zonefile)}
@@ -14,11 +14,11 @@ of populations by providing the indices of the populations to be
 included. Thus if there were 8 populations the pops=c(1,2,3,8), would
 plot the first three and the last population.}
 
-\item{resdir}{the results directory used by makehtml to store plots and
+\item{rundir}{the results directory used by makehtml to store plots and
 tables.}
 }
 \value{
-nothing, it adds a plot into resdir and modifies resultTable.csv
+nothing, it adds a plot into rundir and modifies resultTable.csv
 }
 \description{
 plothistCE provides a visual representation of the cpue

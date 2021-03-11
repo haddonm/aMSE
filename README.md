@@ -83,95 +83,107 @@ library(aMSE)
 library(rutilsMH)
 library(makehtml)
 library(knitr)
-# Obviously you should modify the resdir to suit your own computer
+# Obviously you should modify the rundir to suit your own computer
 if (dir.exists("c:/Users/User/DropBox")) {
   ddir <- "c:/Users/User/DropBox/A_code/"
 } else {
   ddir <- "c:/Users/Malcolm/DropBox/A_code/"
 }
-resdir <- paste0(ddir,"aMSEUse/conddata/generic")  # data and results directory
-dirExists(resdir,make=TRUE,verbose=TRUE)
+rundir <- paste0(ddir,"aMSEUse/conddata/generic")  # data and results directory
+dirExists(rundir,make=TRUE,verbose=TRUE)
 #> c:/Users/User/DropBox/A_code/aMSEUse/conddata/generic :  exists
 # equilibrium zone -------------------------------------------------------------
 # You now need to ensure that there is, at least, a control.csv, and a 
 # constantsdata.csv file in the data directory plus some other data .csv files
 # depending on how conditioned you want the model to be. Templates for the
 # correct format can be produced using ctrlfiletemplate(), datafiletemplate().
-# In the meantime it is easier to use the included data file "zone".
-data(zone)
-# Of course, usually one would use data files, control.csv and a zone.csv, which is 
-# listed as the datafile within the control.csv. These must be stored in resdir
-# zone <- makeequilzone(resdir,"control2.csv") # normally would read in a file
-    equiltime <- (Sys.time())   # let's change the initial depletion
-    origdepl <-  c(0.30,0.31,0.29,0.32,0.30,0.31,0.29,0.32) 
-zoneDD <- depleteSAU(zone$zoneC,zone$zoneD,zone$glb,origdepl,zone$product,len=12)
-out <- prepareprojection(zone$zone1,zone$zoneC,zone$glb,zoneDD,zone$ctrl)
-  zoneDR <- out$zoneDP
-  projC <- out$projC
-  zoneCP <- out$zoneC
-  midtime <- (Sys.time())
+# 
+# Of course, usually one would use data files, control.csv and a zone.csv, which
+# is listed as the datafile within the control.csv. These must be stored in 
+# rundir. There are example control and data files in the DropBox folder:
+# C:\Users\User\Dropbox\National abalone MSE\aMSE_files. Copy the control2.csv
+# and zonewest.csv into you rundir. Then, assuming yo have the very latest
+# version of aMSE = 5300, the following code should work. Recently both aMSE and
+# makehtml have been altered so that all references to resdir have been changed
+# to rundir, so both packages will need updating. See their respective GitHub
+# readme pages for details.
 
-  glb <- zone$glb
-  ctrl <- zone$ctrl
-  print(equiltime - starttime)
-#> Time difference of 0.07679605 secs
-  print(midtime - equiltime)
-#> Time difference of 3.721049 secs
-  propD <- getzoneprops(zone$zoneC,zoneDD,glb,year=1)
-  # round(propD,3)
-# Do the replicates ------------------------------------------------------------
-  inityr <- zone$zone1$projC$inityrs
-  saunames <- zone$zone1$SAUnames
-  sauindex <- zone$glb$sauindex
-  pyrs <- projC$projyrs + projC$inityr
-  B0 <- tapply(sapply(zone$zoneC,"[[","B0"),sauindex,sum)
-  exB0 <- tapply(sapply(zone$zoneC,"[[","ExB0"),sauindex,sum)
+# TasmanianHS.R should be in rundir, but during development is in data-raw
+source(paste0(ddir,"aMSE/data-raw/","TasmanianHS.R"))
+# generate equilibrium zone ----------------------------------------------------
+starttime2 <- (Sys.time())
+zone <- makeequilzone(rundir,"control2.csv",cleanslate = TRUE) # normally would read in a file
+#> All required files appear to be present 
+#> Files read, now making zone 
+#> matureB Stable 
+#> exploitB Stable 
+#> recruitment Stable 
+#> spawning depletion Stable
+equiltime <- (Sys.time()); print(equiltime - starttime2)
+#> Time difference of 11.93326 secs
+# declare main objects ---------------------------------------------------------
+glb <- zone$glb
+ctrl <- zone$ctrl
+zone1 <- zone$zone1
+projC <- zone1$projC
+condC <- zone1$condC
+zoneC <- zone$zoneC
+zoneD <- zone$zoneD
+product <- zone$product
+# add some tables and plots into rundir
+biology_plots(rundir, glb, zoneC)
+plotproductivity(rundir,product,glb)
+numbersatsize(rundir, glb, zoneD)
+# Condition on Fishery ---------------------------------------------------------
+zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,condC,sigR=1e-08,sigB=1e-08)
+# save conditioned results -----------------------------------------------------
+save(zoneDD,file=filenametopath(rundir,"zoneDD.RData"))
+# Illustrate productivity
+propD <- getzoneprops(zoneC,zoneDD,glb,year=47)
+addtable(round(t(propD),4),"propertyDD.csv",rundir,category="zoneDD",caption=
+           "Properties of zoneD after conditioning on historical catches.")
+addtable(round(t(zoneDD$harvestR[45:47,]),4),"final_harvestR.csv",rundir,
+         category="zoneDD",caption="Last three years of harvest rate.")
+popdefs <- getlistvar(zone$zoneC,"popdef")
+addtable(round(t(popdefs),3),"popdefs.csv",rundir,category="zoneDD",caption=
+           "Population specific definitions")
+# Prepare projections ----------------------------------------------------------
+cmcda <- mcdahcr(arrce=condC$histCE,hsargs=hsargs,
+                 yearnames=rownames(condC$histCE),saunames=glb$saunames)
+pms <- cmcda$pms
+multTAC <- cmcda$multTAC
+#out <- prepareprojection(projC,zoneC,glb,zoneDD,ctrl,multTAC)
+out <- prepareprojectionnew(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
+                            zoneDD=zoneDD,ctrl=ctrl,varyrs=6,
+                            multTAC=multTAC,lastsigR = 0.25)
 
-  midtime <- (Sys.time())
-mseproj <- doprojection(zoneCP,zoneDR,glb,ctrl,projC$projyrs,applyHS=mcdahcr,projC$inityrs)
-sauzoneDP <- asSAU(mseproj,sauindex,saunames,B0,exB0)
-  endtime <- (Sys.time())
-  print(endtime - midtime)
-#> Time difference of 14.77056 secs
-# Now plot some results
-  plotC <- function(nsau,saunames,reps,projyrs,plts=c(4,2)) {
-    return(list(nsau=nsau,saunames=saunames,reps=reps,projyrs=projyrs,plts=plts))
-  }
+zoneDP <- out$zoneDP
+projC <- out$projC
+zoneCP <- out$zoneCP
 
-  saunames <- zone$zone1$SAUnames
-  pyrs <- projC$projyrs + projC$inityr
-  reps <- ctrl$reps
-  label <- "Catches t"
-  yrs <- 1:pyrs
+zoneDP <- doTASprojections(ctrl,zoneDP,zoneCP,condC$histCE,glb,mcdahcr,hsargs)
+# save more plots to rundir ----------------------------------------------------
+out <- plotbysau(zoneDP,glb,rundir)
 
-plotconst <- plotC(nsau=length(saunames),saunames,reps,pyrs,plts=c(4,2))
+projtime <- Sys.time()
+print(projtime - starttime)
+#> Time difference of 39.3571 secs
 
-plotprep(width=7,height=8,newdev=FALSE)
-plotproj(sauzoneDP$cpue,"CPUE",plotconst,vline=projC$inityrs,addqnts=TRUE)
+# make results webpage ---------------------------------------------------------
+replist <- list(starttime=as.character(starttime),endtime=as.character(projtime))
+
+# Unhash the make_html command to generate the results webspage
+# make_html(
+#   replist = replist,
+#   rundir = rundir,
+#   width = 500,
+#   openfile = TRUE,
+#   runnotes = NULL,
+#   verbose = FALSE,
+#   packagename = "aMSE",
+#   htmlname = "aMSE"
+# )
 ```
-
-<img src="man/figures/README-example-1.png" width="100%" />
-
-``` r
-
-plotproj(sauzoneDP$saudeplsB,"Spawning Biomass Depletion",plotconst,vline=projC$inityrs,addqnts=TRUE)
-```
-
-<img src="man/figures/README-example-2.png" width="100%" />
-
-``` r
-
-plotproj(sauzoneDP$recS/1000,"Recruitment '000s",plotconst,vline=projC$inityrs,addqnts=TRUE)
-```
-
-<img src="man/figures/README-example-3.png" width="100%" />
-
-``` r
-
-plotproj(sauzoneDP$catS,"Catches t",plotconst,vline=projC$inityrs,addqnts=TRUE)
-```
-
-<img src="man/figures/README-example-4.png" width="100%" />
 
 See the vignette Running\_aMSE.Rmd for a more detailed example.
 

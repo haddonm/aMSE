@@ -308,7 +308,7 @@ getsum <- function(inmat,index) { # inmat=zoneDD$mature; index=zoneDD$SAU
 #' @export
 #' @examples
 #' \dontrun{
-#'   data(zone) # would normally use zone <- makeequilzone(resdir,"control.csv")
+#'   data(zone) # would normally use zone <- makeequilzone(rundir,"control.csv")
 #'   unfish <- getunFished(zone$zoneC,zone$zoneD,zone$glb)
 #'   str(unfish,max.level=1)
 #' }

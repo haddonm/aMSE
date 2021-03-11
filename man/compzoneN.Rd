@@ -4,7 +4,7 @@
 \alias{compzoneN}
 \title{compzoneN compares numbers-at-size before/after depletion}
 \usage{
-compzoneN(unfN, curN, glb, yr, depl, LML = 0, resdir = "")
+compzoneN(unfN, curN, glb, yr, depl, LML = 0, rundir = "")
 }
 \arguments{
 \item{unfN}{the unfished numbers-at-size from getzoneprops}
@@ -19,7 +19,7 @@ compzoneN(unfN, curN, glb, yr, depl, LML = 0, resdir = "")
 
 \item{LML}{the legal minimum length in teh comparison year}
 
-\item{resdir}{the results directory, default = "" leading to no
+\item{rundir}{the results directory, default = "" leading to no
 .png file, just a plot to the screen.}
 }
 \value{
@@ -31,5 +31,5 @@ compzoneN generates a plot comparing the unfished
 }
 \examples{
 print("still to be developed")
-# unfN=unfN; curN=depN;glb=glb; yr=1; depl=0.3993; LML=132; resdir=resdir
+# unfN=unfN; curN=depN;glb=glb; yr=1; depl=0.3993; LML=132; rundir=rundir
 }

@@ -4,10 +4,10 @@
 \alias{makeequilzone}
 \title{makeequilzone high level function generates equilibrium zone}
 \usage{
-makeequilzone(resdir, ctrlfile = "control.csv", cleanslate = FALSE)
+makeequilzone(rundir, ctrlfile = "control.csv", cleanslate = FALSE)
 }
 \arguments{
-\item{resdir}{the directory containing the data and control csv files. It
+\item{rundir}{the directory containing the data and control csv files. It
 can/will also act to store results in a manner that will allow them
 to be displayed using makehtml.}
 
@@ -16,7 +16,7 @@ the name of the data file that is used to biologically condition the
 numpop populations}
 
 \item{cleanslate}{a boolean determining whether any old results are deleted
-from resdir before starting. Default=FALSE}
+from rundir before starting. Default=FALSE}
 }
 \value{
 a list of zoneC, zoneD, glb, constants, product, ctrl, and zone1
@@ -25,8 +25,8 @@ a list of zoneC, zoneD, glb, constants, product, ctrl, and zone1
 makeequilzone is a high level function that merely hides the
     details of generating the original unfished zone after reading in the
     data files, estimates the productivity, and sets up the results
-    directory, resdir, ready to receive files.
+    directory, rundir, ready to receive files.
 }
 \examples{
-print("wait on datafiles")  #  resdir=resdir; ctrlfile="control2.csv"; cleanslate=FALSE
+print("wait on datafiles")  #  rundir=rundir; ctrlfile="control2.csv"; cleanslate=FALSE
 }

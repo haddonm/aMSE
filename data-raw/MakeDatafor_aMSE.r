@@ -14,8 +14,8 @@ if (dir.exists("c:/Users/User/DropBox")) {
 } else {
   ddir <- "c:/Users/Malcolm/DropBox/A_code/"
 }
-resdir <- paste0(ddir,"aMSEUse/conddata/generic2")
-dirExists(resdir,make=TRUE,verbose=TRUE)
+rundir <- paste0(ddir,"aMSEUse/conddata/generic2")
+dirExists(rundir,make=TRUE,verbose=TRUE)
 
 # equilibrium zone -------------------------------------------------------------
 # You now need to ensure that there is, at least, a control.csv, zone1.csv
@@ -23,9 +23,9 @@ dirExists(resdir,make=TRUE,verbose=TRUE)
 # depending on how conditioned you want the model to be. Templates for the
 # correct format can be produced using ctrlfiletemplate(), datafiletemplate(),
 # and zonefiletemplate.
-zone1 <- readctrlfile(resdir,infile="control.csv")
+zone1 <- readctrlfile(rundir,infile="control.csv")
 ctrl <- zone1$ctrl
-constants <- readdatafile(glb$numpop,resdir,ctrl$datafile)
+constants <- readdatafile(glb$numpop,rundir,ctrl$datafile)
 
 datadir <- "C:/Users/User/Dropbox/A_Code/aMSE/data/"
 
@@ -42,15 +42,15 @@ library(microbenchmark)
 
 datadir <- "./../../rcode2/aMSE/data-raw/"
 # read data files ----------------------------------------------------
-resdir <- "./../../rcode2/aMSEUse/out/run1"
-dirExists(resdir,make=TRUE,verbose=TRUE)
+rundir <- "./../../rcode2/aMSEUse/out/run1"
+dirExists(rundir,make=TRUE,verbose=TRUE)
 # You now need to ensure that there is a control.csv, zone1sau2pop6.csv
 # and zone1.csv file in the data directory
-ctrl <- checkctrldat(resdir)
+ctrl <- checkctrldat(rundir)
 runname <- ctrl$runlabel
-zone1 <- readzonefile(resdir,ctrl$zonefile)
+zone1 <- readzonefile(rundir,ctrl$zonefile)
 glb <- zone1$globals
-constants <- readdatafile(glb$numpop,resdir,ctrl$datafile)
+constants <- readdatafile(glb$numpop,rundir,ctrl$datafile)
 
 out <- setupzone(constants, zone1)
 zoneC <- out$zoneC

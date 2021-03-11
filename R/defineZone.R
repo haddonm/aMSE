@@ -566,38 +566,38 @@ makeabpop <- function(popparam,midpts,projLML) {
 #' @description makeequilzone is a high level function that merely hides the
 #'     details of generating the original unfished zone after reading in the
 #'     data files, estimates the productivity, and sets up the results
-#'     directory, resdir, ready to receive files.
+#'     directory, rundir, ready to receive files.
 #'
-#' @param resdir the directory containing the data and control csv files. It
+#' @param rundir the directory containing the data and control csv files. It
 #'     can/will also act to store results in a manner that will allow them
 #'     to be displayed using makehtml.
 #' @param ctrlfile the main file that controls the particular run. It contains
 #'     the name of the data file that is used to biologically condition the
 #'     numpop populations
 #' @param cleanslate a boolean determining whether any old results are deleted
-#'     from resdir before starting. Default=FALSE
+#'     from rundir before starting. Default=FALSE
 #'
 #' @return a list of zoneC, zoneD, glb, constants, product, ctrl, and zone1
 #' @export
 #'
 #' @examples
-#' print("wait on datafiles")  #  resdir=resdir; ctrlfile="control2.csv"; cleanslate=FALSE
-makeequilzone <- function(resdir,ctrlfile="control.csv",cleanslate=FALSE) {
-  zone1 <- readctrlfile(resdir,infile=ctrlfile)
+#' print("wait on datafiles")  #  rundir=rundir; ctrlfile="control2.csv"; cleanslate=FALSE
+makeequilzone <- function(rundir,ctrlfile="control.csv",cleanslate=FALSE) {
+  zone1 <- readctrlfile(rundir,infile=ctrlfile)
   ctrl <- zone1$ctrl
   glb <- zone1$globals     # glb without the movement matrix
-  constants <- readdatafile(glb$numpop,resdir,ctrl$datafile)
+  constants <- readdatafile(glb$numpop,rundir,ctrl$datafile)
   cat("Files read, now making zone \n")
   out <- setupzone(constants,zone1) # make operating model
   zoneC <- out$zoneC
   zoneD <- out$zoneD
   glb <- out$glb             # glb now has the movement matrix
-  product <- out$product     # important bits usually saved in resdir
+  product <- out$product     # important bits usually saved in rundir
   zone1$globals <- glb
   # did the larval dispersal level disturb the equilibrium?
   zoneD <- testequil(zoneC,zoneD,glb)
   zoneC <- resetexB0(zoneC,zoneD) # rescale exploitB to avexplB after dynamics
-  setuphtml(resdir,cleanslate=cleanslate)
+  setuphtml(rundir,cleanslate=cleanslate)
   equilzone <- list(zoneC=zoneC,zoneD=zoneD,glb=glb,constants=constants,
                     product=product,ctrl=ctrl,zone1=zone1)
   return(equilzone)
@@ -775,7 +775,9 @@ makezone <- function(glob,zoneC) { #glob=glb; zoneC=zoneC;
     deplSpB[1,pop] <- 1.0
     Recruit[1,pop] <- recr[1]
     qcalc <- as.numeric(zoneC[[pop]]$popdef["MaxCE"])
-    zoneC[[pop]]$popq <- qcalc/ExplB[1,pop]
+    zoneC[[pop]]$popq <- qcalc/ExplB[1,pop]   # Need to implement non-linearity
+    # can use the standard lambda model, but also an asymmetric logistic
+    # to capture the tbalance between search and handling time.
     cpue[1,pop] <- 1000.0 * zoneC[[pop]]$popq * ExplB[1,pop]
   }
   ans <- list(SAU=SAU,matureB=MatB,exploitB=ExplB,catch=Catch,

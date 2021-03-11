@@ -15,12 +15,9 @@ prepareprojection(projC, zoneC, glb, zoneDep, ctrl, multTAC)
 
 \item{zoneDep}{the zone after initial depletion}
 
-\item{ctrl}{the ctrl object for the scenario run
-####param multTAC the TAC multiplication matrix from the HCR}
+\item{ctrl}{the ctrl object for the scenario run}
 
-\item{varyrs}{how many years at the end to add recruitment variation}
-
-\item{lastsigR}{recruitment variation for when it is applied for varyrs}
+\item{multTAC}{the TAC multiplication matrix from the HCR}
 }
 \value{
 a list of the dynamic zone object as a list of arrays of projyrs x
