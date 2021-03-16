@@ -52,7 +52,7 @@ save(zoneDD,file=filenametopath(rundir,"zoneDD.RData"))
 propD <- getzoneprops(zoneC,zoneDD,glb,year=47)
 addtable(round(t(propD),4),"propertyDD.csv",rundir,category="zoneDD",caption=
            "Properties of zoneD after conditioning on historical catches.")
-addtable(round(t(zoneDD$harvestR[45:47,]),4),"final_harvestR.csv",rundir,
+addtable(round(t(zoneDD$harvestR[40:47,]),4),"final_harvestR.csv",rundir,
          category="zoneDD",caption="Last three years of harvest rate.")
 popdefs <- getlistvar(zone$zoneC,"popdef")
 addtable(round(t(popdefs),3),"popdefs.csv",rundir,category="zoneDD",caption=
@@ -64,7 +64,8 @@ pms <- cmcda$pms
 multTAC <- cmcda$multTAC
 #out <- prepareprojection(projC,zoneC,glb,zoneDD,ctrl,multTAC)
 out <- prepareprojectionnew(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
-                            zoneDD=zoneDD,ctrl=ctrl,varyrs=6,lastsigR = 0.2)
+                            multTAC=multTAC,zoneDD=zoneDD,ctrl=ctrl,varyrs=6,
+                            lastsigR = ctrl$withsigR)
 
 zoneDP <- out$zoneDP
 projC <- out$projC

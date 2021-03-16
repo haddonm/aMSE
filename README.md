@@ -91,7 +91,7 @@ if (dir.exists("c:/Users/User/DropBox")) {
 }
 rundir <- paste0(ddir,"aMSEUse/conddata/generic")  # data and results directory
 dirExists(rundir,make=TRUE,verbose=TRUE)
-#> c:/Users/User/DropBox/A_code/aMSEUse/conddata/generic :  exists
+#> c:/Users/Malcolm/DropBox/A_code/aMSEUse/conddata/generic :  exists
 # equilibrium zone -------------------------------------------------------------
 # You now need to ensure that there is, at least, a control.csv, and a 
 # constantsdata.csv file in the data directory plus some other data .csv files
@@ -120,7 +120,7 @@ zone <- makeequilzone(rundir,"control2.csv",cleanslate = TRUE) # normally would 
 #> recruitment Stable 
 #> spawning depletion Stable
 equiltime <- (Sys.time()); print(equiltime - starttime2)
-#> Time difference of 11.93326 secs
+#> Time difference of 15.80114 secs
 # declare main objects ---------------------------------------------------------
 glb <- zone$glb
 ctrl <- zone$ctrl
@@ -154,12 +154,13 @@ pms <- cmcda$pms
 multTAC <- cmcda$multTAC
 #out <- prepareprojection(projC,zoneC,glb,zoneDD,ctrl,multTAC)
 out <- prepareprojectionnew(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
-                            zoneDD=zoneDD,ctrl=ctrl,varyrs=6,
+                            zoneDD=zoneDD,ctrl=ctrl,varyrs=8,
                             multTAC=multTAC,lastsigR = 0.25)
 
 zoneDP <- out$zoneDP
 projC <- out$projC
 zoneCP <- out$zoneCP
+zoneDDR <- out$zoneDDR
 
 zoneDP <- doTASprojections(ctrl,zoneDP,zoneCP,condC$histCE,glb,mcdahcr,hsargs)
 # save more plots to rundir ----------------------------------------------------
@@ -167,7 +168,7 @@ out <- plotbysau(zoneDP,glb,rundir)
 
 projtime <- Sys.time()
 print(projtime - starttime)
-#> Time difference of 39.3571 secs
+#> Time difference of 1.0881 mins
 
 # make results webpage ---------------------------------------------------------
 replist <- list(starttime=as.character(starttime),endtime=as.character(projtime))
@@ -184,6 +185,51 @@ replist <- list(starttime=as.character(starttime),endtime=as.character(projtime)
 #   htmlname = "aMSE"
 # )
 ```
+
+After running the whole, even if you do not generate the results
+webpage, you could also try:
+
+``` r
+B0 <- getvar(zoneC,"B0")
+ExB0 <- getvar(zoneC,"ExB0")
+
+zoneDsau <- zonetosau(zoneDDR,glb,B0,ExB0)
+zonePsau <- zonetosau(zoneDP,glb,B0,ExB0)
+
+nsau <- glb$nSAU
+label <- glb$saunames
+CIprobs <- c(0.05,0.5,0.95)
+sauCI <- vector("list",nsau)
+postyrs <- ctrl$projection
+startyr <- 40
+
+invar <- "cpue"
+prerep <- zoneDsau[[invar]]
+allrep <- zonePsau[[invar]]
+preyrs <- dim(prerep)[1]
+allyrs <- preyrs + postyrs
+reps <- dim(prerep)[3]
+
+plotprep(width=8, height=8,newdev=FALSE)
+parset(plots=c(4,2))
+for (sau in 1:nsau) {
+  ymax <- getmax(rbind(prerep[startyr:preyrs,sau,],allrep[,sau,]))
+  traj <- c(prerep[startyr:preyrs,sau,1],allrep[,sau,1])
+  plot(startyr:allyrs,traj,type="l",lwd=1,col="grey",panel.first=grid(),
+       ylab=paste0(invar,"  ",label[sau]),ylim=c(0,ymax))
+  for (i in 2:reps)
+    lines(startyr:allyrs,c(prerep[startyr:preyrs,sau,i],allrep[,sau,i]),lwd=1,col="grey")
+  CI <- apply(allrep[,sau,],1,quantile,probs=CIprobs)
+  lines((preyrs+1):allyrs,CI[2,],lwd=2,col=4)
+  lines((preyrs+1):allyrs,CI[1,],lwd=1,col=2)
+  lines((preyrs+1):allyrs,CI[3,],lwd=1,col=2)
+  sauCI[[sau]] <- CI
+  abline(v=(preyrs+0.5),col=2)
+ if (invar == "cpue") abline(h=150,col=2)
+}
+```
+
+<img src="man/figures/README-combined_plot-1.png" width="100%" />
 
 See the vignette Running\_aMSE.Rmd for a more detailed example.
 

@@ -165,3 +165,70 @@ wtedmean <- function(x,wts) {
   return(ans)
 } # end of wtedmean
 
+#' @title zonetosau translates the zonexpop objects to zonexsau objects
+#'
+#' @description zonetosau combines the dynamic results for each variable so
+#'     that results by population become results by SAU. matureB, exploitB,
+#'     catch, recruit, catchN, and Nt are simple summations of the totals for
+#'     each population into their respective SAU. The harvest rate would be
+#'     end of year or beginning of year estimates derived from dividing the
+#'     catchxsau by the exploitable biomass x sau. Similarly the deplsB and
+#'     depleB are the end of year matureB and exploitB divided by their
+#'     respective unfished estimated by SAU obtained using getvar(zoneC,"B0").
+#'
+#' @param inzone one of the zone dynamics objects made up of populations
+#' @param glb the object containng the global constants
+#' @param B0 the estimate B0 for each population use getvar(zoneC,"B0")
+#' @param ExB0 the estimate ExB0 for each population use getvar(zoneC,"ExB0")
+#'
+#' @return a list of dynamics variables by SAU
+#' @export
+#'
+#' @examples
+#' print("wait on suitable internal data sets ")
+zonetosau <- function(inzone,glb, B0, ExB0) { # inzone=zoneDP; glb=glb
+  nsau <- glb$nSAU
+  sauindex <- glb$sauindex
+  saunames <- glb$saunames
+  N <- glb$Nclass
+  invar <- inzone$matureB
+  nyrs <- dim(invar)[1]
+  reps <- dim(invar)[3]
+  sauB0 <- tapply(B0,sauindex,sum)
+  sauExB0 <- tapply(ExB0,sauindex,sum)
+  matureB <- poptosau(invar,glb)
+  exploitB <- poptosau(inzone$exploitB,glb)
+  recruit <- poptosau(inzone$recruit,glb)
+  catchN <- array(data=0,dim=c(N,nyrs,nsau,reps), # define some arrays
+                  dimnames=list(glb$midpts,1:nyrs,saunames,1:reps))
+  Nt <- array(data=0,dim=c(N,nyrs,nsau,reps),
+              dimnames=list(glb$midpts,1:nyrs,saunames,1:reps))
+  catch <- inzone$acatch
+  cpue <- catch
+  harvestR <- catch
+  deplsB <- catch
+  depleB <- catch
+  popcat <- inzone$catch
+  popce <- inzone$cpue
+  for (iter in 1:reps) {
+    for (yr in 1:nyrs) {
+      saudyn <- poptosauCE(popcat[yr,,iter],popce[yr,,iter],sauindex)
+      cpue[yr,,iter] <- saudyn$saucpue
+      catch[yr,,iter] <- saudyn$saucatch
+      deplsB[yr,,iter] <- matureB[yr,,iter]/sauB0
+      depleB[yr,,iter] <- exploitB[yr,,iter]/sauExB0
+      for (sau in 1:nsau) { #  sau = 1
+        pick <- which(sauindex %in% sau)
+        catchN[,yr,sau,iter] <- rowSums(inzone$catchN[,yr,pick,iter])
+        Nt[,yr,sau,iter] <- rowSums(inzone$Nt[,yr,pick,iter])
+      }
+    }
+    harvestR[,,iter] <- catch[,,iter]/exploitB[,,iter]
+  }
+  outsau <- list(matureB=matureB,exploitB=exploitB,catch=catch,
+                 acatch=inzone$acatch,harvestR=harvestR,cpue=cpue,
+                 recruit=recruit,deplsB=deplsB,depleB=depleB,
+                 catchN=catchN,Nt=Nt)
+  return(outsau)
+} # end of zonetosau
+

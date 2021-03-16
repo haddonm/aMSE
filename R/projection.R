@@ -338,6 +338,7 @@ doTASprojections <- function(ctrl,zoneDP,zoneCP,histCE,glb,mcdahcr,hsargs) {
 makezoneDP <- function(projyr,iter,glb) {
   numpop <- glb$numpop
   nSAU <- glb$nSAU
+  saunames <- glb$saunames
   N <- glb$Nclass
   SAU <- glb$SAUpop
   namedims <- list(1:projyr,1:numpop,1:iter)
@@ -346,13 +347,13 @@ makezoneDP <- function(projyr,iter,glb) {
   ExplB <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
   catch <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
   acatch <- array(0,dim=c(projyr,nSAU,iter),
-                  dimnames=list(1:projyr,1:nSAU,1:iter)) #aspirational catches
+                  dimnames=list(1:projyr,saunames,1:iter)) #aspirational catches
   harvest <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
   cpue <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
   cesau <- array(0,dim=c(projyr,nSAU,iter),
-                 dimnames=list(1:projyr,1:nSAU,1:iter))
+                 dimnames=list(1:projyr,saunames,1:iter))
   catsau <- array(0,dim=c(projyr,nSAU,iter),
-                  dimnames=list(1:projyr,1:nSAU,1:iter))
+                  dimnames=list(1:projyr,saunames,1:iter))
   recruit <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
   deplSpB <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
   deplExB <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
