@@ -508,6 +508,7 @@ readctrlfile <- function(datadir,infile="control.csv") {
    begin <- grep("START",indat) + 1
    runlabel <- getStr(indat[begin],1)
    datafile <- getStr(indat[begin+1],1)
+   bysau <- getsingleNum("bysau",indat)
    batch <- getsingleNum("batch",indat)
    reps <- getsingleNum("replicates",indat)
    withsigR <- getsingleNum("withsigR",indat)
@@ -518,7 +519,6 @@ readctrlfile <- function(datadir,infile="control.csv") {
       stop("population data file not found \n")
    cat("All required files appear to be present \n")
    # Now read zone data
-   context <- "control_file"
    nSAU <-  getsingleNum("nSAU",indat) # number of spatial management units
    begin <- grep("SAUpop",indat)
    SAUpop <-  getConst(indat[begin],nSAU) # how many populations per SAU
@@ -626,10 +626,10 @@ readctrlfile <- function(datadir,infile="control.csv") {
    projC <- list(projLML=projLML,HS=HS,HSdetail=HSdetail,projyrs=projyrs,
                  inityrs=inityrs,Sel=NULL,SelWt=NULL,histCE=histCE)
    outctrl <- list(runlabel,datafile,batch,reps,randomseed,randomseedP,
-                   withsigR,withsigB,withsigCE,catches,projyrs)
+                   withsigR,withsigB,withsigCE,catches,projyrs,bysau)
    names(outctrl) <- c("runlabel","datafile","batch","reps","randseed",
                        "randseedP","withsigR","withsigB","withsigCE",
-                       "catches","projection")
+                       "catches","projection","bysau")
    globals <- list(numpop=numpop, nSAU=nSAU, midpts=midpts,
                    Nclass=Nclass, Nyrs=Nyrs,larvdisp=larvdisp)
    totans <- list(SAUnames,SAUpop,minc,cw,larvdisp,randomseed,
@@ -765,6 +765,79 @@ readhcrfile <- function(infile) {  # infile <- "C:/A_CSIRO/Rcode/AbMSERun/ctrl_w
                        "withsigCE")
    return(outctrl)
 } # end of readhcrfile
+
+#' @title readsaudatafile generates the constants matrix from sau data
+#'
+#' @description readsaudatafile uses data described at the SAU level to make
+#'     the constants file, which is then used to generate the popdefs matrix
+#'     containing the specific values. This change from explicitly defining
+#'     each population has been implemented to simplify the conditioning of
+#'     each operating model.
+#'
+#' @param rundir the directory in which the data file is to be found. This will
+#'     usually be the rundir for the scenario run
+#' @param infile the name of the specific datafile used.
+#'
+#' @return the constants matrix with values for each population
+#' @export
+#'
+#' @examples
+#' print("wait on suitable data sets")
+readsaudatafile <- function(rundir,infile) {  # rundir=rundir; infile=ctrl$datafile
+   filename <- filenametopath(rundir,infile)
+   indat <- readLines(filename)   # reads the whole file as character strings
+   nsau <- getsingleNum("nsau",indat)
+   saupop <- getConst(indat[grep("saupop",indat)],nsau)
+   numpop <- sum(saupop)
+   saunames <- getConst(indat[grep("saunames",indat)],nsau)
+   initdepl <- getConst(indat[grep("initdepl",indat)],nsau)
+   begin <- grep("VARS",indat)
+   npar <- getConst(indat[begin],1)
+   rows <- c("DLMax","sMaxDL","L50","sL50","L50inc","sL50inc","SigMax",
+             "sSigMax","LML","Wtb","sWtb","Wtbtoa","sWtbtoa","Me","sMe",
+             "AvRec","sAvRec","defsteep","sdefsteep","L50C","sL50C",
+             "deltaC","sdeltaC","MaxCEpars","sMaxCEpars","selL50p",
+             "selL95p","SaMa","L50Mat","sL50Mat")
+   numrow <- length(rows)
+   ans <- matrix(0,nrow=numrow,ncol=nsau)
+   begin <- begin + 1
+   for (i in 1:npar) {
+      ans[i,] <- getConst(indat[begin],nsau)
+      begin <- begin + 1
+   } # completed filling ans matrix
+   rownames(ans) <- rows
+   colnames(ans) <- saunames
+   poprec <- matrix(0,nrow=numpop,ncol=3,
+                    dimnames=list(1:numpop,c("sau","pop","prec")))
+   begin <- grep("propREC",indat) + 2
+   for (i in 1:numpop) {
+      poprec[i,] <- getConst(indat[begin],nb=3,index=1)
+      begin <- begin + 1
+   }
+   pop <- 1
+   sauindex <- numeric(numpop); names(sauindex) <- poprec[,"sau"]
+   for (i in 1:nsau) {
+      npop <- saupop[i]
+      for (j in 1:npop) {
+         sauindex[pop] <- i
+         pop <- pop + 1
+      }
+   }
+   outrows <- c("SAU",rows)
+   numrow <- length(outrows)
+   consts <- matrix(0,nrow=numrow,ncol=numpop,
+                    dimnames=list(outrows,poprec[,"pop"]))
+   consts["SAU",] <- poprec[,"sau"]
+   for (index in 1:npar) { # index=16
+      vect <- ans[rows[index],]
+      if (rows[index] == "AvRec") {
+         consts[rows[index],] <- log(vect[sauindex] * poprec[,"prec"])
+      } else {
+         consts[rows[index],] <- vect[sauindex]
+      }
+   }
+   return(consts)
+} # end of readsaudatafile
 
 #' @title replaceVar replaces values of a variable in the input datafile
 #'

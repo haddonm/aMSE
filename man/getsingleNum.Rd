@@ -4,33 +4,25 @@
 \alias{getsingleNum}
 \title{getsingleNum find a line of text and extracts a single number}
 \usage{
-getsingleNum(varname, intxt, context = "")
+getsingleNum(varname, intxt)
 }
 \arguments{
 \item{varname}{the name of the variable to get from intxt}
 
 \item{intxt}{text to be parsed, usually obtained using readLines}
-
-\item{context}{the function name within which getsingleNum is
-being used, defaults to empty string}
 }
 \value{
-a single number
+a single number or, if no value is in the data file a NULL
 }
 \description{
-getsingleNum uses grep to fine an input line. The
-    variable 'context' is used to identify within which function
-    getsingleNum is being called. This can then be used in a
-    the stop function if grep fails to find the 'varname' inside the
-    'intxt', which is usually obtained using readLines.
+getsingleNum uses grep to find an input line. If the variable
+    being searched for fails then NULL is returned
 }
 \examples{
 \dontrun{
- # Not exported, prefix with aMSE:::
- context = "Function Example"
  txtlines <- c("replicates, 100","Some_other_text, 52")
- getsingleNum("replicates",txtlines,context=context)
- getsingleNum("eeplicates",txtlines,context=context)
- getsingleNum("other",txtlines,context=context)
+ getsingleNum("replicates",txtlines)
+ getsingleNum("eeplicates",txtlines)
+ getsingleNum("other",txtlines)
 }
 }

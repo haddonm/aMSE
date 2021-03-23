@@ -41,5 +41,5 @@ modzoneC runs the doproduction function so it can then
   zoneD <- ans$zoneD
   ans2 <- modzoneC(zoneC,zoneD,glb)
   str(ans2,max.level=2)
-}   # zoneC=zoneC; zoneD=zoneD; glob=glb; lowlim=0.0;uplim=0.4;inc=0.005
+}   # zoneC=zoneC; zoneD=zoneD; glob=glb; lowlim=0.0;uplim=0.4;inc=0.01
 }

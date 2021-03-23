@@ -81,7 +81,7 @@ definepops <- function(inSAU,inSAUindex,const,glob) {
   popdefs <- matrix(0,nrow=numpop,ncol=length(columns),
                     dimnames=list(1:numpop,columns))
   popdefs[,"Nyrs"] <- rep(Nyrs,numpop) # Num Years - why is this here?
-  for (pop in 1:numpop) {  # blk=2
+  for (pop in 1:numpop) {  # pop=1
     popdefs[pop,"Me"] <- rnorm(1,mean=const["Me",pop],
                                sd=const["sMe",pop])
     popdefs[pop,"DLMax"] <- rnorm(1,mean=const["DLMax",pop],
@@ -226,7 +226,7 @@ dodepletion <- function(zoneC,zoneD,glob,depl,product,len=15) {
 #' @export
 #'
 #' @examples
-#' print("wait")
+#' print("wait") #  zoneC=zoneC; zoneD=zoneD; glob=glb; lowlim=0.0;uplim=0.4;inc=0.01
 doproduction <- function(zoneC,zoneD,glob,
                          lowlim=0.0,uplim=0.35,inc=0.005) {
   numpop <- glob$numpop
@@ -445,7 +445,7 @@ findmsy <- function(product) {  # product=production
   label <- c(colnames(product),"index")
   xval <- matrix(0,nrow=numpop,ncol=length(label),
                  dimnames=list(1:numpop,label))
-  for (pop in 1:numpop) {
+  for (pop in 1:numpop) { # pop=1
     pick <- which.max(catch[,pop])
     xval[pop,] <- c(product[pick,,pop],pick)
   }
@@ -586,7 +586,13 @@ makeequilzone <- function(rundir,ctrlfile="control.csv",cleanslate=FALSE) {
   zone1 <- readctrlfile(rundir,infile=ctrlfile)
   ctrl <- zone1$ctrl
   glb <- zone1$globals     # glb without the movement matrix
-  constants <- readdatafile(glb$numpop,rundir,ctrl$datafile)
+  bysau <- ctrl$bysau
+  if (is.null(bysau)) bysau <- 0
+  if (bysau) {
+     constants <- readsaudatafile(rundir,ctrl$datafile)
+  } else {
+    constants <- readdatafile(glb$numpop,rundir,ctrl$datafile)
+  }
   cat("Files read, now making zone \n")
   out <- setupzone(constants,zone1) # make operating model
   zoneC <- out$zoneC
@@ -843,7 +849,7 @@ maturity <- function(ina,inb,lens) {
 #'   zoneD <- ans$zoneD
 #'   ans2 <- modzoneC(zoneC,zoneD,glb)
 #'   str(ans2,max.level=2)
-#' }   # zoneC=zoneC; zoneD=zoneD; glob=glb; lowlim=0.0;uplim=0.4;inc=0.005
+#' }   # zoneC=zoneC; zoneD=zoneD; glob=glb; lowlim=0.0;uplim=0.4;inc=0.01
 modzoneC <- function(zoneC,zoneD,glob,lowlim=0.0,uplim=0.4,inc=0.005) {
   numpop <- glob$numpop
   production <- doproduction(zoneC=zoneC,zoneD=zoneD,glob=glob,
@@ -1001,13 +1007,14 @@ resetexB0 <- function(zoneC,zoneD) {
 #' str(glb)
 #' }
 setupzone <- function(constants,zone1,uplim=0.4,inc=0.005) {
-  # constants=zone$constants; zone1=zone$zone1; uplim=0.4; inc=0.005
+  # constants=constants; zone1=zone1; uplim=0.4; inc=0.01
   ans <- makezoneC(zone1,constants) # classical equilibrium
   zoneC <- ans$zoneC
   glb <- ans$glb
   ans <- makezone(glob=glb,zoneC=zoneC) # now make zoneD
   zoneC <- ans$zoneC  # zone constants
   zoneD <- ans$zoneD  # zone dynamics
+  cat("Now estimating population productivity \n")
   ans <- modzoneC(zoneC=zoneC,zoneD=zoneD,glob=glb,uplim=uplim,inc=inc)
   zoneC <- ans$zoneC  # zone constants
   product <- ans$product  # productivity by population

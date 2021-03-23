@@ -1,8 +1,6 @@
 ## aMSE Recent Activity
 
-* Added a `NEWS.md` file to track/log the development of the package.
-
-
+* 22/03/2021 0.0.0.4500 Added the option of using an SAU based data file for reading in the biological properties of the zone; this simplifies the conditioning, especially of the recruitment levels by population.
 
 * 17/03/2021 0.0.0.5000 Well behind in this documentation. The MSE now operates successfully, with the README page on GitHub providing a worked example. The latest versions of aMSE, makehtml, and rutilsMH, as tar.gz source files along with a control2.csv and westzone.csv data files, and a first-run.R file are to be found in National abalone MSE/aMSE_files. Currently, the development of additional functions to generate further summary plots and tables are still being worked on. And work towards correctly conditioning the Operating Model onto the Tasmanian west coast is underway.
 

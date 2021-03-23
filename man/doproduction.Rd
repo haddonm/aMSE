@@ -41,5 +41,5 @@ doproduction estimates a production curve for each
     harvest rates that take a long time.
 }
 \examples{
-print("wait")
+print("wait") #  zoneC=zoneC; zoneD=zoneD; glob=glb; lowlim=0.0;uplim=0.4;inc=0.01
 }
