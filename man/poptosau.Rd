@@ -12,7 +12,7 @@ poptosau(invar, glb)
 \item{glb}{the global constants object}
 }
 \value{
-a results array of dimnesion [projyrs, nSAU,reps]
+a results array of dimension [projyrs, nSAU,reps]
 }
 \description{
 poptosau the MSE dynamics are run at the population level but
@@ -21,8 +21,8 @@ poptosau the MSE dynamics are run at the population level but
     poptosau uses the sauindex to sum the variables that can be summed, which
     include matureB, exploitB, catch, and recruit, and combines their
     population results to form their respective SAU results. Thus, for an
-    input array of dimensions [projyrs,numpop,reps] one receives an array of
-    [projyrs, nSAU,reps]
+    input array of dimensions [projyrs,numpop,reps] one receives back an
+    array of [projyrs, nSAU,reps]
 }
 \examples{
 print("wait on appropriate internal datasets")

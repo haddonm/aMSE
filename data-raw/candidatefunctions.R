@@ -8,7 +8,7 @@ zoneDsau <- zonetosau(zoneDDR,glb,B0,ExB0)
 
 
 
-plotNt <- function(Nt,origNt,year,start=3,glb,newdev=FALSE) {
+plotNt <- function(Nt,year,start=3,glb,newdev=FALSE) {
 #   Nt <- zoneDsau$Nt; origNt=zoneD$Nt;year=47;start=3; glb=glb; newdev=FALSE
   Nclass <- glb$Nclass
   midpts <- glb$midpts
@@ -33,11 +33,5 @@ plotNt <- function(Nt,origNt,year,start=3,glb,newdev=FALSE) {
 }
 
 plotNt(zoneDsau$Nt,year=47,start=3,glb=glb,newdev=FALSE)
-
-
-
-
-
-
 
 

@@ -166,10 +166,6 @@ range(allrep[,3,])
 
 
 
-plotprep(width=8, height=8,newdev=FALSE)
-plotsau(zoneDP$cpue,glb,c(4,2),ylab="CPUE")
-
-
 zoneDD$cpue[,2]
 
 

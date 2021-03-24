@@ -6,7 +6,7 @@
 #' @importFrom utils object.size browseURL packageDescription read.csv
 #' @importFrom utils write.table head tail
 #' @importFrom rutilsMH getmax getmin setpalette plotprep removeEmpty
-#' @importFrom rutilsMH splitDate which.closest parset
+#' @importFrom rutilsMH splitDate which.closest parset getparplots
 #' @importFrom Rcpp evalCpp
 #' @importFrom makehtml addplot addtable dirExists filenametopath
 #' @importFrom makehtml getextension htmltable logfilename make_html pathend

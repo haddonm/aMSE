@@ -41,13 +41,13 @@ alltosau <- function(zoneDR,glb) {  # zoneDR=zoneDP; glb=glb
 #'     poptosau uses the sauindex to sum the variables that can be summed, which
 #'     include matureB, exploitB, catch, and recruit, and combines their
 #'     population results to form their respective SAU results. Thus, for an
-#'     input array of dimensions [projyrs,numpop,reps] one receives an array of
-#'     [projyrs, nSAU,reps]
+#'     input array of dimensions [projyrs,numpop,reps] one receives back an
+#'     array of [projyrs, nSAU,reps]
 #'
 #' @param invar either zoneDP$ matureB, exploitB, catch, or recruit
 #' @param glb the global constants object
 #'
-#' @return a results array of dimnesion [projyrs, nSAU,reps]
+#' @return a results array of dimension [projyrs, nSAU,reps]
 #' @export
 #'
 #' @examples
@@ -186,7 +186,7 @@ wtedmean <- function(x,wts) {
 #'
 #' @examples
 #' print("wait on suitable internal data sets ")
-zonetosau <- function(inzone,glb, B0, ExB0) { # inzone=zoneDP; glb=glb
+zonetosau <- function(inzone,glb, B0, ExB0) { # inzone=zoneDDR; glb=glb; B0=B0; ExB0=ExB0
   nsau <- glb$nSAU
   sauindex <- glb$sauindex
   saunames <- glb$saunames
