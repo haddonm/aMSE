@@ -30,7 +30,7 @@ plotzoneproj takes the results from the function aszone, which
     contains a set of variables zonesB, zoneeB, zoneC, zoneH, zoneR, zonece,
     zonedeplsB,and zonedepleB, and plots whichever is selected. It contains
     the option of also plotting the median and the inner 90 percent quantiles
-    of each year's spread of values across replicates
+    of each year's spread of values across replicates. DEPRECATED
 }
 \examples{
 print("wait on more time")

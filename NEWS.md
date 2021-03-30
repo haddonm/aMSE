@@ -1,5 +1,7 @@
 ## aMSE Recent Activity
 
+* 30/03/2021 0.0.0.3500 Working on working with length-composition data both within the projections and during the conditioning. Added plotNt, plotCnt, prepareDDNt, and getLFdata.
+
 * 24/03/2021 0.0.0.4000 Fixed the summary of populations to SAU and the plotting of those results.
 
 * 22/03/2021 0.0.0.4500 Added the option of using an SAU based data file for reading in the biological properties of the zone; this simplifies the conditioning, especially of the recruitment levels by population.

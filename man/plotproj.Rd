@@ -39,7 +39,7 @@ nothing but it does generate a plot
 \description{
 plotproj plots out the projections from teh mse for a selected
     variable. iters is included so that details of a few trajectories can
-    be viewed as well as seeing all replicates.
+    be viewed as well as seeing all replicates. DEPRECATED
 }
 \examples{
 print("wait on data files")

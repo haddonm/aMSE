@@ -2,36 +2,6 @@
 
 # rutilsMH::listFunctions("C:/Users/User/Dropbox/A_code/aMSE/aMSE_utils.R")
 
-#' @title alltosau sums population properties to form SAU totals
-#'
-#' @description alltosau sums the projected values for matureB, exploitB,
-#'     acatch, catch, and recruit, by population, into totals by SAU, using
-#'     sauindex from glb
-#'
-#' @param zoneDR the dynamics projeciton object
-#' @param glb the global constants object
-#'
-#' @return a list of some SAU properties
-#' @export
-#'
-#' @examples
-#' print("wait on appropriate internal data sets")
-alltosau <- function(zoneDR,glb) {  # zoneDR=zoneDP; glb=glb
-  saunames <- glb$saunames
-  matB <- poptosau(zoneDR$matureB,glb=glb)
-  exB <- poptosau(zoneDR$exploitB,glb=glb)
-  recruit <- poptosau(zoneDR$recruit,glb=glb)
-  catsau=zoneDR$catsau
-  dimnames(catsau)[[2]] <- saunames
-  acatch=zoneDR$acatch
-  dimnames(acatch)[[2]] <- saunames
-  cesau=zoneDR$cesau
-  dimnames(cesau)[[2]] <- saunames
-  sumsau <- list(matureB=matB,exploitB=exB,catsau=catsau,acatch=acatch,
-                 cesau=cesau,recruit=recruit)
-  return(sumsau)
-} # end of alltosau
-
 
 #' @title poptosau converts projected population dynamics to SAU scale results
 #'
@@ -67,6 +37,41 @@ poptosau <- function(invar,glb) {  # invar=zoneDP$matureB; glb=glb
   return(result)
 } # end of poptosa
 
+#' @title prepareDDNt converts the population based historical Nt to SAU-based
+#'
+#' @description prepareDDNt processes the zoneDD, following the conditioning on
+#'     the historical fishery data, so that the population numbers-at-size are
+#'     converted to SAU-based numbers-at-size. It does this for both Nt and
+#'     catchN. This is to allow analysis, tabulation, and plotting at the SAU
+#'     scale. Input data is 3D  Nclass x years x numpop
+#'
+#' @param inNt the 3 dimensional array of population numbers-at-size
+#' @param incatchN the 3 dimensional array of catch numbers-at-size
+#' @param glb the global constants object
+#'
+#' @return a list of Nt and catchN x SAU
+#' @export
+#'
+#' @examples
+#' print("wait on suitable internal data-sets")
+prepareDDNt <- function(inNt,incatchN,glb) { # Nt=zoneDD$Nt; catchN=zoneDD$catchN; glb=glb
+  sauindex <- glb$sauindex
+  nsau <- glb$nSAU
+  nyrs <- glb$Nyrs
+  Nc <- glb$Nclass
+  catchN <- array(data=0,dim=c(Nc,nyrs,nsau), # define some arrays
+                  dimnames=list(glb$midpts,1:nyrs,glb$saunames))
+  Nt <- array(data=0,dim=c(Nc,nyrs,nsau),
+              dimnames=list(glb$midpts,1:nyrs,glb$saunames))
+  for (sau in 1:nsau) { #  yr=1; sau = 1
+    pick <- which(sauindex %in% sau)
+    for (yr in 1:nyrs) {
+      catchN[,yr,sau] <- rowSums(incatchN[,yr,pick])
+      Nt[,yr,sau] <- rowSums(inNt[,yr,pick])
+    }
+  }
+  return(list(Nt=Nt,catchN=catchN))
+} # end of prepareDDNt
 
 #' @title summarizeprod generates a summary of the productivity properties
 #'
@@ -140,31 +145,6 @@ sumpop2sau <- function(invect,sauindex) {
   return(tapply(invect,sauindex,sum,na.rm=TRUE))
 } # end of sumpop2sau
 
-#' @title wtedmean calculates the weighted mean of a set of values and weights
-#'
-#' @description wtedmean solves the problem of calculating a weighted mean
-#'     value from a set of values with different weights. Within the aMSE this
-#'     is common when trying to summarize across populations within an SAU or
-#'     summarize SAU within a zone by finding a mean value weighted by the
-#'     respective catch from each related population or SAU.
-#'
-#' @param x the values whose weighted mean is wanted
-#' @param wts the weights to use, often a set of catches
-#'
-#' @return a single real number
-#' @export
-#'
-#' @examples
-#' saucpue <- c(91.0,85.5,88.4,95.2)
-#' saucatch <- c(42.0,102.3,75.0,112.0)
-#' wtedmean(saucpue,saucatch)
-#' saucatch/sum(saucatch)  # the relative weights
-wtedmean <- function(x,wts) {
-  pwts <- wts/sum(wts,na.rm=TRUE)
-  ans <- sum((x * pwts),na.rm=TRUE)
-  return(ans)
-} # end of wtedmean
-
 #' @title zonetosau translates the zonexpop objects to zonexsau objects
 #'
 #' @description zonetosau combines the dynamic results for each variable so
@@ -186,7 +166,7 @@ wtedmean <- function(x,wts) {
 #'
 #' @examples
 #' print("wait on suitable internal data sets ")
-zonetosau <- function(inzone,glb, B0, ExB0) { # inzone=zoneDDR; glb=glb; B0=B0; ExB0=ExB0
+zonetosau <- function(inzone,glb, B0, ExB0) { # inzone=zoneDP; glb=glb; B0=B0; ExB0=ExB0
   nsau <- glb$nSAU
   sauindex <- glb$sauindex
   saunames <- glb$saunames
@@ -217,7 +197,7 @@ zonetosau <- function(inzone,glb, B0, ExB0) { # inzone=zoneDDR; glb=glb; B0=B0; 
       catch[yr,,iter] <- saudyn$saucatch
       deplsB[yr,,iter] <- matureB[yr,,iter]/sauB0
       depleB[yr,,iter] <- exploitB[yr,,iter]/sauExB0
-      for (sau in 1:nsau) { #  sau = 1
+      for (sau in 1:nsau) { #  iter=1; yr=1; sau = 1
         pick <- which(sauindex %in% sau)
         catchN[,yr,sau,iter] <- rowSums(inzone$catchN[,yr,pick,iter])
         Nt[,yr,sau,iter] <- rowSums(inzone$Nt[,yr,pick,iter])
@@ -231,4 +211,6 @@ zonetosau <- function(inzone,glb, B0, ExB0) { # inzone=zoneDDR; glb=glb; B0=B0; 
                  catchN=catchN,Nt=Nt)
   return(outsau)
 } # end of zonetosau
+
+
 

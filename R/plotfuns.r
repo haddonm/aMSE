@@ -67,6 +67,91 @@ dosauplot <- function(ylabel,prerep,postrep,glb,startyr,addCI=FALSE,
   return(invisible(sauCI))
 } # end of dosauplot
 
+#' @title plotCNt plots the historical conditioning Nt or catchN for all years
+#'
+#' @description plotCNt the historical conditioning on the fisheries data leads
+#'     to a three dimensional array of numbers-at-size x years x numpop. We use
+#'     'prepareDDNt' to convert this to a 3D array by SAU. PlotCNt then plots,
+#'     for each SAU, numbers-at-size for all years of conditioning with the
+#'     first year emphasized in black and the last year in red.
+#'
+#' @param Nt the 3D array of numbers-at-size x years x SAU from prepareDDNt
+#' @param glb the global constants object
+#' @param vline add a vertical dashed line, perhaps at the LML, default=NULL
+#' @param start from what size class should the maximum Y value be measured.
+#'     The default = 3 (= 6mm)
+#'
+#' @return nothing but it does plot a graph
+#' @export
+#'
+#' @examples
+#'  print("wait on suitable built in data-sets")
+plotCNt <- function(Nt,glb,vline=NULL,start=3) {
+  #   Nt <- lcomp$Nt; year=1;start=3; glb=glb;
+  Nclass <- glb$Nclass
+  midpts <- glb$midpts
+  nsau <- glb$nSAU
+  saunames <- glb$saunames
+  endyr <- dim(Nt)[2]
+  parset(plots=c(4,2),margin = c(0.25, 0.45, 0.05, 0.05),byrow=FALSE,
+         outmargin = c(1.1, 0, 0, 0))
+  for (sau in 1:nsau) { #  sau=1
+    label <- paste0("N '000s  sau",saunames[sau])
+    ymax <- getmax(Nt[start:Nclass,,sau])/1000.0
+    plot(midpts,Nt[,1,sau]/1000.0,type="l",lwd=1,panel.first=grid(),
+         ylim=c(0,ymax),ylab=label,xlab="")
+    for (i in 2:(endyr-1)) lines(midpts,Nt[,i,sau]/1000.0,lwd=1,col="grey")
+    lines(midpts,Nt[,1,sau]/1000.0,lwd=2,col=1)
+    lines(midpts,Nt[,endyr,sau]/1000.0,lwd=2,col=2)
+    if (!is.null(vline)) abline(v=vline,lwd=1,lty=2)
+  }
+  mtext("Shell Length mm",side=1,outer=TRUE,cex=1.1)
+} # end of plotCNt
+
+#' @title plotNt plots the size-composition for each SAU
+#'
+#' @description plotNt accepts size-composition data (either the population Nt,
+#'     of the catchN), and plots the replicate size-distributions for each SAU.
+#'     It then puts the first year's size-distribution on top and if the medcol
+#'     that defines the colour of hte mdeian of the replicates is different
+#'     from 0 (not plotted) then it plots the median as well. A contrasting
+#'     colour choice is 4 = Blue.
+#'
+#'
+#' @param Nt the 4 dimensional array of numbers-at-size Nclass,years,nsau,reps.
+#' @param year which year from dimension 2 should be plotted?
+#' @param glb the global constants object
+#' @param start from what size class should the maximum Y value be measured.
+#'     The default = 3 (= 6mm)
+#' @param medcol colour of the median line; default=0 = not plotted
+#'
+#' @return invisibly the matrix of median values, Nclass x nsau
+#' @export
+#'
+#' @examples
+#' print("wait on suitable built in data-sets")
+plotNt <- function(Nt,year,glb,start=3,medcol=0) {
+  #   Nt <- zonePsau$Nt; origNt=zoneD$Nt;year=25;start=3; glb=glb; newdev=FALSE
+  Nclass <- glb$Nclass
+  midpts <- glb$midpts
+  reps <- dim(Nt)[4]
+  nsau <- glb$nSAU
+  saunames <- glb$saunames
+  saumedians <- matrix(0,nrow=Nclass,ncol=nsau,dimnames=list(midpts,saunames))
+  parset(plots=c(4,2),byrow=FALSE)
+  for (sau in 1:nsau) { #  sau=1
+    sdat <- Nt[,year,sau,]
+    saumedians[,sau] <- apply(sdat,1,median)
+    ymax <- getmax(sdat[start:Nclass,])/1000.0
+    label <- paste0("N '000s  sau",saunames[sau])
+    plot(midpts,sdat[,1]/1000.0,type="l",lwd=1,col="grey",panel.first=grid(),
+         ylim=c(0,ymax),ylab=label)
+    for (i in 1:reps) lines(midpts,sdat[,i]/1000.0,col="grey")
+    lines(midpts,sdat[,1]/1000.0,lwd=2,col=2)
+    lines(midpts,saumedians[,sau]/1000.0,lwd=2,col=medcol)
+  }
+  return(invisible(saumedians))
+} # end of plotNt
 
 #' @title plotprod graphs a selected productivity variable
 #'
@@ -110,9 +195,7 @@ plotprod <- function(product,xname="MatB",yname="Catch",xlimit=NA,
   y <- product[,yname,]
   numpop <- ncol(x)
   maxy <- getmax(y)
-  if (length(xlimit) ==1 ) {
-    xlimit <- c(0,getmax(x))
-  }
+  if (length(xlimit) == 1) xlimit <- c(0,getmax(x))
   plotprep(width=7,height=4,newdev=FALSE,filename=filename,cex=0.9,
            verbose=FALSE)
   parset(font=font)
@@ -132,7 +215,7 @@ plotprod <- function(product,xname="MatB",yname="Catch",xlimit=NA,
 #'
 #' @description plotproj plots out the projections from teh mse for a selected
 #'     variable. iters is included so that details of a few trajectories can
-#'     be viewed as well as seeing all replicates.
+#'     be viewed as well as seeing all replicates. DEPRECATED
 #'
 #' @param invar the array containing the year x SAU x reps values for a selected
 #'     variable out of sauzoneDP
@@ -185,7 +268,7 @@ plotproj <- function(invar,varlabel,plotconst,miny=0,
 #'     contains a set of variables zonesB, zoneeB, zoneC, zoneH, zoneR, zonece,
 #'     zonedeplsB,and zonedepleB, and plots whichever is selected. It contains
 #'     the option of also plotting the median and the inner 90 percent quantiles
-#'     of each year's spread of values across replicates
+#'     of each year's spread of values across replicates. DEPRECATED
 #'
 #' @param zoneV the variable from within the output of aszone
 #' @param reps the number of replicates to plot. Generaly one would plot all of

@@ -29,6 +29,48 @@ getConst <- function(inline,nb,index=2) { # parses lines containing numbers
   return(ans)
 }   # end getConst
 
+#' @title getLFdata reads the observed LF-composition data
+#'
+#' @description getLFdata reads the observed LF-composition data, which needs
+#'     to be stored in a csv file with the following format. Each SAU must use
+#'     the same sequence of length-classes as rows, and the same sequence of
+#'     years as columns, even if there are empty rows and columns. In addition,
+#'     the first column must list the length-class and the second column lists
+#'     the SAU. See the 'data-file-description.docx', and the example data files
+#'     to see examples of the required format.
+#'
+#' @param rundir the run directory containing the control and data files for a
+#'     particular run
+#' @param filename the complete filename for the length-composition data file
+#'
+#' @return a list containing the lfs array (lengths x years x sau) and palfs
+#'     matrix of the count of observations in each year for each sau
+#' @export
+#'
+#' @examples
+#' print("wait on suitable internal data files")
+getLFdata <- function(rundir,filename) {
+  filen <- filenametopath(rundir,filename)
+  lfdat <- read.csv(filen,header=TRUE)
+  colnames(lfdat) <- tolower(colnames(lfdat))
+  sau <- sort(unique(lfdat[,"sau"]))
+  nsau <- length(sau)
+  lcl <- sort(unique(lfdat[,"length"]))  # lcl = length classes
+  ncl <- length(lcl)
+  yrs <- colnames(lfdat)[3:dim(lfdat)[2]]
+  yrs <- as.numeric(gsub("x","",yrs))
+  nyrs <- length(yrs)
+  lfs <- array(0,dim=c(ncl,nyrs,nsau),dimnames=list(lcl,yrs,sau))
+  palfs <- matrix(0,nrow=nyrs,ncol=nsau,dimnames=list(yrs,sau))
+  for (i in 1:nsau) { # i = 1
+    pick <- which(lfdat[,"sau"] == sau[i])
+    x <- lfdat[pick,3:(nyrs+2)]
+    lfs[,,i] <- as.matrix(x)       # length frequencies
+    palfs[,i] <- colSums(lfs[,,i]) # presence absence LF data
+  }
+  return(list(lfs=lfs,palfs=palfs))
+} # end of getLFdata
+
 #' @title getlistvar extracts a vector or matrix from zoneC
 #'
 #' @description getlistvar extracts a vector or matrix from zoneC.
@@ -137,34 +179,6 @@ getnas <- function(zoneD,yr,glob,zone) {# zoneD=zoneD;yr=1;glob=glb;zone=zone1
   # }
   return(nas)
 } #end of getnas
-
-##  inzone <- zone1; indexVar <- "Nt"
-## gets all LF data from a zone across pops and years
-#' @title getzoneLF extracts all LF data from a zone across pops and years
-#'
-#' @description getzoneLF extracts all LF data from a zone across
-#'     all populations for each year. Thus an Nclass x Nyrs X numpop
-#'     matrix is compressed into a Nclass x Nyrs matrix
-#'
-#' @param zoneD the dynamic part of the zone
-#' @param glb the global constants
-#'
-#' @return an Nclass x Nyrs matrix containing LF data across all
-#'     populations by year
-#' @export
-#'
-#' @examples
-#' print("An example needs to be written")
-getzoneLF <- function(zoneD,glb) { # need to define years
-  numpop <- glb$numpop
-  Nyrs <- glb$Nyrs
-  storeLF <- matrix(0,nrow=glb$Nclass,ncol=Nyrs,
-                    dimnames=list(glb$midpts,1:Nyrs))
-  for (yr in 1:Nyrs)
-    storeLF[,yr] <- rowSums(zoneD$Nt[,yr,])
-  return(storeLF)
-} # end of getzoneLF
-
 
 
 #' @title getsingleNum find a line of text and extracts a single number
@@ -349,6 +363,86 @@ getunFished <- function(zoneC,zoneD,glb) {  # inzone=zone
 }  # End of getUnfished
 
 
+
+#' @title getvar a replacement for sapply to obtain scalar constants
+#'
+#' @description getvar is a replacement for sapply to obtain scalar
+#'     constants from zoneC and is significantly faster. It should
+#'     be used to obtain things like B0, R0, MSY, popq, etc. Still
+#'     need to use sapply to pull out vectors.
+#'
+#' @param zoneC the constants object for the zone
+#' @param invar a character variable eg. "B0" or "R0"
+#'
+#' @return a numpop vector of the invar constants from zoneC
+#' @export
+#'
+#' @seealso getlistvar
+#'
+#' @examples
+#' data(zone)
+#' zoneC <- zone$zoneC
+#' getvar(zoneC,"MSY")
+#' getvar(zoneC,"B0")
+getvar <- function(zoneC,invar) {
+  npop <- length(zoneC)
+  recs <- numeric(npop)
+  for (i in 1:npop) recs[i] <- zoneC[[i]][[invar]]
+  return(recs)
+} # end of getvar
+
+#' @title getvect extracts invar from the popdef vector in zoneC
+#'
+#' @description getvect extracts a numpop vector of invar from the
+#'     popdef vector in zoneC. Still need to use sapply to pull out
+#'     complete vectors such as popdef or maturity etc.
+#'
+#' @param zoneC the constants object for the zone
+#' @param invar a character variable eg. "steeph", "DLMax"
+#'
+#' @return a numpop vector of invar from the numpop popdefs in zoneC
+#' @export
+#'
+#' @seealso getlistvar
+#'
+#' @examples
+#' data(zone)
+#' zoneC <- zone$zoneC
+#' getvect(zoneC,"steeph")
+getvect <- function(zoneC,invar) {
+  npop <- length(zoneC)
+  ans <- numeric(npop)
+  for (i in 1:npop) ans[i] <- zoneC[[i]]$popdef[invar]
+  return(ans)
+} # end of getvect
+
+##  inzone <- zone1; indexVar <- "Nt"
+## gets all LF data from a zone across pops and years
+#' @title getzoneLF extracts all LF data from a zone across pops and years
+#'
+#' @description getzoneLF extracts all LF data from a zone across
+#'     all populations for each year. Thus an Nclass x Nyrs X numpop
+#'     matrix is compressed into a Nclass x Nyrs matrix
+#'
+#' @param zoneD the dynamic part of the zone
+#' @param glb the global constants
+#'
+#' @return an Nclass x Nyrs matrix containing LF data across all
+#'     populations by year
+#' @export
+#'
+#' @examples
+#' print("An example needs to be written")
+getzoneLF <- function(zoneD,glb) { # need to define years
+  numpop <- glb$numpop
+  Nyrs <- glb$Nyrs
+  storeLF <- matrix(0,nrow=glb$Nclass,ncol=Nyrs,
+                    dimnames=list(glb$midpts,1:Nyrs))
+  for (yr in 1:Nyrs)
+    storeLF[,yr] <- rowSums(zoneD$Nt[,yr,])
+  return(storeLF)
+} # end of getzoneLF
+
 #' @title getzoneprod zone scale summary of product matrix from doproduction
 #'
 #' @description getzoneprod takes in the product matrix from doproduction and
@@ -452,55 +546,3 @@ getzoneprops <- function(zoneC,zoneD,glb,year=1) { #zoneC=zoneC; zoneD=zoneDD;gl
   colnames(ans) <- c(paste0("p",1:numpop),"zone")
   return(ans)
 }  # end of getzoneprops
-
-#' @title getvar a replacement for sapply to obtain scalar constants
-#'
-#' @description getvar is a replacement for sapply to obtain scalar
-#'     constants from zoneC and is significantly faster. It should
-#'     be used to obtain things like B0, R0, MSY, popq, etc. Still
-#'     need to use sapply to pull out vectors.
-#'
-#' @param zoneC the constants object for the zone
-#' @param invar a character variable eg. "B0" or "R0"
-#'
-#' @return a numpop vector of the invar constants from zoneC
-#' @export
-#'
-#' @seealso getlistvar
-#'
-#' @examples
-#' data(zone)
-#' zoneC <- zone$zoneC
-#' getvar(zoneC,"MSY")
-#' getvar(zoneC,"B0")
-getvar <- function(zoneC,invar) {
-  npop <- length(zoneC)
-  recs <- numeric(npop)
-  for (i in 1:npop) recs[i] <- zoneC[[i]][[invar]]
-  return(recs)
-} # end of getvar
-
-#' @title getvect extracts invar from the popdef vector in zoneC
-#'
-#' @description getvect extracts a numpop vector of invar from the
-#'     popdef vector in zoneC. Still need to use sapply to pull out
-#'     complete vectors such as popdef or maturity etc.
-#'
-#' @param zoneC the constants object for the zone
-#' @param invar a character variable eg. "steeph", "DLMax"
-#'
-#' @return a numpop vector of invar from the numpop popdefs in zoneC
-#' @export
-#'
-#' @seealso getlistvar
-#'
-#' @examples
-#' data(zone)
-#' zoneC <- zone$zoneC
-#' getvect(zoneC,"steeph")
-getvect <- function(zoneC,invar) {
-  npop <- length(zoneC)
-  ans <- numeric(npop)
-  for (i in 1:npop) ans[i] <- zoneC[[i]]$popdef[invar]
-  return(ans)
-} # end of getvect
