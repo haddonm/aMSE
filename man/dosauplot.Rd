@@ -48,7 +48,9 @@ dosauplot takes the results of the prepareproject and the
     replicates for the years from 'startyr' to the final year of the
     projections. It includes the median and inner 90% CI, and, for the CPUE
     plot, if the historical conditioning CPUE is included in histCE, it also
-    includes the original cpue series.
+    includes the original cpue series. Beware of trying to plot the
+    historical cpue in years where there are no historical cpue data,
+    although there are error captures at work to limit the pot to available.
 }
 \examples{
 print("wait on suitable built in data sets")

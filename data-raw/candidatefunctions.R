@@ -70,7 +70,7 @@ for (sau in 1:nsau) { #  sau=1
 
 
 
-outLF <- getLFdata(rundir,"lateLF-84-20.csv")
+outLF <- getLFdata(datadir,"lateLF-84-20.csv")
 
 palfs=outLF$palfs
 palfs
@@ -79,9 +79,14 @@ palfs
 
 
 
+# copyto -------------------------------------------------------------
 
 
 
+
+destdir <- "c:/Users/Malcolm/DropBox/A_code/aMSEUse/scenarios/tasHS653510"
+
+copyto(rundir,todir=destdir,filename="controlsau.csv")
 
 
 

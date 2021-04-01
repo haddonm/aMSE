@@ -568,12 +568,14 @@ makeabpop <- function(popparam,midpts,projLML) {
 #'     data files, estimates the productivity, and sets up the results
 #'     directory, rundir, ready to receive files.
 #'
-#' @param rundir the directory containing the data and control csv files. It
+#' @param rundir the directory containing the control csv files. It
 #'     can/will also act to store results in a manner that will allow them
 #'     to be displayed using makehtml.
 #' @param ctrlfile the main file that controls the particular run. It contains
 #'     the name of the data file that is used to biologically condition the
 #'     numpop populations
+#' @param datadir the directory containing the data csv files. This defaults to
+#'     equal the rundir, but can be different if desired. default=rundir
 #' @param cleanslate a boolean determining whether any old results are deleted
 #'     from rundir before starting. Default=FALSE
 #'
@@ -582,16 +584,18 @@ makeabpop <- function(popparam,midpts,projLML) {
 #'
 #' @examples
 #' print("wait on datafiles")  #  rundir=rundir; ctrlfile="control2.csv"; cleanslate=FALSE
-makeequilzone <- function(rundir,ctrlfile="control.csv",cleanslate=FALSE) {
-  zone1 <- readctrlfile(rundir,infile=ctrlfile)
+makeequilzone <- function(rundir,ctrlfile="control.csv",datadir=rundir,
+                          cleanslate=FALSE) {
+  #  rundir=rundir;ctrlfile="controlsau.csv";cleanslate = TRUE;datadir=datadir
+  zone1 <- readctrlfile(rundir,infile=ctrlfile,datadir=datadir)
   ctrl <- zone1$ctrl
   glb <- zone1$globals     # glb without the movement matrix
   bysau <- ctrl$bysau
   if (is.null(bysau)) bysau <- 0
   if (bysau) {
-     constants <- readsaudatafile(rundir,ctrl$datafile)
+     constants <- readsaudatafile(datadir,ctrl$datafile)
   } else {
-    constants <- readdatafile(glb$numpop,rundir,ctrl$datafile)
+    constants <- readdatafile(glb$numpop,datadir,ctrl$datafile)
   }
   cat("Files read, now making zone \n")
   out <- setupzone(constants,zone1) # make operating model

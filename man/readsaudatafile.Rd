@@ -4,10 +4,10 @@
 \alias{readsaudatafile}
 \title{readsaudatafile generates the constants matrix from sau data}
 \usage{
-readsaudatafile(rundir, infile)
+readsaudatafile(datadir, infile)
 }
 \arguments{
-\item{rundir}{the directory in which the data file is to be found. This will
+\item{datadir}{the directory in which the data file is to be found. This will
 usually be the rundir for the scenario run}
 
 \item{infile}{the name of the specific datafile used.}

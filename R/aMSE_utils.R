@@ -3,6 +3,100 @@
 # rutilsMH::listFunctions("C:/Users/User/Dropbox/A_code/aMSE/aMSE_utils.R")
 
 
+#' @title alldirExists Checks the existence of both a run and data directory
+#'
+#' @description alldirExists answers the questions 'do both a rundir and a
+#'     datadir directory exist?' It uses dir.exists and reports existence if
+#'     already present and provides a stop warning if either does not exist. Of
+#'     course it can also be used to determine whether a single directory exists.
+#'     By default the second directory, indir2 = indir1. This allows for the
+#'     datadir = rundir within aMSE, but also allows for a separate datadir.
+#'
+#' @param indir1 a character string containing the name of the first directory
+#'     whose existence is to be checked before it is created if it
+#'     does not already exist.
+#' @param indir2 a character string containing the name of a second directory
+#'     whose existence is to be checked, by default this has the same value as
+#'     indir1
+#' @param make if the directory does NOT exist should it be created.
+#'     default = FALSE; if make=FALSE and a directory does not exist
+#'     a warning will be given to the console.
+#' @param verbose default=TRUE, prints directory status to the console,
+#'     If make is set to FALSE and a directory does not exist a
+#'     warning will always be given.
+#'
+#' @return a message to the screen if the directory exists or is
+#'     created; if make is TRUE then it also creates the directory as
+#'     listed in 'indir1'.
+#' @export
+#'
+#' @examples
+#' indirect <- getwd()
+#' alldirExists(indirect)
+alldirExists <- function(indir1,indir2=indir1,make=FALSE,verbose=TRUE) {
+  if (dir.exists(indir1)) {
+    if (verbose) cat("rundir, ",indir1,":  exists  \n")
+  } else {
+    if (make) {
+      dir.create(indir1, recursive = TRUE)
+      if (verbose) cat(indir1,":  created  \n")
+    } else {
+      warning(cat(indir1,":  does not exist \n"))
+    }
+  }
+  if (indir2 != indir1) {
+    if (dir.exists(indir2)) {
+      if (verbose) cat("datadir, ",indir2,":  exists  \n")
+    } else {
+      if (make) {
+        dir.create(indir2, recursive = TRUE)
+        if (verbose) cat("datadir, ",indir2,":  created  \n")
+      } else {
+        warning(cat("datadir, ",indir2,":  does not exist \n"))
+      }
+    }
+  } # end of datadir != rundir
+}  # end of alldirExists
+
+#' @title copyto copies the control.csv file from a scenario to a new directory
+#'
+#' @description copyto copies the control.csv file from one scenario's
+#'     directory to another. 'copyto' includes the option of copying to a
+#'     completely different path and will create the 'todir' if it
+#'     does not already exist.
+#'
+#' @param fromdir the full path of the origin rundir
+#' @param todir the full path to the destination rundir
+#' @param makenew if the 'todir' does not exist should it be created using
+#'     dir.create? default = TRUE
+#'
+#' @return a vector of 1 or -1 denoting which files are transferred
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # When constructing a new scenario, one can copy a control.csv file from
+#' # a different scenario's rundir into a new one prior to editing it to match
+#' # any new requirements.
+#' copyto(fromdir=rundir,todir=destdir,filename="control.csv")
+#' }
+copyto <- function (fromdir, todir, filename, makenew = TRUE,verbose=TRUE) {
+  if (!dir.exists(fromdir)) stop(cat(fromdir, " does not exist!   \n\n"))
+  filen <- filenametopath(fromdir,filename)
+  if (!file.exists(filen)) stop(cat(filename, " does not exist \n"))
+  if (!dir.exists(todir)) {
+    if (verbose) cat(todir," did not exist  \n")
+    if (makenew) {
+      dir.create(todir, recursive = TRUE)
+      if (verbose) cat(todir," has been created  \n")
+    }
+  }
+  fileout <- filenametopath(todir, filename)
+  file.copy(filen, fileout, overwrite = TRUE, copy.date = TRUE)
+  if (verbose) cat(filename, " has been copied to ",todir,"\n")
+}
+# end of copyto
+
 #' @title poptosau converts projected population dynamics to SAU scale results
 #'
 #' @description poptosau the MSE dynamics are run at the population level but

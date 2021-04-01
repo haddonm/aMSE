@@ -4,16 +4,24 @@
 \alias{makeequilzone}
 \title{makeequilzone high level function generates equilibrium zone}
 \usage{
-makeequilzone(rundir, ctrlfile = "control.csv", cleanslate = FALSE)
+makeequilzone(
+  rundir,
+  ctrlfile = "control.csv",
+  datadir = rundir,
+  cleanslate = FALSE
+)
 }
 \arguments{
-\item{rundir}{the directory containing the data and control csv files. It
+\item{rundir}{the directory containing the control csv files. It
 can/will also act to store results in a manner that will allow them
 to be displayed using makehtml.}
 
 \item{ctrlfile}{the main file that controls the particular run. It contains
 the name of the data file that is used to biologically condition the
 numpop populations}
+
+\item{datadir}{the directory containing the data csv files. This defaults to
+equal the rundir, but can be different if desired. default=rundir}
 
 \item{cleanslate}{a boolean determining whether any old results are deleted
 from rundir before starting. Default=FALSE}

@@ -4,15 +4,19 @@
 \alias{readctrlfile}
 \title{readctrlfile checks datadir contains the required csv files}
 \usage{
-readctrlfile(datadir, infile = "control.csv")
+readctrlfile(rundir, infile = "control.csv", datadir = rundir)
 }
 \arguments{
-\item{datadir}{the directory in which all all files relating to a
-particular run are to be held.}
+\item{rundir}{the directory in which all files relating to a
+particular run are to be held. If datadir != rundir then the main data
+files are kept in datadir}
 
 \item{infile}{default="control.csv", the filename of the control
 file present in datadir containing information regarding the
 run.}
+
+\item{datadir}{default = rundir. If datadir != rundir then the data files
+for a series of scenarios are kept in this directory.}
 }
 \value{
 the control list for the run

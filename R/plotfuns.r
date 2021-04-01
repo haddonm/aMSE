@@ -7,7 +7,9 @@
 #'     replicates for the years from 'startyr' to the final year of the
 #'     projections. It includes the median and inner 90% CI, and, for the CPUE
 #'     plot, if the historical conditioning CPUE is included in histCE, it also
-#'     includes the original cpue series.
+#'     includes the original cpue series. Beware of trying to plot the
+#'     historical cpue in years where there are no historical cpue data,
+#'     although there are error captures at work to limit the pot to available.
 #'
 #' @param ylabel the variable name to be plotted, used as a y-axis label
 #' @param prerep the replicate values from the replicated initial zoneDDR after
@@ -31,6 +33,7 @@
 #' print("wait on suitable built in data sets")
 dosauplot <- function(ylabel,prerep,postrep,glb,startyr,addCI=FALSE,
                       CIprobs=c(0.05,0.5,0.95),histCE=NULL) {
+  # ylabel=invar;prerep=prerep;postrep=postrep;glb=glb;startyr=10;histCE=histCE;CIprobs=c(0.05,0.5,0.95); addCI=TRUE
   label <- glb$saunames
   nsau <- glb$nSAU
   sauCI <- vector("list",nsau)
@@ -42,7 +45,7 @@ dosauplot <- function(ylabel,prerep,postrep,glb,startyr,addCI=FALSE,
   nplot <- getparplots(nsau)
   if (is.numeric(histCE)) ceyr <- startyr:preyrs
   parset(plots=nplot,byrow=FALSE)
-  for (sau in 1:nsau) {
+  for (sau in 1:nsau) {  # sau = 1
     ymax <- getmax(rbind(prerep[startyr:preyrs,sau,],postrep[,sau,]))
     traj <- c(prerep[startyr:preyrs,sau,1],postrep[,sau,1])
     plot(startyr:allyrs,traj,type="l",lwd=1,col="grey",panel.first=grid(),
@@ -57,7 +60,9 @@ dosauplot <- function(ylabel,prerep,postrep,glb,startyr,addCI=FALSE,
       lines((preyrs+1):allyrs,CI[1,],lwd=1,col=2)
       lines((preyrs+1):allyrs,CI[3,],lwd=1,col=2)
     }
+    nhistce <- dim(histCE)[1]
     if (is.numeric(histCE)) {
+      if (length(ceyr) > nhistce) ceyr <- (preyrs - nhistce + 1):preyrs
       oldce <- tail(histCE[,sau],length(ceyr))
       lines(ceyr,oldce,lwd=2,col=3)
     }

@@ -480,11 +480,14 @@ read_conddata <- function(filename) {  # filename=filen
 #'     the names of the region data file, and the population data
 #'     file. The run stops if any are not present or are misnamed.
 #'
-#' @param datadir the directory in which all all files relating to a
-#'     particular run are to be held.
+#' @param rundir the directory in which all files relating to a
+#'     particular run are to be held. If datadir != rundir then the main data
+#'     files are kept in datadir
 #' @param infile default="control.csv", the filename of the control
 #'     file present in datadir containing information regarding the
 #'     run.
+#' @param datadir default = rundir. If datadir != rundir then the data files
+#'     for a series of scenarios are kept in this directory.
 #'
 #' @return the control list for the run
 #' @export
@@ -498,12 +501,12 @@ read_conddata <- function(filename) {  # filename=filen
 #' ctrl <- readctrlfile(rundir)
 #' ctrl
 #' }
-readctrlfile <- function(datadir,infile="control.csv") {
-   # datadir=rundir; infile="control2.csv"
-   filenames <- dir(datadir)
+readctrlfile <- function(rundir,infile="control.csv",datadir=rundir) {
+   # rundir=rundir; infile="controlsau.csv"; datadir=datadir
+   filenames <- dir(rundir)
    if (length(grep(infile,filenames)) != 1)
-      stop(cat(infile," not found in datadir \n"))
-   filename <- filenametopath(datadir,infile)
+      stop(cat(infile," not found in ",rundir," \n"))
+   filename <- filenametopath(rundir,infile)
    indat <- readLines(filename)   # reads the whole file as character strings
    begin <- grep("START",indat) + 1
    runlabel <- getStr(indat[begin],1)
@@ -515,7 +518,8 @@ readctrlfile <- function(datadir,infile="control.csv") {
    withsigB <- getsingleNum("withsigB",indat)
    withsigCE <- getsingleNum("withsigCE",indat)
    Nyrs=40 # minimum to set up equilibrium unfished population
-   if (length(grep(datafile,filenames)) != 1)
+   filenames2 <- dir(datadir)
+   if (length(grep(datafile,filenames2)) != 1)
       stop("population data file not found \n")
    cat("All required files appear to be present \n")
    # Now read zone data
@@ -774,7 +778,7 @@ readhcrfile <- function(infile) {  # infile <- "C:/A_CSIRO/Rcode/AbMSERun/ctrl_w
 #'     each population has been implemented to simplify the conditioning of
 #'     each operating model.
 #'
-#' @param rundir the directory in which the data file is to be found. This will
+#' @param datadir the directory in which the data file is to be found. This will
 #'     usually be the rundir for the scenario run
 #' @param infile the name of the specific datafile used.
 #'
@@ -783,8 +787,8 @@ readhcrfile <- function(infile) {  # infile <- "C:/A_CSIRO/Rcode/AbMSERun/ctrl_w
 #'
 #' @examples
 #' print("wait on suitable data sets")
-readsaudatafile <- function(rundir,infile) {  # rundir=rundir; infile=ctrl$datafile
-   filename <- filenametopath(rundir,infile)
+readsaudatafile <- function(datadir,infile) {  # rundir=rundir; infile=ctrl$datafile
+   filename <- filenametopath(datadir,infile)
    indat <- readLines(filename)   # reads the whole file as character strings
    nsau <- getsingleNum("nsau",indat)
    saupop <- getConst(indat[grep("saupop",indat)],nsau)
