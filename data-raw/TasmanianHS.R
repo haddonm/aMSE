@@ -190,7 +190,7 @@ getlmcoef <- function(y,x) {
   grad <- xy/x2
   inter <- my - grad*mx
   return(c(inter,grad))
-}
+} # end of getlmcoef
 
 #' @title getscore calculates the scores for the grad1 and grad4 PMs
 #'

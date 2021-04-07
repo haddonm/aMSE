@@ -1,4 +1,73 @@
 
+#' @title doonesau plots the dynamics for a single SAU
+#'
+#' @description doonesau plots the details of matureB, exploitB, catch, acatch,
+#'     harvestR, cpue, recruit, deplsB, depleB for a single SAU on one plot.
+#'
+#'
+#' @param prerep the zoneDsau object that represents the SAU data
+#' @param postrep the zonePsau object that represents the SAU data
+#' @param glb the global constants object
+#' @param startyr the year from which to begin the conditioned dynamics
+#' @param picksau which sau should be plotted
+#' @param addCI should the 90% CI be added, default=FALSE
+#' @param CIprobs what CI should be fitted, default=c(0.05,0.5,0.95)
+#' @param histCE should the historical CPUE be added to the cpue plot
+#'
+#' @return a list of the CI for each vaiable
+#' @export
+#'
+#' @examples
+#' print("wait until real data is available")
+doonesau <- function(prerep,postrep,glb,startyr,picksau,addCI=FALSE,
+                     CIprobs=c(0.05,0.5,0.95),histCE=NULL) {
+  saunames <- glb$saunames
+  sauindex <- which(saunames == picksau)
+  label=c("matureB","exploitB","catch","acatch", "harvestR","cpue",
+          "recruit","deplsB","depleB")
+  nvar <- length(label)
+  prematB <- prerep$matureB
+  postmatB <- postrep$matureB
+  preyrs <- dim(prematB)[1]
+  projyrs <- dim(postmatB)[1]
+  allyrs <- preyrs + projyrs
+  reps <- dim(prematB)[3]
+  varCI <- vector("list",nvar)
+  names(varCI) <- label
+  if (is.numeric(histCE)) ceyr <- startyr:preyrs
+  parset(plots=c(3,3),margin=c(0.3,0.4,0.05,0.05),outmargin=c(1,0,1,0),
+         byrow=FALSE)
+  for (invar in 1:nvar) {  #  invar=1
+    premat <- prerep[[label[invar]]][,sauindex,]
+    postmat <- postrep[[label[invar]]][,sauindex,]
+    ymax <- getmax(rbind(premat[startyr:preyrs,],postmat[,]))
+    traj <- c(premat[startyr:preyrs,1],postmat[,1])
+    plot(startyr:allyrs,traj,type="l",lwd=1,col="grey",panel.first=grid(),
+         ylab=paste0(label[invar]),ylim=c(0,ymax),xlab="",cex=1.0)
+    for (i in 2:reps)
+      lines(startyr:allyrs,c(premat[startyr:preyrs,i],postmat[,i]),
+            lwd=1,col="grey")
+    CI <- apply(postmat[,],1,quantile,probs=CIprobs)
+    varCI[[invar]] <- CI
+    lines((preyrs+1):allyrs,CI[2,],lwd=2,col=4)
+    if (addCI) {
+      lines((preyrs+1):allyrs,CI[1,],lwd=1,col=2)
+      lines((preyrs+1):allyrs,CI[3,],lwd=1,col=2)
+    }
+    abline(v=(preyrs+0.5),col=2)
+    if ((is.numeric(histCE)) & (label[invar] == "cpue")) {
+      nhistce <- dim(histCE)[1]
+      if (length(ceyr) > nhistce) ceyr <- (preyrs - nhistce + 1):preyrs
+      oldce <- tail(histCE[,sauindex],length(ceyr))
+      lines(ceyr,oldce,lwd=2,col=3)
+    }
+  }
+  mtext(paste0("SAU ",picksau),side=3,outer=TRUE,cex=1.0)
+  mtext("Years",side=1,outer=TRUE,cex=1.1,line=-0.1)
+  return(invisible(varCI))
+} # end of doonesau
+
+
 #' @title dosauplot generates the plot of the chosen variable for each sau
 #'
 #' @description dosauplot takes the results of the prepareproject and the
@@ -33,7 +102,8 @@
 #' print("wait on suitable built in data sets")
 dosauplot <- function(ylabel,prerep,postrep,glb,startyr,addCI=FALSE,
                       CIprobs=c(0.05,0.5,0.95),histCE=NULL) {
-  # ylabel=invar;prerep=prerep;postrep=postrep;glb=glb;startyr=10;histCE=histCE;CIprobs=c(0.05,0.5,0.95); addCI=TRUE
+  # ylabel=invar;prerep=prerep;postrep=postrep;glb=glb;startyr=10;histCE=histCE
+  # CIprobs=c(0.05,0.5,0.95); addCI=TRUE
   label <- glb$saunames
   nsau <- glb$nSAU
   sauCI <- vector("list",nsau)

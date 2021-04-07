@@ -88,16 +88,14 @@ destdir <- "c:/Users/Malcolm/DropBox/A_code/aMSEUse/scenarios/tasHS653510"
 
 copyto(rundir,todir=destdir,filename="controlsau.csv")
 
+  #     zoned=zoneDsau;zonep=zonePsau;glb=glb;startyr=30;
+  #     picksau=9; histCE=histCE;CIprobs=c(0.05,0.5,0.95); addCI=TRUE
 
 
 
 
-
-
-
-
-
-
-
+plotprep(width=12,height=8,newdev=FALSE)
+doonesau(prerep=zoneDsau,postrep=zonePsau,glb=glb,startyr=30,picksau=11,
+         addCI=TRUE,histCE=histCE)
 
 
