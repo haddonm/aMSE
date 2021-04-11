@@ -13,7 +13,8 @@ sauplots(
   ExB0,
   startyr,
   addCI = TRUE,
-  histCE = NULL
+  histCE = NULL,
+  tabcat = "projSAU"
 )
 }
 \arguments{
@@ -37,6 +38,8 @@ include in the trajectory, to give startyr:indexoflastyear,eg startyr=40}
 default=TRUE}
 
 \item{histCE}{historical CPUE data used in CPUE plots, default=NULL}
+
+\item{tabcat}{the name of the results website tab for the plots}
 }
 \value{
 a list of lists of CI for each SAU and variable

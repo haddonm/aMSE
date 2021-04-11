@@ -289,10 +289,13 @@ doTASprojections <- function(ctrl,zoneDP,zoneCP,histCE,glb,mcdahcr,hsargs) {
   for (iter in 1:reps) {
     for (year in 2:projyrs) {
       arrce=rbind(histCE,zoneDP$cesau[1:(year-1),,iter])
-      lnce <- nrow(arrce)
+     # lnce <- nrow(arrce)
       yearnames=c(oldyrs,tail(oldyrs,1)+1:(year-1))
-      hcrout <- mcdahcr(arrce=arrce,hsargs,yearnames,saunames=glb$saunames)
-      acatch <- zoneDP$acatch[year-1,,iter] * hcrout$multTAC[lnce,]
+      hcrout <- mcdahcr(arrce=arrce,hsargs,yearnames,saunames=glb$saunames,
+                        acatches=zoneDP$acatch[year-1,,iter])
+     # acatch <- zoneDP$acatch[year-1,,iter] * hcrout$multTAC[lnce,]
+      acatch <- hcrout$acatch
+      TAC <- sum(acatch)
       zoneDP$acatch[year,,iter] <- acatch
       outy <- oneyearsauC(zoneCC=zoneCP,exb=zoneDP$exploitB[year-1,,iter],
                           inN=zoneDP$Nt[,year-1,,iter],catchsau=acatch,year=year,
@@ -313,6 +316,7 @@ doTASprojections <- function(ctrl,zoneDP,zoneCP,histCE,glb,mcdahcr,hsargs) {
       zoneDP$depleB[year,,iter] <- dyn["depleB",]
       zoneDP$Nt[,year,,iter] <- outy$NaL
       zoneDP$catchN[,year,,iter] <- outy$catchN
+      zoneDP$TAC[year,iter] <- TAC
     } # year loop
   }   # iter loop
   return(zoneDP)
@@ -359,10 +363,11 @@ makezoneDP <- function(projyr,iter,glb) {
   deplExB <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
   catchN <- array(data=0,dim=c(N,projyr,numpop,iter),dimnames=namendims)
   Nt <- array(data=0,dim=c(N,projyr,numpop,iter),dimnames=namendims)
+  TAC <- array(0,dim=c(projyr,iter),dimnames=list(1:projyr,1:iter))
   zoneDP <- list(SAU=SAU,matureB=MatB,exploitB=ExplB,catch=catch,acatch=acatch,
                  harvestR=harvest,cpue=cpue,cesau=cesau,catsau=catsau,
                  recruit=recruit,deplsB=deplSpB,depleB=deplExB,catchN=catchN,
-                 Nt=Nt)
+                 Nt=Nt,TAC=TAC)
   return(zoneDP)
 } # end of makezoneDP
 
@@ -622,6 +627,7 @@ prepareprojectionnew <- function(projC,condC,zoneC,glb,zoneDD,ctrl,varyrs,
   zoneDR <- makezoneDP(projyrs,ctrl$reps,glb) #,zoneDep) # zoneDReplicates
   endyr <- nrow(zoneDD$matureB)
   endcatch <- tapply(zoneDD$catch[endyr,],glb$sauindex,sum,na.rm=TRUE)
+  zoneDR$TAC[1,] <- sum(endcatch)
   arv <- addrecvar(zoneDD=zoneDD,zoneDP=zoneDR,zoneC=zoneC,glob=glb,
                    condC=condC,ctrl=ctrl,varyrs=varyrs,multTAC=multTAC,
                    lastsigR=lastsigR)

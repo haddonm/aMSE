@@ -44,6 +44,7 @@ mtext(paste0(title,"  Numbers-at-Size 000's"),side=1,line=-0.2,outer=TRUE,cex=1.
 
 
 # plot all first years and all last years
+start <- 3
 Nt <- zonePsau$Nt
 Nclass <- glb$Nclass
 midpts <- glb$midpts
@@ -54,19 +55,19 @@ dat <- Nt[sc,,,]
 nsau <- glb$nSAU
 saunames <- glb$saunames
 endyr <- dim(Nt)[2]
-plotprep(width=8,height=8,newdev=newdev)
-parset(plots=c(4,2),byrow=FALSE)
+plotprep(width=8,height=8,newdev=FALSE)
+parset(plots=c(4,2))
 for (sau in 1:nsau) { #  sau=1
   ymax <- getmax(dat[,c(1,endyr),sau,],mult=1.01)
-  plot(sizes,dat[,1,sau,1],type="l",lwd=1,col=rgb(.211,.211,.211,1/10),
+  plot(sizes,dat[,1,sau,1],type="l",lwd=1,col=rgb(.211,.211,.211,1/40),
        panel.first=grid(),
        ylim=c(0,ymax),ylab=saunames[sau],xlab="Shell Length mm")
-  for (i in 2:reps) lines(sizes,dat[,1,sau,i],lwd=1,col=rgb(.231,.251,.251,1/10))
-  for (i in 1:reps) lines(sizes,dat[,endyr,sau,i],lwd=1,col=rgb(1,0,0,1/15))
+  for (i in 2:reps) lines(sizes,dat[,1,sau,i],lwd=1,col=rgb(.231,.251,.251,1/40))
+  for (i in 1:reps) lines(sizes,dat[,5,sau,i],lwd=1,col=rgb(1,0,0,1/50))
 }
 
 
-# Read the Obs LF-comp data ----------------------------------------------------
+# Read the Obs LF-comp data-----------------------------------------------
 
 
 
@@ -97,5 +98,17 @@ copyto(rundir,todir=destdir,filename="controlsau.csv")
 plotprep(width=12,height=8,newdev=FALSE)
 doonesau(prerep=zoneDsau,postrep=zonePsau,glb=glb,startyr=30,picksau=11,
          addCI=TRUE,histCE=histCE)
+
+
+
+
+plotprep(width=8,height=8,newdev=FALSE)
+dosau(sauZone,glb,picksau=12,histCE=condC$histCE,yrnames=1973:2019)
+
+
+
+
+
+
 
 

@@ -219,6 +219,8 @@ getsingleNum <- function(varname,intxt) {
 #'
 #' @param zoneD the zoneD after nyrs of dynamics
 #' @param glb the globals object
+#' @param B0 is the sau based B0
+#' @param ExB0 is the sau based ExB0
 #'
 #' @return a list of six matrices of nSAU columns of SAU summaries,
 #'     and one column for the zone
@@ -226,12 +228,17 @@ getsingleNum <- function(varname,intxt) {
 #'
 #' @examples
 #' print("wait on an example")
-getsauzone <- function(zoneD,glb) { # zoneD=zoneDD; glb=glb
+getsauzone <- function(zoneD,glb,B0,ExB0) { # zoneD=zoneDD; glb=glb
   iSAU <- glb$sauindex
   SAU <- unique(iSAU)
   nSAU <- length(SAU)
   matB <- getsum(zoneD$matureB,iSAU)
+  deplsB <- matB
+  nsau <- glb$nSAU
+  for (i in 1:nsau) deplsB[,i] <- deplsB[,i]/B0[i]
   expB <- getsum(zoneD$exploitB,iSAU)
+  depleB <- expB
+  for (i in 1:nsau) depleB[,i] <- depleB[,i]/ExB0[i]
   catch <- getsum(zoneD$catch,iSAU)
   recruit <- getsum(zoneD$recruit,iSAU)
   harvestR <- catch/expB
@@ -244,10 +251,9 @@ getsauzone <- function(zoneD,glb) { # zoneD=zoneDD; glb=glb
   }
   cpue[,(nSAU+1)] <- rowSums(zoneD$cpue * wtzone)
   ans <- list(matB=matB,expB=expB,catch=catch,recruit=recruit,
-              harvestR=harvestR,cpue=cpue)
+              harvestR=harvestR,cpue=cpue,deplsB=deplsB,depleB=depleB)
   return(ans)
 }  # end of getsauzone
-
 
 
 #' @title getStr obtains a string from an input text line

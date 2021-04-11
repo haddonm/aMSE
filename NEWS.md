@@ -1,5 +1,7 @@
 ## aMSE Recent Activity
 
+* 11/04/2021 0.0.0.3300 modified the projection function and HCR function to generate and use the aspirational catches and include the TAC. Added a function to plot the zonescale TAC.
+
 * 30/03/2021 0.0.0.3500 Working on working with length-composition data both within the projections and during the conditioning. Added plotNt, plotCnt, prepareDDNt, and getLFdata.
 
 * 24/03/2021 0.0.0.4000 Fixed the summary of populations to SAU and the plotting of those results.

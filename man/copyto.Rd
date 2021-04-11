@@ -4,15 +4,28 @@
 \alias{copyto}
 \title{copyto copies the control.csv file from a scenario to a new directory}
 \usage{
-copyto(fromdir, todir, filename, makenew = TRUE, verbose = TRUE)
+copyto(
+  sourcedir,
+  fromdir,
+  todir,
+  filename = "control.csv",
+  makenew = TRUE,
+  verbose = TRUE
+)
 }
 \arguments{
-\item{fromdir}{the full path of the origin rundir}
+\item{sourcedir}{the full path to the directory that contains rundir}
 
-\item{todir}{the full path to the destination rundir}
+\item{fromdir}{the name of the current rundir}
+
+\item{todir}{the name of the new destination rundir}
+
+\item{filename}{the filename of the file to be copied}
 
 \item{makenew}{if the 'todir' does not exist should it be created using
 dir.create? default = TRUE}
+
+\item{verbose}{should details be printed to the console, default=TRUE}
 }
 \value{
 a vector of 1 or -1 denoting which files are transferred

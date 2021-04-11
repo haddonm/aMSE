@@ -65,10 +65,13 @@ alldirExists <- function(indir1,indir2=indir1,make=FALSE,verbose=TRUE) {
 #'     completely different path and will create the 'todir' if it
 #'     does not already exist.
 #'
-#' @param fromdir the full path of the origin rundir
-#' @param todir the full path to the destination rundir
+#' @param sourcedir the full path to the directory that contains rundir
+#' @param fromdir the name of the current rundir
+#' @param todir the name of the new destination rundir
+#' @param filename the filename of the file to be copied
 #' @param makenew if the 'todir' does not exist should it be created using
 #'     dir.create? default = TRUE
+#' @param verbose should details be printed to the console, default=TRUE
 #'
 #' @return a vector of 1 or -1 denoting which files are transferred
 #' @export
@@ -80,18 +83,21 @@ alldirExists <- function(indir1,indir2=indir1,make=FALSE,verbose=TRUE) {
 #' # any new requirements.
 #' copyto(fromdir=rundir,todir=destdir,filename="control.csv")
 #' }
-copyto <- function (fromdir, todir, filename, makenew = TRUE,verbose=TRUE) {
-  if (!dir.exists(fromdir)) stop(cat(fromdir, " does not exist!   \n\n"))
-  filen <- filenametopath(fromdir,filename)
+copyto <- function (sourcedir,fromdir, todir, filename="control.csv",
+                    makenew = TRUE,verbose=TRUE) {
+  fdir <- paste0(sourcedir,fromdir)
+  if (!dir.exists(fdir)) stop(cat(fdir, " does not exist!   \n\n"))
+  filen <- filenametopath(fdir,filename)
   if (!file.exists(filen)) stop(cat(filename, " does not exist \n"))
-  if (!dir.exists(todir)) {
-    if (verbose) cat(todir," did not exist  \n")
+  tdir <- paste0(sourcedir,todir)
+  if (!dir.exists(tdir)) {
+    if (verbose) cat(tdir," did not exist  \n")
     if (makenew) {
       dir.create(todir, recursive = TRUE)
       if (verbose) cat(todir," has been created  \n")
     }
   }
-  fileout <- filenametopath(todir, filename)
+  fileout <- filenametopath(tdir, filename)
   file.copy(filen, fileout, overwrite = TRUE, copy.date = TRUE)
   if (verbose) cat(filename, " has been copied to ",todir,"\n")
 }
