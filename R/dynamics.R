@@ -330,7 +330,7 @@ oneyearcat <- function(inpopC,inNt,Nclass,incat,yr) {  #
  # Harvest <- min(Catch/ExploitB,0.8)  # average of the start and end
   ce <- inpopC$popq * newExpB * 1000.0  #ExploitB
   vect <- c(exploitb=ExploitB,matureb=MatureB,catch=Catch,cpue=ce)
-  ans <- list(vect=vect,NaL=newNt,catchN=Cat)
+  ans <- list(vect=vect,NaL=newNt,catchN=Cat,NumNe=NumNe)
   return(ans)
 } # End of oneyearcat
 
@@ -366,7 +366,7 @@ oneyearcat <- function(inpopC,inNt,Nclass,incat,yr) {  #
 #' @examples
 #' print("Wait on new data")
 #' # zoneCC=zone$zoneC; exb=exb ;catchsau=zone$zone1$condC$histCatch[46,];year=46;
-#' # sigmar=1e-08; Ncl=zone$glb$Nclass; sauindex=zone$glb$sauindex;movem=zone$glb$movem; sigmab=1e-08
+#' # sigmar=1e-08;Ncl=zone$glb$Nclass;sauindex=zone$glb$sauindex;movem=zone$glb$movem; sigmab=1e-08
 oneyearsauC <- function(zoneCC,exb,inN,catchsau,year,Ncl,
                          sauindex,movem,sigmar=1e-08,sigmab=1e-08) {
   popC <- imperr(catchsau,exb,sauindex,sigmab)
@@ -388,10 +388,10 @@ oneyearsauC <- function(zoneCC,exb,inN,catchsau,year,Ncl,
   dyn <- rbind(dyn,recruits,deplsB,depleB)
   NaL <-  sapply(ans,"[[","NaL")
   NaL[1,] <- recruits
-  catchN <-  sapply(ans,"[[","catchN")
-  return(list(dyn=dyn,NaL=NaL,catchN=catchN))
+  catchN <- sapply(ans,"[[","catchN")
+  NumNe <- sapply(ans,"[[","NumNe")
+  return(list(dyn=dyn,NaL=NaL,catchN=catchN,NumNe=NumNe))
 } # end of oneyearsauC
-
 
 #' @title oneyearC conducts one year's dynamics using catch not harvest
 #'

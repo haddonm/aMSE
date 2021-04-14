@@ -1,7 +1,28 @@
 
 
-# rutilsMH::listFunctions("C:/Users/User/Dropbox/A_code/aMSE/aMSE_utils.R")
+# x <- rutilsMH::describefunctions("C:/Users/User/Dropbox/A_code/aMSE/R/","aMSE_utils.R")
 
+#' @title addpops adds the populations from a single replicate together
+#'
+#' @description addpops adds the populations from a single replicate together
+#'     to form zone totals. It can only be used on matureB, exploitB, catch,
+#'     acatch, and recruits. teh sum of acatch is already available as TAC in
+#'     the projection dynamics object 'zoneDP'
+#'
+#' @param invar the summable variable eg catch, recruits, matureB
+#' @param nyrs the number of years of data
+#' @param reps the number of replicates
+#'
+#' @return a 2D matrix of yrs x reps
+#' @export
+#'
+#' @examples
+#' print("wait on data")
+addpops <- function(invar,nyrs,reps) {  # invar=invar; glb=glb
+  result <- array(0,dim=c(nyrs,reps),dimnames=list(1:nyrs,1:reps)) # 3D to 2D
+  for (iter in 1:reps) result[,iter] <- rowSums(invar[,,iter],na.rm=TRUE)
+  return(result)
+} # end of addpops
 
 #' @title alldirExists Checks the existence of both a run and data directory
 #'
@@ -135,7 +156,65 @@ poptosau <- function(invar,glb) {  # invar=zoneDP$matureB; glb=glb
     for (yr in 1:nyrs)
       result[yr,,iter] <- tapply(invar[yr,,iter],sauindex,sum,na.rm=TRUE)
   return(result)
-} # end of poptosa
+} # end of poptosau
+
+#' @title poptozone translates the zone_pop objects to a single zone object
+#'
+#' @description poptozone combines the dynamic results for each variable so
+#'     that results by population become results by zone. matureB, exploitB,
+#'     catch, recruit, catchN, and Nt are simple summations of the totals for
+#'     each population into their respective Zone The harvest rate would be
+#'     end of year or beginning of year estimates derived from dividing the
+#'     catch x zone by the exploitable biomass x zone. Similarly the deplsB and
+#'     depleB are the end of year matureB and exploitB divided by their
+#'     respective unfished estimated by Zone obtained using getvar(zoneC,"B0").
+#'
+#' @param inzone one of the zone dynamics objects containing replicates, made
+#'     up of populations
+#' @param glb the object containing the global constants
+#' @param B0 the sum of B0 across all populations, use getvar(zoneC,"B0")
+#' @param ExB0 the sum of ExB0 across all populations use getvar(zoneC,"ExB0")
+#'
+#' @return a list of dynamics variables by zone
+#' @export
+#'
+#' @examples
+#' print("wait on suitable internal data sets ")
+poptozone <- function(inzone,glb, B0, ExB0) {
+  # inzone=zoneDP; glb=glb; B0=sum(getvar(zoneC,"B0")); ExB0=sum(getvar(zoneC,"ExB0"))
+  N <- glb$Nclass
+  invar <- inzone$matureB
+  nyrs <- dim(invar)[1]
+  reps <- dim(invar)[3]
+  matureB <- addpops(invar,nyrs,reps)
+  deplsB <- matureB/B0
+  exploitB <- addpops(inzone$exploitB,nyrs,reps)
+  depleB <- exploitB/ExB0
+  recruit <- addpops(inzone$recruit,nyrs,reps)
+  catch <- addpops(inzone$catch,nyrs,reps)
+  catchN <- array(data=0,dim=c(N,nyrs,reps), # define some arrays
+                  dimnames=list(glb$midpts,1:nyrs,1:reps))
+  Nt <- array(data=0,dim=c(N,nyrs,reps),
+              dimnames=list(glb$midpts,1:nyrs,1:reps))
+  cpue <- catch
+  harvestR <- catch
+  popcat <- inzone$catch
+  popce <- inzone$cpue
+  for (iter in 1:reps) {
+    harvestR[,iter] <- catch[,iter]/exploitB[,iter]
+    for (yr in 1:nyrs) {
+      totC <- sum(popcat[yr,,iter],na.rm=TRUE)
+      cpue[yr,iter] <- sum(popce[yr,,iter] * (popcat[yr,,iter]/totC),na.rm=TRUE)
+      catchN[,yr,iter] <- rowSums(inzone$catchN[,yr,,iter])
+      Nt[,yr,iter] <- rowSums(inzone$Nt[,yr,,iter])
+    }
+  }
+  outzone <- list(matureB=matureB,exploitB=exploitB,catch=catch,
+                  TAC=inzone$TAC,harvestR=harvestR,cpue=cpue,
+                  recruit=recruit,deplsB=deplsB,depleB=depleB,
+                  catchN=catchN,Nt=Nt)
+  return(outzone)
+} # end of poptozone
 
 #' @title prepareDDNt converts the population based historical Nt to SAU-based
 #'
@@ -228,6 +307,7 @@ summarizeprod <- function(product,saunames) { # product=zone$product; saunames=z
   return(ans)
 } # end of summarizeprod
 
+
 #' @title sumpop2sau gathers population data into sau data using sauindex
 #'
 #' @param invect a vector of population values for a given variable
@@ -257,7 +337,7 @@ sumpop2sau <- function(invect,sauindex) {
 #'     respective unfished estimated by SAU obtained using getvar(zoneC,"B0").
 #'
 #' @param inzone one of the zone dynamics objects made up of populations
-#' @param glb the object containng the global constants
+#' @param glb the object containing the global constants
 #' @param B0 the estimate B0 for each population use getvar(zoneC,"B0")
 #' @param ExB0 the estimate ExB0 for each population use getvar(zoneC,"ExB0")
 #'

@@ -93,18 +93,11 @@ copyto(rundir,todir=destdir,filename="controlsau.csv")
   #     picksau=9; histCE=histCE;CIprobs=c(0.05,0.5,0.95); addCI=TRUE
 
 
+library(rutilsMH)
+ddir <- "c:/Users/Malcolm/DropBox/A_code/aMSE/R/"
+filen <- c("aMSE.R","definezone.R")
 
-
-plotprep(width=12,height=8,newdev=FALSE)
-doonesau(prerep=zoneDsau,postrep=zonePsau,glb=glb,startyr=30,picksau=11,
-         addCI=TRUE,histCE=histCE)
-
-
-
-
-plotprep(width=8,height=8,newdev=FALSE)
-dosau(sauZone,glb,picksau=12,histCE=condC$histCE,yrnames=1973:2019)
-
+x <- describefunctions(ddir,filen)
 
 
 

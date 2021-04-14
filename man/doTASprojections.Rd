@@ -4,7 +4,16 @@
 \alias{doTASprojections}
 \title{doTASprojections conducts the replicate model runs for Tasmania}
 \usage{
-doTASprojections(ctrl, zoneDP, zoneCP, histCE, glb, mcdahcr, hsargs)
+doTASprojections(
+  ctrl,
+  zoneDP,
+  zoneCP,
+  histCE,
+  glb,
+  mcdahcr,
+  hsargs,
+  sampleFIS = NULL
+)
 }
 \arguments{
 \item{ctrl}{the ctrl object from readctrlfile}
@@ -26,6 +35,8 @@ calculate the multiplier for the previous aspirational catches so as to
 estimate the aspirational catches for the following year}
 
 \item{hsargs}{the constants used to define the workings of the hcr}
+
+\item{sampleFIS}{a function that generates the FIS statistics}
 }
 \value{
 a replacement for zoneDP containing the dynamics of all replicates

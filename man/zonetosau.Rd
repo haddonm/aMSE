@@ -9,7 +9,7 @@ zonetosau(inzone, glb, B0, ExB0)
 \arguments{
 \item{inzone}{one of the zone dynamics objects made up of populations}
 
-\item{glb}{the object containng the global constants}
+\item{glb}{the object containing the global constants}
 
 \item{B0}{the estimate B0 for each population use getvar(zoneC,"B0")}
 

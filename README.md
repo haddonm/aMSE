@@ -1,6 +1,14 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
+# LATEST UPDATE
+
+  - 2021-04-14 0.0.0.3200 Added NumNe to zoneDP output ready for its use
+    in estimating FIS results by population and other numbers-at-size
+    related indices. NumNe are the numbers-at-size following growth and
+    the application of half of natural mortality but before any fishing
+    mortality has occurred. (see News.ms for history of development)
+
 # aMSE
 
 <!-- badges: start -->
@@ -83,15 +91,17 @@ library(aMSE)
 library(rutilsMH)
 library(makehtml)
 library(knitr)
-# Obviously you should modify the rundir to suit your own computer
+# OBVIOUSLY you should modify the rundir and datadir to suit your own computer
 if (dir.exists("c:/Users/User/DropBox")) {
   ddir <- "c:/Users/User/DropBox/A_code/"
 } else {
   ddir <- "c:/Users/Malcolm/DropBox/A_code/"
 }
-rundir <- paste0(ddir,"aMSEUse/conddata/generic")  # data and results directory
-dirExists(rundir,make=TRUE,verbose=TRUE)
-#> c:/Users/Malcolm/DropBox/A_code/aMSEUse/conddata/generic :  exists
+rundir <- paste0(ddir,"aMSEUse/scenarios/HS652510")
+datadir <- paste0(ddir,"aMSEUse/scenarios/tasdata")
+alldirExists(rundir,datadir)
+#> rundir,  c:/Users/User/DropBox/A_code/aMSEUse/scenarios/HS652510 :  exists  
+#> datadir,  c:/Users/User/DropBox/A_code/aMSEUse/scenarios/tasdata :  exists
 # equilibrium zone -------------------------------------------------------------
 # You now need to ensure that there is, at least, a control.csv, and a 
 # constantsdata.csv file in the data directory plus some other data .csv files
@@ -109,18 +119,19 @@ dirExists(rundir,make=TRUE,verbose=TRUE)
 # readme pages for details.
 
 # TasmanianHS.R should be in rundir, but during development is in data-raw
-source(paste0(ddir,"aMSE/data-raw/","TasmanianHS.R"))
+source(paste0(rundir,"/TasmanianHS.R"))
 # generate equilibrium zone ----------------------------------------------------
 starttime2 <- (Sys.time())
-zone <- makeequilzone(rundir,"control2.csv",cleanslate = TRUE) # normally would read in a file
+zone <- makeequilzone(rundir,"controlsau.csv",datadir=datadir,cleanslate = TRUE)
 #> All required files appear to be present 
 #> Files read, now making zone 
+#> Now estimating population productivity 
 #> matureB Stable 
 #> exploitB Stable 
 #> recruitment Stable 
 #> spawning depletion Stable
 equiltime <- (Sys.time()); print(equiltime - starttime2)
-#> Time difference of 15.80114 secs
+#> Time difference of 20.85827 secs
 # declare main objects ---------------------------------------------------------
 glb <- zone$glb
 ctrl <- zone$ctrl
@@ -136,27 +147,25 @@ plotproductivity(rundir,product,glb)
 numbersatsize(rundir, glb, zoneD)
 # Condition on Fishery ---------------------------------------------------------
 zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,condC,sigR=1e-08,sigB=1e-08)
-# save conditioned results -----------------------------------------------------
-save(zoneDD,file=filenametopath(rundir,"zoneDD.RData"))
-# Illustrate productivity
-propD <- getzoneprops(zoneC,zoneDD,glb,year=47)
-addtable(round(t(propD),4),"propertyDD.csv",rundir,category="zoneDD",caption=
+
+propD <- t(getzoneprops(zoneC,zoneDD,glb,year=47))
+addtable(round(propD,4),"propertyDD.csv",rundir,category="zoneDD",caption=
            "Properties of zoneD after conditioning on historical catches.")
-addtable(round(t(zoneDD$harvestR[45:47,]),4),"final_harvestR.csv",rundir,
-         category="zoneDD",caption="Last three years of harvest rate.")
+addtable(round(t(zoneDD$harvestR[40:47,]),4),"final_harvestR.csv",rundir,
+         category="zoneDD",caption="Last eight years of harvest rate.")
 popdefs <- getlistvar(zone$zoneC,"popdef")
 addtable(round(t(popdefs),3),"popdefs.csv",rundir,category="zoneDD",caption=
            "Population specific definitions")
 # Prepare projections ----------------------------------------------------------
+plotconditioning(zoneDD,glb,zoneC,condC$histCE,1973:2019,rundir)
 cmcda <- mcdahcr(arrce=condC$histCE,hsargs=hsargs,
-                 yearnames=rownames(condC$histCE),saunames=glb$saunames)
+                 yearnames=rownames(condC$histCE),saunames=glb$saunames,
+                 acatches=tail(condC$histCatch,1))
 pms <- cmcda$pms
 multTAC <- cmcda$multTAC
-#out <- prepareprojection(projC,zoneC,glb,zoneDD,ctrl,multTAC)
 out <- prepareprojectionnew(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
-                            zoneDD=zoneDD,ctrl=ctrl,varyrs=8,
-                            multTAC=multTAC,lastsigR = 0.25)
-
+                            multTAC=multTAC,zoneDD=zoneDD,ctrl=ctrl,varyrs=7,
+                            lastsigR = ctrl$withsigR)
 zoneDP <- out$zoneDP
 projC <- out$projC
 zoneCP <- out$zoneCP
@@ -164,12 +173,18 @@ zoneDDR <- out$zoneDDR
 
 zoneDP <- doTASprojections(ctrl,zoneDP,zoneCP,condC$histCE,glb,mcdahcr,hsargs)
 # save more plots to rundir ----------------------------------------------------
-out <- plotbysau(zoneDP,glb,rundir)
-
+histCE <- condC$histCE
+B0 <- getvar(zoneC,"B0")
+ExB0 <- getvar(zoneC,"ExB0")
+sauCI <- sauplots(zoneDP,zoneDDR,glb,rundir,B0,ExB0,startyr=25,addCI=TRUE,
+                  histCE=histCE)
+outzone <- poptozone(zoneDP,glb,
+                     B0=sum(getvar(zoneC,"B0")),
+                     ExB0=sum(getvar(zoneC,"ExB0")))
+plotZone(outzone,rundir,CIprobs=c(0.05,0.5,0.95),addfile=TRUE)
 projtime <- Sys.time()
 print(projtime - starttime)
-#> Time difference of 1.0881 mins
-
+#> Time difference of 58.48022 secs
 # make results webpage ---------------------------------------------------------
 replist <- list(starttime=as.character(starttime),endtime=as.character(projtime))
 
@@ -190,46 +205,42 @@ After running the whole, even if you do not generate the results
 webpage, you could also try:
 
 ``` r
-B0 <- getvar(zoneC,"B0")
-ExB0 <- getvar(zoneC,"ExB0")
-
-zoneDsau <- zonetosau(zoneDDR,glb,B0,ExB0)
-zonePsau <- zonetosau(zoneDP,glb,B0,ExB0)
-
-nsau <- glb$nSAU
-label <- glb$saunames
-CIprobs <- c(0.05,0.5,0.95)
-sauCI <- vector("list",nsau)
-postyrs <- ctrl$projection
-startyr <- 40
-
-invar <- "cpue"
-prerep <- zoneDsau[[invar]]
-allrep <- zonePsau[[invar]]
-preyrs <- dim(prerep)[1]
-allyrs <- preyrs + postyrs
-reps <- dim(prerep)[3]
-
-plotprep(width=8, height=8,newdev=FALSE)
-parset(plots=c(4,2))
-for (sau in 1:nsau) {
-  ymax <- getmax(rbind(prerep[startyr:preyrs,sau,],allrep[,sau,]))
-  traj <- c(prerep[startyr:preyrs,sau,1],allrep[,sau,1])
-  plot(startyr:allyrs,traj,type="l",lwd=1,col="grey",panel.first=grid(),
-       ylab=paste0(invar,"  ",label[sau]),ylim=c(0,ymax))
-  for (i in 2:reps)
-    lines(startyr:allyrs,c(prerep[startyr:preyrs,sau,i],allrep[,sau,i]),lwd=1,col="grey")
-  CI <- apply(allrep[,sau,],1,quantile,probs=CIprobs)
-  lines((preyrs+1):allyrs,CI[2,],lwd=2,col=4)
-  lines((preyrs+1):allyrs,CI[1,],lwd=1,col=2)
-  lines((preyrs+1):allyrs,CI[3,],lwd=1,col=2)
-  sauCI[[sau]] <- CI
-  abline(v=(preyrs+0.5),col=2)
- if (invar == "cpue") abline(h=150,col=2)
-}
+str(zoneDP,max.level=1)
+#> List of 16
+#>  $ SAU     : num [1:28] 6 6 6 7 7 7 8 8 9 9 ...
+#>  $ matureB : num [1:30, 1:28, 1:100] 28 30.2 30.9 29.9 30.1 ...
+#>   ..- attr(*, "dimnames")=List of 3
+#>  $ exploitB: num [1:30, 1:28, 1:100] 30.4 27.4 29.4 30.6 29.4 ...
+#>   ..- attr(*, "dimnames")=List of 3
+#>  $ catch   : num [1:30, 1:28, 1:100] 2.65 3.66 4.47 4.55 3.69 ...
+#>   ..- attr(*, "dimnames")=List of 3
+#>  $ acatch  : num [1:30, 1:8, 1:100] 13.6 15 15 15 15.7 ...
+#>   ..- attr(*, "dimnames")=List of 3
+#>  $ harvestR: num [1:30, 1:28, 1:100] 0.087 0.134 0.152 0.149 0.126 ...
+#>   ..- attr(*, "dimnames")=List of 3
+#>  $ cpue    : num [1:30, 1:28, 1:100] 185 163 173 181 175 ...
+#>   ..- attr(*, "dimnames")=List of 3
+#>  $ cesau   : num [1:30, 1:8, 1:100] 142 121 125 140 159 ...
+#>   ..- attr(*, "dimnames")=List of 3
+#>  $ catsau  : num [1:30, 1:8, 1:100] 14.2 15.4 17.7 17.3 15 ...
+#>   ..- attr(*, "dimnames")=List of 3
+#>  $ recruit : num [1:30, 1:28, 1:100] 62965 18522 24364 16453 19168 ...
+#>   ..- attr(*, "dimnames")=List of 3
+#>  $ deplsB  : num [1:30, 1:28, 1:100] 0.402 0.434 0.444 0.429 0.432 ...
+#>   ..- attr(*, "dimnames")=List of 3
+#>  $ depleB  : num [1:30, 1:28, 1:100] 0.457 0.411 0.441 0.459 0.441 ...
+#>   ..- attr(*, "dimnames")=List of 3
+#>  $ catchN  : num [1:105, 1:30, 1:28, 1:100] 3.69e-132 1.86e-128 6.89e-125 1.85e-121 3.61e-118 ...
+#>   ..- attr(*, "dimnames")=List of 4
+#>  $ Nt      : num [1:105, 1:30, 1:28, 1:100] 6.30e+04 3.07e-07 1.26e-05 3.74e-04 8.07e-03 ...
+#>   ..- attr(*, "dimnames")=List of 4
+#>  $ NumNe   : num [1:105, 1:30, 1:28, 1:100] 0 0 0 0 0 0 0 0 0 0 ...
+#>   ..- attr(*, "dimnames")=List of 4
+#>  $ TAC     : num [1:30, 1:100] 703 550 497 496 498 ...
+#>   ..- attr(*, "dimnames")=List of 2
 ```
 
-<img src="man/figures/README-combined_plot-1.png" width="100%" />
+To see the structure of the dynamic object generated by the projections.
 
 See the vignette Running\_aMSE.Rmd for a more detailed example.
 

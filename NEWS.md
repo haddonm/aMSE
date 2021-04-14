@@ -1,5 +1,7 @@
 ## aMSE Recent Activity
 
+* 2021-04-14 0.0.0.3200 Added NumNe to zoneDP output ready for its use in estimating FIS results by population and other numbers-at-size related indices. NumNe are the numbers-at-size following growth and the application of half of natural mortality but before any fishing moretality has occurred. 
+
 * 11/04/2021 0.0.0.3300 modified the projection function and HCR function to generate and use the aspirational catches and include the TAC. Added a function to plot the zonescale TAC.
 
 * 30/03/2021 0.0.0.3500 Working on working with length-composition data both within the projections and during the conditioning. Added plotNt, plotCnt, prepareDDNt, and getLFdata.

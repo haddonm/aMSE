@@ -194,6 +194,46 @@ dosauplot <- function(ylabel,prerep,postrep,glb,startyr,addCI=FALSE,
   return(invisible(sauCI))
 } # end of dosauplot
 
+
+#' @title onezoneplot plots out one variable from the zone
+#'
+#' @description once the projected zone has been summarized by poptozone one
+#'     can add plots to the results using plotZone. This in turn uses
+#'     onezoneplot to plot each variable in turn.
+#'
+#' @param invar which zone variable to plot
+#' @param rundir the run directory for the results
+#' @param CIprobs the quantiles to use for the CI.
+#' @param varname the name of the variable for use in labels
+#' @param addfile should a png file be added to the results, default = TRUE
+#'
+#' @return it generates a png file of the plot if addfile remains TRUE
+#' @export
+#'
+#' @examples
+#' print("wait on suitable data")
+onezoneplot <- function(invar,rundir,CIprobs,varname,addfile=TRUE) {
+  #  invar <- inzone$catch
+  nyrs <- nrow(invar)
+  reps <- ncol(invar)
+  namefile <- paste0("Projected_Zonal_",varname,".png")
+  filen <- filenametopath(rundir,namefile)
+  if (!addfile) filen <- ""
+  plotprep(width=7,height=4,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
+  parset()
+  ymax <- getmax(invar)
+  CI <- apply(invar,1,quantile,probs=CIprobs)
+  plot(1:nyrs,invar[,1],lwd=1,col="grey",ylab=varname,xlab="Years",
+       panel.first=grid(),ylim=c(0,ymax),yaxs="i")
+  for (i in 1:reps) lines(1:nyrs,invar[,i],col="grey",lwd=1)
+  lines(1:nyrs,CI[1,],lwd=1,col=2)
+  lines(1:nyrs,CI[3,],lwd=1,col=2)
+  lines(1:nyrs,CI[2,],lwd=2,col=4)
+  caption <- paste0("Projected ",varname," across all replicates.")
+  if (addfile) addplot(filen,rundir=rundir,category="zonescale",caption)
+} # end of onezoneplot
+
+
 #' @title plotCNt plots the historical conditioning Nt or catchN for all years
 #'
 #' @description plotCNt the historical conditioning on the fisheries data leads
@@ -459,6 +499,38 @@ plotTAC <- function(zoneDP,rundir,CIprobs=c(0.05,0.5,0.95)) {
   caption <- "Projected TAC across all replicates."
   addplot(filen,rundir=rundir,category="zonescale",caption)
 } # end of plotTAC
+
+
+#' @title plotZone plots the projected TAC across all replicates
+#'
+#' @description plotZone plots out the projected TAC for all replicates. The
+#'     first value is the sum of the final catches in the conditioning period.
+#'
+#' @param inzone the dynamic zone projection object
+#' @param rundir the rundir for the scenario
+#' @param CIprobs the quantiles used to generate the confidence intervals. The
+#'     default = c(0.05,0.5,0.95)
+#' @param addfile should the plots be added to the rundir =TRUE or only sent to
+#'     the console = FALSE. Default = TRUE
+#'
+#' @return nothing but it adds a plot to the zonescale tab in the rundir
+#' @export
+#'
+#' @examples
+#' print("wait on suitable datasets")
+plotZone <- function(inzone,rundir,CIprobs=c(0.05,0.5,0.95),addfile=TRUE) {
+  onezoneplot(inzone$catch,rundir,CIprobs=CIprobs,"Catch",addfile=addfile)
+  onezoneplot(inzone$cpue,rundir,CIprobs=CIprobs,"CPUE",addfile=addfile)
+  onezoneplot(inzone$deplsB,rundir,CIprobs=CIprobs,"Mature_Biomass_Depletion",
+              addfile=addfile)
+  onezoneplot(inzone$matureB,rundir,CIprobs=CIprobs,"Mature_Biomass",
+              addfile=addfile)
+  onezoneplot(inzone$harvestR,rundir,CIprobs=CIprobs,"Harvest_Rate",
+              addfile=addfile)
+  onezoneplot(inzone$recruit,rundir,CIprobs=CIprobs,"Recruitment",
+              addfile=addfile)
+  onezoneplot(inzone$TAC,rundir,CIprobs=CIprobs,"TAC",addfile=addfile)
+} # end of plotZone
 
 
 #' @title plotzoneproj plots the replicates of a single zone-wide variable

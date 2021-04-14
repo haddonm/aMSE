@@ -269,6 +269,7 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 #'     calculate the multiplier for the previous aspirational catches so as to
 #'     estimate the aspirational catches for the following year
 #' @param hsargs the constants used to define the workings of the hcr
+#' @param sampleFIS a function that generates the FIS statistics
 #'
 #' @return a replacement for zoneDP containing the dynamics of all replicates
 #'     for all projection years
@@ -276,7 +277,8 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 #'
 #' @examples
 #' print("wait on suitable internal data sets")
-doTASprojections <- function(ctrl,zoneDP,zoneCP,histCE,glb,mcdahcr,hsargs) {
+doTASprojections <- function(ctrl,zoneDP,zoneCP,histCE,glb,mcdahcr,hsargs,
+                             sampleFIS=NULL) {
   reps <- ctrl$reps
   projyrs <- ctrl$projection
   sigmar <- ctrl$withsigR
@@ -289,13 +291,12 @@ doTASprojections <- function(ctrl,zoneDP,zoneCP,histCE,glb,mcdahcr,hsargs) {
   for (iter in 1:reps) {
     for (year in 2:projyrs) {
       arrce=rbind(histCE,zoneDP$cesau[1:(year-1),,iter])
-     # lnce <- nrow(arrce)
       yearnames=c(oldyrs,tail(oldyrs,1)+1:(year-1))
       hcrout <- mcdahcr(arrce=arrce,hsargs,yearnames,saunames=glb$saunames,
                         acatches=zoneDP$acatch[year-1,,iter])
      # acatch <- zoneDP$acatch[year-1,,iter] * hcrout$multTAC[lnce,]
       acatch <- hcrout$acatch
-      TAC <- sum(acatch)
+      TAC <- hcrout$TAC
       zoneDP$acatch[year,,iter] <- acatch
       outy <- oneyearsauC(zoneCC=zoneCP,exb=zoneDP$exploitB[year-1,,iter],
                           inN=zoneDP$Nt[,year-1,,iter],catchsau=acatch,year=year,
@@ -316,6 +317,7 @@ doTASprojections <- function(ctrl,zoneDP,zoneCP,histCE,glb,mcdahcr,hsargs) {
       zoneDP$depleB[year,,iter] <- dyn["depleB",]
       zoneDP$Nt[,year,,iter] <- outy$NaL
       zoneDP$catchN[,year,,iter] <- outy$catchN
+      zoneDP$NumNe[,year,,iter] <- outy$NumNe
       zoneDP$TAC[year,iter] <- TAC
     } # year loop
   }   # iter loop
@@ -363,11 +365,12 @@ makezoneDP <- function(projyr,iter,glb) {
   deplExB <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
   catchN <- array(data=0,dim=c(N,projyr,numpop,iter),dimnames=namendims)
   Nt <- array(data=0,dim=c(N,projyr,numpop,iter),dimnames=namendims)
+  NumNe <- array(data=0,dim=c(N,projyr,numpop,iter),dimnames=namendims)
   TAC <- array(0,dim=c(projyr,iter),dimnames=list(1:projyr,1:iter))
   zoneDP <- list(SAU=SAU,matureB=MatB,exploitB=ExplB,catch=catch,acatch=acatch,
                  harvestR=harvest,cpue=cpue,cesau=cesau,catsau=catsau,
                  recruit=recruit,deplsB=deplSpB,depleB=deplExB,catchN=catchN,
-                 Nt=Nt,TAC=TAC)
+                 Nt=Nt,NumNe=NumNe,TAC=TAC)
   return(zoneDP)
 } # end of makezoneDP
 

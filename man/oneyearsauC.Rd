@@ -57,5 +57,5 @@ oneyearsauC conducts one year's dynamics in the simulation
 \examples{
 print("Wait on new data")
 # zoneCC=zone$zoneC; exb=exb ;catchsau=zone$zone1$condC$histCatch[46,];year=46;
-# sigmar=1e-08; Ncl=zone$glb$Nclass; sauindex=zone$glb$sauindex;movem=zone$glb$movem; sigmab=1e-08
+# sigmar=1e-08;Ncl=zone$glb$Nclass;sauindex=zone$glb$sauindex;movem=zone$glb$movem; sigmab=1e-08
 }
