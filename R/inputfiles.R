@@ -517,6 +517,7 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir) {
    withsigR <- getsingleNum("withsigR",indat)
    withsigB <- getsingleNum("withsigB",indat)
    withsigCE <- getsingleNum("withsigCE",indat)
+   NeedFIS <- getStr(indat[begin+10],1) # added to read in whether need a FIS
    Nyrs=40 # minimum to set up equilibrium unfished population
    filenames2 <- dir(datadir)
    if (length(grep(datafile,filenames2)) != 1)
@@ -630,10 +631,10 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir) {
    projC <- list(projLML=projLML,HS=HS,HSdetail=HSdetail,projyrs=projyrs,
                  inityrs=inityrs,Sel=NULL,SelWt=NULL,histCE=histCE)
    outctrl <- list(runlabel,datafile,batch,reps,randomseed,randomseedP,
-                   withsigR,withsigB,withsigCE,catches,projyrs,bysau)
+                   withsigR,withsigB,withsigCE,catches,projyrs,bysau,NeedFIS) # Added NeedFIS into ctrl
    names(outctrl) <- c("runlabel","datafile","batch","reps","randseed",
                        "randseedP","withsigR","withsigB","withsigCE",
-                       "catches","projection","bysau")
+                       "catches","projection","bysau","NeedFIS") # Added NeedFIS
    globals <- list(numpop=numpop, nSAU=nSAU, midpts=midpts,
                    Nclass=Nclass, Nyrs=Nyrs,larvdisp=larvdisp)
    totans <- list(SAUnames,SAUpop,minc,cw,larvdisp,randomseed,
