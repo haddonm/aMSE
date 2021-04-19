@@ -251,9 +251,9 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 
 
 
-#' @title doTASprojections conducts the replicate model runs for Tasmania
+#' @title doprojections conducts the replicate model runs for Tasmania
 #'
-#' @description doTASprojections conducts the replicate model runs for
+#' @description doprojections conducts the replicate model runs for
 #'     Tasmania using the mcdahcr and the input hsargs
 #'
 #' @param ctrl the ctrl object from readctrlfile
@@ -261,15 +261,23 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 #'     model runs
 #' @param zoneCP the object used to contain the constants for each population
 #'     used in model dynamics
-#' @param histCE the historical CPUE data used to condition the model prior to
-#'     running the replicates. This is appended to new predicted cpue data from
-#'     each replicate to calibrate the HCR within the current HS
+#' @param otherdata an object containing any other data used by the different
+#'     functions used n the projections. For example, for Tasmania this would
+#'     be pointed at the histCE data set which is appended to each year's new
+#'     predicted cpue data from each replicate to calibrate the HCR within the
+#'     current HS. Other jurisdictions may use other data.
 #' @param glb the object containing the global constants for the given run
-#' @param mcdahcr the name of the harvest control rule that is used to
-#'     calculate the multiplier for the previous aspirational catches so as to
-#'     estimate the aspirational catches for the following year
+#' @param hcrfun the name of the harvest control rule that is used to
+#'     calculate the multiplier for the previous aspirational catches (possibly
+#'     for each SAU but possibly the TAC for the wholse zone) so as to
+#'     estimate the aspirational catches or TAC or the following year
 #' @param hsargs the constants used to define the workings of the hcr
+#' @param sampleCE a function that generates the CPUE statistics
 #' @param sampleFIS a function that generates the FIS statistics
+#' @param sampleNaS a function that generates the Numbers-at-size samples
+#' @param ... the ellipsis used in case any of the functions hcrfun, sampleCE,
+#'     sampleFIS, or sampleNas require extra arguments not included in the
+#'     default collection
 #'
 #' @return a replacement for zoneDP containing the dynamics of all replicates
 #'     for all projection years
@@ -277,24 +285,24 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 #'
 #' @examples
 #' print("wait on suitable internal data sets")
-doTASprojections <- function(ctrl,zoneDP,zoneCP,histCE,glb,mcdahcr,hsargs,
-                             sampleFIS=NULL) {
+doprojections <- function(ctrl,zoneDP,zoneCP,otherdata,glb,hcrfun,hsargs,
+                             sampleCE,sampleFIS,sampleNaS,...) {
+#  ctrl=ctrl;zoneDP=zoneDP;zoneCP=zoneCP;otherdata=condC$histCE;glb=glb
+#  hcrfun=mcdahcr; hsargs=hsargs; sampleCE=tasCPUE;sampleFIS=tasFIS; sampleNaS=tasNaS
   reps <- ctrl$reps
   projyrs <- ctrl$projection
   sigmar <- ctrl$withsigR
   sigmab <- ctrl$withsigB
-  oldyrs <- as.numeric(rownames(histCE))
+  sigce <- ctrl$withsigCE
+  oldyrs <- as.numeric(rownames(otherdata))
   sauindex <- glb$sauindex
   saunames <- glb$saunames
   Nclass <- glb$Nclass
   movem <- glb$move
   for (iter in 1:reps) {
-    for (year in 2:projyrs) {
-      arrce=rbind(histCE,zoneDP$cesau[1:(year-1),,iter])
-      yearnames=c(oldyrs,tail(oldyrs,1)+1:(year-1))
-      hcrout <- mcdahcr(arrce=arrce,hsargs,yearnames,saunames=glb$saunames,
-                        acatches=zoneDP$acatch[year-1,,iter])
-     # acatch <- zoneDP$acatch[year-1,,iter] * hcrout$multTAC[lnce,]
+    for (year in 2:projyrs) { # iter=1; year=2
+      hcrdata <- tasdata(tasCPUE,tasFIS,tasNaS,zoneDP,otherdata,year=year,iter=iter)
+      hcrout <- hcrfun(hcrdata,hsargs,saunames=glb$saunames)
       acatch <- hcrout$acatch
       TAC <- hcrout$TAC
       zoneDP$acatch[year,,iter] <- acatch
@@ -322,7 +330,7 @@ doTASprojections <- function(ctrl,zoneDP,zoneCP,histCE,glb,mcdahcr,hsargs,
     } # year loop
   }   # iter loop
   return(zoneDP)
-} # end of doTASprojections
+} # end of doprojections
 
 #' @title makezoneDP generates the container for the projection dynamics
 #'

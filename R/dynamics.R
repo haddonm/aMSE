@@ -126,13 +126,14 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,sigR=1e-08,sigB=1e-08) {
 
 #' @title imperr calculates population catches from sau catches with error
 #'
-#' @description imperr converts predicted sau catches into population level
-#'     catches while introducing management implementation error at the same
-#'     time. Here it is implemented as Log-Normal errors on diver intuitions
+#' @description imperr converts aspirational sau catches into population level
+#'     catches while introducing management implementation error. Here this
+#'     error is implemented as Log-Normal errors on diver intuitions
 #'     concerning the relative abundance in each population. The error is
 #'     imposed separately on the populations in each SAU.
 #'
-#' @param catchsau the predicted catch per SAU from the Harvest control rule
+#' @param catchsau the predicted or aspirational catch per SAU from the Harvest
+#'     control rule
 #' @param exb the exploitable biomass at the end of the previous year. In the
 #'     first year of the projections this would be the last year of the
 #'     conditioning.
@@ -140,8 +141,8 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,sigR=1e-08,sigB=1e-08) {
 #' @param sigmab the Log-Normal standard deviation of implementation error. The
 #'     default value = 1e-08, which effectively means no errors.
 #'
-#' @return a vector of population catches for the year after the exploitable
-#'     biomass estimates
+#' @return a vector of population catches for the year to be imposed after the
+#'     estimation of exploitable biomass
 #' @export
 #'
 #' @examples
@@ -318,18 +319,19 @@ oneyearcat <- function(inpopC,inNt,Nclass,incat,yr) {  #
   Os <- exp(-inpopC$Me/2)
   #  MatureB <- sum(MatWt*inNt)
   NumNe <- (Os * (inpopC$G %*% inNt))
-  ExploitB <- sum(SelectWt * NumNe) #SelectWt=Select*WtL
-  #oldExpB <- ExploitB   # ExploitB after growth and 0.5NatM
+  ExploitB <- sum(SelectWt * NumNe) #SelectWt=Select*WtL =midyrexB
   estH <- min(incat/ExploitB,0.8) # no more than 0.8 harvest rate
   Fish <- 1-(estH*selyr)
   newNt <- (Os * (Fish * NumNe))
   Cat <- (estH*selyr) * NumNe  #numbers at size in the catch
-  newExpB <- (sum(SelectWt * newNt) + ExploitB)/2.0 #av start and end
+  endyrexpB <- sum(SelectWt * newNt) # nd of year exploitable biomass
+  avExpB <- (endyrexpB + ExploitB)/2.0 #av start and end
   MatureB <- sum(MatWt*newNt)
   Catch <- sum(inpopC$WtL*Cat)/1e06
  # Harvest <- min(Catch/ExploitB,0.8)  # average of the start and end
-  ce <- inpopC$popq * newExpB * 1000.0  #ExploitB
-  vect <- c(exploitb=ExploitB,matureb=MatureB,catch=Catch,cpue=ce)
+  ce <- inpopC$popq * avExpB * 1000.0  #ExploitB
+  vect <- c(exploitb=ExploitB,endyrexpB=endyrexpB,matureb=MatureB,
+            catch=Catch,cpue=ce)
   ans <- list(vect=vect,NaL=newNt,catchN=Cat,NumNe=NumNe)
   return(ans)
 } # End of oneyearcat
@@ -369,6 +371,10 @@ oneyearcat <- function(inpopC,inNt,Nclass,incat,yr) {  #
 #' # sigmar=1e-08;Ncl=zone$glb$Nclass;sauindex=zone$glb$sauindex;movem=zone$glb$movem; sigmab=1e-08
 oneyearsauC <- function(zoneCC,exb,inN,catchsau,year,Ncl,
                          sauindex,movem,sigmar=1e-08,sigmab=1e-08) {
+ # zoneCC=zoneCP;exb=zoneDP$exploitB[year-1,,iter]
+#  inN=zoneDP$Nt[,year-1,,iter];catchsau=acatch;year=year
+#  Ncl=Nclass;sauindex=sauindex;movem=movem
+#  sigmar=sigmar;sigmab=sigmab
   popC <- imperr(catchsau,exb,sauindex,sigmab)
   npop <- length(popC)
   matb <- numeric(npop)

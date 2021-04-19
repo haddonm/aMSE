@@ -20,8 +20,22 @@ plotCNt(lcomp$Nt,glb,vline=c(140),start=3) # plot the conditioning history
 plotCNt(zonePsau$Nt[,,,51],glb,vline=140,start=3) # plot a single replicate from projections
 
 
+zonePsau <- zonetosau(zoneDP,glb,B0,ExB0)
 
-plotprep(width=10,height=6,newdev=FALSE)
+plotprep(width=6,height=8,newdev=FALSE)
+
+parset(plots=c(4,2))
+saunames <- glb$saunames
+nsau <- glb$nSAU
+cpue <- zonePsau$cpue
+exploitb <- zonePsau$exploitB
+for (sau in 1:nsau) {
+  ymax <- getmax(cpue[,sau,1])
+  xmax <- getmax(exploitb[,sau,1])
+  plot(exploitb[,sau,1],cpue[,sau,1],type="p",pch=16,cex=1.0,panel.first=grid(),
+       )
+}
+
 
 sau <- 1
 title <- paste0("SAU ",saunames[sau])
@@ -93,15 +107,13 @@ copyto(rundir,todir=destdir,filename="controlsau.csv")
   #     picksau=9; histCE=histCE;CIprobs=c(0.05,0.5,0.95); addCI=TRUE
 
 
-library(rutilsMH)
-ddir <- "c:/Users/Malcolm/DropBox/A_code/aMSE/R/"
-filen <- c("aMSE.R","definezone.R")
-
-x <- describefunctions(ddir,filen)
+# Diagnostic plots --------------------------------------------------------
 
 
 
 
+
+diagnosticsproj(zoneDP,glb,rundir="")
 
 
 

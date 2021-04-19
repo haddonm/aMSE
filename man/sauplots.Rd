@@ -42,7 +42,8 @@ default=TRUE}
 \item{tabcat}{the name of the results website tab for the plots}
 }
 \value{
-a list of lists of CI for each SAU and variable
+a list of lists of CI for each SAU and variable as well as the
+    zoneDsau and zonePsau
 }
 \description{
 sauplots generates the dosauplots for the dynamic variables

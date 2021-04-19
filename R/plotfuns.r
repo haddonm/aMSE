@@ -1,4 +1,72 @@
 
+#' @title diagnosticsproj plots a series of diagnostics to DiagProj
+#'
+#' @description diagnosticsproj provides a series of plots and results that
+#'     illustrate the properties of the projections. These include the
+#'     residuals between SAU actual catches and their predicted catches. But
+#'     also a series of plots of the projections for only nrep trajectories to
+#'     illustrate that the dynamic variables are changing through time in a
+#'     plausible or 'realistic' manner.
+#'
+#' @param zonePsau the SAU scale object containing the dynamics results
+#' @param glb the global constants object
+#' @param rundir the rundir for the scenario
+#' @param nrep the number of replicate trajectories to plot; default=3
+#'
+#' @return the residuals between actual catches and aspirational SAU catches
+#' @export
+#'
+#' @examples
+#' print("wait on suitable data sets")
+diagnosticsproj <- function(zonePsau,glb,rundir,nrep=3) {
+  plotvar <- function(invar,nsau,saunames,nrep,filen,caption,label) {
+    nyrs <- dim(invar)[1]
+    reps <- dim(invar)[3]
+    plotprep(width=7,height=7,filename=filen,cex=1.0,verbose=FALSE)
+    parset(plots=c(4,2))
+    for (sau in 1:nsau) {
+      pickrep <- sample(1:reps,nrep,replace=FALSE)
+      ymax <- getmax(invar[,sau,pickrep])
+      ylabel <- paste0(paste0("SAU_",saunames[sau],label))
+      plot(1:nyrs,invar[,sau,pickrep[1]],type="l",lwd=2,ylim=c(0,ymax),
+           ylab=ylabel,xlab="Years",panel.first=grid())
+      for (i in 2:nrep) lines(1:nyrs,invar[,sau,pickrep[i]],lwd=2,col=i)
+    } # end of actual catches
+    addplot(filen,rundir=rundir,category="DiagProj",caption)
+  } # end of internal function plotvar
+  #  zonePsau=sauout$zonePsau; filen=""
+  nsau <- glb$nSAU
+  saunames <- glb$saunames
+  # plot catch residuals
+  filen <- filenametopath(rundir,"catch-acatch_residuals.png")
+  caption <- paste0("The residuals between the actual SAU catches and the",
+                    "predicted catches from the HCR.")
+  plotprep(width=7,height=7,filename=filen,cex=1.0,verbose=FALSE)
+  resid <- zonePsau$catch - zonePsau$acatch
+  parset(plots=c(4,2),margin=c(0.3,0.35,0.05,0.05),outmargin = c(1,1,0,0))
+  for (sau in 1:nsau) {
+    label <- paste0("SAU ",saunames[sau])
+    hist(resid[,sau,],breaks=25,main="",ylab=label,xlab="",
+         panel.first=grid())
+  }
+  mtext("Difference between Observed and Expected SAU Catches",
+        side=1,outer=TRUE,cex=1.1,line=-0.1)
+  mtext("Frequency",side=2,outer=TRUE,cex=1.1,line=-0.1)
+  addplot(filen,rundir=rundir,category="DiagProj",caption)
+  # plot the limited trajectory plots # filen=""
+  catch <- zonePsau$catch
+  filen <- filenametopath(rundir,paste0("actual_catch_projections_",nrep,".png"))
+  caption <- paste0(nrep," projections of actual catches")
+  plotvar(catch,nsau,saunames,nrep,filen,caption,"_Actual_Catch")
+
+  cpue <- zonePsau$cpue
+  filen <- filenametopath(rundir,paste0("cpue_projections_",nrep,".png"))
+  caption <- paste0(nrep," cpue projections")
+  plotvar(cpue,nsau,saunames,nrep,filen,caption,"_CPUE")
+
+  #out <- list(resid=resid)
+  return(invisible(resid))
+} # end of diagnosticsproj
 
 #' @title dosau plots the conditioning history for the dynamics
 #'
@@ -51,74 +119,6 @@ dosau <- function(inzone,glb,picksau,histCE,yrnames,extra=FALSE) {
   }
   mtext(paste0("Years  SAU ",picksau),side=1,outer=TRUE,cex=1.1,line=-0.1)
 } # end of dosau
-
-
-#' @title onesau plots the dynamics for a single SAU
-#'
-#' @description onesau plots the details of matureB, exploitB, catch, acatch,
-#'     harvestR, cpue, recruit, deplsB, depleB for a single SAU on one plot
-#'
-#' @param prerep the zoneDsau object that represents the SAU data
-#' @param postrep the zonePsau object that represents the SAU data
-#' @param glb the global constants object
-#' @param startyr the year from which to begin the conditioned dynamics
-#' @param picksau which sau should be plotted
-#' @param addCI should the 90 percent CI be added, default=FALSE
-#' @param CIprobs what CI should be fitted, default=c(0.05,0.5,0.95)
-#' @param histCE should the historical CPUE be added to the cpue plot
-#'
-#' @return a list of the CI for each variable
-#' @export
-#'
-#' @examples
-#' print("Wait on suitable data sets")
-onesau <- function(prerep,postrep,glb,startyr,picksau,addCI=FALSE,
-                     CIprobs=c(0.05,0.5,0.95),histCE=NULL) {
-  saunames <- glb$saunames
-  sauindex <- which(saunames == picksau)
-  label=c("matureB","exploitB","catch","acatch", "harvestR","cpue",
-          "recruit","deplsB","depleB")
-  nvar <- length(label)
-  prematB <- prerep$matureB
-  postmatB <- postrep$matureB
-  preyrs <- dim(prematB)[1]
-  projyrs <- dim(postmatB)[1]
-  allyrs <- preyrs + projyrs
-  reps <- dim(prematB)[3]
-  varCI <- vector("list",nvar)
-  names(varCI) <- label
-  if (is.numeric(histCE)) ceyr <- startyr:preyrs
-  parset(plots=c(3,3),margin=c(0.3,0.4,0.05,0.05),outmargin=c(1,0,1,0),
-         byrow=FALSE)
-  for (invar in 1:nvar) {  #  invar=1
-    premat <- prerep[[label[invar]]][,sauindex,]
-    postmat <- postrep[[label[invar]]][,sauindex,]
-    ymax <- getmax(rbind(premat[startyr:preyrs,],postmat[,]))
-    traj <- c(premat[startyr:preyrs,1],postmat[,1])
-    plot(startyr:allyrs,traj,type="l",lwd=1,col="grey",panel.first=grid(),
-         ylab=paste0(label[invar]),ylim=c(0,ymax),xlab="",cex=1.0)
-    for (i in 2:reps)
-      lines(startyr:allyrs,c(premat[startyr:preyrs,i],postmat[,i]),
-            lwd=1,col="grey")
-    CI <- apply(postmat[,],1,quantile,probs=CIprobs)
-    varCI[[invar]] <- CI
-    lines((preyrs+1):allyrs,CI[2,],lwd=2,col=4)
-    if (addCI) {
-      lines((preyrs+1):allyrs,CI[1,],lwd=1,col=2)
-      lines((preyrs+1):allyrs,CI[3,],lwd=1,col=2)
-    }
-    abline(v=(preyrs+0.5),col=2)
-    if ((is.numeric(histCE)) & (label[invar] == "cpue")) {
-      nhistce <- dim(histCE)[1]
-      if (length(ceyr) > nhistce) ceyr <- (preyrs - nhistce + 1):preyrs
-      oldce <- tail(histCE[,sauindex],length(ceyr))
-      lines(ceyr,oldce,lwd=2,col=3)
-    }
-  }
-  mtext(paste0("SAU ",picksau),side=3,outer=TRUE,cex=1.0)
-  mtext("Years",side=1,outer=TRUE,cex=1.1,line=-0.1)
-  return(invisible(varCI))
-} # end of onesau
 
 #' @title dosauplot generates the plot of the chosen variable for each sau
 #'
@@ -194,6 +194,73 @@ dosauplot <- function(ylabel,prerep,postrep,glb,startyr,addCI=FALSE,
   return(invisible(sauCI))
 } # end of dosauplot
 
+
+#' @title onesau plots the dynamics for a single SAU
+#'
+#' @description onesau plots the details of matureB, exploitB, catch, acatch,
+#'     harvestR, cpue, recruit, deplsB, depleB for a single SAU on one plot
+#'
+#' @param prerep the zoneDsau object that represents the SAU data
+#' @param postrep the zonePsau object that represents the SAU data
+#' @param glb the global constants object
+#' @param startyr the year from which to begin the conditioned dynamics
+#' @param picksau which sau should be plotted
+#' @param addCI should the 90 percent CI be added, default=FALSE
+#' @param CIprobs what CI should be fitted, default=c(0.05,0.5,0.95)
+#' @param histCE should the historical CPUE be added to the cpue plot
+#'
+#' @return a list of the CI for each variable
+#' @export
+#'
+#' @examples
+#' print("Wait on suitable data sets")
+onesau <- function(prerep,postrep,glb,startyr,picksau,addCI=FALSE,
+                   CIprobs=c(0.05,0.5,0.95),histCE=NULL) {
+  saunames <- glb$saunames
+  sauindex <- which(saunames == picksau)
+  label=c("matureB","exploitB","catch","acatch", "harvestR","cpue",
+          "recruit","deplsB","depleB")
+  nvar <- length(label)
+  prematB <- prerep$matureB
+  postmatB <- postrep$matureB
+  preyrs <- dim(prematB)[1]
+  projyrs <- dim(postmatB)[1]
+  allyrs <- preyrs + projyrs
+  reps <- dim(prematB)[3]
+  varCI <- vector("list",nvar)
+  names(varCI) <- label
+  if (is.numeric(histCE)) ceyr <- startyr:preyrs
+  parset(plots=c(3,3),margin=c(0.3,0.4,0.05,0.05),outmargin=c(1,0,1,0),
+         byrow=FALSE)
+  for (invar in 1:nvar) {  #  invar=1
+    premat <- prerep[[label[invar]]][,sauindex,]
+    postmat <- postrep[[label[invar]]][,sauindex,]
+    ymax <- getmax(rbind(premat[startyr:preyrs,],postmat[,]))
+    traj <- c(premat[startyr:preyrs,1],postmat[,1])
+    plot(startyr:allyrs,traj,type="l",lwd=1,col="grey",panel.first=grid(),
+         ylab=paste0(label[invar]),ylim=c(0,ymax),xlab="",cex=1.0)
+    for (i in 2:reps)
+      lines(startyr:allyrs,c(premat[startyr:preyrs,i],postmat[,i]),
+            lwd=1,col="grey")
+    CI <- apply(postmat[,],1,quantile,probs=CIprobs)
+    varCI[[invar]] <- CI
+    lines((preyrs+1):allyrs,CI[2,],lwd=2,col=4)
+    if (addCI) {
+      lines((preyrs+1):allyrs,CI[1,],lwd=1,col=2)
+      lines((preyrs+1):allyrs,CI[3,],lwd=1,col=2)
+    }
+    abline(v=(preyrs+0.5),col=2)
+    if ((is.numeric(histCE)) & (label[invar] == "cpue")) {
+      nhistce <- dim(histCE)[1]
+      if (length(ceyr) > nhistce) ceyr <- (preyrs - nhistce + 1):preyrs
+      oldce <- tail(histCE[,sauindex],length(ceyr))
+      lines(ceyr,oldce,lwd=2,col=3)
+    }
+  }
+  mtext(paste0("SAU ",picksau),side=3,outer=TRUE,cex=1.0)
+  mtext("Years",side=1,outer=TRUE,cex=1.1,line=-0.1)
+  return(invisible(varCI))
+} # end of onesau
 
 #' @title onezoneplot plots out one variable from the zone
 #'
@@ -594,7 +661,8 @@ plotzoneproj <- function(zoneV,reps,yrs,label="",addqnts=TRUE,miny=0) {
 #' @param histCE historical CPUE data used in CPUE plots, default=NULL
 #' @param tabcat the name of the results website tab for the plots
 #'
-#' @return a list of lists of CI for each SAU and variable
+#' @return a list of lists of CI for each SAU and variable as well as the
+#'     zoneDsau and zonePsau
 #' @export
 #'
 #' @examples
@@ -663,7 +731,7 @@ sauplots <- function(zoneDP,zoneDDR,glb,rundir,B0,ExB0,startyr,addCI=TRUE,
   caption <- "The Harvest Rate projections for each SAU."
   addplot(filen,rundir=rundir,category=tabcat,caption)
   out[["harvestR"]] <- CI
-  return(invisible(out))
+  return(invisible(list(out=out,zoneDsau=zoneDsau,zonePsau=zonePsau)))
 }# end of sauplots
 
 

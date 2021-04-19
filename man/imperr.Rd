@@ -7,7 +7,8 @@
 imperr(catchsau, exb, sauindex, sigmab = 1e-08)
 }
 \arguments{
-\item{catchsau}{the predicted catch per SAU from the Harvest control rule}
+\item{catchsau}{the predicted or aspirational catch per SAU from the Harvest
+control rule}
 
 \item{exb}{the exploitable biomass at the end of the previous year. In the
 first year of the projections this would be the last year of the
@@ -19,13 +20,13 @@ conditioning.}
 default value = 1e-08, which effectively means no errors.}
 }
 \value{
-a vector of population catches for the year after the exploitable
-    biomass estimates
+a vector of population catches for the year to be imposed after the
+    estimation of exploitable biomass
 }
 \description{
-imperr converts predicted sau catches into population level
-    catches while introducing management implementation error at the same
-    time. Here it is implemented as Log-Normal errors on diver intuitions
+imperr converts aspirational sau catches into population level
+    catches while introducing management implementation error. Here this
+    error is implemented as Log-Normal errors on diver intuitions
     concerning the relative abundance in each population. The error is
     imposed separately on the populations in each SAU.
 }

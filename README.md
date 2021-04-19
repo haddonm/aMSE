@@ -3,11 +3,13 @@
 
 # LATEST UPDATE
 
-  - 2021-04-14 0.0.0.3200 Added NumNe to zoneDP output ready for its use
-    in estimating FIS results by population and other numbers-at-size
-    related indices. NumNe are the numbers-at-size following growth and
-    the application of half of natural mortality but before any fishing
-    mortality has occurred. (see News.ms for history of development)
+  - 2021-04-19 0.0.0.3000 Started development required to generalize the
+    use of the doprojection function (it was previously called
+    doTASprojection). This generalization requires the generation of
+    separate functions to process the data for cpue, any FIS, and the
+    numbers-at-size. Numerous diganostic plots have been added, also
+    providing a template for adding more (see News.md for history of
+    development).
 
 # aMSE
 
@@ -131,7 +133,7 @@ zone <- makeequilzone(rundir,"controlsau.csv",datadir=datadir,cleanslate = TRUE)
 #> recruitment Stable 
 #> spawning depletion Stable
 equiltime <- (Sys.time()); print(equiltime - starttime2)
-#> Time difference of 20.85827 secs
+#> Time difference of 20.98692 secs
 # declare main objects ---------------------------------------------------------
 glb <- zone$glb
 ctrl <- zone$ctrl
@@ -158,9 +160,10 @@ addtable(round(t(popdefs),3),"popdefs.csv",rundir,category="zoneDD",caption=
            "Population specific definitions")
 # Prepare projections ----------------------------------------------------------
 plotconditioning(zoneDD,glb,zoneC,condC$histCE,1973:2019,rundir)
-cmcda <- mcdahcr(arrce=condC$histCE,hsargs=hsargs,
-                 yearnames=rownames(condC$histCE),saunames=glb$saunames,
-                 acatches=tail(condC$histCatch,1))
+
+indata <- list(arrce=condC$histCE,yearnames=rownames(condC$histCE),
+               acatches=tail(condC$histCatch,1),fis=NA,nas=NA)
+cmcda <- mcdahcr(indata,hsargs=hsargs,saunames=glb$saunames)
 pms <- cmcda$pms
 multTAC <- cmcda$multTAC
 out <- prepareprojectionnew(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
@@ -171,20 +174,22 @@ projC <- out$projC
 zoneCP <- out$zoneCP
 zoneDDR <- out$zoneDDR
 
-zoneDP <- doTASprojections(ctrl,zoneDP,zoneCP,condC$histCE,glb,mcdahcr,hsargs)
+zoneDP <- doprojections(ctrl,zoneDP,zoneCP,condC$histCE,glb,mcdahcr,hsargs,
+                        tasCPUE,tasFIS,tasNaS)
 # save more plots to rundir ----------------------------------------------------
 histCE <- condC$histCE
 B0 <- getvar(zoneC,"B0")
 ExB0 <- getvar(zoneC,"ExB0")
-sauCI <- sauplots(zoneDP,zoneDDR,glb,rundir,B0,ExB0,startyr=25,addCI=TRUE,
+sauout <- sauplots(zoneDP,zoneDDR,glb,rundir,B0,ExB0,startyr=25,addCI=TRUE,
                   histCE=histCE)
+diagnosticsproj(sauout$zonePsau,glb,rundir,nrep=3)
 outzone <- poptozone(zoneDP,glb,
                      B0=sum(getvar(zoneC,"B0")),
                      ExB0=sum(getvar(zoneC,"ExB0")))
 plotZone(outzone,rundir,CIprobs=c(0.05,0.5,0.95),addfile=TRUE)
 projtime <- Sys.time()
 print(projtime - starttime)
-#> Time difference of 58.48022 secs
+#> Time difference of 1.01255 mins
 # make results webpage ---------------------------------------------------------
 replist <- list(starttime=as.character(starttime),endtime=as.character(projtime))
 
