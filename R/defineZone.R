@@ -753,6 +753,7 @@ makezone <- function(glob,zoneC) { #glob=glb; zoneC=zoneC;
   numpop <- glob$numpop
   N <- glob$Nclass
   ExplB <- matrix(0,nrow=Nyrs,ncol=numpop)
+  midyexpB <- matrix(0,nrow=Nyrs,ncol=numpop)
   MatB <- matrix(0,nrow=Nyrs,ncol=numpop)
   Catch <- matrix(0,nrow=Nyrs,ncol=numpop)
   Harvest <- matrix(0,nrow=Nyrs,ncol=numpop)
@@ -790,8 +791,8 @@ makezone <- function(glob,zoneC) { #glob=glb; zoneC=zoneC;
     # to capture the tbalance between search and handling time.
     cpue[1,pop] <- 1000.0 * zoneC[[pop]]$popq * ExplB[1,pop]
   }
-  ans <- list(SAU=SAU,matureB=MatB,exploitB=ExplB,catch=Catch,
-              harvestR=Harvest,cpue=cpue,recruit=Recruit,
+  ans <- list(SAU=SAU,matureB=MatB,exploitB=ExplB,midyexpB=midyexpB,
+              catch=Catch,harvestR=Harvest,cpue=cpue,recruit=Recruit,
               deplsB=deplSpB,depleB=deplExB,catchN=CatchN,Nt=Nt)
   return(list(zoneD=ans,zoneC=zoneC))
 } # end of makezone

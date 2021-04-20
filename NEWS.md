@@ -1,4 +1,8 @@
-## aMSE Recent Activity
+## aMSE Recent Activity.
+
+* 2021-04-20 0.0.0.2900 Continuing process of modifying the core functions to allow for the numbers-at-size prior to fishing and the midyear-exploitB (midyexpB) to be included in teh zoneD object. doprojection still requires fursther modification to account for applying to chosen HCR and HS to the completed conditioned zoneDD to provide the first year of expected catches in the projections (which are to be defined by teh conditoned data prior to projections beginning).
+
+* 2021-04-19 0.0.0.3000 Started development required to generalize the use of the doprojection function (it was previously called doTASprojection). This generalization requires the generation of separate functions to process the data for cpue, any FIS, and the numbers-at-size. Numerous diganostic plots have been added, also providing a template for adding more  (see News.md for history of development).
 
 * 2021-04-14 0.0.0.3200 Added NumNe to zoneDP output ready for its use in estimating FIS results by population and other numbers-at-size related indices. NumNe are the numbers-at-size following growth and the application of half of natural mortality but before any fishing moretality has occurred. 
 

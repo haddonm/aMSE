@@ -31,7 +31,6 @@
 #' print("wait on suitable data-sets")
 addrecvar <- function(zoneDD,zoneDP,zoneC,glob,condC,ctrl,varyrs,multTAC,
                       sigR=1e-08,sigB=1e-08,lastsigR=0.3) {
-
  #  zoneDD=zoneDD;zoneDP=zoneDR;zoneC=zoneC;glob=glb
  #  condC=condC;ctrl=ctrl;varyrs=6;lastsigR=lastsigR
  #  sigR=1e-08; sigB=1e-08; lastsigR=0.1
@@ -44,6 +43,7 @@ addrecvar <- function(zoneDD,zoneDP,zoneC,glob,condC,ctrl,varyrs,multTAC,
   finalyr <- nyrs - varyrs
   zoneDDR$matureB[1:finalyr,,] <- zoneDD$matureB[1:finalyr,]
   zoneDDR$exploitB[1:finalyr,,] <- zoneDD$exploitB[1:finalyr,]
+  zoneDDR$midyexpB[1:finalyr,,] <- zoneDD$midyexpB[1:finalyr,]
   zoneDDR$catch[1:finalyr,,] <- zoneDD$catch[1:finalyr,]
   zoneDDR$harvestR[1:finalyr,,] <- zoneDD$harvestR[1:finalyr,]
   zoneDDR$cpue[1:finalyr,,] <- zoneDD$cpue[1:finalyr,]
@@ -61,6 +61,7 @@ addrecvar <- function(zoneDD,zoneDP,zoneC,glob,condC,ctrl,varyrs,multTAC,
       dyn <- out$dyn
       saudyn <- poptosauCE(dyn["catch",],dyn["cpue",],sauindex)
       zoneDDR$exploitB[year,,iter] <- dyn["exploitb",]
+      zoneDDR$midyexpB[year,,iter] <- dyn["midyexpB",]
       zoneDDR$matureB[year,,iter] <- dyn["matureb",]
       zoneDDR$catch[year,,iter] <- dyn["catch",]
       zoneDDR$harvestR[year,,iter] <- dyn["catch",]/out$dyn["exploitb",]
@@ -88,6 +89,7 @@ addrecvar <- function(zoneDD,zoneDP,zoneC,glob,condC,ctrl,varyrs,multTAC,
     dyn <- outy$dyn
     saudyn <- poptosauCE(dyn["catch",],dyn["cpue",],sauindex)
     zoneDP$exploitB[1,,iter] <- dyn["exploitb",]
+    zoneDP$midyexpB[1,,iter] <- dyn["midyexpB",]
     zoneDP$matureB[1,,iter] <- dyn["matureb",]
     zoneDP$catch[1,,iter] <- dyn["catch",]
     zoneDP$acatch[1,,iter] <- acatch
@@ -304,7 +306,6 @@ doprojections <- function(ctrl,zoneDP,zoneCP,otherdata,glb,hcrfun,hsargs,
       hcrdata <- tasdata(tasCPUE,tasFIS,tasNaS,zoneDP,otherdata,year=year,iter=iter)
       hcrout <- hcrfun(hcrdata,hsargs,saunames=glb$saunames)
       acatch <- hcrout$acatch
-      TAC <- hcrout$TAC
       zoneDP$acatch[year,,iter] <- acatch
       outy <- oneyearsauC(zoneCC=zoneCP,exb=zoneDP$exploitB[year-1,,iter],
                           inN=zoneDP$Nt[,year-1,,iter],catchsau=acatch,year=year,
@@ -313,6 +314,7 @@ doprojections <- function(ctrl,zoneDP,zoneCP,otherdata,glb,hcrfun,hsargs,
       dyn <- outy$dyn
       saudyn <- poptosauCE(dyn["catch",],dyn["cpue",],sauindex)
       zoneDP$exploitB[year,,iter] <- dyn["exploitb",]
+      zoneDP$midyexpB[year,,iter] <- dyn["midyexpB",]
       zoneDP$matureB[year,,iter] <- dyn["matureb",]
       zoneDP$catch[year,,iter] <- dyn["catch",]
       zoneDP$acatch[year,,iter] <- acatch
@@ -326,7 +328,7 @@ doprojections <- function(ctrl,zoneDP,zoneCP,otherdata,glb,hcrfun,hsargs,
       zoneDP$Nt[,year,,iter] <- outy$NaL
       zoneDP$catchN[,year,,iter] <- outy$catchN
       zoneDP$NumNe[,year,,iter] <- outy$NumNe
-      zoneDP$TAC[year,iter] <- TAC
+      zoneDP$TAC[year,iter] <- hcrout$TAC
     } # year loop
   }   # iter loop
   return(zoneDP)
@@ -359,6 +361,7 @@ makezoneDP <- function(projyr,iter,glb) {
   namendims <- list(glb$midpts,1:projyr,1:numpop,1:iter)
   MatB <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
   ExplB <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
+  midyexpB <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
   catch <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
   acatch <- array(0,dim=c(projyr,nSAU,iter),
                   dimnames=list(1:projyr,saunames,1:iter)) #aspirational catches
@@ -375,10 +378,10 @@ makezoneDP <- function(projyr,iter,glb) {
   Nt <- array(data=0,dim=c(N,projyr,numpop,iter),dimnames=namendims)
   NumNe <- array(data=0,dim=c(N,projyr,numpop,iter),dimnames=namendims)
   TAC <- array(0,dim=c(projyr,iter),dimnames=list(1:projyr,1:iter))
-  zoneDP <- list(SAU=SAU,matureB=MatB,exploitB=ExplB,catch=catch,acatch=acatch,
-                 harvestR=harvest,cpue=cpue,cesau=cesau,catsau=catsau,
-                 recruit=recruit,deplsB=deplSpB,depleB=deplExB,catchN=catchN,
-                 Nt=Nt,NumNe=NumNe,TAC=TAC)
+  zoneDP <- list(SAU=SAU,matureB=MatB,exploitB=ExplB,midyexpB=midyexpB,catch=catch,
+                 acatch=acatch,harvestR=harvest,cpue=cpue,cesau=cesau,
+                 catsau=catsau,recruit=recruit,deplsB=deplSpB,depleB=deplExB,
+                 catchN=catchN,Nt=Nt,NumNe=NumNe,TAC=TAC)
   return(zoneDP)
 } # end of makezoneDP
 
@@ -564,55 +567,6 @@ poptosauCE <- function(catvect,cpuevect,sauindex) {
 #'     zeros in the catch, cpue, and cesau arrays
 #'
 #' @param projC the projection object from readctrlfile
-#' @param zoneC the constant part of the zone
-#' @param glb the global variables
-#' @param zoneDep the zone after initial depletion
-#' @param ctrl the ctrl object for the scenario run
-#' @param multTAC the TAC multiplication matrix from the HCR
-#'
-#' @return a list of the dynamic zone object as a list of arrays of projyrs x
-#'     populations x replicates, plus the revised projC and revised zoneC
-#' @export
-#'
-#' @examples
-#' print("wait on data files")
-prepareprojection <- function(projC,zoneC,glb,zoneDep,ctrl,multTAC) {
-  # projC=projC;condC=condC;zoneC=zoneC; glb=glb; zoneDep=zoneDD; ctrl=ctrl;varyrs=6;lastsigR=0.1
-  if (ctrl$randseedP > 0) set.seed(ctrl$randseedP)
-  projyrs <- projC$projyrs
-  projC <- modprojC(zoneC,glb,projC) # include selectivity into projC
-  zoneCR <- modzoneCSel(zoneC,projC$Sel,projC$SelWt,glb,projyrs)
-  zoneDR <- makezoneDP(projyrs,ctrl$reps,glb) #,zoneDep) # zoneDReplicates
-  endyr <- nrow(zoneDep$matureB)
-  endcatch <- tapply(zoneDep$catch[endyr,],glb$sauindex,sum,na.rm=TRUE)
-  yrce <- nrow(multTAC)
-  acatch <- endcatch * multTAC[yrce,]  # predicted aspirational catches
-  zoneDR <- initiateHS(zoneDP=zoneDR,zoneCP=zoneCR,exb=zoneDep$exploitB[endyr,],
-                       inN=zoneDep$Nt[,endyr,],acatch=acatch,
-                       sigmar=ctrl$withsigR,sigmab=ctrl$withsigB,glb=glb)
-  # arv <- addrecvar(zoneDD=zoneDep,zoneDP=zoneDR,zoneC=zoneC,glob=glb,
-  #                     condC=condC,ctrl=ctrl,varyrs=varyrs,lastsigR=lastsigR)
-
-  return(list(zoneDP=zoneDR,projC=projC,zoneCP=zoneCR))#,zoneDDR=arv$zoneDDR))
-} # end of prepareprojection
-
-#' @title prepareprojectionnew high level function that sets up a projection
-#'
-#' @description prepareprojectionnew is a high level function that restructures
-#'     zoneC by including the projected selectivity (in case the LML is set to
-#'     change during the projections), and also selectivity x weight-at-size
-#'     (for computational speed). It then generates a new zoneD with room for
-#'     all replicates as well as the aspirational catches from each HS. It does
-#'     this by converting the arrays of year x pop, to year x pop x replicate.
-#'     It then uses the conditioned data in zoneDep to predict the first
-#'     aspirational catches for the projections and conducts the initial
-#'     replicate, thus starting the application of the HS.
-#'     Finally, it adds recruitment variation
-#'     to each of the replicates and keeps the last year of each iteration of
-#'     the addrecvar function as the start of each replicate projection, with
-#'     zeros in the catch, cpue, and cesau arrays
-#'
-#' @param projC the projection object from readctrlfile
 #' @param condC historical conditioning data
 #' @param zoneC the constant part of the zone
 #' @param glb the global variables
@@ -628,7 +582,7 @@ prepareprojection <- function(projC,zoneC,glb,zoneDep,ctrl,multTAC) {
 #'
 #' @examples
 #' print("wait on data files")
-prepareprojectionnew <- function(projC,condC,zoneC,glb,zoneDD,ctrl,varyrs,
+prepareprojection <- function(projC,condC,zoneC,glb,zoneDD,ctrl,varyrs,
                                  multTAC,lastsigR = 0.3) {
   # projC=projC;condC=condC;zoneC=zoneC; glb=glb; zoneDep=zoneDD; ctrl=ctrl;varyrs=6;lastsigR=0.1
   if (ctrl$randseedP > 0) set.seed(ctrl$randseedP)
@@ -644,9 +598,6 @@ prepareprojectionnew <- function(projC,condC,zoneC,glb,zoneDD,ctrl,varyrs,
                    lastsigR=lastsigR)
   return(list(zoneDP=arv$zoneDP,projC=projC,zoneCP=zoneCR,zoneDDR=arv$zoneDDR))
 } # end of prepareprojection
-
-
-
 
 #' @title scaleto1 scales an input vector of CPUE to a mean of one x avCE
 #'

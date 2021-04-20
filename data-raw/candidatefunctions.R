@@ -111,9 +111,43 @@ copyto(rundir,todir=destdir,filename="controlsau.csv")
 
 
 
+invar <- zonePsau$catch
+invar2 <- zonePsau$acatch
+filen <- ""
+nsau=8
+nrep=3
+reps=100
+saunames=glb$saunames
+label <- "_catches"
+
+nyrs <- dim(invar)[1]
+reps <- dim(invar)[3]
+plotprep(width=7,height=7,filename=filen,cex=1.0,verbose=FALSE,newdev = FALSE)
+parset(plots=c(4,2))
+for (sau in 1:nsau) {
+  pickrep <- sample(1:reps,nrep,replace=FALSE)
+  ymax <- getmax(invar[,sau,pickrep])
+  ylabel <- paste0(paste0("SAU_",saunames[sau],label))
+  plot(1:nyrs,invar[,sau,pickrep[1]],type="l",lwd=2,ylim=c(0,ymax),
+       ylab=ylabel,xlab="Years",panel.first=grid())
+  for (i in 2:nrep) lines(1:nyrs,invar[,sau,pickrep[i]],lwd=2,col=i)
+  for (i in 1:nrep) lines(1:nyrs,invar2[,sau,pickrep[i]],lwd=2,col=i,lty=3)
+} # end of actual catches
 
 
-diagnosticsproj(zoneDP,glb,rundir="")
+
+
+str1 <- function(x) str(x,max.level = 1)
+str2 <- function(x) str(x,max.level = 2)
+
+
+
+
+
+
+
+
+
 
 
 

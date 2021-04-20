@@ -4,20 +4,37 @@
 \alias{prepareprojection}
 \title{prepareprojection high level function that sets up a projection}
 \usage{
-prepareprojection(projC, zoneC, glb, zoneDep, ctrl, multTAC)
+prepareprojection(
+  projC,
+  condC,
+  zoneC,
+  glb,
+  zoneDD,
+  ctrl,
+  varyrs,
+  multTAC,
+  lastsigR = 0.3
+)
 }
 \arguments{
 \item{projC}{the projection object from readctrlfile}
+
+\item{condC}{historical conditioning data}
 
 \item{zoneC}{the constant part of the zone}
 
 \item{glb}{the global variables}
 
-\item{zoneDep}{the zone after initial depletion}
+\item{zoneDD}{the zone after initial depletion through conditioning on the
+fishery}
 
 \item{ctrl}{the ctrl object for the scenario run}
 
+\item{varyrs}{how many years at the end to add recruitment variation}
+
 \item{multTAC}{the TAC multiplication matrix from the HCR}
+
+\item{lastsigR}{recruitment variation for when it is applied for varyrs}
 }
 \value{
 a list of the dynamic zone object as a list of arrays of projyrs x

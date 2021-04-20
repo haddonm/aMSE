@@ -13,24 +13,27 @@
 #' @param rundir the rundir for the scenario
 #' @param nrep the number of replicate trajectories to plot; default=3
 #'
-#' @return the residuals between actual catches and aspirational SAU catches
+#' @return Nothing but it does add some plots to rundir
 #' @export
 #'
 #' @examples
 #' print("wait on suitable data sets")
 diagnosticsproj <- function(zonePsau,glb,rundir,nrep=3) {
-  plotvar <- function(invar,nsau,saunames,nrep,filen,caption,label) {
-    nyrs <- dim(invar)[1]
-    reps <- dim(invar)[3]
+  plotvar <- function(var1,nsau,saunames,nrep,filen,caption,label,var2=NULL) {
+    # a helper function that plots nrep trajectories from invar
+    nyrs <- dim(var1)[1]
+    reps <- dim(var1)[3]
     plotprep(width=7,height=7,filename=filen,cex=1.0,verbose=FALSE)
     parset(plots=c(4,2))
     for (sau in 1:nsau) {
       pickrep <- sample(1:reps,nrep,replace=FALSE)
-      ymax <- getmax(invar[,sau,pickrep])
+      ymax <- getmax(var1[,sau,pickrep])
       ylabel <- paste0(paste0("SAU_",saunames[sau],label))
-      plot(1:nyrs,invar[,sau,pickrep[1]],type="l",lwd=2,ylim=c(0,ymax),
+      plot(1:nyrs,var1[,sau,pickrep[1]],type="l",lwd=2,ylim=c(0,ymax),
            ylab=ylabel,xlab="Years",panel.first=grid())
-      for (i in 2:nrep) lines(1:nyrs,invar[,sau,pickrep[i]],lwd=2,col=i)
+      for (i in 2:nrep) lines(1:nyrs,var1[,sau,pickrep[i]],lwd=2,col=i)
+      if (is.numeric(var2))
+        for (i in 1:nrep) lines(1:nyrs,var2[,sau,pickrep[i]],lwd=2,col=i,lty=3)
     } # end of actual catches
     addplot(filen,rundir=rundir,category="DiagProj",caption)
   } # end of internal function plotvar
@@ -55,9 +58,11 @@ diagnosticsproj <- function(zonePsau,glb,rundir,nrep=3) {
   addplot(filen,rundir=rundir,category="DiagProj",caption)
   # plot the limited trajectory plots # filen=""
   catch <- zonePsau$catch
+  acatch <- zonePsau$acatch
   filen <- filenametopath(rundir,paste0("actual_catch_projections_",nrep,".png"))
-  caption <- paste0(nrep," projections of actual catches")
-  plotvar(catch,nsau,saunames,nrep,filen,caption,"_Actual_Catch")
+  caption <- paste0(nrep," projections of actual catches, dotted lines are",
+                    " the aspirational catches.")
+  plotvar(catch,nsau,saunames,nrep,filen,caption,"_Actual_Catch",var2=acatch)
 
   cpue <- zonePsau$cpue
   filen <- filenametopath(rundir,paste0("cpue_projections_",nrep,".png"))
@@ -65,7 +70,7 @@ diagnosticsproj <- function(zonePsau,glb,rundir,nrep=3) {
   plotvar(cpue,nsau,saunames,nrep,filen,caption,"_CPUE")
 
   #out <- list(resid=resid)
-  return(invisible(resid))
+  #return(invisible(resid))
 } # end of diagnosticsproj
 
 #' @title dosau plots the conditioning history for the dynamics

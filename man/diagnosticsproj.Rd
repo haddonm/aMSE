@@ -16,7 +16,7 @@ diagnosticsproj(zonePsau, glb, rundir, nrep = 3)
 \item{nrep}{the number of replicate trajectories to plot; default=3}
 }
 \value{
-the residuals between actual catches and aspirational SAU catches
+Nothing but it does add some plots to rundir
 }
 \description{
 diagnosticsproj provides a series of plots and results that

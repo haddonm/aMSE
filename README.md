@@ -3,13 +3,14 @@
 
 # LATEST UPDATE
 
-  - 2021-04-19 0.0.0.3000 Started development required to generalize the
-    use of the doprojection function (it was previously called
-    doTASprojection). This generalization requires the generation of
-    separate functions to process the data for cpue, any FIS, and the
-    numbers-at-size. Numerous diganostic plots have been added, also
-    providing a template for adding more (see News.md for history of
-    development).
+  - 2021-04-20 0.0.0.2900 Continuing process of modifying the core
+    functions to allow for the numbers-at-size prior to fishing and the
+    midyear-exploitB (midyexpB) to be included in teh zoneD object.
+    doprojection still requires fursther modification to account for
+    applying to chosen HCR and HS to the completed conditioned zoneDD to
+    provide the first year of expected catches in the projections (which
+    are to be defined by teh conditoned data prior to projections
+    beginning).
 
 # aMSE
 
@@ -133,7 +134,7 @@ zone <- makeequilzone(rundir,"controlsau.csv",datadir=datadir,cleanslate = TRUE)
 #> recruitment Stable 
 #> spawning depletion Stable
 equiltime <- (Sys.time()); print(equiltime - starttime2)
-#> Time difference of 20.98692 secs
+#> Time difference of 20.96232 secs
 # declare main objects ---------------------------------------------------------
 glb <- zone$glb
 ctrl <- zone$ctrl
@@ -161,14 +162,17 @@ addtable(round(t(popdefs),3),"popdefs.csv",rundir,category="zoneDD",caption=
 # Prepare projections ----------------------------------------------------------
 plotconditioning(zoneDD,glb,zoneC,condC$histCE,1973:2019,rundir)
 
+#explicit definition of indata rather than using the tasdata function
 indata <- list(arrce=condC$histCE,yearnames=rownames(condC$histCE),
-               acatches=tail(condC$histCatch,1),fis=NA,nas=NA)
+               acatches=tail(condC$histCatch,1),fis=NULL,nas=NULL)
 cmcda <- mcdahcr(indata,hsargs=hsargs,saunames=glb$saunames)
 pms <- cmcda$pms
 multTAC <- cmcda$multTAC
-out <- prepareprojectionnew(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
+out <- prepareprojection(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
                             multTAC=multTAC,zoneDD=zoneDD,ctrl=ctrl,varyrs=7,
                             lastsigR = ctrl$withsigR)
+# prepareprojection needs to be modified so that is uses expected catches rather
+# than calculating them internally (which will differ by jurisdiction)
 zoneDP <- out$zoneDP
 projC <- out$projC
 zoneCP <- out$zoneCP
@@ -189,7 +193,7 @@ outzone <- poptozone(zoneDP,glb,
 plotZone(outzone,rundir,CIprobs=c(0.05,0.5,0.95),addfile=TRUE)
 projtime <- Sys.time()
 print(projtime - starttime)
-#> Time difference of 1.01255 mins
+#> Time difference of 58.96815 secs
 # make results webpage ---------------------------------------------------------
 replist <- list(starttime=as.character(starttime),endtime=as.character(projtime))
 
@@ -211,33 +215,35 @@ webpage, you could also try:
 
 ``` r
 str(zoneDP,max.level=1)
-#> List of 16
+#> List of 17
 #>  $ SAU     : num [1:28] 6 6 6 7 7 7 8 8 9 9 ...
-#>  $ matureB : num [1:30, 1:28, 1:100] 28 30.2 30.9 29.9 30.1 ...
+#>  $ matureB : num [1:30, 1:28, 1:100] 27.9 30.1 30.8 29.7 30.1 ...
 #>   ..- attr(*, "dimnames")=List of 3
-#>  $ exploitB: num [1:30, 1:28, 1:100] 30.4 27.4 29.4 30.6 29.4 ...
+#>  $ exploitB: num [1:30, 1:28, 1:100] 25.8 21.9 23 24 23.8 ...
 #>   ..- attr(*, "dimnames")=List of 3
-#>  $ catch   : num [1:30, 1:28, 1:100] 2.65 3.66 4.47 4.55 3.69 ...
+#>  $ midyexpB: num [1:30, 1:28, 1:100] 30.5 27.3 29.3 30.5 29.3 ...
+#>   ..- attr(*, "dimnames")=List of 3
+#>  $ catch   : num [1:30, 1:28, 1:100] 2.68 3.76 4.49 4.57 3.63 ...
 #>   ..- attr(*, "dimnames")=List of 3
 #>  $ acatch  : num [1:30, 1:8, 1:100] 13.6 15 15 15 15.7 ...
 #>   ..- attr(*, "dimnames")=List of 3
-#>  $ harvestR: num [1:30, 1:28, 1:100] 0.087 0.134 0.152 0.149 0.126 ...
+#>  $ harvestR: num [1:30, 1:28, 1:100] 0.104 0.172 0.195 0.19 0.153 ...
 #>   ..- attr(*, "dimnames")=List of 3
-#>  $ cpue    : num [1:30, 1:28, 1:100] 185 163 173 181 175 ...
+#>  $ cpue    : num [1:30, 1:28, 1:100] 186 162 172 180 175 ...
 #>   ..- attr(*, "dimnames")=List of 3
 #>  $ cesau   : num [1:30, 1:8, 1:100] 142 121 125 140 159 ...
 #>   ..- attr(*, "dimnames")=List of 3
 #>  $ catsau  : num [1:30, 1:8, 1:100] 14.2 15.4 17.7 17.3 15 ...
 #>   ..- attr(*, "dimnames")=List of 3
-#>  $ recruit : num [1:30, 1:28, 1:100] 62965 18522 24364 16453 19168 ...
+#>  $ recruit : num [1:30, 1:28, 1:100] 62962 18512 24351 16443 19163 ...
 #>   ..- attr(*, "dimnames")=List of 3
-#>  $ deplsB  : num [1:30, 1:28, 1:100] 0.402 0.434 0.444 0.429 0.432 ...
+#>  $ deplsB  : num [1:30, 1:28, 1:100] 0.402 0.433 0.443 0.427 0.432 ...
 #>   ..- attr(*, "dimnames")=List of 3
-#>  $ depleB  : num [1:30, 1:28, 1:100] 0.457 0.411 0.441 0.459 0.441 ...
+#>  $ depleB  : num [1:30, 1:28, 1:100] 0.402 0.342 0.359 0.375 0.371 ...
 #>   ..- attr(*, "dimnames")=List of 3
-#>  $ catchN  : num [1:105, 1:30, 1:28, 1:100] 3.69e-132 1.86e-128 6.89e-125 1.85e-121 3.61e-118 ...
+#>  $ catchN  : num [1:105, 1:30, 1:28, 1:100] 3.73e-132 1.88e-128 6.97e-125 1.87e-121 3.65e-118 ...
 #>   ..- attr(*, "dimnames")=List of 4
-#>  $ Nt      : num [1:105, 1:30, 1:28, 1:100] 6.30e+04 3.07e-07 1.26e-05 3.74e-04 8.07e-03 ...
+#>  $ Nt      : num [1:105, 1:30, 1:28, 1:100] 6.30e+04 3.07e-07 1.26e-05 3.74e-04 8.08e-03 ...
 #>   ..- attr(*, "dimnames")=List of 4
 #>  $ NumNe   : num [1:105, 1:30, 1:28, 1:100] 0 0 0 0 0 0 0 0 0 0 ...
 #>   ..- attr(*, "dimnames")=List of 4

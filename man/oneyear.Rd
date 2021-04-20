@@ -24,7 +24,7 @@ depleted. All dynamics are applied from year 2 - Nyrs; scalar}
 }
 \value{
 a list containing ExploitB, MatureB, Catch, Harvest, Nt,
-    ce, and CatchN used to update the given pop in yr + 1
+    ce, CatchN, and midyexpB used to update the given pop in yr + 1
 }
 \description{
 oneyear do one year's dynamics for one input population.
