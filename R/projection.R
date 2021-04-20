@@ -1,3 +1,83 @@
+# The first version of creating a FIS will be to assume that
+# each population will have a FIS and that this function is called in the projection part
+# so called every year of the projection.
+# Also no error as yet. Later I will change the control input files and slowly add
+# all required changes throughout the code as selecting a population needs more thought.
+# I have put all the FIS functions at the top so they can be easily moved if need be
+
+#' Title GetFIS
+#'
+#' @description This generates the fishery independent data (FIS) required to run some of the
+#'    harvest strategies. This code is still under development so do not use. At present assumes
+#'    function is being called for each year of the projection and each iteration within that
+#'    loop of DoTasProjection
+#' @param zoneDDR
+#' @param glb global variables
+#' @param ctrl control settings
+#' @param FISsettings FISsettings are settings required to calculate the index.
+#'    Some of this should later be moved to one of csv files but presently in the first_use file.
+#' @param iter replicate number
+#' @param year year of the projection
+#'
+#' @return
+#' @export
+#'
+#' @examples
+getFIS <- function(zoneDP, glb,ctrl,FISsettings,iter, year) {
+  Nclass <- glb$Nclass
+  BinSize <- glb$midpts[2]-glb$midpts[1] # this is also in zone1 but big object so hopefully saving time
+  Nt <- zoneDP$Nt
+  MidSizeAll <- as.numeric(names(Nt[,1,1,1])) # Mid pt sizes of the observed data
+  knifeedge <- 0
+  if(FISsettings$FISKnife == TRUE) knifeedge <- FISsettings$FISSel50[year] # Test if knifeedged
+  Select <- logistic(FISsettings$FISSel50[year],FISsettings$FISSel95[year]-FISsettings$FISSel50[year],
+                     MidSizeAll, knifeedge=knifeedge) # Calculate selectivity. Is knife edged it kifeedge >0
+  MinIndexSizeBin <- ceiling(FISsettings$MinIndexSize/BinSize) # Min size of index (bin)
+  MaxIndexSizeBin <- ceiling(FISsettings$MaxIndexSize/BinSize) # Max size of index (bin)
+
+
+  # ToDo - need to extend the FIS back in time but getting it to work for proejction first
+
+  FISSF <- data.frame(matrix(NA, nrow=glb$Nclass, ncol=glb$numpop)) # Once I understand the changes MH is making will need to change these 2 lines
+  FISData <- data.frame(matrix(NA, nrow=glb$numpop,ncol=3))
+  for(pop in 1:glb$numpop) {
+    FISN <- Nt[,year,pop,iter] # Absolute size frequency without error
+
+    # Generate the size-frequency
+    ObsErrComps <- rnorm(length(FISN),FISsettings$ObsErrCompsMean,FISsettings$ObsErrCompsSd)
+    FISNObsQ <- FISsettings$qFIS*FISN * ObsErrComps # Adding s-f observation error and catchability.
+    SizeFrequency <- FISNObsQ/sum(FISNObsQ)*100 # Size frequency as a percent
+    # Malcolm having real trouble with where to place the Q.
+    # If I put it after selectivity then the q changes meaning depending on these values.
+    # If here then the numbers are no longer integers. Ideas?
+
+    # Creating the index in numbers depending on size classes required for HS
+
+    # Adding further observation error because this assumes that not all animals in the FIS are measures
+    FISNObs <- SizeFrequency[MinIndexSizeBin:MaxIndexSizeBin] # remember selectivity has already been applied
+
+    MidSize <- as.numeric(names(FISNObs)) # Mid pt sizes of the observed data
+    FISBObs <- FISNObs * FISsettings$WtaObs*MidSize^(FISsettings$WtbObs) # FIS biomass per bin, NB Need to check that the s-zes are commenusrate to Nt
+    FISNumber <- sum(FISNObs) # Actual absolute numbers for Index except for s-f error
+    FISBiomass <- sum(FISBObs) # Actual absolute weight except for s-f error
+    temp <- cbind(pop,FISBiomass,FISNumber)
+    temp2 <- cbind(pop,SizeFrequency)
+    # IndexInB = q * qyear * B^gamma*exp(error) NB Still need to add gamma and exp error
+    if(pop == 1) {
+      FISData <- temp
+      FISSF <- temp2
+    } else {
+        FISData <- rbind(FISData,temp) # put all the population data together
+        FISSF <- rbind(FISSF, temp2)
+    } # if pop
+
+    # Still not complete at all! And not checked but now think it is time wasted as MH changing code
+    # to much for this to be relevant
+  } # for pop
+
+  return(list(FISData, FISSF))
+} # function getFIS
+
 
 #' @title addrecvar adds recruitment variation to end of conditioning step
 #'
@@ -292,6 +372,36 @@ doTASprojections <- function(ctrl,zoneDP,zoneCP,histCE,glb,mcdahcr,hsargs,
     for (year in 2:projyrs) {
       arrce=rbind(histCE,zoneDP$cesau[1:(year-1),,iter])
       yearnames=c(oldyrs,tail(oldyrs,1)+1:(year-1))
+
+      # Get the FIS data if needed. Not complete as stopped - MH changing the code!
+      if (ctrl$NeedFIS <- TRUE) {
+        # This needs to be later put in the input files and then error added same as cpue etc
+        FISsettings <- list("MinIndexSize" = 100, # Lower size class in mm of the Index
+                            "MaxIndexSize" = 150, # Upper size class of the index in mm, maybe relate to glb?
+                            "FISKnife" = FALSE, # Knide edged selectivity (TRUE) or logistic (FALSE)
+                            "FISSel50" = rep(100, times=ctrl$projection), # FIS 50% selectivity, needs to be more elegant later
+                            #If knife-edged will use this number
+                            "FISSel95" = rep(140, times=ctrl$projection), # FIS 95% selectivity
+                            "qFIS" = 1E-5,  # FIS catchability related to numbers not biomass (needs discussion)
+                            "ObsErrCompsMean" = 1, # Mean observation error on size frequency composition (normal distribution)
+                            "ObsErrCompsSd" = 0.001, # Sd of observation error on s-f composition (normal distribution)
+                            "WtaObs" = 2.413551e-05, # Observed length-weight a used in the HS
+                            "WtbObs" = 3.385185e+00) # Observed length-weight b used in HS. NB at this stage assuming 1 global l-w regression
+        # Create the FIS numbers array (this will have to be moved to earlier part of main code)
+        zoneDP$FISNumbers <-array(0,dim=c(glb$Nclass,ctrl$projection,glb$numpop,ctrl$reps),
+                                  dimnames=list(1:glb$Nclass,1:ctrl$projection,1:glb$numpop,1:ctrl$reps))
+        zoneDP$FISBiomass <-array(0,dim=c(glb$Nclass,ctrl$projection,glb$numpop,ctrl$reps),
+                                  dimnames=list(1:glb$Nclass,1:ctrl$projection,1:glb$numpop,1:ctrl$reps))
+
+        FIS <- getFIS(zoneDP=zoneDP, glb=glb,ctrl=ctrl,FISsettings = FISsettings,iter=1, year=1)
+        # Testing the FIS for first year in projection
+
+        # May need to change dimnames later as MH wants to use proper years
+        # placed this here but I think we can do this by generalising the projection function
+        #FISHS <- function(hsargs, yearnames, saunames,acatches=zoneDP$acatch[year-1,,iter])
+
+      } # If NeedFIS is true
+      # NB One year's data in FIS from getFIS only so need to add to previous year(s) still to do but suspect no longer relevant
       hcrout <- mcdahcr(arrce=arrce,hsargs,yearnames,saunames=glb$saunames,
                         acatches=zoneDP$acatch[year-1,,iter])
      # acatch <- zoneDP$acatch[year-1,,iter] * hcrout$multTAC[lnce,]
@@ -482,6 +592,7 @@ modprojC <- function(zoneC,glob,projC) { # zoneC=zone$zoneC; glob=glb; projC=zon
                                              selL95,midpts)
         projSelWt[,pop,pickyr[yr]] <- projSel[,pop,pickyr[yr]] * zoneC[[pop]]$WtL
       }
+
     }
   }
   projC$Sel <- projSel
