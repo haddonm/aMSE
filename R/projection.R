@@ -23,59 +23,66 @@
 #' @export
 #'
 #' @examples
-getFIS <- function(zoneDP, glb,ctrl,FISsettings,iter, year) {
+getFIS <- function(zoneDP=zoneDP, glb=glb,ctrl=ctrl,FISsettings = FISsettings,iter=1, year=1) {
   Nclass <- glb$Nclass
   BinSize <- glb$midpts[2]-glb$midpts[1] # this is also in zone1 but big object so hopefully saving time
   Nt <- zoneDP$Nt
   MidSizeAll <- as.numeric(names(Nt[,1,1,1])) # Mid pt sizes of the observed data
+  FISBias <- runif(ctrl$reps,FISsettings$FISBiasLower,FISsettings$FISBiasUpper)+0.5
+  # NB NB replace this with truncated normal but first check if in mUtils as not in base or stats. this is a hack presently
+  # Calculate selectivity
   knifeedge <- 0
   if(FISsettings$FISKnife == TRUE) knifeedge <- FISsettings$FISSel50[year] # Test if knifeedged
   Select <- logistic(FISsettings$FISSel50[year],FISsettings$FISSel95[year]-FISsettings$FISSel50[year],
-                     MidSizeAll, knifeedge=knifeedge) # Calculate selectivity. Is knife edged it kifeedge >0
+                     MidSizeAll, knifeedge=knifeedge) # Calculate selectivity. Is knife edged if knifeedge >0
   MinIndexSizeBin <- ceiling(FISsettings$MinIndexSize/BinSize) # Min size of index (bin)
   MaxIndexSizeBin <- ceiling(FISsettings$MaxIndexSize/BinSize) # Max size of index (bin)
-
 
   # ToDo - need to extend the FIS back in time but getting it to work for proejction first
 
   FISSF <- data.frame(matrix(NA, nrow=glb$Nclass, ncol=glb$numpop)) # Once I understand the changes MH is making will need to change these 2 lines
-  FISData <- data.frame(matrix(NA, nrow=glb$numpop,ncol=3))
+  ObsFISIndices <- data.frame(matrix(NA, nrow=glb$numpop,ncol=3))
+
   for(pop in 1:glb$numpop) {
+
     FISN <- Nt[,year,pop,iter] # Absolute size frequency without error
+    ObsFISN <- rowMeans(rmultinom(FISsettings$SFSampleSize,(FISBias[iter]*FISsettings$qFIS*sum(FISN)),FISN)) # generate a multinomial sample
+    # here we scale to qFIS*FISBias[iter] times the actual total so it returns a number in the scale we want.
+    # Note selectivity has still not been applied as worth code checking the numbers here
 
-    # Generate the size-frequency
-    ObsErrComps <- rnorm(length(FISN),FISsettings$ObsErrCompsMean,FISsettings$ObsErrCompsSd)
-    FISNObsQ <- FISsettings$qFIS*FISN * ObsErrComps # Adding s-f observation error and catchability.
-    SizeFrequency <- FISNObsQ/sum(FISNObsQ)*100 # Size frequency as a percent
-    # Malcolm having real trouble with where to place the Q.
-    # If I put it after selectivity then the q changes meaning depending on these values.
-    # If here then the numbers are no longer integers. Ideas?
+    ObsFISSFnFinal <- Select*ObsFISN # Now apply selectivity. This is the actual size-frequency the FIS will obtain
+    # Need to check this as numbers strange
 
-    # Creating the index in numbers depending on size classes required for HS
+    ObsFISSFpFinal <- ObsFISSFnFinal/sum(ObsFISSFnFinal) # Size frequency as a proportion
 
-    # Adding further observation error because this assumes that not all animals in the FIS are measures
-    FISNObs <- SizeFrequency[MinIndexSizeBin:MaxIndexSizeBin] # remember selectivity has already been applied
+    # NB I am proposing this is where we stop. If the HS needs an index then we give it ObsFISSFnFinal,
+    # if the HS needs size-frequency but doesn't have an index, we give ObsFISSFpFinal
+    # The HS can then cut its cloth as needed within its own code. So the below will be in the HS code rather.
+    # It can arguably be here but if they need 2 indices then the person would do the above and cut in their HS. Same thing.
+    # So from here on I think should be in the HS function e.g. SA HS.
 
-    MidSize <- as.numeric(names(FISNObs)) # Mid pt sizes of the observed data
-    FISBObs <- FISNObs * FISsettings$WtaObs*MidSize^(FISsettings$WtbObs) # FIS biomass per bin, NB Need to check that the s-zes are commenusrate to Nt
-    FISNumber <- sum(FISNObs) # Actual absolute numbers for Index except for s-f error
-    FISBiomass <- sum(FISBObs) # Actual absolute weight except for s-f error
-    temp <- cbind(pop,FISBiomass,FISNumber)
-    temp2 <- cbind(pop,SizeFrequency)
+    # creating a numbers index based on the cut-offs required for the HS.
+    ObsFISNIndex <- ObsFISSFnFinal[MinIndexSizeBin:MaxIndexSizeBin]
+    MidSize <- as.numeric(names(ObsFISNIndex)) # Mid pt sizes of the observed data
+    ObsFISBIndex <- ObsFISNIndex * FISsettings$WtaObs*MidSize^(FISsettings$WtbObs) # FIS biomass per bin, NB Need to check that the sizes are commensurate to Nt
+    ObsFISNumber <- sum(ObsFISSFnFinal) # Index in numbers for the selected range
+    ObsFISBiomass <- sum(ObsFISBIndex) # Actual absolute weight except for s-f error
+    temp <- cbind(pop,ObsFISNumber,ObsFISBiomass)
+    temp2 <- cbind(pop,ObsFISSFnFinal,ObsFISSFpFinal)
     # IndexInB = q * qyear * B^gamma*exp(error) NB Still need to add gamma and exp error
     if(pop == 1) {
-      FISData <- temp
-      FISSF <- temp2
+      ObsFISIndices <- temp
+      ObsFISSF <- temp2
     } else {
-        FISData <- rbind(FISData,temp) # put all the population data together
-        FISSF <- rbind(FISSF, temp2)
+      ObsFISIndices <- rbind(ObsFISIndices,temp) # put all the population data together
+      ObsFISSF <- rbind(ObsFISSF, temp2)
     } # if pop
 
     # Still not complete at all! And not checked but now think it is time wasted as MH changing code
     # to much for this to be relevant
   } # for pop
 
-  return(list(FISData, FISSF))
+  return(list(ObsFISIndices, ObsFISSF))
 } # function getFIS
 
 
