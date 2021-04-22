@@ -6,27 +6,26 @@
 \usage{
 oneyearsauC(
   zoneCC,
-  exb,
   inN,
-  catchsau,
+  popC,
   year,
   Ncl,
   sauindex,
   movem,
   sigmar = 1e-08,
-  sigmab = 1e-08
+  sigmab = 1e-08,
+  r0,
+  b0,
+  exb0
 )
 }
 \arguments{
 \item{zoneCC}{the constant portion of the zone with a list of
-properties for each population}
-
-\item{exb}{the vector of exploitable biomass for each population for the
-previous year}
+    properties for each population
+##param exb the vector of exploitable biomass for each population for the
+##     previous year}
 
 \item{inN}{the numbers-at-length for each population for the previous year}
-
-\item{catchsau}{a vector of catches to be taken in the year from each SAU}
 
 \item{year}{the year of the dynamics the exb and inN would be from year-1}
 
@@ -42,6 +41,14 @@ when searching for an equilibrium.}
 \item{sigmab}{the variability introduced to the catches by population by
 fishers not knowing the distribution of exploitable biomass exactly.
 Initial default value=1e-08}
+
+\item{r0}{the unfished R0 level used by oneyearrec}
+
+\item{b0}{the unfished mature biomass B0, used in recruitment and depletion}
+
+\item{exb0}{the unfished exploitable biomass used in depletion}
+
+\item{catchsau}{a vector of catches to be taken in the year from each SAU}
 }
 \value{
 a list containing a revised dynamics list

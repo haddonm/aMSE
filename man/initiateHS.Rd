@@ -4,15 +4,12 @@
 \alias{initiateHS}
 \title{initiateHS applies HS to the last years of the historical conditioning}
 \usage{
-initiateHS(zoneDP, zoneCP, exb, inN, acatch, sigmar, sigmab, glb)
+initiateHS(zoneDP, zoneCP, inN, acatch, sigmar, sigmab, glb)
 }
 \arguments{
 \item{zoneDP}{the empty dynamics object used in the projections}
 
 \item{zoneCP}{the constant object after modification for projections}
-
-\item{exb}{a vector of exploitable biomass for each population from the last
-year of the conditioning on the fishery or historical fishery data}
 
 \item{inN}{an array of the numbers-at-length for each population from the
 last year of the conditioning on the fishery or historical fishery data}
@@ -27,6 +24,9 @@ estimates to introduce a form of implementation error on the distribution
 of catches among SAU}
 
 \item{glb}{the globals object}
+
+\item{exb}{a vector of exploitable biomass for each population from the last
+year of the conditioning on the fishery or historical fishery data}
 }
 \value{
 a revised zoneDP object with the first year filled in for each

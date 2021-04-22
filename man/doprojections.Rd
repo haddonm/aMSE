@@ -15,6 +15,7 @@ doprojections(
   sampleCE,
   sampleFIS,
   sampleNaS,
+  getdata,
   ...
 )
 }

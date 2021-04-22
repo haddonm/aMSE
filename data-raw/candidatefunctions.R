@@ -1,6 +1,6 @@
 
 
-
+# prepare size-composition data ------------------------------------------------
 
 B0 <- getvar(zoneC,"B0")
 ExB0 <- getvar(zoneC,"ExB0")
@@ -135,11 +135,7 @@ for (sau in 1:nsau) {
 } # end of actual catches
 
 
-
-
-str1 <- function(x) str(x,max.level = 1)
-str2 <- function(x) str(x,max.level = 2)
-
+# calcexpectedsauC -----------------------------------------------------
 
 
 

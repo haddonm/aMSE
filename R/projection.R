@@ -32,7 +32,7 @@
 addrecvar <- function(zoneDD,zoneDP,zoneC,glob,condC,ctrl,varyrs,multTAC,
                       sigR=1e-08,sigB=1e-08,lastsigR=0.3) {
  #  zoneDD=zoneDD;zoneDP=zoneDR;zoneC=zoneC;glob=glb
- #  condC=condC;ctrl=ctrl;varyrs=6;lastsigR=lastsigR
+ #  condC=condC;ctrl=ctrl;varyrs=6;lastsigR=lastsigR; multTAC=multTAC
  #  sigR=1e-08; sigB=1e-08; lastsigR=0.1
   sauindex <- glob$sauindex
   histC <- condC$histCatch
@@ -41,6 +41,9 @@ addrecvar <- function(zoneDD,zoneDP,zoneC,glob,condC,ctrl,varyrs,multTAC,
   reps <- ctrl$reps
   zoneDDR <- makezoneDP(nyrs,reps,glob)
   finalyr <- nyrs - varyrs
+  r0 <- getvar(zoneC,"R0") #sapply(zoneC,"[[","R0")
+  b0 <- getvar(zoneC,"B0") #sapply(zoneC,"[[","B0")
+  exb0 <- getvar(zoneC,"ExB0")
   zoneDDR$matureB[1:finalyr,,] <- zoneDD$matureB[1:finalyr,]
   zoneDDR$exploitB[1:finalyr,,] <- zoneDD$exploitB[1:finalyr,]
   zoneDDR$midyexpB[1:finalyr,,] <- zoneDD$midyexpB[1:finalyr,]
@@ -53,11 +56,14 @@ addrecvar <- function(zoneDD,zoneDP,zoneC,glob,condC,ctrl,varyrs,multTAC,
   for (iter in 1:reps) { # iter = 1
     for (year in (finalyr+1):nyrs) { # year = finalyr + 1
       catchsau <- histC[year,]
-      exb <- zoneDDR$exploitB[year-1,,iter]
+      popC <- calcexpectpopC(TAC=0,acatch=catchsau,
+                             exb=zoneDD$exploitB[year-1,],
+                             sauindex,sigmab=1e-08)
+    #  exb <- zoneDDR$exploitB[year-1,,iter]
       inN <- zoneDDR$Nt[,year-1,,iter]
-      out <- oneyearsauC(zoneCC=zoneC,exb=exb,inN=inN,catchsau=catchsau,
-                         year=year,Ncl=glob$Nclass,sauindex=glob$sauindex,
-                         movem=glob$move,sigmar=lastsigR,sigmab=sigB)
+      out <- oneyearsauC(zoneCC=zoneC,inN=inN,popC=popC,year=year,
+                         Ncl=glob$Nclass,sauindex=sauindex,movem=glob$move,
+                         sigmar=lastsigR,sigmab=sigB,r0=r0,b0=b0,exb0=exb0)
       dyn <- out$dyn
       saudyn <- poptosauCE(dyn["catch",],dyn["cpue",],sauindex)
       zoneDDR$exploitB[year,,iter] <- dyn["exploitb",]
@@ -75,17 +81,20 @@ addrecvar <- function(zoneDD,zoneDP,zoneC,glob,condC,ctrl,varyrs,multTAC,
       zoneDDR$catchN[,year,,iter] <- out$catchN
     }
   }
-  endcatch <- tapply(zoneDDR$catch[nyrs,,1],glob$sauindex,sum,na.rm=TRUE)
+  endcatch <- tapply(zoneDDR$catch[nyrs,,1],sauindex,sum,na.rm=TRUE)
   yrce <- nrow(multTAC)
   acatch <- endcatch * multTAC[yrce,]  # predicted aspirational catches
   sigmar=ctrl$withsigR
   sigmab=ctrl$withsigB
-  for (iter in 1:reps) {
-    exb=zoneDDR$exploitB[nyrs,,iter]
+  for (iter in 1:reps) {  #  iter=1
+  #  exb=zoneDDR$exploitB[nyrs,,iter]
     inN=zoneDDR$Nt[,nyrs,,iter]
-    outy <- oneyearsauC(zoneCC=zoneC,exb=exb,inN=inN,catchsau=acatch,year=1,
+    popC <- calcexpectpopC(TAC=0,acatch=acatch,
+                           exb=zoneDD$exploitB[year-1,],
+                           sauindex,sigmab=1e-08)
+    outy <- oneyearsauC(zoneCC=zoneC,inN=inN,popC=popC,year=1,
                         Ncl=glob$Nclass,sauindex=sauindex,movem=glob$move,
-                        sigmar=sigmar,sigmab=sigmab)
+                        sigmar=sigmar,sigmab=sigmab,r0=r0,b0=b0,exb0=exb0)
     dyn <- outy$dyn
     saudyn <- poptosauCE(dyn["catch",],dyn["cpue",],sauindex)
     zoneDP$exploitB[1,,iter] <- dyn["exploitb",]
@@ -288,7 +297,7 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 #' @examples
 #' print("wait on suitable internal data sets")
 doprojections <- function(ctrl,zoneDP,zoneCP,otherdata,glb,hcrfun,hsargs,
-                             sampleCE,sampleFIS,sampleNaS,...) {
+                             sampleCE,sampleFIS,sampleNaS,getdata,...) {
 #  ctrl=ctrl;zoneDP=zoneDP;zoneCP=zoneCP;otherdata=condC$histCE;glb=glb
 #  hcrfun=mcdahcr; hsargs=hsargs; sampleCE=tasCPUE;sampleFIS=tasFIS; sampleNaS=tasNaS
   reps <- ctrl$reps
@@ -301,23 +310,28 @@ doprojections <- function(ctrl,zoneDP,zoneCP,otherdata,glb,hcrfun,hsargs,
   saunames <- glb$saunames
   Nclass <- glb$Nclass
   movem <- glb$move
+  r0 <- getvar(zoneCP,"R0") #sapply(zoneC,"[[","R0")
+  b0 <- getvar(zoneCP,"B0") #sapply(zoneC,"[[","B0")
+  exb0 <- getvar(zoneCP,"ExB0")
   for (iter in 1:reps) {
     for (year in 2:projyrs) { # iter=1; year=2
-      hcrdata <- tasdata(tasCPUE,tasFIS,tasNaS,zoneDP,otherdata,year=year,iter=iter)
+      hcrdata <- getdata(sampleCE,sampleFIS,sampleNaS,zoneDP,otherdata,
+                         year=year,iter=iter)
       hcrout <- hcrfun(hcrdata,hsargs,saunames=glb$saunames)
-      acatch <- hcrout$acatch
-      zoneDP$acatch[year,,iter] <- acatch
-      outy <- oneyearsauC(zoneCC=zoneCP,exb=zoneDP$exploitB[year-1,,iter],
-                          inN=zoneDP$Nt[,year-1,,iter],catchsau=acatch,year=year,
+      popC <- calcexpectpopC(TAC=hcrout$TAC,acatch=hcrout$acatch,
+                             exb=zoneDP$exploitB[year-1,,iter],
+                             sauindex,sigmab=1e-08)
+      outy <- oneyearsauC(zoneCC=zoneCP,    #exb=zoneDP$exploitB[year-1,,iter],
+                          inN=zoneDP$Nt[,year-1,,iter],popC=popC,year=year,
                           Ncl=Nclass,sauindex=sauindex,movem=movem,
-                          sigmar=sigmar,sigmab=sigmab)
+                          sigmar=sigmar,sigmab=sigmab,r0=r0,b0=b0,exb0=exb0)
       dyn <- outy$dyn
       saudyn <- poptosauCE(dyn["catch",],dyn["cpue",],sauindex)
       zoneDP$exploitB[year,,iter] <- dyn["exploitb",]
       zoneDP$midyexpB[year,,iter] <- dyn["midyexpB",]
       zoneDP$matureB[year,,iter] <- dyn["matureb",]
       zoneDP$catch[year,,iter] <- dyn["catch",]
-      zoneDP$acatch[year,,iter] <- acatch
+      zoneDP$acatch[year,,iter] <- hcrout$acatch
       zoneDP$catsau[year,,iter] <- saudyn$saucatch
       zoneDP$harvestR[year,,iter] <- dyn["catch",]/dyn["exploitb",]
       zoneDP$cpue[year,,iter] <- dyn["cpue",]
@@ -584,7 +598,8 @@ poptosauCE <- function(catvect,cpuevect,sauindex) {
 #' print("wait on data files")
 prepareprojection <- function(projC,condC,zoneC,glb,zoneDD,ctrl,varyrs,
                                  multTAC,lastsigR = 0.3) {
-  # projC=projC;condC=condC;zoneC=zoneC; glb=glb; zoneDep=zoneDD; ctrl=ctrl;varyrs=6;lastsigR=0.1
+  # projC=projC;condC=condC;zoneC=zoneC; glb=glb; zoneDD=zoneDD; ctrl=ctrl;
+  # varyrs=6;lastsigR=0.1; multTAc=multTAC
   if (ctrl$randseedP > 0) set.seed(ctrl$randseedP)
   projyrs <- projC$projyrs
   projC <- modprojC(zoneC,glb,projC) # include selectivity into projC
