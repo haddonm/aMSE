@@ -1,104 +1,5 @@
 
 
-#' @title doprojection applies the Tasmanian MCDA to a simulated zone
-#'
-#' @description doprojection applies the Tasmanian MCDA to a simulated zone. It
-#'     is still in need of optimization as 1000 iterations would currently take
-#'     about 20 minutes.
-#'
-#' @param zoneCP the modified zoneC object ready for projections
-#' @param zoneDP the modified zoneD object ready for projections
-#' @param glob the global variables object
-#' @param ctrl the ctrl object
-#' @param projyrs the number of years of projection
-#' @param applyHS the function describing the harvest strategy to be used
-#' @param hsargs a list of any arguments used by applyHS
-#' @param projpms the matrices of performance measures from calibrateHS
-#' @param inityrs the number of years kept from the period of conditioning,
-#' @param ... the ellipsis should contain any additional arguments
-#'
-#' @return the filled in zoneDP list
-#' @export
-#'
-#' @examples
-#' print("wait on data files")
-#' # zoneCP=zoneCP;zoneDP=zoneDR;glob=glb;ctrl=ctrl;projyrs=projC$projyrs;inityrs=projC$inityrs
-#' # wid=4;targqnt=0.55;pmwts=c(0.65, 0.25,0.1);hcr = c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2)
-doprojection <- function(zoneCP,zoneDP,glob,ctrl,projyrs,applyHS,hsargs,
-                         projpms,inityrs,...) {
-  # get  important constants
-  sigmaR <- ctrl$withsigR # needed to add recruitment variation
-  npop <- glob$numpop
-  nsau <- glob$nSAU
-  Ncl <- glob$Nclass
-  nyrs <- projyrs
-  movem <- glob$move
-  reps <- ctrl$reps
-  sauindex <- glob$sauindex
-  matb <- numeric(npop)                   # use the same initial TAC for all reps
-  origTAC <- mean(colSums(zoneDP$catch[1,,])) # mean sum of catches in last year
-
-  saucatch <- array(0,dim=c(nyrs,nsau,reps))
-  saucpue <- saucatch
-
-  # for (iter in 1:reps) { # generate SAU total catches and catch-weighted cpue iter=1
-  #   for (yr in 1:inityrs) { # iter=1; yr=4
-  #     saucatch[yr,,iter] <- tapply(zoneDP$catch[yr,,iter],sauindex,sum,na.rm=TRUE)
-  #     wts <- zoneDP$catch[yr,,iter]/(saucatch[yr,sauindex,iter])
-  #     saucpue[yr,,iter] <- tapply((zoneDP$cpue[yr,,iter] * wts),sauindex,sum,na.rm=TRUE)
-  #     if (yr >= hsargs$wid) {
-  #       grad1[yr,,iter] <- apply(saucpue[1:yr,,iter],2,getgradone,yr=yr)
-  #       grad4[yr,,iter] <- apply(saucpue[1:yr,,iter],2,getgradwid,yr=yr,wid=hsargs$wid)
-  #     }
-  #   }
-  #   for (sau in 1:nsau)
-  #     targetce[sau] <- targscore(saucpue[1:inityrs,sau,iter],qnt=hsargs$targqnt)
-  #   targsc[1:inityrs,,iter] <- targetce
-  # }
-  # now do replicates, updating saucatch and saucpue each year
-  if(ctrl$randseedP > 0) set.seed(ctrl$randseedP) # set random seed if desired
-  for (iter in 1:reps) {
-    TAC <- origTAC  # use the same original TAC for each replicate
-    for (year in (inityrs+1):nyrs) { # iter=1; year=11
-      #  catpop <- colSums(zoneDP$catch[1:(year - 1),,iter])
-      inexpB <- zoneDP$exploitB[(year - 1),,iter]
-      sauexpB <- tapply(inexpB,sauindex,sum,na.rm=TRUE)
-      catbysau <- TAC * sauexpB/sum(sauexpB)  # no error initially
-      multh <- apply(saucpue[1:(year-1),,1],2,applyHS,yr=(year-1)) # apply mcdahcr
-      TAC <- sum(catbysau * multh)
-      divererr <- sauexpB * exp(rnorm(nsau,mean=0,sd=ctrl$withsigB))
-      catbysau <- TAC * (divererr/sum(divererr)) # currently no error on TAC
-      catbypop <- catbysau[sauindex] * (inexpB/sauexpB[sauindex]) # no error on pops
-      for (popn in 1:npop) { # year=11; iter=1; pop=1
-        out <- oneyearcat(inpopC=zoneCP[[popn]],inNt=zoneDP$Nt[,year-1,popn,iter],
-                          Nclass=Ncl,incat=catbypop[popn],yr=year)
-        zoneDP$exploitB[year,popn,iter] <- out$ExploitB
-        zoneDP$matureB[year,popn,iter] <- out$MatureB
-        zoneDP$catch[year,popn,iter] <- out$Catch
-        zoneDP$harvestR[year,popn,iter] <- out$Harvest
-        zoneDP$cpue[year,popn,iter] <- out$ce
-        zoneDP$Nt[,year,popn,iter] <- out$Nt
-        zoneDP$catchN[,year,popn,iter] <- out$CatchN
-        matb[popn] <- out$MatureB
-      } # pop
-      steep <- getvect(zoneCP,"steeph")
-      r0 <- sapply(zoneCP,"[[","R0")
-      b0 <- sapply(zoneCP,"[[","B0")
-      recs <- oneyearrec(steep,r0,b0,matb,sigR=ctrl$withsigR)
-      newrecs <- movem %*% recs
-      zoneDP$recruit[year,,iter] <- newrecs
-      zoneDP$Nt[1,year,,iter] <- newrecs
-      zoneDP$deplsB[year,,iter] <- zoneDP$matureB[year,,iter]/b0
-      zoneDP$depleB[year,,iter] <- zoneDP$exploitB[year,,iter]/sapply(zoneCP,"[[","ExB0")
-      saucatch[year,,iter] <- tapply(zoneDP$catch[year,,iter],sauindex,sum,na.rm=TRUE)
-      wts <- zoneDP$catch[year,,iter]/(saucatch[year,sauindex,iter])
-      saucpue[year,,iter] <- tapply((zoneDP$cpue[year,,iter] * wts),sauindex,sum,na.rm=TRUE)
-    }   # year loop        zoneDR$matureB[,,1]
-  }     # rep loop
-  zoneDP$cesau <- saucpue
-  return(zoneDP=zoneDP)
-} # end of doprojection
-
 #' @title product is the productivity curve matrix from doproduction
 #'
 #' @description product is the productivity curve matrix from
@@ -199,122 +100,92 @@ NULL
 
 
 
-doprojection <- function(zoneCP,zoneDP,glob,ctrl,projyrs,applyHS,hsargs,
-                         projpms) {
-  zoneCP=zoneCP
-  zoneDP=zoneDP
-  glob=glb
-  ctrl=ctrl
-  projyrs=projC$projyrs
-  applyHS=mcdahcr
-  hsargs=hsargs
-  projpms=cmcda
-  # get important constants
-  sigmaR <- ctrl$withsigR # needed to add recruitment variation
-  sigmaB <- ctrl$withsigB
-  npop <- glob$numpop
-  nsau <- glob$nSAU
-  Ncl <- glob$Nclass
-  nyrs <- projyrs
-  movem <- glob$move
-  reps <- ctrl$reps
-  sauindex <- glob$sauindex
-  matb <- numeric(npop)
-  origTAC <- colSums(zoneDP$catch[1,,]) # mean sum of catches in last year
-  # now do replicates, updating saucatch and saucpue each year
-  if (ctrl$randseedP > 0) set.seed(ctrl$randseedP) # set random seed if desired
-  for (iter in 1:reps) {
-    TAC <- origTAC[iter]
-    for (year in 2:nyrs) { # iter=1; year=11
-      catbysau <- catchbysau(inexpB=zoneDP$exploitB[(year - 1),,iter],sauindex,TAC) # no error initially
-      multh <- apply(saucpue[1:(year-1),,1],2,applyHS,yr=(year-1)) # apply mcdahcr
-      TAC <- sum(catbysau * multh)
-      divererr <- sauexpB * exp(rnorm(nsau,mean=0,sd=ctrl$withsigB))
-      catbysau <- TAC * (divererr/sum(divererr)) # currently no error on TAC
-      catbypop <- catbysau[sauindex] * (inexpB/sauexpB[sauindex]) # no error on pops
-      for (popn in 1:npop) { # year=11; iter=1; pop=1
-        out <- oneyearcat(inpopC=zoneCP[[popn]],inNt=zoneDP$Nt[,year-1,popn,iter],
-                          Nclass=Ncl,incat=catbypop[popn],yr=year)
-        zoneDP$exploitB[year,popn,iter] <- out$ExploitB
-        zoneDP$matureB[year,popn,iter] <- out$MatureB
-        zoneDP$catch[year,popn,iter] <- out$Catch
-        zoneDP$harvestR[year,popn,iter] <- out$Harvest
-        zoneDP$cpue[year,popn,iter] <- out$ce
-        zoneDP$Nt[,year,popn,iter] <- out$Nt
-        zoneDP$catchN[,year,popn,iter] <- out$CatchN
-        matb[popn] <- out$MatureB
-      } # pop
-      steep <- getvect(zoneCP,"steeph")
-      r0 <- sapply(zoneCP,"[[","R0")
-      b0 <- sapply(zoneCP,"[[","B0")
-      recs <- oneyearrec(steep,r0,b0,matb,sigR=sigmar)
-      newrecs <- movem %*% recs
-      zoneDP$recruit[year,,iter] <- newrecs
-      zoneDP$Nt[1,year,,iter] <- newrecs
-      zoneDP$deplsB[year,,iter] <- zoneDP$matureB[year,,iter]/b0
-      zoneDP$depleB[year,,iter] <- zoneDP$exploitB[year,,iter]/sapply(zoneCP,"[[","ExB0")
-      saucatch[year,,iter] <- tapply(zoneDP$catch[year,,iter],sauindex,sum,na.rm=TRUE)
-      wts <- zoneDP$catch[year,,iter]/(saucatch[year,sauindex,iter])
-      saucpue[year,,iter] <- tapply((zoneDP$cpue[year,,iter] * wts),sauindex,sum,na.rm=TRUE)
-    }   # year loop        zoneDR$matureB[,,1]
-  }     # rep loop
-  zoneDP$cesau <- saucpue
-  return(zoneDP=zoneDP)
-} # end of doprojection
+#' @title plotzoneproj plots the replicates of a single zone-wide variable
+#'
+#' @description plotzoneproj takes the results from the function aszone, which
+#'     contains a set of variables zonesB, zoneeB, zoneC, zoneH, zoneR, zonece,
+#'     zonedeplsB,and zonedepleB, and plots whichever is selected. It contains
+#'     the option of also plotting the median and the inner 90 percent quantiles
+#'     of each year's spread of values across replicates. DEPRECATED
+#'
+#' @param zoneV the variable from within the output of aszone
+#' @param reps the number of replicates to plot. Generaly one would plot all of
+#'     them. If not then it might be best to turn addqnts to FALSE
+#' @param yrs the vector of years as in 1:(inityrs + projyrs)
+#' @param label the y-axis label, which should obviously reflect which variable
+#'     is chosen from the zone summary list.
+#' @param addqnts should the median and inner 90 percent quantiles be added to
+#'     the plot; default = TRUE
+#' @param miny sets the lower limit of the y-axis, default=0
+#'
+#' @return if addqnts=TRUE the quantiles are returned invisibly
+#' @export
+#'
+#' @examples
+#' print("wait on more time")
+#' # zoneV=zoneproj$zoneC;reps=reps;yrs=1:50;miny=0;label="Catches"; addqnts=TRUE
+plotzoneproj <- function(zoneV,reps,yrs,label="",addqnts=TRUE,miny=0) {
+  maxy <- getmax(zoneV)
+  ylabel <- "Variable"
+  if (nchar(label) > 0) ylabel <- label
+  plot(yrs,zoneV[,1],type="n",panel.first=grid(),ylim=c(miny,maxy),yaxs="i",
+       ylab=ylabel,xlab="Years")
+  for (iter in 1:reps) lines(yrs,zoneV[,iter],lwd=1,col="grey")
+  if (addqnts) {
+    CI <- apply(zoneV,1,quantile,probs=c(0.05,0.5,0.95))
+    lines(yrs,CI[1,],lwd=2,col=4)
+    lines(yrs,CI[2,],lwd=2,col=2)
+    lines(yrs,CI[3,],lwd=2,col=4)
+  }
+  if (addqnts) return(invisible(t(CI)))
+} # end of plotzoneproj
 
-
-
-
-doproj <- function(zoneC,zoneDD,glb,ctrl,projC,applyHS=mcdahcr,HSargs,
-                   histpms) {
-  ans <- calcprojsel(zoneC,projC,glb) # calculate selectivity for projections
-  sel <- ans$projSel
-  selwt <- ans$projSelWt
-  reps <- ctrl$reps
-  pyrs <- projC$projyrs
-  zoneDP <- makezoneDP(pyrs,reps,glb,zoneDD) # make object to hold projections
-  sigmar <- ctrl$withsigR # needed to add recruitment variation
-  npop <- glb$numpop
-  nsau <- glb$nSAU
-  Ncl <- glb$Nclass
-
-  lastyr <- glb$Nyrs
-  histyrs <- projC$inityrs:lastyr
-  movem <- glb$move
-  reps <- ctrl$reps
-  matb <- numeric(npop)
-  origTAC <- sum(zoneDD$catch[lastyr,]) # Assumes the TAC is always caught!
-  sauindex <- glb$sauindex
-  saucatch <- array(0,dim=c(pyrs,nsau,reps))
-  saucpue <- saucatch
-  grad4 <- array(0,dim=c(pyrs,nsau,reps)) # declare arrays to store PMs
-  grad1 <- grad4
-  targsc <- grad4
-  targetce <- numeric(nsau)
-  for (iter in 1:reps) {
-    for (year in 1:pyrs) {  # iter=1; year = 1
-      ans <- getmcdadatap(zoneDD$catch,zoneDD$cpue,
-                          zoneDP$catch[,,iter],zoneDP$cpue[,,iter],
-                          histyrs,year)
-
-
+#' @title plotproj aids the plotting of a projected variable
+#'
+#' @description plotproj plots out the projections from the MSE for a selected
+#'     variable. iters is included so that details of a few trajectories can
+#'     be viewed as well as seeing all replicates. DEPRECATED
+#'
+#' @param invar the array containing the year x SAU x reps values for a selected
+#'     variable out of sauzoneDP
+#' @param varlabel the label to place along the outer Y-axis
+#' @param plotconst a list containing nsau, saunames, reps, projyrs, and plts
+#'     a vector of two describing the layout of plots
+#' @param vline default=NULL, which means nothing extra is plotted. If given a
+#'     year then a vertical line in red will be added to the plot
+#' @param iters default=0, which means all iterations will be plotted. If iters
+#'     has a value then only that many trajectories will be plotted
+#' @param addqnts will calculate and add the median and 90 percent quantiles
+#' @param miny sets the lower limit of the y-axis, default=0
+#'
+#' @return nothing but it does generate a plot
+#' @export
+#'
+#' @examples
+#' print("wait on data files")
+plotproj <- function(invar,varlabel,plotconst,miny=0,
+                     vline=NULL,iters=0,addqnts=FALSE) {
+  nsau <- plotconst$nsau
+  yrs <- 1:plotconst$projyrs
+  saunames <- plotconst$saunames
+  reps <- plotconst$reps
+  parset(plots=plotconst$plts,byrow=FALSE,margin=c(0.25,0.4,0.1,0.05),
+         outmargin=c(1,1,0,0))
+  for (sau in 1:nsau) { # sau=1
+    maxy <- getmax(invar[,sau,])
+    plot(yrs,invar[,sau,1],lwd=1,type="l",col="grey",panel.first=grid(),
+         ylim=c(miny,maxy),xlab="",ylab=saunames[sau])
+    trajs <- reps
+    if (iters > 0) trajs <- iters
+    for (iter in 1:trajs) lines(yrs,invar[,sau,iter],lwd=1,col="grey")
+    if (!is.null(vline)) abline(v=vline,lwd=1,col=2)
+    if (addqnts) {
+      CI <- apply(invar[,sau,],1,quantile,probs=c(0.05,0.5,0.95))
+      lines(yrs,CI[1,],lwd=1,col=4)
+      lines(yrs,CI[2,],lwd=2,col=4)
+      lines(yrs,CI[3,],lwd=1,col=4)
     }
   }
-  #calibrate the HCR on zoneDD before the projections
-  for (yr in 1:inityrs) { # iter=1; yr=4
-    saucatch[yr,,iter] <- tapply(zoneDP$catch[yr,,iter],sauindex,sum,na.rm=TRUE)
-    wts <- zoneDP$catch[yr,,iter]/(saucatch[yr,sauindex,iter])
-    saucpue[yr,,iter] <- tapply((zoneDP$cpue[yr,,iter] * wts),sauindex,sum,na.rm=TRUE)
-    if (yr >= wid) {
-      grad1[yr,,iter] <- apply(saucpue[1:yr,,iter],2,getgradone,yr=yr)
-      grad4[yr,,iter] <- apply(saucpue[1:yr,,iter],2,getgradwid,yr=yr)
-    }
-  }
-  for (sau in 1:nsau)
-    targetce[sau] <- targscore(saucpue[1:inityrs,sau,iter],qnt=targqnt)$result
-  targsc[1:inityrs,,iter] <- targetce
-
-}
-
-
-
+  mtext("Years",side=1,line=-0.1,outer=TRUE,cex=1.0,font=7)
+  mtext(varlabel,side=2,line=-0.1,outer=TRUE,cex=1.0,font=7)
+} # end of plotproj

@@ -49,13 +49,16 @@ estimate the aspirational catches or TAC or the following year}
 
 \item{sampleNaS}{a function that generates the Numbers-at-size samples}
 
+\item{getdata}{a function that gathers all the data required by the hcrfun
+and combines it into an hcrdata object ready for the hcrfun}
+
 \item{...}{the ellipsis used in case any of the functions hcrfun, sampleCE,
-sampleFIS, or sampleNas require extra arguments not included in the
-default collection}
+sampleFIS, sampleNas, and getdata require extra arguments not included
+in the default named collection}
 }
 \value{
-a replacement for zoneDP containing the dynamics of all replicates
-    for all projection years
+a replacement for zoneDP containing the dynamics for all populations,
+    for all replicates, and for all projection years
 }
 \description{
 doprojections conducts the replicate model runs for

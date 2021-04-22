@@ -23,7 +23,7 @@ biology_plots <- function(rundir, glb, zoneC) {
   numpop <- glb$numpop
   popdef <- getlistvar(zoneC,"popdef")
   SAU <- unique(popdef["SAU",])
-  nSAU <- length(SAU)
+  nSAU <- glb$nSAU
   # Yield vs Spawning biomass-----------------------
   # maturation uses zoneC
   matur <- getlistvar(zoneC,"Maturity")

@@ -23,8 +23,9 @@ diagnosticsproj <- function(zonePsau,glb,rundir,nrep=3) {
     # a helper function that plots nrep trajectories from invar
     nyrs <- dim(var1)[1]
     reps <- dim(var1)[3]
+    nsau <- glb$nSAU
     plotprep(width=7,height=7,filename=filen,cex=1.0,verbose=FALSE)
-    parset(plots=c(4,2))
+    parset(plots=getparplots(nsau))
     for (sau in 1:nsau) {
       pickrep <- sample(1:reps,nrep,replace=FALSE)
       ymax <- getmax(var1[,sau,pickrep])
@@ -46,7 +47,8 @@ diagnosticsproj <- function(zonePsau,glb,rundir,nrep=3) {
                     "predicted catches from the HCR.")
   plotprep(width=7,height=7,filename=filen,cex=1.0,verbose=FALSE)
   resid <- zonePsau$catch - zonePsau$acatch
-  parset(plots=c(4,2),margin=c(0.3,0.35,0.05,0.05),outmargin = c(1,1,0,0))
+  parset(plots=getparplots(nsau),margin=c(0.3,0.35,0.05,0.05),
+         outmargin = c(1,1,0,0))
   for (sau in 1:nsau) {
     label <- paste0("SAU ",saunames[sau])
     hist(resid[,sau,],breaks=25,main="",ylab=label,xlab="",
@@ -99,11 +101,10 @@ dosau <- function(inzone,glb,picksau,histCE,yrnames,extra=FALSE) {
   saunames <- as.numeric(glb$saunames)
   indexsau <- which(saunames == picksau)
   label=c("deplsB","cpue","matB","catch","harvestR","recruit")
-  doplots=c(3,2)
   if (extra) {
     label=c("deplsB","cpue","matB","catch","harvestR","recruit","expB","depleB")
-    doplots=c(4,2)
   }
+  doplots=getparplots(length(label))
   nvar <- length(label)
   matB <- inzone$matB
   nyrs <- dim(matB)[1]
@@ -235,7 +236,7 @@ onesau <- function(prerep,postrep,glb,startyr,picksau,addCI=FALSE,
   varCI <- vector("list",nvar)
   names(varCI) <- label
   if (is.numeric(histCE)) ceyr <- startyr:preyrs
-  parset(plots=c(3,3),margin=c(0.3,0.4,0.05,0.05),outmargin=c(1,0,1,0),
+  parset(plots=getparplots(length(label)),margin=c(0.3,0.4,0.05,0.05),outmargin=c(1,0,1,0),
          byrow=FALSE)
   for (invar in 1:nvar) {  #  invar=1
     premat <- prerep[[label[invar]]][,sauindex,]
@@ -292,7 +293,7 @@ onezoneplot <- function(invar,rundir,CIprobs,varname,addfile=TRUE) {
   filen <- filenametopath(rundir,namefile)
   if (!addfile) filen <- ""
   plotprep(width=7,height=4,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
-  parset()
+  parset(plots=c(1,1))
   ymax <- getmax(invar)
   CI <- apply(invar,1,quantile,probs=CIprobs)
   plot(1:nyrs,invar[,1],lwd=1,col="grey",ylab=varname,xlab="Years",
@@ -332,7 +333,7 @@ plotCNt <- function(Nt,glb,vline=NULL,start=3) {
   nsau <- glb$nSAU
   saunames <- glb$saunames
   endyr <- dim(Nt)[2]
-  parset(plots=c(4,2),margin = c(0.25, 0.45, 0.05, 0.05),byrow=FALSE,
+  parset(plots=getparplots(nsau),margin = c(0.25, 0.45, 0.05, 0.05),byrow=FALSE,
          outmargin = c(1.1, 0, 0, 0))
   for (sau in 1:nsau) { #  sau=1
     label <- paste0("N '000s  sau",saunames[sau])
@@ -415,7 +416,7 @@ plotNt <- function(Nt,year,glb,start=3,medcol=0) {
   nsau <- glb$nSAU
   saunames <- glb$saunames
   saumedians <- matrix(0,nrow=Nclass,ncol=nsau,dimnames=list(midpts,saunames))
-  parset(plots=c(4,2),byrow=FALSE)
+  parset(plots=getparplots(nsau),byrow=FALSE)
   for (sau in 1:nsau) { #  sau=1
     sdat <- Nt[,year,sau,]
     saumedians[,sau] <- apply(sdat,1,median)
@@ -488,55 +489,6 @@ plotprod <- function(product,xname="MatB",yname="Catch",xlimit=NA,
 } # end of plotprod
 
 
-#' @title plotproj aids the plotting of a projected variable
-#'
-#' @description plotproj plots out the projections from teh mse for a selected
-#'     variable. iters is included so that details of a few trajectories can
-#'     be viewed as well as seeing all replicates. DEPRECATED
-#'
-#' @param invar the array containing the year x SAU x reps values for a selected
-#'     variable out of sauzoneDP
-#' @param varlabel the label to place along the outer Y-axis
-#' @param plotconst a list containing nsau, saunames, reps, projyrs, and plts
-#'     a vector of two describing the layout of plots, default=c(4,2)
-#' @param vline default=NULL, which means nothing extra is plotted. If given a
-#'     year then a vertical line in red will be added to the plot
-#' @param iters default=0, which means all iterations will be plotted. If iters
-#'     has a value then only that many trajectories will be plotted
-#' @param addqnts will calculate and add the median and 90 percent quantiles
-#' @param miny sets the lower limit of the y-axis, default=0
-#'
-#' @return nothing but it does generate a plot
-#' @export
-#'
-#' @examples
-#' print("wait on data files")
-plotproj <- function(invar,varlabel,plotconst,miny=0,
-                     vline=NULL,iters=0,addqnts=FALSE) {
-  nsau <- plotconst$nsau
-  yrs <- 1:plotconst$projyrs
-  saunames <- plotconst$saunames
-  reps <- plotconst$reps
-  parset(plots=plotconst$plts,byrow=FALSE,margin=c(0.25,0.4,0.1,0.05),
-         outmargin=c(1,1,0,0))
-  for (sau in 1:nsau) { # sau=1
-    maxy <- getmax(invar[,sau,])
-    plot(yrs,invar[,sau,1],lwd=1,type="l",col="grey",panel.first=grid(),
-         ylim=c(miny,maxy),xlab="",ylab=saunames[sau])
-    trajs <- reps
-    if (iters > 0) trajs <- iters
-    for (iter in 1:trajs) lines(yrs,invar[,sau,iter],lwd=1,col="grey")
-    if (!is.null(vline)) abline(v=vline,lwd=1,col=2)
-    if (addqnts) {
-        CI <- apply(invar[,sau,],1,quantile,probs=c(0.05,0.5,0.95))
-        lines(yrs,CI[1,],lwd=1,col=4)
-        lines(yrs,CI[2,],lwd=2,col=4)
-        lines(yrs,CI[3,],lwd=1,col=4)
-    }
-  }
-  mtext("Years",side=1,line=-0.1,outer=TRUE,cex=1.0,font=7)
-  mtext(varlabel,side=2,line=-0.1,outer=TRUE,cex=1.0,font=7)
-} # end of plotproj
 
 #' @title plotTAC plots the projected TAC across all replicates
 #'
@@ -604,46 +556,6 @@ plotZone <- function(inzone,rundir,CIprobs=c(0.05,0.5,0.95),addfile=TRUE) {
   onezoneplot(inzone$TAC,rundir,CIprobs=CIprobs,"TAC",addfile=addfile)
 } # end of plotZone
 
-
-#' @title plotzoneproj plots the replicates of a single zone-wide variable
-#'
-#' @description plotzoneproj takes the results from the function aszone, which
-#'     contains a set of variables zonesB, zoneeB, zoneC, zoneH, zoneR, zonece,
-#'     zonedeplsB,and zonedepleB, and plots whichever is selected. It contains
-#'     the option of also plotting the median and the inner 90 percent quantiles
-#'     of each year's spread of values across replicates. DEPRECATED
-#'
-#' @param zoneV the variable from within the output of aszone
-#' @param reps the number of replicates to plot. Generaly one would plot all of
-#'     them. If not then it might be best to turn addqnts to FALSE
-#' @param yrs the vector of years as in 1:(inityrs + projyrs)
-#' @param label the y-axis label, which should obviously reflect which variable
-#'     is chosen from the zone summary list.
-#' @param addqnts should the median and inner 90 percent quantiles be added to
-#'     the plot; default = TRUE
-#' @param miny sets the lower limit of the y-axis, default=0
-#'
-#' @return if addqnts=TRUE the quantiles are returned invisibly
-#' @export
-#'
-#' @examples
-#' print("wait on more time")
-#' # zoneV=zoneproj$zoneC;reps=reps;yrs=1:50;miny=0;label="Catches"; addqnts=TRUE
-plotzoneproj <- function(zoneV,reps,yrs,label="",addqnts=TRUE,miny=0) {
-  maxy <- getmax(zoneV)
-  ylabel <- "Variable"
-  if (nchar(label) > 0) ylabel <- label
-  plot(yrs,zoneV[,1],type="n",panel.first=grid(),ylim=c(miny,maxy),yaxs="i",
-       ylab=ylabel,xlab="Years")
-  for (iter in 1:reps) lines(yrs,zoneV[,iter],lwd=1,col="grey")
-  if (addqnts) {
-    CI <- apply(zoneV,1,quantile,probs=c(0.05,0.5,0.95))
-    lines(yrs,CI[1,],lwd=2,col=4)
-    lines(yrs,CI[2,],lwd=2,col=2)
-    lines(yrs,CI[3,],lwd=2,col=4)
-  }
-  if (addqnts) return(invisible(t(CI)))
-} # end of plotzoneproj
 
 
 #' @title sauplots generates the dosauplots for the dynamic variables

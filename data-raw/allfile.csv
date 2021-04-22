@@ -1,115 +1,115 @@
-"","syntax","linenumber","file","function","references","crossreference"
-"aMSE_utils1","addpops(invar,nyrs,reps)",21,"aMSE_utils","addpops",", ","poptozone"
-"projection1","addrecvar(zoneDD,zoneDP,zoneC,glob,condC,ctrl,varyrs,multTAC,",32,"projection","addrecvar",", getvar, makezone, makezoneDP, oneyear, oneyearsauC, poptosau, poptosauCE, ","prepareprojection"
-"aMSE_utils2","alldirExists(indir1,indir2=indir1,make=FALSE,verbose=TRUE)",57,"aMSE_utils","alldirExists",", ",""
-"projection2","asSAU(projzone,sauindex,saunames,b0,exb0)",133,"projection","asSAU",", calcsau, sumpops, ",""
-"projection3","aszone(sauzone,zoneCP)",170,"projection","aszone",", getvar, ",""
-"generate_results1","biology_plots(rundir,glb,zoneC)",21,"generate_results","biology_plots",", getlistvar, maturity, ",""
-"projection4","calcprojsel(zoneC,projC,glb)",210,"projection","calcprojsel",", logistic, ",""
-"projection5","calcsau(invar,saunames,ref0)",249,"projection","calcsau",", ","asSAU"
-"generate_results2","compzoneN(unfN,curN,glb,yr,depl,LML=0,rundir="""")",128,"generate_results","compzoneN",", ",""
-"HS-HCR1","constCatch(inTAC,zoneCP,zoneDP,glob,ctrl,projyrs,inityrs=10)",25,"HS-HCR","constCatch",", getvect, oneyear, oneyearcat, oneyearrec, ",""
-"aMSE_utils3","copyto(sourcedir,fromdir,todir,filename=""control.csv"",",107,"aMSE_utils","copyto",", ",""
-"inputfiles1","ctrlzonetemplate(indir,filename=""control.csv"")",30,"inputfiles","ctrlzonetemplate",", ",""
-"inputfiles3","datafiletemplate(numpop,indir,filename=""tmpdat.csv"")",279,"inputfiles","datafiletemplate",", logistic, maturity, ",""
-"defineZone1","defineBlock(numblk,blknum,numpop)",25,"defineZone","defineBlock",", ","makezoneC"
-"defineZone2","definepops(inSAU,inSAUindex,const,glob)",74,"defineZone","definepops",", ","makezoneC"
-"dynamics1","depleteSAU(zoneC,zoneD,glob,initdepl,product,len=15)",38,"dynamics","depleteSAU",", runthreeH, ",""
-"inputfiles2","diagnostics(zoneC,zoneD,glob,plot=TRUE)",233,"inputfiles","diagnostics",", ",""
-"plotfuns1","diagnosticsproj(zonePsau,glb,rundir,nrep=3)",21,"plotfuns","diagnosticsproj",", ",""
-"defineZone3","dodepletion(zoneC,zoneD,glob,depl,product,len=15)",165,"defineZone","dodepletion",", runthreeH, ",""
-"dynamics2","dohistoricC(zoneDD,zoneC,glob,condC,sigR=1e-08,sigB=1e-08)",99,"dynamics","dohistoricC",", getvar, oneyear, oneyearsauC, ",""
-"defineZone4","doproduction(zoneC,zoneD,glob,",230,"defineZone","doproduction",", runthreeH, ","modzoneC"
-"projection6","doprojections(ctrl,zoneDP,zoneCP,otherdata,glb,hcrfun,hsargs,",296,"projection","doprojections",", getvar, oneyear, oneyearsauC, poptosau, poptosauCE, ",""
-"plotfuns2","dosau(inzone,glb,picksau,histCE,yrnames,extra=FALSE)",97,"plotfuns","dosau",", ",""
-"plotfuns3","dosauplot(ylabel,prerep,postrep,glb,startyr,addCI=FALSE,",160,"plotfuns","dosauplot",", ","sauplots"
-"defineZone5","driftrec(recs,recp)",289,"defineZone","driftrec",", ",""
-"defineZone6","fillzoneDef(zoneC,zoneD,prod)",338,"defineZone","fillzoneDef",", ",""
-"defineZone7","findF1(product)",390,"defineZone","findF1",", ",""
-"defineZone8","findmsy(product)",442,"defineZone","findmsy",", ",""
-"HS-HCR2","getaav(invect)",84,"HS-HCR","getaav",", ",""
-"getfunctions1","getConst(inline,nb,index=2)",18,"getfunctions","getConst",", ",""
-"getfunctions2","getLFdata(rundir,filename)",52,"getfunctions","getLFdata",", ",""
-"getfunctions3","getlistvar(zoneC,indexvar,indexvar2="""")",98,"getfunctions","getlistvar",", ",""
-"getfunctions4","getLogical(inline,nb)",142,"getfunctions","getLogical",", ","readhcrfile"
-"getfunctions5","getnas(zoneD,yr,glob,zone)",168,"getfunctions","getnas",", ",""
-"getfunctions7","getsauzone(zoneD,glb,B0,ExB0)",231,"getfunctions","getsauzone",", getsum, ","plotconditioning"
-"getfunctions6","getsingleNum(varname,intxt)",202,"getfunctions","getsingleNum",", getConst, ",""
-"getfunctions8","getStr(inline,nb)",275,"getfunctions","getStr",", ",""
-"getfunctions9","getsum(inmat,index)",295,"getfunctions","getsum",", ","getsauzone"
-"getfunctions10","getunFished(zoneC,zoneD,glb)",328,"getfunctions","getunFished",", ",""
-"getfunctions11","getvar(zoneC,invar)",393,"getfunctions","getvar",", ",""
-"getfunctions12","getvect(zoneC,invar)",418,"getfunctions","getvect",", ",""
-"getfunctions13","getzoneLF(zoneD,glb)",442,"getfunctions","getzoneLF",", ",""
-"getfunctions14","getzoneprod(product)",473,"getfunctions","getzoneprod",", ",""
-"getfunctions15","getzoneprops(zoneC,zoneD,glb,year=1)",508,"getfunctions","getzoneprops",", getvar, ",""
-"dynamics3","imperr(catchsau,exb,sauindex,sigmab=1e-08)",157,"dynamics","imperr",", ",""
-"dynamics4","initiateHS(zoneDP,zoneCP,inN,acatch,sigmar,sigmab,glb)",197,"dynamics","initiateHS",", getvar, oneyear, oneyearsauC, poptosau, poptosauCE, ",""
-"RcppExports1","invC(x)",13,"RcppExports","invC",", ",""
-"defineZone9","logistic(inL50,delta,lens,knifeedge=0)",486,"defineZone","logistic",", ",""
-"defineZone10","makeabpop(popparam,midpts,projLML)",521,"defineZone","makeabpop",", logistic, maturity, STM, WtatLen, ","makezoneC"
-"defineZone11","makeequilzone(rundir,ctrlfile=""control.csv"",datadir=rundir,",587,"defineZone","makeequilzone",", readctrlfile, readdatafile, readsaudatafile, resetexB0, setupzone, testequil, ",""
-"inputfiles4","makefilename(hcrLabel,runlabel,reps,initDepl)",385,"inputfiles","makefilename",", ",""
-"inputfiles5","makeLabel(invect,insep=""_"")",413,"inputfiles","makeLabel",", ",""
-"defineZone12","makemove(npop,recs,ld,sigmove=0.0)",644,"defineZone","makemove",", ","makezoneC"
-"defineZone14","makezone(glob,zoneC)",751,"defineZone","makezone",", getvar, ",""
-"defineZone13","makezoneC(zone,const)",681,"defineZone","makezoneC",", defineBlock, definepops, getvar, makeabpop, makemove, oneyrgrowth, ","setupzone"
-"projection7","makezoneDP(projyr,iter,glb)",365,"projection","makezoneDP",", ",""
-"projection8","makezoneDR(projyr,iter,glb,inzoneD)",419,"projection","makezoneDR",", ",""
-"defineZone15","maturity(ina,inb,lens)",820,"defineZone","maturity",", ",""
-"projection9","modprojC(zoneC,glob,projC)",484,"projection","modprojC",", getlistvar, logistic, ","prepareprojection"
-"defineZone16","modzoneC(zoneC,zoneD,glob,lowlim=0.0,uplim=0.4,inc=0.005)",858,"defineZone","modzoneC",", doproduction, findmsy, ",""
-"projection10","modzoneCSel(zoneC,sel,selwt,glb,yrs)",532,"projection","modzoneCSel",", ","prepareprojection"
-"RcppExports2","mvC(inmat,invect)",28,"RcppExports","mvC",", ",""
-"generate_results3","numbersatsize(rundir,glb,zoneD)",160,"generate_results","numbersatsize",", ",""
-"generate_results4","numbersatsizeSAU(rundir,glb,zoneC,zoneD,sau,yr=1,",217,"generate_results","numbersatsizeSAU",", ",""
-"plotfuns4","onesau(prerep,postrep,glb,startyr,picksau,addCI=FALSE,",222,"plotfuns","onesau",", ",""
-"dynamics5","oneyear(inpopC,inNt,Nclass,inH,yr)",258,"dynamics","oneyear",", ",""
-"dynamics8","oneyearC(zoneC,zoneDP,catchp,year,iter,sigmar,Ncl,npop,movem)",462,"dynamics","oneyearC",", getvar, getvect, oneyear, oneyearcat, oneyearrec, ",""
-"dynamics6","oneyearcat(inpopC,inNt,Nclass,incat,yr)",324,"dynamics","oneyearcat",", ",""
-"dynamics9","oneyearD(zoneC,zoneD,inHt,year,sigmar,Ncl,npop,movem)",528,"dynamics","oneyearD",", getvar, getvect, oneyear, oneyearrec, ",""
-"dynamics10","oneyearrec(steep,R0,B0,Bsp,sigR)",581,"dynamics","oneyearrec",", ",""
-"dynamics7","oneyearsauC(zoneCC,inN,popC,year,Ncl,sauindex,",386,"dynamics","oneyearsauC",", getvect, oneyear, oneyearcat, oneyearrec, ",""
-"dynamics11","oneyrgrowth(inpop,startsize=2)",614,"dynamics","oneyrgrowth",", ","makezoneC"
-"plotfuns5","onezoneplot(invar,rundir,CIprobs,varname,addfile=TRUE)",287,"plotfuns","onezoneplot",", ","plotZone"
-"plotfuns6","plotCNt(Nt,glb,vline=NULL,start=3)",328,"plotfuns","plotCNt",", ",""
-"plotfuns7","plotconditioning(zoneDD,glb,zoneC,histCE,yrnames,rundir)",370,"plotfuns","plotconditioning",", dosau, getlistvar, getsauzone, ",""
-"generate_results5","plothistcatch(zone1,pops=NULL,rundir="""",defpar=TRUE)",276,"generate_results","plothistcatch",", ",""
-"generate_results6","plothistCE(zone1,pops=NULL,rundir="""")",331,"generate_results","plothistCE",", ",""
-"plotfuns8","plotNt(Nt,year,glb,start=3,medcol=0)",410,"plotfuns","plotNt",", ",""
-"plotfuns9","plotprod(product,xname=""MatB"",yname=""Catch"",xlimit=NA,",468,"plotfuns","plotprod",", ","plotproductivity"
-"generate_results7","plotproductivity(rundir,product,glb)",373,"generate_results","plotproductivity",", findmsy, plotprod, ",""
-"plotfuns10","plotproj(invar,varlabel,plotconst,miny=0,",514,"plotfuns","plotproj",", ",""
-"plotfuns11","plotTAC(zoneDP,rundir,CIprobs=c(0.05,0.5,0.95))",556,"plotfuns","plotTAC",", ",""
-"plotfuns12","plotZone(inzone,rundir,CIprobs=c(0.05,0.5,0.95),addfile=TRUE)",593,"plotfuns","plotZone",", onezoneplot, ",""
-"plotfuns13","plotzoneproj(zoneV,reps,yrs,label="""",addqnts=TRUE,miny=0)",632,"plotfuns","plotzoneproj",", ",""
-"aMSE_utils4","poptosau(invar,glb)",146,"aMSE_utils","poptosau",", ",""
-"projection11","poptosauCE(catvect,cpuevect,sauindex)",557,"projection","poptosauCE",", ",""
-"aMSE_utils5","poptozone(inzone,glb,B0,ExB0)",183,"aMSE_utils","poptozone",", addpops, ",""
-"aMSE_utils6","prepareDDNt(inNt,incatchN,glb)",236,"aMSE_utils","prepareDDNt",", ",""
-"projection12","prepareprojection(projC,condC,zoneC,glb,zoneDD,ctrl,varyrs,",596,"projection","prepareprojection",", addrecvar, makezone, makezoneDP, modprojC, modzoneC, modzoneCSel, ",""
-"defineZone18","print.zone(x,...)",923,"defineZone","print.zone",", getlistvar, ",""
-"defineZone17","print.zoneDefinition(x,...)",885,"defineZone","print.zoneDefinition",", ",""
-"inputfiles6","read_conddata(filename)",445,"inputfiles","read_conddata",", getsingleNum, ",""
-"inputfiles7","readctrlfile(rundir,infile=""control.csv"",datadir=rundir)",504,"inputfiles","readctrlfile",", getConst, getsingleNum, getStr, ","makeequilzone"
-"inputfiles8","readdatafile(numpop,indir,infile)",675,"inputfiles","readdatafile",", getConst, ","makeequilzone"
-"inputfiles9","readhcrfile(infile)",712,"inputfiles","readhcrfile",", getConst, getLogical, getsingleNum, getStr, ",""
-"inputfiles10","readsaudatafile(datadir,infile)",790,"inputfiles","readsaudatafile",", getConst, getsingleNum, ","makeequilzone"
-"inputfiles11","replaceVar(infile,invar,newval)",870,"inputfiles","replaceVar",", getConst, ",""
-"defineZone20","resetexB0(zoneC,zoneD)",982,"defineZone","resetexB0",", ","makeequilzone"
-"defineZone19","resetLML(inzone,inLML,inyear,glob)",949,"defineZone","resetLML",", logistic, ",""
-"inputfiles12","resetSel(inzone,inLML,glob)",907,"inputfiles","resetSel",", logistic, ",""
-"dynamics12","restart(oldzoneD,nyrs,npop,N,zero=TRUE)",648,"dynamics","restart",", ",""
-"dynamics13","runthreeH(zoneC,zoneD,inHarv,glob,maxiter=3)",703,"dynamics","runthreeH",", oneyear, oneyearD, restart, ",""
-"plotfuns14","sauplots(zoneDP,zoneDDR,glb,rundir,B0,ExB0,startyr,addCI=TRUE,",675,"plotfuns","sauplots",", dosau, dosauplot, zonetosau, ",""
-"projection13","scaleto1(invect)",629,"projection","scaleto1",", ",""
-"inputfiles13","scaletoOne(invect)",950,"inputfiles","scaletoOne",", ",""
-"defineZone21","setupzone(constants,zone1,uplim=0.4,inc=0.005)",1014,"defineZone","setupzone",", makezone, makezoneC, modzoneC, ","makeequilzone"
-"defineZone22","STM(p,mids)",1059,"defineZone","STM",", ","makeabpop"
-"aMSE_utils7","summarizeprod(product,saunames)",283,"aMSE_utils","summarizeprod",", ",""
-"aMSE_utils8","sumpop2sau(invect,sauindex)",324,"aMSE_utils","sumpop2sau",", ",""
-"projection14","sumpops(invar,sauindex,saunames)",649,"projection","sumpops",", ","asSAU"
-"RcppExports3","svvC(lhs,rhs)",40,"RcppExports","svvC",", ",""
-"defineZone23","testequil(zoneC,zoneD,glb,inH=0.0,verbose=TRUE)",1103,"defineZone","testequil",", oneyear, oneyearD, restart, ","makeequilzone"
-"defineZone24","WtatLen(ina,inb,lens)",1164,"defineZone","WtatLen",", ","makeabpop"
-"aMSE_utils9","zonetosau(inzone,glb,B0,ExB0)",349,"aMSE_utils","zonetosau",", poptosau, poptosauCE, ","sauplots"
+,syntax,linenumber,file,function,references,crossreference
+aMSE_utils1,"addpops(invar,nyrs,reps)",21,aMSE_utils,addpops,", ",poptozone
+projection1,"addrecvar(zoneDD,zoneDP,zoneC,glob,condC,ctrl,varyrs,multTAC,",32,projection,addrecvar,", getvar, makezone, makezoneDP, oneyear, oneyearsauC, poptosau, poptosauCE, ",prepareprojection
+aMSE_utils2,"alldirExists(indir1,indir2=indir1,make=FALSE,verbose=TRUE)",57,aMSE_utils,alldirExists,", ",
+projection2,"asSAU(projzone,sauindex,saunames,b0,exb0)",133,projection,asSAU,", calcsau, sumpops, ",
+projection3,"aszone(sauzone,zoneCP)",170,projection,aszone,", getvar, ",
+generate_results1,"biology_plots(rundir,glb,zoneC)",21,generate_results,biology_plots,", getlistvar, maturity, ",
+projection4,"calcprojsel(zoneC,projC,glb)",210,projection,calcprojsel,", logistic, ",
+projection5,"calcsau(invar,saunames,ref0)",249,projection,calcsau,", ",asSAU
+generate_results2,"compzoneN(unfN,curN,glb,yr,depl,LML=0,rundir="""")",128,generate_results,compzoneN,", ",
+HS-HCR1,"constCatch(inTAC,zoneCP,zoneDP,glob,ctrl,projyrs,inityrs=10)",25,HS-HCR,constCatch,", getvect, oneyear, oneyearcat, oneyearrec, ",
+aMSE_utils3,"copyto(sourcedir,fromdir,todir,filename=""control.csv"",",107,aMSE_utils,copyto,", ",
+inputfiles1,"ctrlzonetemplate(indir,filename=""control.csv"")",30,inputfiles,ctrlzonetemplate,", ",
+inputfiles3,"datafiletemplate(numpop,indir,filename=""tmpdat.csv"")",279,inputfiles,datafiletemplate,", logistic, maturity, ",
+defineZone1,"defineBlock(numblk,blknum,numpop)",25,defineZone,defineBlock,", ",makezoneC
+defineZone2,"definepops(inSAU,inSAUindex,const,glob)",74,defineZone,definepops,", ",makezoneC
+dynamics1,"depleteSAU(zoneC,zoneD,glob,initdepl,product,len=15)",38,dynamics,depleteSAU,", runthreeH, ",
+inputfiles2,"diagnostics(zoneC,zoneD,glob,plot=TRUE)",233,inputfiles,diagnostics,", ",
+plotfuns1,"diagnosticsproj(zonePsau,glb,rundir,nrep=3)",21,plotfuns,diagnosticsproj,", ",
+defineZone3,"dodepletion(zoneC,zoneD,glob,depl,product,len=15)",165,defineZone,dodepletion,", runthreeH, ",
+dynamics2,"dohistoricC(zoneDD,zoneC,glob,condC,sigR=1e-08,sigB=1e-08)",99,dynamics,dohistoricC,", getvar, oneyear, oneyearsauC, ",
+defineZone4,"doproduction(zoneC,zoneD,glob,",230,defineZone,doproduction,", runthreeH, ",modzoneC
+projection6,"doprojections(ctrl,zoneDP,zoneCP,otherdata,glb,hcrfun,hsargs,",296,projection,doprojections,", getvar, oneyear, oneyearsauC, poptosau, poptosauCE, ",
+plotfuns2,"dosau(inzone,glb,picksau,histCE,yrnames,extra=FALSE)",97,plotfuns,dosau,", ",
+plotfuns3,"dosauplot(ylabel,prerep,postrep,glb,startyr,addCI=FALSE,",160,plotfuns,dosauplot,", ",sauplots
+defineZone5,"driftrec(recs,recp)",289,defineZone,driftrec,", ",
+defineZone6,"fillzoneDef(zoneC,zoneD,prod)",338,defineZone,fillzoneDef,", ",
+defineZone7,findF1(product),390,defineZone,findF1,", ",
+defineZone8,findmsy(product),442,defineZone,findmsy,", ",
+HS-HCR2,getaav(invect),84,HS-HCR,getaav,", ",
+getfunctions1,"getConst(inline,nb,index=2)",18,getfunctions,getConst,", ",
+getfunctions2,"getLFdata(rundir,filename)",52,getfunctions,getLFdata,", ",
+getfunctions3,"getlistvar(zoneC,indexvar,indexvar2="""")",98,getfunctions,getlistvar,", ",
+getfunctions4,"getLogical(inline,nb)",142,getfunctions,getLogical,", ",readhcrfile
+getfunctions5,"getnas(zoneD,yr,glob,zone)",168,getfunctions,getnas,", ",
+getfunctions7,"getsauzone(zoneD,glb,B0,ExB0)",231,getfunctions,getsauzone,", getsum, ",plotconditioning
+getfunctions6,"getsingleNum(varname,intxt)",202,getfunctions,getsingleNum,", getConst, ",
+getfunctions8,"getStr(inline,nb)",275,getfunctions,getStr,", ",
+getfunctions9,"getsum(inmat,index)",295,getfunctions,getsum,", ",getsauzone
+getfunctions10,"getunFished(zoneC,zoneD,glb)",328,getfunctions,getunFished,", ",
+getfunctions11,"getvar(zoneC,invar)",393,getfunctions,getvar,", ",
+getfunctions12,"getvect(zoneC,invar)",418,getfunctions,getvect,", ",
+getfunctions13,"getzoneLF(zoneD,glb)",442,getfunctions,getzoneLF,", ",
+getfunctions14,getzoneprod(product),473,getfunctions,getzoneprod,", ",
+getfunctions15,"getzoneprops(zoneC,zoneD,glb,year=1)",508,getfunctions,getzoneprops,", getvar, ",
+dynamics3,"imperr(catchsau,exb,sauindex,sigmab=1e-08)",157,dynamics,imperr,", ",
+dynamics4,"initiateHS(zoneDP,zoneCP,inN,acatch,sigmar,sigmab,glb)",197,dynamics,initiateHS,", getvar, oneyear, oneyearsauC, poptosau, poptosauCE, ",
+RcppExports1,invC(x),13,RcppExports,invC,", ",
+defineZone9,"logistic(inL50,delta,lens,knifeedge=0)",486,defineZone,logistic,", ",
+defineZone10,"makeabpop(popparam,midpts,projLML)",521,defineZone,makeabpop,", logistic, maturity, STM, WtatLen, ",makezoneC
+defineZone11,"makeequilzone(rundir,ctrlfile=""control.csv"",datadir=rundir,",587,defineZone,makeequilzone,", readctrlfile, readdatafile, readsaudatafile, resetexB0, setupzone, testequil, ",
+inputfiles4,"makefilename(hcrLabel,runlabel,reps,initDepl)",385,inputfiles,makefilename,", ",
+inputfiles5,"makeLabel(invect,insep=""_"")",413,inputfiles,makeLabel,", ",
+defineZone12,"makemove(npop,recs,ld,sigmove=0.0)",644,defineZone,makemove,", ",makezoneC
+defineZone14,"makezone(glob,zoneC)",751,defineZone,makezone,", getvar, ",
+defineZone13,"makezoneC(zone,const)",681,defineZone,makezoneC,", defineBlock, definepops, getvar, makeabpop, makemove, oneyrgrowth, ",setupzone
+projection7,"makezoneDP(projyr,iter,glb)",365,projection,makezoneDP,", ",
+projection8,"makezoneDR(projyr,iter,glb,inzoneD)",419,projection,makezoneDR,", ",
+defineZone15,"maturity(ina,inb,lens)",820,defineZone,maturity,", ",
+projection9,"modprojC(zoneC,glob,projC)",484,projection,modprojC,", getlistvar, logistic, ",prepareprojection
+defineZone16,"modzoneC(zoneC,zoneD,glob,lowlim=0.0,uplim=0.4,inc=0.005)",858,defineZone,modzoneC,", doproduction, findmsy, ",
+projection10,"modzoneCSel(zoneC,sel,selwt,glb,yrs)",532,projection,modzoneCSel,", ",prepareprojection
+RcppExports2,"mvC(inmat,invect)",28,RcppExports,mvC,", ",
+generate_results3,"numbersatsize(rundir,glb,zoneD)",160,generate_results,numbersatsize,", ",
+generate_results4,"numbersatsizeSAU(rundir,glb,zoneC,zoneD,sau,yr=1,",217,generate_results,numbersatsizeSAU,", ",
+plotfuns4,"onesau(prerep,postrep,glb,startyr,picksau,addCI=FALSE,",222,plotfuns,onesau,", ",
+dynamics5,"oneyear(inpopC,inNt,Nclass,inH,yr)",258,dynamics,oneyear,", ",
+dynamics8,"oneyearC(zoneC,zoneDP,catchp,year,iter,sigmar,Ncl,npop,movem)",462,dynamics,oneyearC,", getvar, getvect, oneyear, oneyearcat, oneyearrec, ",
+dynamics6,"oneyearcat(inpopC,inNt,Nclass,incat,yr)",324,dynamics,oneyearcat,", ",
+dynamics9,"oneyearD(zoneC,zoneD,inHt,year,sigmar,Ncl,npop,movem)",528,dynamics,oneyearD,", getvar, getvect, oneyear, oneyearrec, ",
+dynamics10,"oneyearrec(steep,R0,B0,Bsp,sigR)",581,dynamics,oneyearrec,", ",
+dynamics7,"oneyearsauC(zoneCC,inN,popC,year,Ncl,sauindex,",386,dynamics,oneyearsauC,", getvect, oneyear, oneyearcat, oneyearrec, ",
+dynamics11,"oneyrgrowth(inpop,startsize=2)",614,dynamics,oneyrgrowth,", ",makezoneC
+plotfuns5,"onezoneplot(invar,rundir,CIprobs,varname,addfile=TRUE)",287,plotfuns,onezoneplot,", ",plotZone
+plotfuns6,"plotCNt(Nt,glb,vline=NULL,start=3)",328,plotfuns,plotCNt,", ",
+plotfuns7,"plotconditioning(zoneDD,glb,zoneC,histCE,yrnames,rundir)",370,plotfuns,plotconditioning,", dosau, getlistvar, getsauzone, ",
+generate_results5,"plothistcatch(zone1,pops=NULL,rundir="""",defpar=TRUE)",276,generate_results,plothistcatch,", ",
+generate_results6,"plothistCE(zone1,pops=NULL,rundir="""")",331,generate_results,plothistCE,", ",
+plotfuns8,"plotNt(Nt,year,glb,start=3,medcol=0)",410,plotfuns,plotNt,", ",
+plotfuns9,"plotprod(product,xname=""MatB"",yname=""Catch"",xlimit=NA,",468,plotfuns,plotprod,", ",plotproductivity
+generate_results7,"plotproductivity(rundir,product,glb)",373,generate_results,plotproductivity,", findmsy, plotprod, ",
+plotfuns10,"plotproj(invar,varlabel,plotconst,miny=0,",514,plotfuns,plotproj,", ",
+plotfuns11,"plotTAC(zoneDP,rundir,CIprobs=c(0.05,0.5,0.95))",556,plotfuns,plotTAC,", ",
+plotfuns12,"plotZone(inzone,rundir,CIprobs=c(0.05,0.5,0.95),addfile=TRUE)",593,plotfuns,plotZone,", onezoneplot, ",
+plotfuns13,"plotzoneproj(zoneV,reps,yrs,label="""",addqnts=TRUE,miny=0)",632,plotfuns,plotzoneproj,", ",
+aMSE_utils4,"poptosau(invar,glb)",146,aMSE_utils,poptosau,", ",
+projection11,"poptosauCE(catvect,cpuevect,sauindex)",557,projection,poptosauCE,", ",
+aMSE_utils5,"poptozone(inzone,glb,B0,ExB0)",183,aMSE_utils,poptozone,", addpops, ",
+aMSE_utils6,"prepareDDNt(inNt,incatchN,glb)",236,aMSE_utils,prepareDDNt,", ",
+projection12,"prepareprojection(projC,condC,zoneC,glb,zoneDD,ctrl,varyrs,",596,projection,prepareprojection,", addrecvar, makezone, makezoneDP, modprojC, modzoneC, modzoneCSel, ",
+defineZone18,"print.zone(x,...)",923,defineZone,print.zone,", getlistvar, ",
+defineZone17,"print.zoneDefinition(x,...)",885,defineZone,print.zoneDefinition,", ",
+inputfiles6,read_conddata(filename),445,inputfiles,read_conddata,", getsingleNum, ",
+inputfiles7,"readctrlfile(rundir,infile=""control.csv"",datadir=rundir)",504,inputfiles,readctrlfile,", getConst, getsingleNum, getStr, ",makeequilzone
+inputfiles8,"readdatafile(numpop,indir,infile)",675,inputfiles,readdatafile,", getConst, ",makeequilzone
+inputfiles9,readhcrfile(infile),712,inputfiles,readhcrfile,", getConst, getLogical, getsingleNum, getStr, ",
+inputfiles10,"readsaudatafile(datadir,infile)",790,inputfiles,readsaudatafile,", getConst, getsingleNum, ",makeequilzone
+inputfiles11,"replaceVar(infile,invar,newval)",870,inputfiles,replaceVar,", getConst, ",
+defineZone20,"resetexB0(zoneC,zoneD)",982,defineZone,resetexB0,", ",makeequilzone
+defineZone19,"resetLML(inzone,inLML,inyear,glob)",949,defineZone,resetLML,", logistic, ",
+inputfiles12,"resetSel(inzone,inLML,glob)",907,inputfiles,resetSel,", logistic, ",
+dynamics12,"restart(oldzoneD,nyrs,npop,N,zero=TRUE)",648,dynamics,restart,", ",
+dynamics13,"runthreeH(zoneC,zoneD,inHarv,glob,maxiter=3)",703,dynamics,runthreeH,", oneyear, oneyearD, restart, ",
+plotfuns14,"sauplots(zoneDP,zoneDDR,glb,rundir,B0,ExB0,startyr,addCI=TRUE,",675,plotfuns,sauplots,", dosau, dosauplot, zonetosau, ",
+projection13,scaleto1(invect),629,projection,scaleto1,", ",
+inputfiles13,scaletoOne(invect),950,inputfiles,scaletoOne,", ",
+defineZone21,"setupzone(constants,zone1,uplim=0.4,inc=0.005)",1014,defineZone,setupzone,", makezone, makezoneC, modzoneC, ",makeequilzone
+defineZone22,"STM(p,mids)",1059,defineZone,STM,", ",makeabpop
+aMSE_utils7,"summarizeprod(product,saunames)",283,aMSE_utils,summarizeprod,", ",
+aMSE_utils8,"sumpop2sau(invect,sauindex)",324,aMSE_utils,sumpop2sau,", ",
+projection14,"sumpops(invar,sauindex,saunames)",649,projection,sumpops,", ",asSAU
+RcppExports3,"svvC(lhs,rhs)",40,RcppExports,svvC,", ",
+defineZone23,"testequil(zoneC,zoneD,glb,inH=0.0,verbose=TRUE)",1103,defineZone,testequil,", oneyear, oneyearD, restart, ",makeequilzone
+defineZone24,"WtatLen(ina,inb,lens)",1164,defineZone,WtatLen,", ",makeabpop
+aMSE_utils9,"zonetosau(inzone,glb,B0,ExB0)",349,aMSE_utils,zonetosau,", poptosau, poptosauCE, ",sauplots

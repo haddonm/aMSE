@@ -539,8 +539,8 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir) {
    initLML <- getsingleNum("initLML",indat)
    projyrs <- getsingleNum("PROJECT",indat)
    firstyear <- getsingleNum("firstyear",indat)
-   inityrs <- getsingleNum("inityrs",indat)
-   outyear <- c(projyrs,firstyear)
+   lastyear <- getsingleNum("lastyear",indat)
+   projyrnames <- firstyear:lastyear
    projLML <- NULL
    HS <- NULL
    histCatch <- NULL
@@ -628,7 +628,7 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir) {
                  histCE=histCE,yearCE=yearCE,initdepl=initdepl,
                  compdat=compdat,Sel=NULL,SelWt=NULL)
    projC <- list(projLML=projLML,HS=HS,HSdetail=HSdetail,projyrs=projyrs,
-                 inityrs=inityrs,Sel=NULL,SelWt=NULL,histCE=histCE)
+                 projyrnames=projyrnames,Sel=NULL,SelWt=NULL,histCE=histCE)
    outctrl <- list(runlabel,datafile,batch,reps,randomseed,randomseedP,
                    withsigR,withsigB,withsigCE,catches,projyrs,bysau)
    names(outctrl) <- c("runlabel","datafile","batch","reps","randseed",

@@ -286,12 +286,14 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 #' @param sampleCE a function that generates the CPUE statistics
 #' @param sampleFIS a function that generates the FIS statistics
 #' @param sampleNaS a function that generates the Numbers-at-size samples
+#' @param getdata a function that gathers all the data required by the hcrfun
+#'     and combines it into an hcrdata object ready for the hcrfun
 #' @param ... the ellipsis used in case any of the functions hcrfun, sampleCE,
-#'     sampleFIS, or sampleNas require extra arguments not included in the
-#'     default collection
+#'     sampleFIS, sampleNas, and getdata require extra arguments not included
+#'     in the default named collection
 #'
-#' @return a replacement for zoneDP containing the dynamics of all replicates
-#'     for all projection years
+#' @return a replacement for zoneDP containing the dynamics for all populations,
+#'     for all replicates, and for all projection years
 #' @export
 #'
 #' @examples
@@ -321,10 +323,10 @@ doprojections <- function(ctrl,zoneDP,zoneCP,otherdata,glb,hcrfun,hsargs,
       popC <- calcexpectpopC(TAC=hcrout$TAC,acatch=hcrout$acatch,
                              exb=zoneDP$exploitB[year-1,,iter],
                              sauindex,sigmab=1e-08)
-      outy <- oneyearsauC(zoneCC=zoneCP,    #exb=zoneDP$exploitB[year-1,,iter],
-                          inN=zoneDP$Nt[,year-1,,iter],popC=popC,year=year,
-                          Ncl=Nclass,sauindex=sauindex,movem=movem,
-                          sigmar=sigmar,sigmab=sigmab,r0=r0,b0=b0,exb0=exb0)
+      outy <- oneyearsauC(zoneCC=zoneCP,inN=zoneDP$Nt[,year-1,,iter],
+                          popC=popC,year=year,Ncl=Nclass,sauindex=sauindex,
+                          movem=movem,sigmar=sigmar,sigmab=sigmab,
+                          r0=r0,b0=b0,exb0=exb0)
       dyn <- outy$dyn
       saudyn <- poptosauCE(dyn["catch",],dyn["cpue",],sauindex)
       zoneDP$exploitB[year,,iter] <- dyn["exploitb",]

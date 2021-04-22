@@ -15,24 +15,24 @@
 #' @param glob the global object
 #' @param ctrl the control object
 #' @param projyrs the number of years of projection from projC$projyrs
-#' @param inityrs the initial number of years used to express starting variation
+#' @param varyrs the number of years used to express starting variation
 #'
 #' @return a revised zoneDP now containing the dynamics of each replicate run
 #' @export
 #'
 #' @examples
 #' print("wait on new data")
-constCatch <- function(inTAC,zoneCP,zoneDP,glob,ctrl,projyrs,inityrs=10) {
+constCatch <- function(inTAC,zoneCP,zoneDP,glob,ctrl,projyrs,varyrs=10) {
   sigmar <- ctrl$withsigR
   npop <- glob$numpop
   Ncl <- glob$Nclass
-  nyrs <- projyrs + inityrs
+  nyrs <- projyrs + varyrs
   movem <- glob$move
   sauindex <- glob$sauindex
   reps <- ctrl$reps
   matb <- numeric(npop)
   for (iter in 1:reps) {  # iter=1
-    for (year in (inityrs+1):nyrs) {
+    for (year in (varyrs+1):nyrs) {
       inexpB <- zoneDP$exploitB[(year - 1),,iter] # each populations exB
       sauexpB <- tapply(inexpB,glob$sauindex,sum) # each SAU exB
       divererr <- sauexpB * exp(rnorm(glob$nSAU,mean=0,sd=ctrl$withsigB))
