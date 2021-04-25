@@ -19,22 +19,24 @@
 #' @examples
 #' print("wait on suitable data sets")
 diagnosticsproj <- function(zonePsau,glb,rundir,nrep=3) {
+  # zonePsau=sauout$zonePsau;glb=glb;rundir=rundir;nrep=3
   plotvar <- function(var1,nsau,saunames,nrep,filen,caption,label,var2=NULL) {
     # a helper function that plots nrep trajectories from invar
-    nyrs <- dim(var1)[1]
-    reps <- dim(var1)[3]
+    #var1=catch;nsau=nsau;saunames=saunames;nrep=3;filen="";caption="";label="_Actual_Catch";var2=acatch
+    reps <- glb$reps
     nsau <- glb$nSAU
+    yrnames <- glb$pyrnames
     plotprep(width=7,height=7,filename=filen,cex=1.0,verbose=FALSE)
     parset(plots=getparplots(nsau))
-    for (sau in 1:nsau) {
+    for (sau in 1:nsau) { # sau =1
       pickrep <- sample(1:reps,nrep,replace=FALSE)
       ymax <- getmax(var1[,sau,pickrep])
       ylabel <- paste0(paste0("SAU_",saunames[sau],label))
-      plot(1:nyrs,var1[,sau,pickrep[1]],type="l",lwd=2,ylim=c(0,ymax),
+      plot(yrnames,var1[,sau,pickrep[1]],type="l",lwd=2,ylim=c(0,ymax),
            ylab=ylabel,xlab="Years",panel.first=grid())
-      for (i in 2:nrep) lines(1:nyrs,var1[,sau,pickrep[i]],lwd=2,col=i)
+      for (i in 2:nrep) lines(yrnames,var1[,sau,pickrep[i]],lwd=2,col=i)
       if (is.numeric(var2))
-        for (i in 1:nrep) lines(1:nyrs,var2[,sau,pickrep[i]],lwd=2,col=i,lty=3)
+        for (i in 1:nrep) lines(yrnames,var2[,sau,pickrep[i]],lwd=2,col=i,lty=3)
     } # end of actual catches
     addplot(filen,rundir=rundir,category="DiagProj",caption)
   } # end of internal function plotvar
@@ -71,8 +73,6 @@ diagnosticsproj <- function(zonePsau,glb,rundir,nrep=3) {
   caption <- paste0(nrep," cpue projections")
   plotvar(cpue,nsau,saunames,nrep,filen,caption,"_CPUE")
 
-  #out <- list(resid=resid)
-  #return(invisible(resid))
 } # end of diagnosticsproj
 
 #' @title dosau plots the conditioning history for the dynamics
@@ -97,6 +97,7 @@ diagnosticsproj <- function(zonePsau,glb,rundir,nrep=3) {
 #' @examples
 #' print("wait on suitable data-sets")
 dosau <- function(inzone,glb,picksau,histCE,yrnames,extra=FALSE) {
+  # inzone=sauZone;glb=glb;picksau=sau;histCE=histCE;yrnames=glb$hyrnames; extra=FALSE
   histceyr <- as.numeric(rownames(histCE))
   saunames <- as.numeric(glb$saunames)
   indexsau <- which(saunames == picksau)
@@ -121,7 +122,7 @@ dosau <- function(inzone,glb,picksau,histCE,yrnames,extra=FALSE) {
       pickyr <-round(nyrs/2)
       text(x=yrnames[pickyr],y=0.9*ymax,round(tail(dvar,1),4),cex=1.1,pos=4)
     }
-    if (label[invar] == "harvestR") abline(h=0.4,col=2,lwd=1)
+    if (label[invar] == "harvestR") abline(h=c(0.4,0.75),col=2,lwd=1,lty=2)
   }
   mtext(paste0("Years  SAU ",picksau),side=1,outer=TRUE,cex=1.1,line=-0.1)
 } # end of dosau
@@ -160,41 +161,50 @@ dosau <- function(inzone,glb,picksau,histCE,yrnames,extra=FALSE) {
 #' print("wait on suitable built in data sets")
 dosauplot <- function(ylabel,prerep,postrep,glb,startyr,addCI=FALSE,
                       CIprobs=c(0.05,0.5,0.95),histCE=NULL) {
-  # ylabel=invar;prerep=prerep;postrep=postrep;glb=glb;startyr=10;histCE=histCE
-  # CIprobs=c(0.05,0.5,0.95); addCI=TRUE
+  # ylabel="harvestR";prerep=zoneDsau[["harvestR"]];postrep=zonePsau[["harvestR"]];glb=glb;
+  # startyr=startyr;histCE=histCE; CIprobs=c(0.05,0.5,0.95); addCI=TRUE
+
   label <- glb$saunames
   nsau <- glb$nSAU
   sauCI <- vector("list",nsau)
   names(sauCI) <- glb$saunames
-  preyrs <- dim(prerep)[1]
-  projyrs <- dim(postrep)[1]
+  preyrs <- glb$hyrs
+  projyrs <- glb$pyrs
   allyrs <- preyrs + projyrs
   reps <- dim(prerep)[3]
   nplot <- getparplots(nsau)
-  if (is.numeric(histCE)) ceyr <- startyr:preyrs
+  pickyr <- startyr:preyrs
+  pyrnames <- glb$pyrnames
+  yrnames <- c(glb$hyrnames,pyrnames)
   parset(plots=nplot,byrow=FALSE)
+  xvar <- yrnames[startyr:allyrs]
   for (sau in 1:nsau) {  # sau = 1
-    ymax <- getmax(rbind(prerep[startyr:preyrs,sau,],postrep[,sau,]))
-    traj <- c(prerep[startyr:preyrs,sau,1],postrep[,sau,1])
-    plot(startyr:allyrs,traj,type="l",lwd=1,col="grey",panel.first=grid(),
+    ymax <- getmax(rbind(prerep[pickyr,sau,],postrep[,sau,]))
+    traj <- c(prerep[pickyr,sau,1],postrep[,sau,1])
+    plot(xvar,traj,type="l",lwd=1,col="grey",panel.first=grid(),
          ylab=paste0(ylabel,"  ",label[sau]),ylim=c(0,ymax),xlab="Years")
     for (i in 2:reps)
-      lines(startyr:allyrs,c(prerep[startyr:preyrs,sau,i],postrep[,sau,i]),
+      lines(xvar,c(prerep[pickyr,sau,i],postrep[,sau,i]),
             lwd=1,col="grey")
     CI <- apply(postrep[,sau,],1,quantile,probs=CIprobs)
     sauCI[[sau]] <- CI
-    lines((preyrs+1):allyrs,CI[2,],lwd=2,col=4)
+    lines(pyrnames,CI[2L,],lwd=2L,col=4L)
     if (addCI) {
-      lines((preyrs+1):allyrs,CI[1,],lwd=1,col=2)
-      lines((preyrs+1):allyrs,CI[3,],lwd=1,col=2)
+      lines(pyrnames,CI[1L,],lwd=1L,col=2L)
+      lines(pyrnames,CI[3L,],lwd=1L,col=2L)
     }
-    nhistce <- dim(histCE)[1]
-    if (is.numeric(histCE)) {
-      if (length(ceyr) > nhistce) ceyr <- (preyrs - nhistce + 1):preyrs
+
+    if (is.numeric(histCE)) {  # add the historical cpue line
+      nhistce <- dim(histCE)[1L]
+      if (length(pickyr) > nhistce) {
+        ceyr <- (preyrs - nhistce + 1):preyrs
+      } else {
+        ceyr <- pickyr
+      }
       oldce <- tail(histCE[,sau],length(ceyr))
-      lines(ceyr,oldce,lwd=2,col=3)
+      lines(yrnames[ceyr],oldce,lwd=2L,col=3L)
     }
-    abline(v=(preyrs+0.5),col=2)
+    abline(v=(yrnames[preyrs]+0.5),col=2L,lty=2L)
     if (ylabel == "cpue") abline(h=150,col=2)
   }
   return(invisible(sauCI))
@@ -276,6 +286,7 @@ onesau <- function(prerep,postrep,glb,startyr,picksau,addCI=FALSE,
 #'
 #' @param invar which zone variable to plot
 #' @param rundir the run directory for the results
+#' @param glb the global constants object
 #' @param CIprobs the quantiles to use for the CI.
 #' @param varname the name of the variable for use in labels
 #' @param addfile should a png file be added to the results, default = TRUE
@@ -285,10 +296,10 @@ onesau <- function(prerep,postrep,glb,startyr,picksau,addCI=FALSE,
 #'
 #' @examples
 #' print("wait on suitable data")
-onezoneplot <- function(invar,rundir,CIprobs,varname,addfile=TRUE) {
+onezoneplot <- function(invar,rundir,glb,CIprobs,varname,addfile=TRUE) {
   #  invar <- inzone$catch
-  nyrs <- nrow(invar)
-  reps <- ncol(invar)
+  yrnames <- glb$pyrnames
+  reps <- glb$reps
   namefile <- paste0("Projected_Zonal_",varname,".png")
   filen <- filenametopath(rundir,namefile)
   if (!addfile) filen <- ""
@@ -296,12 +307,12 @@ onezoneplot <- function(invar,rundir,CIprobs,varname,addfile=TRUE) {
   parset(plots=c(1,1))
   ymax <- getmax(invar)
   CI <- apply(invar,1,quantile,probs=CIprobs)
-  plot(1:nyrs,invar[,1],lwd=1,col="grey",ylab=varname,xlab="Years",
+  plot(yrnames,invar[,1],lwd=1,col="grey",ylab=varname,xlab="Years",
        panel.first=grid(),ylim=c(0,ymax),yaxs="i")
-  for (i in 1:reps) lines(1:nyrs,invar[,i],col="grey",lwd=1)
-  lines(1:nyrs,CI[1,],lwd=1,col=2)
-  lines(1:nyrs,CI[3,],lwd=1,col=2)
-  lines(1:nyrs,CI[2,],lwd=2,col=4)
+  for (i in 1:reps) lines(yrnames,invar[,i],col="grey",lwd=1)
+  lines(yrnames,CI[1,],lwd=1,col=2)
+  lines(yrnames,CI[3,],lwd=1,col=2)
+  lines(yrnames,CI[2,],lwd=2,col=4)
   caption <- paste0("Projected ",varname," across all replicates.")
   if (addfile) addplot(filen,rundir=rundir,category="zonescale",caption)
 } # end of onezoneplot
@@ -360,7 +371,6 @@ plotCNt <- function(Nt,glb,vline=NULL,start=3) {
 #' @param glb the global constants object
 #' @param zoneC the constant zone object
 #' @param histCE the historical CPUE matrix
-#' @param yrnames the years of catch and related data eg 1973:2019
 #' @param rundir the rundir for the given scenario
 #'
 #' @return the sau scale zone dynamics, invisibly
@@ -368,7 +378,8 @@ plotCNt <- function(Nt,glb,vline=NULL,start=3) {
 #'
 #' @examples
 #' print("wait on suitable data sets")
-plotconditioning <- function(zoneDD,glb,zoneC,histCE,yrnames,rundir) {
+plotconditioning <- function(zoneDD,glb,zoneC,histCE,rundir) {
+  # zoneDD=zoneDD;glb=glb;zoneC=zoneC;histCE=condC$histCE;rundir=rundir
   sauindex <- glb$sauindex
   popB0 <- getlistvar(zoneC,"B0")
   B0 <- tapply(popB0,sauindex,sum)
@@ -376,11 +387,12 @@ plotconditioning <- function(zoneDD,glb,zoneC,histCE,yrnames,rundir) {
   ExB0 <- tapply(popExB0,sauindex,sum)
   sauZone <- getsauzone(zoneDD,glb,B0=B0,ExB0=ExB0)
   allsau <- glb$saunames
-  for (sau in allsau) {
+  yrnames <- glb$hyrnames
+  for (sau in allsau) {  #  sau=allsau[1]; filen=""
     filen <- filenametopath(rundir,paste0("SAU",sau,"_conditioned.png"))
     plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
-    dosau(sauZone,glb,picksau=sau,histCE=histCE,yrnames=yrnames)
-    caption <- "Dynamics during condsitioning on the fishery."
+    dosau(sauZone,glb,picksau=sau,histCE=histCE,yrnames=glb$hyrnames)
+    caption <- "Dynamics during conditioning on the fishery."
     addplot(filen,rundir=rundir,category="condition",caption)
   }
   return(invisible(sauZone))
@@ -532,6 +544,7 @@ plotTAC <- function(zoneDP,rundir,CIprobs=c(0.05,0.5,0.95)) {
 #'
 #' @param inzone the dynamic zone projection object
 #' @param rundir the rundir for the scenario
+#' @param glb the global constants object
 #' @param CIprobs the quantiles used to generate the confidence intervals. The
 #'     default = c(0.05,0.5,0.95)
 #' @param addfile should the plots be added to the rundir =TRUE or only sent to
@@ -542,18 +555,18 @@ plotTAC <- function(zoneDP,rundir,CIprobs=c(0.05,0.5,0.95)) {
 #'
 #' @examples
 #' print("wait on suitable datasets")
-plotZone <- function(inzone,rundir,CIprobs=c(0.05,0.5,0.95),addfile=TRUE) {
-  onezoneplot(inzone$catch,rundir,CIprobs=CIprobs,"Catch",addfile=addfile)
-  onezoneplot(inzone$cpue,rundir,CIprobs=CIprobs,"CPUE",addfile=addfile)
-  onezoneplot(inzone$deplsB,rundir,CIprobs=CIprobs,"Mature_Biomass_Depletion",
+plotZone <- function(inzone,rundir,glb,CIprobs=c(0.05,0.5,0.95),addfile=TRUE) {
+  onezoneplot(inzone$catch,rundir,glb,CIprobs=CIprobs,"Catch",addfile=addfile)
+  onezoneplot(inzone$cpue,rundir,glb,CIprobs=CIprobs,"CPUE",addfile=addfile)
+  onezoneplot(inzone$deplsB,rundir,glb,CIprobs=CIprobs,
+              "Mature_Biomass_Depletion",addfile=addfile)
+  onezoneplot(inzone$matureB,rundir,glb,CIprobs=CIprobs,"Mature_Biomass",
               addfile=addfile)
-  onezoneplot(inzone$matureB,rundir,CIprobs=CIprobs,"Mature_Biomass",
+  onezoneplot(inzone$harvestR,rundir,glb,CIprobs=CIprobs,"Harvest_Rate",
               addfile=addfile)
-  onezoneplot(inzone$harvestR,rundir,CIprobs=CIprobs,"Harvest_Rate",
+  onezoneplot(inzone$recruit,rundir,glb,CIprobs=CIprobs,"Recruitment",
               addfile=addfile)
-  onezoneplot(inzone$recruit,rundir,CIprobs=CIprobs,"Recruitment",
-              addfile=addfile)
-  onezoneplot(inzone$TAC,rundir,CIprobs=CIprobs,"TAC",addfile=addfile)
+  onezoneplot(inzone$TAC,rundir,glb,CIprobs=CIprobs,"TAC",addfile=addfile)
 } # end of plotZone
 
 
@@ -586,13 +599,13 @@ plotZone <- function(inzone,rundir,CIprobs=c(0.05,0.5,0.95),addfile=TRUE) {
 #' print("wait on suitable internal data-sets")
 sauplots <- function(zoneDP,zoneDDR,glb,rundir,B0,ExB0,startyr,addCI=TRUE,
                      histCE=NULL,tabcat="projSAU") {
-  # zoneDP=zoneDP;zoneDDR=zoneDDR;glb=glb;rundir=rundir;B0=B0;ExB0=ExB0;addCI=TRUE;histCE=histCE
+  # zoneDP=zoneDP;zoneDDR=zoneDDR;glb=glb;rundir=rundir;B0=B0;ExB0=ExB0;
+  # startyr=32; addCI=TRUE;histCE=histCE; tabcat="projSAU"
   zoneDsau <- zonetosau(zoneDDR,glb,B0,ExB0)
   zonePsau <- zonetosau(zoneDP,glb,B0,ExB0)
   label <-  c("cpue","catch","acatch","matureB","exploitB","recruit","harvestR")
   out <- vector("list",length(label))
   names(out) <- label
-  nplot <- getparplots(glb$nSAU)
   #CPUE
   filen <- filenametopath(rundir,"proj_cpue_SAU.png")  # filen=""
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
@@ -612,9 +625,10 @@ sauplots <- function(zoneDP,zoneDDR,glb,rundir,B0,ExB0,startyr,addCI=TRUE,
   #Aspirational catches
   filen <- filenametopath(rundir,"proj_aspcatch_SAU.png")
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
-  CI <- dosauplot("acatch",zoneDsau[["acatch"]],zonePsau[["acatch"]],glb,
+  CI <- dosauplot("acatch",zoneDsau[["catch"]],zonePsau[["acatch"]],glb,
                   startyr=startyr,addCI=TRUE,histCE=NULL)
-  caption <- "The Aspirational catch projections for each SAU."
+  caption <- paste0("The Aspirational catch projections for each SAU. Catches ",
+                    "prior to HS are actual catches.")
   addplot(filen,rundir=rundir,category=tabcat,caption)
   out[["acatch"]] <- CI
   #MatureBiomass

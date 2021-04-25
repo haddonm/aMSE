@@ -85,6 +85,8 @@ depleteSAU <- function(zoneC,zoneD,glob,initdepl,product,len=15) {
 #' @param zoneC the zone constants object, zoneC
 #' @param glob the globals object
 #' @param condC from the zone1 object, contains historical fisheries data plus
+#' @param calcpopC a function that takes the output from hcrfun and gernerates
+#'     the actual catch per population expected in the current year.
 #' @param sigR the recruitment variation included
 #' @param sigB the variability introduced to the catches by population by
 #'     fishers not knowing the distribution of exploitable biomass exactly. What
@@ -96,7 +98,7 @@ depleteSAU <- function(zoneC,zoneD,glob,initdepl,product,len=15) {
 #'
 #' @examples
 #' print("wait on some data sets")
-dohistoricC <- function(zoneDD,zoneC,glob,condC,sigR=1e-08,sigB=1e-08) {
+dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,sigR=1e-08,sigB=1e-08) {
   # zoneC=zone$zoneC; zoneDD=zone$zoneD;glob=zone$glb;condC=zone$zone1$condC
   # sigR=1e-08; sigB=1e-08; Ncl=glob$Nclass;sauindex=glob$sauindex;movem=glob$move;
   histC <- condC$histCatch
@@ -108,14 +110,12 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,sigR=1e-08,sigB=1e-08) {
   exb0 <- getvar(zoneC,"ExB0")
   for (year in 2:nyrs) {  # year=2 # ignores the initial unfished year
     catchsau <- histC[year,]
-  #  exb <- zoneDD$exploitB[year-1,]
-    popC <- calcexpectpopC(TAC=0,acatch=catchsau,
-                           exb=zoneDD$exploitB[year-1,],
-                           sauindex,sigmab=1e-08)
+    hcrout <- list(acatch=catchsau)
+    popC <- calcpopC(hcrout,exb=zoneDD$exploitB[year-1,],sauindex,sigmab=sigB)
     inN <- zoneDD$Nt[,year-1,]
     out <- oneyearsauC(zoneCC=zoneC,inN=inN,popC=popC,year=year,
                        Ncl=glob$Nclass,sauindex=sauindex,movem=glob$move,
-                       sigmar=sigR,sigmab=sigB,r0=r0,b0=b0,exb0=exb0)
+                       sigmar=sigR,r0=r0,b0=b0,exb0=exb0)
     dyn <- out$dyn
     zoneDD$exploitB[year,] <- dyn["exploitb",]
     zoneDD$midyexpB[year,] <- dyn["midyexpB",]
@@ -167,64 +167,6 @@ imperr <- function(catchsau,exb,sauindex,sigmab=1e-08) {
   popC <- popC * TAC/sum(popC)
   return(popC)
 } # end of imperr
-
-#' @title initiateHS applies HS to the last years of the historical conditioning
-#'
-#' @description initiateHS uses the last years of fishery conditioning to run
-#'     the HS for the first year of the projections. This fills in the first
-#'     row of each of the variables in the dynamic object for each of the
-#'     proposed iterations.
-#'
-#' @param zoneDP the empty dynamics object used in the projections
-#' @param zoneCP the constant object after modification for projections
-#' @param exb a vector of exploitable biomass for each population from the last
-#'     year of the conditioning on the fishery or historical fishery data
-#' @param inN an array of the numbers-at-length for each population from the
-#'     last year of the conditioning on the fishery or historical fishery data
-#' @param acatch the aspirational catches per SAU derived from the conditioning
-#'     of the HS based on the historical or fishery conditioning data
-#' @param sigmar the recruitment variability (sd) to be used in the projections
-#' @param sigmab the variability (sd) applied to the exploitable biomass
-#'     estimates to introduce a form of implementation error on the distribution
-#'     of catches among SAU
-#' @param glb the globals object
-#'
-#' @return a revised zoneDP object with the first year filled in for each
-#'     replicate
-#' @export
-#'
-#' @examples
-#' print("wait on suitable internal data sets")
-initiateHS <- function(zoneDP,zoneCP,inN,acatch,sigmar,sigmab,glb) {
-  reps <- dim(zoneDP$matureB)[3]
-  r0 <- getvar(zoneCP,"R0") #sapply(zoneC,"[[","R0")
-  b0 <- getvar(zoneCP,"B0") #sapply(zoneC,"[[","B0")
-  exb0 <- getvar(zoneCP,"ExB0")
-  for (iter in 1:reps) {
-    popC <- calcexpectpopC(TAC=0,acatch=acatch,
-                           exb=zoneDD$exploitB[year-1,],
-                           sauindex,sigmab=1e-08)
-    outy <- oneyearsauC(zoneCC=zoneCP,inN=inN,popC=popC,year=1,
-                        Ncl=glb$Nclass,sauindex=glb$sauindex,movem=glb$move,
-                        sigmar=sigmar,sigmab=sigmab)
-    dyn <- outy$dyn
-    saudyn <- poptosauCE(dyn["catch",],dyn["cpue",],glb$sauindex)
-    zoneDP$exploitB[1,,iter] <- dyn["exploitb",]
-    zoneDP$matureB[1,,iter] <- dyn["matureb",]
-    zoneDP$catch[1,,iter] <- dyn["catch",]
-    zoneDP$acatch[1,,iter] <- acatch
-    zoneDP$catsau[1,,iter] <- saudyn$saucatch
-    zoneDP$harvestR[1,,iter] <- dyn["catch",]/dyn["exploitb",]
-    zoneDP$cpue[1,,iter] <- dyn["cpue",]
-    zoneDP$cesau[1,,iter] <- saudyn$saucpue
-    zoneDP$recruit[1,,iter] <- dyn["recruits",]
-    zoneDP$deplsB[1,,iter] <- dyn["deplsB",]
-    zoneDP$depleB[1,,iter] <- dyn["depleB",]
-    zoneDP$Nt[,1,,iter] <- outy$NaL
-    zoneDP$catchN[,1,,iter] <- outy$catchN
-  }
-  return(zoneDP)
-} # end on initiateHS
 
 #' @title oneyear one year's harvest dynamics for one abpop
 #'
@@ -363,16 +305,13 @@ oneyearcat <- function(inpopC,inNt,Nclass,incat,yr) {  #
 #' ##param exb the vector of exploitable biomass for each population for the
 #' ##     previous year
 #' @param inN the numbers-at-length for each population for the previous year
-#' @param catchsau a vector of catches to be taken in the year from each SAU
+#' @param popC a vector of actual catches to be taken in the year from each SAU
 #' @param year the year of the dynamics the exb and inN would be from year-1
 #' @param Ncl the number of size classes used to describe size, global Nclass
 #' @param sauindex the sau index for each population from glb
 #' @param movem the larval dispersal movement matrix, global move
 #' @param sigmar the variation in recruitment dynamics, set to 1e-08
 #'     when searching for an equilibrium.
-#' @param sigmab the variability introduced to the catches by population by
-#'     fishers not knowing the distribution of exploitable biomass exactly.
-#'     Initial default value=1e-08
 #' @param r0 the unfished R0 level used by oneyearrec
 #' @param b0 the unfished mature biomass B0, used in recruitment and depletion
 #' @param exb0 the unfished exploitable biomass used in depletion
@@ -382,10 +321,8 @@ oneyearcat <- function(inpopC,inNt,Nclass,incat,yr) {  #
 #'
 #' @examples
 #' print("Wait on new data")
-#' # zoneCC=zone$zoneC; exb=exb ;catchsau=zone$zone1$condC$histCatch[46,];year=46;
-#' # sigmar=1e-08;Ncl=zone$glb$Nclass;sauindex=zone$glb$sauindex;movem=zone$glb$movem; sigmab=1e-08
 oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,
-                        movem,sigmar=1e-08,sigmab=1e-08,r0,b0,exb0) {
+                        movem,sigmar=1e-08,r0,b0,exb0) {
  # zoneCC=zoneCP;exb=zoneDP$exploitB[year-1,,iter]
 #  inN=zoneDP$Nt[,year-1,,iter];catchsau=acatch;year=year
 #  Ncl=Nclass;sauindex=sauindex;movem=movem
@@ -448,13 +385,13 @@ oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,
 #' #  glb <- zone$glb
 #'  #zoneD <- zone$zoneD
 #'  #Nc <- glb$Nclass
-#'  #nyrs <- glb$Nyrs
+#'  #hyrs <- glb$hyrs
 #'  #catch <- 900.0 # larger than total MSY ~ 870t
 #'  #B0 <- getvar(zoneC,"B0")
 #'  #totB0 <- sum(B0)
 #'  #prop <- B0/totB0
 #'  #catchpop <- catch * prop
-#'  #for (yr in 2:nyrs)
+#'  #for (yr in 2:hyrs)
 #'  #  zoneD <- oneyearC(zoneC=zoneC,zoneD=zoneD,Ncl=Nc,
 #'  #                  catchp=catchpop,year=yr,sigmar=1e-08,
 #'  #                  npop=glb$numpop,movem=glb$move)
@@ -515,17 +452,7 @@ oneyearC <- function(zoneC,zoneDP,catchp,year,iter,sigmar,Ncl,npop,movem) {
 #' @export
 #'
 #' @examples
-#'  data(zone)
-#'  zoneC <- zone$zoneC
-#'  glb <- zone$glb
-#'  zoneD <- zone$zoneD
-#'  numpop <- glb$numpop
-#'  harvest <- rep(0.2,numpop)
-#'  zoneD <- oneyearD(zoneC=zoneC,zoneD=zoneD,
-#'                    inHt=harvest,year=2,sigmar=1e-06,
-#'                    Ncl=glb$Nclass,npop=numpop,movem=glb$move)
-#'  str(zoneD)
-#'  round(zoneD$catchN[60:105,1:5,1],1)
+#'  print("wait oin revised data")
 oneyearD <- function(zoneC,zoneD,inHt,year,sigmar,Ncl,npop,movem) {
 #  zoneC=zoneC;zoneD=zoneD;Ncl=Nclass;inHt=inHarv;year=yr;sigmar=1e-08;npop=npop;movem=glob$move
   matb <- numeric(npop)
@@ -635,7 +562,7 @@ oneyrgrowth <- function(inpop,startsize=2) {
 #'
 #' @param oldzoneD the old zoneD containing the dynamics as run for
 #'     Nyrs.
-#' @param nyrs The number of years of dynamics, the global Nyrs
+#' @param hyrs The number of years of dynamics, the hyrs from glb
 #' @param npop The number of populations, the global numpop
 #' @param N the number of size classes, teh global Nclass
 #' @param zero should the arrays be otherwise filled with zeros? The
@@ -646,41 +573,41 @@ oneyrgrowth <- function(inpop,startsize=2) {
 #'
 #' @examples
 #' print("wait for built in data sets")
-restart <- function(oldzoneD,nyrs,npop,N,zero=TRUE) { # oldzoneD=zoneD; nyrs=Nyrs; npop=npop; N=Nclass
-  ExplB <- matrix(0,nrow=nyrs,ncol=npop)
-  midyexpB <- matrix(0,nrow=nyrs,ncol=npop)
-  MatB <- matrix(0,nrow=nyrs,ncol=npop)
-  Catch <- matrix(0,nrow=nyrs,ncol=npop)
-  Harvest <- matrix(0,nrow=nyrs,ncol=npop)
-  cpue <- matrix(0,nrow=nyrs,ncol=npop)
-  deplExB <- matrix(0,nrow=nyrs,ncol=npop)
-  deplSpB <- matrix(0,nrow=nyrs,ncol=npop)
-  Recruit <- matrix(0,nrow=nyrs,ncol=npop)
-  CatchN <- array(data=0,dim=c(N,nyrs,npop))
-  Nt <- array(data=0,dim=c(N,nyrs,npop))
+restart <- function(oldzoneD,hyrs,npop,N,zero=TRUE) { # oldzoneD=zoneD; hyrs=hyrs; npop=npop; N=Nclass
+  ExplB <- matrix(0,nrow=hyrs,ncol=npop)
+  midyexpB <- matrix(0,nrow=hyrs,ncol=npop)
+  MatB <- matrix(0,nrow=hyrs,ncol=npop)
+  Catch <- matrix(0,nrow=hyrs,ncol=npop)
+  Harvest <- matrix(0,nrow=hyrs,ncol=npop)
+  cpue <- matrix(0,nrow=hyrs,ncol=npop)
+  deplExB <- matrix(0,nrow=hyrs,ncol=npop)
+  deplSpB <- matrix(0,nrow=hyrs,ncol=npop)
+  Recruit <- matrix(0,nrow=hyrs,ncol=npop)
+  CatchN <- array(data=0,dim=c(N,hyrs,npop))
+  Nt <- array(data=0,dim=c(N,hyrs,npop))
   zoneD <- list(SAU=oldzoneD$SAU,matureB=MatB,exploitB=ExplB,midyexpB=midyexpB,
                 catch=Catch,harvestR=Harvest,cpue=cpue,recruit=Recruit,
                 deplsB=deplSpB,depleB=deplExB,catchN=CatchN,Nt=Nt)
   if (!zero) zoneD <- oldzoneD
-  zoneD$matureB[1,] <- oldzoneD$matureB[nyrs,]
-  zoneD$exploitB[1,] <- oldzoneD$exploitB[nyrs,]
-  zoneD$midyexpB[1,] <- oldzoneD$midyexpB[nyrs,]
-  zoneD$catch[1,] <- oldzoneD$catch[nyrs,]
-  zoneD$harvestR[1,] <- oldzoneD$harvestR[nyrs,]
-  zoneD$cpue[1,] <- oldzoneD$cpue[nyrs,]
-  zoneD$recruit[1,] <- oldzoneD$recruit[nyrs,]
-  zoneD$deplsB[1,] <- oldzoneD$deplsB[nyrs,]
-  zoneD$depleB[1,] <- oldzoneD$depleB[nyrs,]
-  zoneD$catchN[,1,] <- oldzoneD$catchN[,nyrs,]
-  zoneD$Nt[,1,] <- oldzoneD$Nt[,nyrs,]
+  zoneD$matureB[1,] <- oldzoneD$matureB[hyrs,]
+  zoneD$exploitB[1,] <- oldzoneD$exploitB[hyrs,]
+  zoneD$midyexpB[1,] <- oldzoneD$midyexpB[hyrs,]
+  zoneD$catch[1,] <- oldzoneD$catch[hyrs,]
+  zoneD$harvestR[1,] <- oldzoneD$harvestR[hyrs,]
+  zoneD$cpue[1,] <- oldzoneD$cpue[hyrs,]
+  zoneD$recruit[1,] <- oldzoneD$recruit[hyrs,]
+  zoneD$deplsB[1,] <- oldzoneD$deplsB[hyrs,]
+  zoneD$depleB[1,] <- oldzoneD$depleB[hyrs,]
+  zoneD$catchN[,1,] <- oldzoneD$catchN[,hyrs,]
+  zoneD$Nt[,1,] <- oldzoneD$Nt[,hyrs,]
   return(zoneD)
 } # end of restart
 
 #' @title runthreeH conducts the dynamics with constant catch 3 times
 #'
 #' @description runthreeH is used when searching numerically for an
-#'     equilibrium and it conducts the Nyrs dynamics three times, each
-#'     time through it replaces year 1 with year Nyrs. Thus if Nyrs is
+#'     equilibrium and it conducts the hyrs dynamics three times, each
+#'     time through it replaces year 1 with year hyrs. Thus if hyrs is
 #'     40 it conducts 3 * 39 years of dynamics (117 years). This is
 #'     not exported. It uses zoneC but always it does this inside
 #'     the environment of another function where zoneC can be found
@@ -704,14 +631,14 @@ restart <- function(oldzoneD,nyrs,npop,N,zero=TRUE) { # oldzoneD=zoneD; nyrs=Nyr
 runthreeH <- function(zoneC,zoneD,inHarv,glob,maxiter=3) {
   npop <- glob$numpop
   Nclass <- glob$Nclass
-  Nyrs <- glob$Nyrs
+  hyrs <- glob$hyrs
   larvdisp <- glob$larvdisp
   for (iter in 1:maxiter) { # iter=1; yr=2
-    for (yr in 2:Nyrs)
+    for (yr in 2:hyrs)
       zoneD <- oneyearD(zoneC=zoneC,zoneD=zoneD,Ncl=Nclass,
                         inHt=inHarv,year=yr,sigmar=1e-08,npop=npop,
                         movem=glob$move)
-    zoneD <- restart(oldzoneD=zoneD,nyrs=Nyrs,npop=npop,N=Nclass,zero=TRUE)
+    zoneD <- restart(oldzoneD=zoneD,hyrs=hyrs,npop=npop,N=Nclass,zero=TRUE)
   }
   return(zoneD)
 } # end of runthreeH

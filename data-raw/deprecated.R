@@ -1,5 +1,63 @@
 
 
+#' @title initiateHS applies HS to the last years of the historical conditioning
+#'
+#' @description initiateHS uses the last years of fishery conditioning to run
+#'     the HS for the first year of the projections. This fills in the first
+#'     row of each of the variables in the dynamic object for each of the
+#'     proposed iterations.
+#'
+#' @param zoneDP the empty dynamics object used in the projections
+#' @param zoneCP the constant object after modification for projections
+#' @param exb a vector of exploitable biomass for each population from the last
+#'     year of the conditioning on the fishery or historical fishery data
+#' @param inN an array of the numbers-at-length for each population from the
+#'     last year of the conditioning on the fishery or historical fishery data
+#' @param acatch the aspirational catches per SAU derived from the conditioning
+#'     of the HS based on the historical or fishery conditioning data
+#' @param sigmar the recruitment variability (sd) to be used in the projections
+#' @param sigmab the variability (sd) applied to the exploitable biomass
+#'     estimates to introduce a form of implementation error on the distribution
+#'     of catches among SAU
+#' @param glb the globals object
+#'
+#' @return a revised zoneDP object with the first year filled in for each
+#'     replicate
+#' @export
+#'
+#' @examples
+#' print("wait on suitable internal data sets")
+initiateHS <- function(zoneDP,zoneCP,inN,acatch,sigmar,sigmab,glb) {
+  reps <- dim(zoneDP$matureB)[3]
+  r0 <- getvar(zoneCP,"R0") #sapply(zoneC,"[[","R0")
+  b0 <- getvar(zoneCP,"B0") #sapply(zoneC,"[[","B0")
+  exb0 <- getvar(zoneCP,"ExB0")
+  for (iter in 1:reps) {
+    popC <- calcexpectpopC(TAC=0,acatch=acatch,
+                           exb=zoneDD$exploitB[year-1,],
+                           sauindex,sigmab=sigmab)
+    outy <- oneyearsauC(zoneCC=zoneCP,inN=inN,popC=popC,year=1,
+                        Ncl=glb$Nclass,sauindex=glb$sauindex,movem=glb$move,
+                        sigmar=sigmar)
+    dyn <- outy$dyn
+    saudyn <- poptosauCE(dyn["catch",],dyn["cpue",],glb$sauindex)
+    zoneDP$exploitB[1,,iter] <- dyn["exploitb",]
+    zoneDP$matureB[1,,iter] <- dyn["matureb",]
+    zoneDP$catch[1,,iter] <- dyn["catch",]
+    zoneDP$acatch[1,,iter] <- acatch
+    zoneDP$catsau[1,,iter] <- saudyn$saucatch
+    zoneDP$harvestR[1,,iter] <- dyn["catch",]/dyn["exploitb",]
+    zoneDP$cpue[1,,iter] <- dyn["cpue",]
+    zoneDP$cesau[1,,iter] <- saudyn$saucpue
+    zoneDP$recruit[1,,iter] <- dyn["recruits",]
+    zoneDP$deplsB[1,,iter] <- dyn["deplsB",]
+    zoneDP$depleB[1,,iter] <- dyn["depleB",]
+    zoneDP$Nt[,1,,iter] <- outy$NaL
+    zoneDP$catchN[,1,,iter] <- outy$catchN
+  }
+  return(zoneDP)
+} # end on initiateHS
+
 #' @title product is the productivity curve matrix from doproduction
 #'
 #' @description product is the productivity curve matrix from
@@ -97,6 +155,109 @@ NULL
 NULL
 
 
+#' @title plothistcatch plots the historical catches used for conditioning
+#'
+#' @description plothistcatch provides a visual representation of the catches
+#'     taken in each SAU/population used in the conditioning of the
+#'     Operating Model.
+#'
+#' @param zone1 The zonewide properties as in readzonefile(indir,ctrl$zonefile)
+#' @param pops default = NULL. The plot can be restricted to a specific set
+#'     of populations by providing the indices of the populations to be
+#'     included. Thus if there were 8 populations the pops=c(1,2,3,8), would
+#'     plot the first three and the last population.
+#' @param rundir the results directory used by makehtml to store plots and
+#'     tables. If set to "", the default, then it plots to the console
+#' @param defpar define the plot parameters. Set to FALSE if using
+#'     plothistcatch to add a plot to a multiple plot
+#'
+#' @return nothing, it adds a plot into rundir and modifies resultTable.csv
+#' @export
+#'
+#' @examples
+#' print("wait until I have altered the internals data sets")
+plothistcatch <- function(zone1,pops=NULL,rundir="",defpar=TRUE) {
+  # zone1=zone1; pops=c(1,2,3,8); defpar=FALSE;  rundir=rundir
+  glb <- zone1$globals
+  if (length(pops) > 0) {
+    histcatch <- as.matrix(zone1$histCatch[,pops])
+    numpop <- length(pops)
+    addlab <- paste0(pops,"_",collapse="")
+    label <- paste0("p",pops)
+    numpop <- length(pops)
+  } else {
+    histcatch <- zone1$histCatch
+    addlab <- "all"
+    label <- colnames(histcatch)
+    numpop <- glb$numpop
+  }
+  histyr <- zone1$histyr
+  yearCE <- zone1$yearCE
+  yearC <- histyr[,"year"]
+  pngfile <- paste0("Historical_Catches_",addlab,".png")
+  if (nchar(rundir) > 0) {
+    filen <- filenametopath(rundir,pngfile)
+  } else { filen <- "" }
+  if (defpar)
+    plotprep(width=7,height=4,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
+  ymax <- getmax(histcatch)
+  plot(yearC,histcatch[,1],type="l",lwd=2,xlab="Year",
+       ylab="Catch (t)",panel.first=grid(),ylim=c(0,ymax))
+  if (numpop > 1) for (pop in 2:numpop)
+    lines(yearC,histcatch[,pop],lwd=2,col=pop)
+  legend("topright",label,lwd=3,col=c(1:numpop),bty="n",cex=1.2)
+  if (nchar(rundir) > 0) {
+    caption <- "The historical catch used for conditioning for each population."
+    addplot(filen,rundir=rundir,category="history",caption)
+  }
+} # end of plothistcatch
+
+#' @title plothistCE plots the historical cpue used for conditioning
+#'
+#' @description plothistCE provides a visual representation of the cpue
+#'     taken in each SAU used in the conditioning of the
+#'     Operating Model.
+#'
+#' @param zone1 The zonewide properties as in readzonefile(indir,ctrl$zonefile)
+#' @param pops default = NULL. The plot can be restricted to a specific set
+#'     of populations by providing the indices of the populations to be
+#'     included. Thus if there were 8 populations the pops=c(1,2,3,8), would
+#'     plot the first three and the last population.
+#' @param rundir the results directory used by makehtml to store plots and
+#'     tables.
+#'
+#' @return nothing, it adds a plot into rundir and modifies resultTable.csv
+#' @export
+#'
+#' @examples
+#' print("wait until I have altered the internals data sets")
+plothistCE <- function(zone1,pops=NULL,rundir="") {
+  # zone1=zone1; pops=c(1,2,3,8);
+  glb <- zone1$globals
+  numpop <- glb$numpop
+  if (length(pops) > 0) {
+    histCE <- zone1$histCE[,pops]
+    numpop <- length(pops)
+    addlab <- paste0(pops,"_",collapse="")
+  } else {
+    histCE <- zone1$histCE
+    addlab="all"
+  }
+  yearCE <- zone1$yearCE
+  pngfile <- paste0("Historical_CPUE_",addlab,".png")
+  filen <- filenametopath(rundir,pngfile)
+  plotprep(width=7,height=4,newdev=FALSE,filename=filen,cex=0.9,
+           verbose=FALSE)
+  ymax <- getmax(histCE)
+  plot(yearCE,histCE[,1],type="l",lwd=2,xlab="Year",
+       ylab="Standardized CPUE",panel.first=grid(),ylim=c(0,ymax))
+  if (numpop > 1) for (pop in 2:numpop)
+    lines(yearCE,histCE[,pop],lwd=2,col=pop)
+  label <- colnames(histCE)
+  legend("topright",label,lwd=3,col=c(1:numpop),bty="n",cex=1.2)
+  caption <- "The historical CPUE used for conditioning for each population."
+  addplot(filen,rundir=rundir,category="history",caption)
+} # end of plothistCE
 
 
 

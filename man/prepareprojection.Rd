@@ -13,6 +13,7 @@ prepareprojection(
   ctrl,
   varyrs,
   multTAC,
+  calcpopC,
   lastsigR = 0.3
 )
 }
@@ -33,6 +34,9 @@ fishery}
 \item{varyrs}{how many years at the end to add recruitment variation}
 
 \item{multTAC}{the TAC multiplication matrix from the HCR}
+
+\item{calcpopC}{a function that takes the output from hcrfun and gernerates
+the actual catch per population expected in the current year.}
 
 \item{lastsigR}{recruitment variation for when it is applied for varyrs}
 }

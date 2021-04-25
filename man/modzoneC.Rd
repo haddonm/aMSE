@@ -2,7 +2,7 @@
 % Please edit documentation in R/defineZone.R
 \name{modzoneC}
 \alias{modzoneC}
-\title{modzoneC runs the zone 3 x Nyrs to equilibrium}
+\title{modzoneC runs the zone 3 x hyrs to equilibrium}
 \usage{
 modzoneC(zoneC, zoneD, glob, lowlim = 0, uplim = 0.4, inc = 0.005)
 }

@@ -158,6 +158,29 @@ poptosau <- function(invar,glb) {  # invar=zoneDP$matureB; glb=glb
   return(result)
 } # end of poptosau
 
+#' @title poptosauCE combines population cpue into sau as catch weighted sums
+#'
+#' @description poptosauCE combines cpue from separate populations into their
+#'     respective sau using a catch-weighted strategy. The sauindex is used to
+#'     identify which populations to apply the sau total catches to.
+#'
+#' @param catvect the vector of catches x population for a given year
+#' @param cpuevect the vector of cpue x population for a given year
+#' @param sauindex the sau indices of each population
+#'
+#' @return a list of saucpue and saucatch
+#' @export
+#'
+#' @examples
+#' print("wait on appropriate built-in data files")
+poptosauCE <- function(catvect,cpuevect,sauindex) {
+  saucatch <- tapply(catvect,sauindex,sum,na.rm=TRUE)
+  wts <- catvect/saucatch[sauindex]
+  saucpue <- tapply((cpuevect * wts),sauindex,sum,na.rm=TRUE)
+  return(list(saucpue=saucpue,saucatch=saucatch))
+} # end of poptosauCE
+
+
 #' @title poptozone translates the zone_pop objects to a single zone object
 #'
 #' @description poptozone combines the dynamic results for each variable so
@@ -236,15 +259,15 @@ poptozone <- function(inzone,glb, B0, ExB0) {
 prepareDDNt <- function(inNt,incatchN,glb) { # Nt=zoneDD$Nt; catchN=zoneDD$catchN; glb=glb
   sauindex <- glb$sauindex
   nsau <- glb$nSAU
-  nyrs <- glb$Nyrs
+  hyrs <- glb$hyrs
   Nc <- glb$Nclass
-  catchN <- array(data=0,dim=c(Nc,nyrs,nsau), # define some arrays
-                  dimnames=list(glb$midpts,1:nyrs,glb$saunames))
-  Nt <- array(data=0,dim=c(Nc,nyrs,nsau),
-              dimnames=list(glb$midpts,1:nyrs,glb$saunames))
+  catchN <- array(data=0,dim=c(Nc,hyrs,nsau), # define some arrays
+                  dimnames=list(glb$midpts,1:hyrs,glb$saunames))
+  Nt <- array(data=0,dim=c(Nc,hyrs,nsau),
+              dimnames=list(glb$midpts,1:hyrs,glb$saunames))
   for (sau in 1:nsau) { #  yr=1; sau = 1
     pick <- which(sauindex %in% sau)
-    for (yr in 1:nyrs) {
+    for (yr in 1:hyrs) {
       catchN[,yr,sau] <- rowSums(incatchN[,yr,pick])
       Nt[,yr,sau] <- rowSums(inNt[,yr,pick])
     }
@@ -353,7 +376,7 @@ zonetosau <- function(inzone,glb, B0, ExB0) { # inzone=zoneDP; glb=glb; B0=B0; E
   N <- glb$Nclass
   invar <- inzone$matureB
   nyrs <- dim(invar)[1]
-  reps <- dim(invar)[3]
+  reps <- glb$reps
   sauB0 <- tapply(B0,sauindex,sum)
   sauExB0 <- tapply(ExB0,sauindex,sum)
   matureB <- poptosau(invar,glb)

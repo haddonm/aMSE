@@ -41,15 +41,5 @@ oneyearD conducts one year's dynamics on zoneD in the MSE
     dodepletion and doproduction) and in testequil
 }
 \examples{
- data(zone)
- zoneC <- zone$zoneC
- glb <- zone$glb
- zoneD <- zone$zoneD
- numpop <- glb$numpop
- harvest <- rep(0.2,numpop)
- zoneD <- oneyearD(zoneC=zoneC,zoneD=zoneD,
-                   inHt=harvest,year=2,sigmar=1e-06,
-                   Ncl=glb$Nclass,npop=numpop,movem=glb$move)
- str(zoneD)
- round(zoneD$catchN[60:105,1:5,1],1)
+ print("wait oin revised data")
 }

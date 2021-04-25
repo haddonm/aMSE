@@ -13,7 +13,6 @@ oneyearsauC(
   sauindex,
   movem,
   sigmar = 1e-08,
-  sigmab = 1e-08,
   r0,
   b0,
   exb0
@@ -27,6 +26,8 @@ oneyearsauC(
 
 \item{inN}{the numbers-at-length for each population for the previous year}
 
+\item{popC}{a vector of actual catches to be taken in the year from each SAU}
+
 \item{year}{the year of the dynamics the exb and inN would be from year-1}
 
 \item{Ncl}{the number of size classes used to describe size, global Nclass}
@@ -38,17 +39,11 @@ oneyearsauC(
 \item{sigmar}{the variation in recruitment dynamics, set to 1e-08
 when searching for an equilibrium.}
 
-\item{sigmab}{the variability introduced to the catches by population by
-fishers not knowing the distribution of exploitable biomass exactly.
-Initial default value=1e-08}
-
 \item{r0}{the unfished R0 level used by oneyearrec}
 
 \item{b0}{the unfished mature biomass B0, used in recruitment and depletion}
 
 \item{exb0}{the unfished exploitable biomass used in depletion}
-
-\item{catchsau}{a vector of catches to be taken in the year from each SAU}
 }
 \value{
 a list containing a revised dynamics list
@@ -63,6 +58,4 @@ oneyearsauC conducts one year's dynamics in the simulation
 }
 \examples{
 print("Wait on new data")
-# zoneCC=zone$zoneC; exb=exb ;catchsau=zone$zone1$condC$histCatch[46,];year=46;
-# sigmar=1e-08;Ncl=zone$glb$Nclass;sauindex=zone$glb$sauindex;movem=zone$glb$movem; sigmab=1e-08
 }

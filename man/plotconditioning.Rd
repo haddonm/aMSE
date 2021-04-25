@@ -4,7 +4,7 @@
 \alias{plotconditioning}
 \title{plotconditioning illustrate the zones dynamics after conditioning}
 \usage{
-plotconditioning(zoneDD, glb, zoneC, histCE, yrnames, rundir)
+plotconditioning(zoneDD, glb, zoneC, histCE, rundir)
 }
 \arguments{
 \item{zoneDD}{the conditioned dynamic zone object}
@@ -14,8 +14,6 @@ plotconditioning(zoneDD, glb, zoneC, histCE, yrnames, rundir)
 \item{zoneC}{the constant zone object}
 
 \item{histCE}{the historical CPUE matrix}
-
-\item{yrnames}{the years of catch and related data eg 1973:2019}
 
 \item{rundir}{the rundir for the given scenario}
 }

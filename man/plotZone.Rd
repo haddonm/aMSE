@@ -4,12 +4,14 @@
 \alias{plotZone}
 \title{plotZone plots the projected TAC across all replicates}
 \usage{
-plotZone(inzone, rundir, CIprobs = c(0.05, 0.5, 0.95), addfile = TRUE)
+plotZone(inzone, rundir, glb, CIprobs = c(0.05, 0.5, 0.95), addfile = TRUE)
 }
 \arguments{
 \item{inzone}{the dynamic zone projection object}
 
 \item{rundir}{the rundir for the scenario}
+
+\item{glb}{the global constants object}
 
 \item{CIprobs}{the quantiles used to generate the confidence intervals. The
 default = c(0.05,0.5,0.95)}

@@ -4,13 +4,13 @@
 \alias{restart}
 \title{restart transfers final year values of zoneD into the first year}
 \usage{
-restart(oldzoneD, nyrs, npop, N, zero = TRUE)
+restart(oldzoneD, hyrs, npop, N, zero = TRUE)
 }
 \arguments{
 \item{oldzoneD}{the old zoneD containing the dynamics as run for
 Nyrs.}
 
-\item{nyrs}{The number of years of dynamics, the global Nyrs}
+\item{hyrs}{The number of years of dynamics, the hyrs from glb}
 
 \item{npop}{The number of populations, the global numpop}
 

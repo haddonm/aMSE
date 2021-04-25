@@ -4,12 +4,14 @@
 \alias{onezoneplot}
 \title{onezoneplot plots out one variable from the zone}
 \usage{
-onezoneplot(invar, rundir, CIprobs, varname, addfile = TRUE)
+onezoneplot(invar, rundir, glb, CIprobs, varname, addfile = TRUE)
 }
 \arguments{
 \item{invar}{which zone variable to plot}
 
 \item{rundir}{the run directory for the results}
+
+\item{glb}{the global constants object}
 
 \item{CIprobs}{the quantiles to use for the CI.}
 

@@ -25,8 +25,8 @@ a list containing a revised dynamics list, zoneD
 }
 \description{
 runthreeH is used when searching numerically for an
-    equilibrium and it conducts the Nyrs dynamics three times, each
-    time through it replaces year 1 with year Nyrs. Thus if Nyrs is
+    equilibrium and it conducts the hyrs dynamics three times, each
+    time through it replaces year 1 with year hyrs. Thus if hyrs is
     40 it conducts 3 * 39 years of dynamics (117 years). This is
     not exported. It uses zoneC but always it does this inside
     the environment of another function where zoneC can be found

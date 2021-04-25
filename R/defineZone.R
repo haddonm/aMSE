@@ -74,13 +74,13 @@ defineBlock <- function(numblk,blknum,numpop) {
 definepops <- function(inSAU,inSAUindex,const,glob) {
   #  inSAU=nSAU; inSAUindex=SAUindex; const=constants; glob=glb
   numpop <- glob$numpop
-  Nyrs <- glob$Nyrs
+  hyrs <- glob$hyrs
   columns <- c("DLMax","L50","L95","SigMax","SaMa","SaMb","Wta","Wtb","Me",
                "L50C","deltaC","AvRec","SelP1","SelP2","Nyrs","steeph",
                "MaxCE","L50mat","SAU")
   popdefs <- matrix(0,nrow=numpop,ncol=length(columns),
                     dimnames=list(1:numpop,columns))
-  popdefs[,"Nyrs"] <- rep(Nyrs,numpop) # Num Years - why is this here?
+  popdefs[,"Nyrs"] <- rep(hyrs,numpop) # Num Years - why is this here?
   for (pop in 1:numpop) {  # pop=1
     popdefs[pop,"Me"] <- rnorm(1,mean=const["Me",pop],
                                sd=const["sMe",pop])
@@ -231,7 +231,7 @@ doproduction <- function(zoneC,zoneD,glob,
                          lowlim=0.0,uplim=0.35,inc=0.005) {
   numpop <- glob$numpop
   Nclass <- glob$Nclass
-  Nyrs <- glob$Nyrs
+ # hyrs <- glob$hyrs
   larvdisp <- glob$larvdisp
   initH <- seq(lowlim,uplim,inc)
   nH <- length(initH)
@@ -694,9 +694,9 @@ makezoneC <- function(zone,const) { # zone=zone1; const=constants
   }
   if (zone$catches > 0) {
      initialLML <- zone$condC$histyr[,2]
-     glb$Nyrs <- length(initialLML)
+     glb$hyrs <- length(initialLML)
    } else {
-     initialLML <- rep(zone$initLML,glb$Nyrs)
+     initialLML <- rep(zone$initLML,glb$hyrs)
   }
   popdefs <- definepops(nSAU,SAUindex,const,glob=glb) # define pops
   zoneC <- vector("list",numpop)
@@ -749,20 +749,20 @@ makezoneC <- function(zone,const) { # zone=zone1; const=constants
 #'   str(ans2,max.level=2)
 #'  }
 makezone <- function(glob,zoneC) { #glob=glb; zoneC=zoneC;
-  Nyrs <- glob$Nyrs
+  hyrs <- glob$hyrs
   numpop <- glob$numpop
   N <- glob$Nclass
-  ExplB <- matrix(0,nrow=Nyrs,ncol=numpop)
-  midyexpB <- matrix(0,nrow=Nyrs,ncol=numpop)
-  MatB <- matrix(0,nrow=Nyrs,ncol=numpop)
-  Catch <- matrix(0,nrow=Nyrs,ncol=numpop)
-  Harvest <- matrix(0,nrow=Nyrs,ncol=numpop)
-  cpue <- matrix(0,nrow=Nyrs,ncol=numpop)
-  deplExB <- matrix(0,nrow=Nyrs,ncol=numpop)
-  deplSpB <- matrix(0,nrow=Nyrs,ncol=numpop)
-  Recruit <- matrix(0,nrow=Nyrs,ncol=numpop)
-  CatchN <- array(data=0,dim=c(N,Nyrs,numpop))
-  Nt <- array(data=0,dim=c(N,Nyrs,numpop))
+  ExplB <- matrix(0,nrow=hyrs,ncol=numpop)
+  midyexpB <- matrix(0,nrow=hyrs,ncol=numpop)
+  MatB <- matrix(0,nrow=hyrs,ncol=numpop)
+  Catch <- matrix(0,nrow=hyrs,ncol=numpop)
+  Harvest <- matrix(0,nrow=hyrs,ncol=numpop)
+  cpue <- matrix(0,nrow=hyrs,ncol=numpop)
+  deplExB <- matrix(0,nrow=hyrs,ncol=numpop)
+  deplSpB <- matrix(0,nrow=hyrs,ncol=numpop)
+  Recruit <- matrix(0,nrow=hyrs,ncol=numpop)
+  CatchN <- array(data=0,dim=c(N,hyrs,numpop))
+  Nt <- array(data=0,dim=c(N,hyrs,numpop))
   SAU <- getvar(zoneC,"SAU") #as.numeric(sapply(zoneC,"[[","SAU"))
   recs <- getvar(zoneC,"R0") #sapply(zoneC,"[[","R0")
   move <- glob$move
@@ -824,7 +824,7 @@ maturity <- function(ina,inb,lens) {
 
 
 
-#' @title modzoneC runs the zone 3 x Nyrs to equilibrium
+#' @title modzoneC runs the zone 3 x hyrs to equilibrium
 #'
 #' @description modzoneC runs the doproduction function so it can then
 #'     appropriately fill in each population's MSY and MSYDepl values.
@@ -948,7 +948,7 @@ print.zone <- function(x, ...) {
 #' }
 resetLML <- function(inzone,inLML,inyear,glob) {
   Npop <- glob$numpop
-  Nyrs <- glob$Nyrs
+  hyrs <- glob$hyrs
   midpts <- glob$midpts
   if (length(inLML) != glob$nblock)
     stop("the number of LML does not match the number of blocks")
@@ -957,9 +957,9 @@ resetLML <- function(inzone,inLML,inyear,glob) {
     blk <- popdef["block"]
     Sel <- logistic((inLML[blk]+popdef["SelP1"]),
                     (inLML[blk]+popdef["SelP2"]),midpts)
-    inzone[[pop]]$Select[,inyear:Nyrs] <- Sel
-    inzone[[pop]]$SelWt[,inyear:Nyrs] <- Sel * inzone[[pop]]$WtL
-    inzone[[pop]]$LML[inyear:Nyrs] <- inLML[blk]
+    inzone[[pop]]$Select[,inyear:hyrs] <- Sel
+    inzone[[pop]]$SelWt[,inyear:hyrs] <- Sel * inzone[[pop]]$WtL
+    inzone[[pop]]$LML[inyear:hyrs] <- inLML[blk]
   }
   return(inzone)
 }  # end of resetLML
@@ -1076,9 +1076,9 @@ STM <- function(p,mids) { #    # p <- popparam[1:4]; mids <- midpts
    return(G)
 } # end of STM
 
-#' @title testequil runs a zone for Nyrs and determines stability
+#' @title testequil runs a zone for hyrs and determines stability
 #'
-#' @description testequil runs a given zone for Nyrs at the given
+#' @description testequil runs a given zone for hyrs at the given
 #'     harvest rate, and then tests that the last values of matureB,
 #'     exploitB, recruitment, and spawning biomass depletion are the
 #'     same as the first (to three decimal places). It reports this
@@ -1092,7 +1092,7 @@ STM <- function(p,mids) { #    # p <- popparam[1:4]; mids <- midpts
 #' @param inH a vector of numpop harvest rates
 #' @param verbose should results go to the console, default=TRUE
 #'
-#' @return the dynamics component with Nyrs of dynamics
+#' @return the dynamics component with hyrs of dynamics
 #' @export
 #'
 #' @examples
@@ -1101,45 +1101,45 @@ STM <- function(p,mids) { #    # p <- popparam[1:4]; mids <- midpts
 #'  zoneDe <- testequil(zoneC=zone$zoneC,zoneD=zone$zoneD,glb=zone$glb)
 #' }    #zoneC=zoneC; zoneD=zoneD; glb=glb; inH=0.0; verbose=TRUE
 testequil <- function(zoneC,zoneD,glb,inH=0.0,verbose=TRUE) {
-  Nyrs <- glb$Nyrs
+  hyrs <- glb$hyrs
   Nclass <- glb$Nclass
   npop <- glb$numpop
   inHarv <- rep(inH,npop)
-  for (yr in 2:Nyrs)
+  for (yr in 2:hyrs)
     zoneD <- oneyearD(zoneC=zoneC,zoneD=zoneD,
                       inHt=inHarv,year=yr,sigmar=1e-08,
                       Ncl=Nclass,npop=npop,movem=glb$move)
-  zoneD <- restart(oldzoneD=zoneD,nyrs=Nyrs,npop=npop,N=Nclass,zero=FALSE)
-  for (yr in 2:Nyrs)  # repeat to be sure
+  zoneD <- restart(oldzoneD=zoneD,hyrs=hyrs,npop=npop,N=Nclass,zero=FALSE)
+  for (yr in 2:hyrs)  # repeat to be sure
     zoneD <- oneyearD(zoneC=zoneC,zoneD=zoneD,
                       inHt=inHarv,year=yr,sigmar=1e-08,
                       Ncl=Nclass,npop=npop,movem=glb$move)
   if (verbose) {
-    if (all(trunc(zoneD$matureB[1,],2) == trunc(zoneD$matureB[Nyrs,],2))) {
+    if (all(trunc(zoneD$matureB[1,],2) == trunc(zoneD$matureB[hyrs,],2))) {
       cat("matureB Stable \n")
     } else {
       cat("matureB varies \n")
     }
-    expldiff <- trunc(zoneD$exploitB[1,],2) == trunc(zoneD$exploitB[Nyrs,],2)
+    expldiff <- trunc(zoneD$exploitB[1,],2) == trunc(zoneD$exploitB[hyrs,],2)
     if (all(expldiff)) {
       cat("exploitB Stable \n")
     } else {
-      diffe <- abs(trunc(zoneD$exploitB[1,],2) - trunc(zoneD$exploitB[Nyrs,],2))
+      diffe <- abs(trunc(zoneD$exploitB[1,],2) - trunc(zoneD$exploitB[hyrs,],2))
       label <- paste0("exploitB varies ",max(diffe,na.rm=TRUE)," \n")
       cat(label)
     }
-    if (all(trunc(zoneD$recruit[1,],2) == trunc(zoneD$recruit[Nyrs,],2))) {
+    if (all(trunc(zoneD$recruit[1,],2) == trunc(zoneD$recruit[hyrs,],2))) {
       cat("recruitment Stable \n")
     } else {
       cat("recruitment varies \n")
     }
-    if (all(round(zoneD$deplsB[1,],2) == round(zoneD$deplsB[Nyrs,],2))) {
+    if (all(round(zoneD$deplsB[1,],2) == round(zoneD$deplsB[hyrs,],2))) {
       cat("spawning depletion Stable \n")
     } else {
       cat("spawning depletion varies \n")
     }
   }
-  zoneD <- restart(oldzoneD=zoneD,nyrs=Nyrs,npop=npop,N=Nclass,zero=TRUE)
+  zoneD <- restart(oldzoneD=zoneD,hyrs=hyrs,npop=npop,N=Nclass,zero=TRUE)
   return(zoneD)
 } # end of testequil
 

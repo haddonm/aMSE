@@ -2,7 +2,7 @@
 % Please edit documentation in R/defineZone.R
 \name{testequil}
 \alias{testequil}
-\title{testequil runs a zone for Nyrs and determines stability}
+\title{testequil runs a zone for hyrs and determines stability}
 \usage{
 testequil(zoneC, zoneD, glb, inH = 0, verbose = TRUE)
 }
@@ -18,10 +18,10 @@ testequil(zoneC, zoneD, glb, inH = 0, verbose = TRUE)
 \item{verbose}{should results go to the console, default=TRUE}
 }
 \value{
-the dynamics component with Nyrs of dynamics
+the dynamics component with hyrs of dynamics
 }
 \description{
-testequil runs a given zone for Nyrs at the given
+testequil runs a given zone for hyrs at the given
     harvest rate, and then tests that the last values of matureB,
     exploitB, recruitment, and spawning biomass depletion are the
     same as the first (to three decimal places). It reports this

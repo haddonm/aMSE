@@ -48,13 +48,13 @@ print("Wait on new data")
 #  glb <- zone$glb
  #zoneD <- zone$zoneD
  #Nc <- glb$Nclass
- #nyrs <- glb$Nyrs
+ #hyrs <- glb$hyrs
  #catch <- 900.0 # larger than total MSY ~ 870t
  #B0 <- getvar(zoneC,"B0")
  #totB0 <- sum(B0)
  #prop <- B0/totB0
  #catchpop <- catch * prop
- #for (yr in 2:nyrs)
+ #for (yr in 2:hyrs)
  #  zoneD <- oneyearC(zoneC=zoneC,zoneD=zoneD,Ncl=Nc,
  #                  catchp=catchpop,year=yr,sigmar=1e-08,
  #                  npop=glb$numpop,movem=glb$move)

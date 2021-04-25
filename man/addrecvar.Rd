@@ -13,6 +13,7 @@ addrecvar(
   ctrl,
   varyrs,
   multTAC,
+  calcpopC,
   sigR = 1e-08,
   sigB = 1e-08,
   lastsigR = 0.3
@@ -36,6 +37,9 @@ to finalize the conditioning}
 which recruitment variation is to be added}
 
 \item{multTAC}{the TAC multiplication matrix from the HCR}
+
+\item{calcpopC}{a function that takes the output from hcrfun and gernerates
+the actual catch per population expected in the current year.}
 
 \item{sigR}{the initial recruitment variation default=1e-08}
 

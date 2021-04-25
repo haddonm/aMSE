@@ -19,6 +19,8 @@
 #' @param varyrs the number of years at the end of the historical period to
 #'     which recruitment variation is to be added
 #' @param multTAC the TAC multiplication matrix from the HCR
+#' @param calcpopC a function that takes the output from hcrfun and gernerates
+#'     the actual catch per population expected in the current year.
 #' @param sigR the initial recruitment variation default=1e-08
 #' @param sigB the initial biomass cpuie variation default = 1e-08
 #' @param lastsigR the recruitment variation to be added to the final varyrs
@@ -30,7 +32,7 @@
 #' @examples
 #' print("wait on suitable data-sets")
 addrecvar <- function(zoneDD,zoneDP,zoneC,glob,condC,ctrl,varyrs,multTAC,
-                      sigR=1e-08,sigB=1e-08,lastsigR=0.3) {
+                      calcpopC,sigR=1e-08,sigB=1e-08,lastsigR=0.3) {
  #  zoneDD=zoneDD;zoneDP=zoneDR;zoneC=zoneC;glob=glb
  #  condC=condC;ctrl=ctrl;varyrs=6;lastsigR=lastsigR; multTAC=multTAC
  #  sigR=1e-08; sigB=1e-08; lastsigR=0.1
@@ -56,14 +58,14 @@ addrecvar <- function(zoneDD,zoneDP,zoneC,glob,condC,ctrl,varyrs,multTAC,
   for (iter in 1:reps) { # iter = 1
     for (year in (finalyr+1):nyrs) { # year = finalyr + 1
       catchsau <- histC[year,]
-      popC <- calcexpectpopC(TAC=0,acatch=catchsau,
-                             exb=zoneDD$exploitB[year-1,],
-                             sauindex,sigmab=1e-08)
+      hcrout <- list(acatch=catchsau)
+      popC <- calcpopC(hcrout,exb=zoneDD$exploitB[year-1,],
+                             sauindex,sigmab=sigB)
     #  exb <- zoneDDR$exploitB[year-1,,iter]
       inN <- zoneDDR$Nt[,year-1,,iter]
       out <- oneyearsauC(zoneCC=zoneC,inN=inN,popC=popC,year=year,
                          Ncl=glob$Nclass,sauindex=sauindex,movem=glob$move,
-                         sigmar=lastsigR,sigmab=sigB,r0=r0,b0=b0,exb0=exb0)
+                         sigmar=lastsigR,r0=r0,b0=b0,exb0=exb0)
       dyn <- out$dyn
       saudyn <- poptosauCE(dyn["catch",],dyn["cpue",],sauindex)
       zoneDDR$exploitB[year,,iter] <- dyn["exploitb",]
@@ -89,12 +91,12 @@ addrecvar <- function(zoneDD,zoneDP,zoneC,glob,condC,ctrl,varyrs,multTAC,
   for (iter in 1:reps) {  #  iter=1
   #  exb=zoneDDR$exploitB[nyrs,,iter]
     inN=zoneDDR$Nt[,nyrs,,iter]
-    popC <- calcexpectpopC(TAC=0,acatch=acatch,
-                           exb=zoneDD$exploitB[year-1,],
-                           sauindex,sigmab=1e-08)
+    hcrout <- list(acatch=catchsau)
+    popC <- calcpopC(hcrout,exb=zoneDD$exploitB[year-1,],
+                           sauindex,sigmab=sigB)
     outy <- oneyearsauC(zoneCC=zoneC,inN=inN,popC=popC,year=1,
                         Ncl=glob$Nclass,sauindex=sauindex,movem=glob$move,
-                        sigmar=sigmar,sigmab=sigmab,r0=r0,b0=b0,exb0=exb0)
+                        sigmar=sigmar,r0=r0,b0=b0,exb0=exb0)
     dyn <- outy$dyn
     saudyn <- poptosauCE(dyn["catch",],dyn["cpue",],sauindex)
     zoneDP$exploitB[1,,iter] <- dyn["exploitb",]
@@ -288,6 +290,8 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 #' @param sampleNaS a function that generates the Numbers-at-size samples
 #' @param getdata a function that gathers all the data required by the hcrfun
 #'     and combines it into an hcrdata object ready for the hcrfun
+#' @param calcpopC a function that takes the output from hcrfun and gernerates
+#'     the actual catch per population expected in the current year.
 #' @param ... the ellipsis used in case any of the functions hcrfun, sampleCE,
 #'     sampleFIS, sampleNas, and getdata require extra arguments not included
 #'     in the default named collection
@@ -299,7 +303,7 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 #' @examples
 #' print("wait on suitable internal data sets")
 doprojections <- function(ctrl,zoneDP,zoneCP,otherdata,glb,hcrfun,hsargs,
-                             sampleCE,sampleFIS,sampleNaS,getdata,...) {
+                             sampleCE,sampleFIS,sampleNaS,getdata,calcpopC,...) {
 #  ctrl=ctrl;zoneDP=zoneDP;zoneCP=zoneCP;otherdata=condC$histCE;glb=glb
 #  hcrfun=mcdahcr; hsargs=hsargs; sampleCE=tasCPUE;sampleFIS=tasFIS; sampleNaS=tasNaS
   reps <- ctrl$reps
@@ -320,12 +324,11 @@ doprojections <- function(ctrl,zoneDP,zoneCP,otherdata,glb,hcrfun,hsargs,
       hcrdata <- getdata(sampleCE,sampleFIS,sampleNaS,zoneDP,otherdata,
                          year=year,iter=iter)
       hcrout <- hcrfun(hcrdata,hsargs,saunames=glb$saunames)
-      popC <- calcexpectpopC(TAC=hcrout$TAC,acatch=hcrout$acatch,
-                             exb=zoneDP$exploitB[year-1,,iter],
-                             sauindex,sigmab=1e-08)
+      popC <- calcpopC(hcrout,exb=zoneDP$exploitB[year-1,,iter],
+                             sauindex,sigmab=sigmab)
       outy <- oneyearsauC(zoneCC=zoneCP,inN=zoneDP$Nt[,year-1,,iter],
                           popC=popC,year=year,Ncl=Nclass,sauindex=sauindex,
-                          movem=movem,sigmar=sigmar,sigmab=sigmab,
+                          movem=movem,sigmar=sigmar,
                           r0=r0,b0=b0,exb0=exb0)
       dyn <- outy$dyn
       saudyn <- poptosauCE(dyn["catch",],dyn["cpue",],sauindex)
@@ -544,27 +547,6 @@ modzoneCSel <- function(zoneC,sel,selwt,glb,yrs) {
   return(zoneC)
 } # end of modzoneCSel
 
-#' @title poptosauCE combines population cpue into sau as catch weighted sums
-#'
-#' @description poptosauCE combines cpue from separate populations into their
-#'     respective sau using a catch-weighted strategy. The sauindex is used to
-#'     identify which populations to apply the sau total catches to.
-#'
-#' @param catvect the vector of catches x population for a given year
-#' @param cpuevect the vector of cpue x population for a given year
-#' @param sauindex the sau indices of each population
-#'
-#' @return a list of saucpue and saucatch
-#' @export
-#'
-#' @examples
-#' print("wait on appropriate built-in data files")
-poptosauCE <- function(catvect,cpuevect,sauindex) {
-  saucatch <- tapply(catvect,sauindex,sum,na.rm=TRUE)
-  wts <- catvect/saucatch[sauindex]
-  saucpue <- tapply((cpuevect * wts),sauindex,sum,na.rm=TRUE)
-  return(list(saucpue=saucpue,saucatch=saucatch))
-} # end of poptosauCE
 
 #' @title prepareprojection high level function that sets up a projection
 #'
@@ -591,6 +573,8 @@ poptosauCE <- function(catvect,cpuevect,sauindex) {
 #' @param ctrl the ctrl object for the scenario run
 #' @param varyrs how many years at the end to add recruitment variation
 #' @param multTAC the TAC multiplication matrix from the HCR
+#' @param calcpopC a function that takes the output from hcrfun and gernerates
+#'     the actual catch per population expected in the current year.
 #' @param lastsigR recruitment variation for when it is applied for varyrs
 #' @return a list of the dynamic zone object as a list of arrays of projyrs x
 #'     populations x replicates, plus the revised projC and revised zoneC
@@ -599,7 +583,7 @@ poptosauCE <- function(catvect,cpuevect,sauindex) {
 #' @examples
 #' print("wait on data files")
 prepareprojection <- function(projC,condC,zoneC,glb,zoneDD,ctrl,varyrs,
-                                 multTAC,lastsigR = 0.3) {
+                                 multTAC,calcpopC,lastsigR = 0.3) {
   # projC=projC;condC=condC;zoneC=zoneC; glb=glb; zoneDD=zoneDD; ctrl=ctrl;
   # varyrs=6;lastsigR=0.1; multTAc=multTAC
   if (ctrl$randseedP > 0) set.seed(ctrl$randseedP)
@@ -612,7 +596,7 @@ prepareprojection <- function(projC,condC,zoneC,glb,zoneDD,ctrl,varyrs,
   zoneDR$TAC[1,] <- sum(endcatch)
   arv <- addrecvar(zoneDD=zoneDD,zoneDP=zoneDR,zoneC=zoneC,glob=glb,
                    condC=condC,ctrl=ctrl,varyrs=varyrs,multTAC=multTAC,
-                   lastsigR=lastsigR)
+                   calcpopC,lastsigR=lastsigR)
   return(list(zoneDP=arv$zoneDP,projC=projC,zoneCP=zoneCR,zoneDDR=arv$zoneDDR))
 } # end of prepareprojection
 

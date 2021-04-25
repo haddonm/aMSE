@@ -441,10 +441,10 @@ getvect <- function(zoneC,invar) {
 #' print("An example needs to be written")
 getzoneLF <- function(zoneD,glb) { # need to define years
   numpop <- glb$numpop
-  Nyrs <- glb$Nyrs
-  storeLF <- matrix(0,nrow=glb$Nclass,ncol=Nyrs,
-                    dimnames=list(glb$midpts,1:Nyrs))
-  for (yr in 1:Nyrs)
+  hyrs <- glb$hyrs
+  storeLF <- matrix(0,nrow=glb$Nclass,ncol=hyrs,
+                    dimnames=list(glb$midpts,1:hyrs))
+  for (yr in 1:hyrs)
     storeLF[,yr] <- rowSums(zoneD$Nt[,yr,])
   return(storeLF)
 } # end of getzoneLF

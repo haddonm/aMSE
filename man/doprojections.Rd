@@ -16,6 +16,7 @@ doprojections(
   sampleFIS,
   sampleNaS,
   getdata,
+  calcpopC,
   ...
 )
 }
@@ -51,6 +52,9 @@ estimate the aspirational catches or TAC or the following year}
 
 \item{getdata}{a function that gathers all the data required by the hcrfun
 and combines it into an hcrdata object ready for the hcrfun}
+
+\item{calcpopC}{a function that takes the output from hcrfun and gernerates
+the actual catch per population expected in the current year.}
 
 \item{...}{the ellipsis used in case any of the functions hcrfun, sampleCE,
 sampleFIS, sampleNas, and getdata require extra arguments not included

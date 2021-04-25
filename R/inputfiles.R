@@ -517,7 +517,7 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir) {
    withsigR <- getsingleNum("withsigR",indat)
    withsigB <- getsingleNum("withsigB",indat)
    withsigCE <- getsingleNum("withsigCE",indat)
-   Nyrs=40 # minimum to set up equilibrium unfished population
+   hyrs=40 # minimum to set up equilibrium unfished population
    filenames2 <- dir(datadir)
    if (length(grep(datafile,filenames2)) != 1)
       stop("population data file not found \n")
@@ -540,7 +540,7 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir) {
    projyrs <- getsingleNum("PROJECT",indat)
    firstyear <- getsingleNum("firstyear",indat)
    lastyear <- getsingleNum("lastyear",indat)
-   projyrnames <- firstyear:lastyear
+   pyrnames <- firstyear:lastyear # projection year names
    projLML <- NULL
    HS <- NULL
    histCatch <- NULL
@@ -582,11 +582,11 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir) {
    } # end of projyrs if test
    catches <- getsingleNum("CATCHES",indat)
    if (catches > 0) {
-      if (catches > Nyrs) Nyrs <- catches
+      if (catches > hyrs) hyrs <- catches
       begin <- grep("CondYears",indat)
       histCatch <- matrix(0,nrow=catches,ncol=nSAU)
       colnames(histCatch) <- SAUnames
-      histyr <- matrix(0,nrow=Nyrs,ncol=2)
+      histyr <- matrix(0,nrow=hyrs,ncol=2)
       colnames(histyr) <- c("year","histLML")
       for (i in 1:catches) {
          begin <- begin + 1
@@ -597,6 +597,7 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir) {
       rownames(histCatch) <- histyr[,1]
       rownames(histyr) <- histyr[,1]
    } # end of catches loop
+   hyrnames <- as.numeric(histyr[,1])
    yrce <- getsingleNum("CEYRS",indat)
    if (yrce > 0) {
       begin <- grep("CPUE",indat)
@@ -628,14 +629,16 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir) {
                  histCE=histCE,yearCE=yearCE,initdepl=initdepl,
                  compdat=compdat,Sel=NULL,SelWt=NULL)
    projC <- list(projLML=projLML,HS=HS,HSdetail=HSdetail,projyrs=projyrs,
-                 projyrnames=projyrnames,Sel=NULL,SelWt=NULL,histCE=histCE)
+                 Sel=NULL,SelWt=NULL,histCE=histCE)
    outctrl <- list(runlabel,datafile,batch,reps,randomseed,randomseedP,
                    withsigR,withsigB,withsigCE,catches,projyrs,bysau)
    names(outctrl) <- c("runlabel","datafile","batch","reps","randseed",
                        "randseedP","withsigR","withsigB","withsigCE",
                        "catches","projection","bysau")
-   globals <- list(numpop=numpop, nSAU=nSAU, midpts=midpts,
-                   Nclass=Nclass, Nyrs=Nyrs,larvdisp=larvdisp)
+   globals <- list(numpop=numpop, nSAU=nSAU, midpts=midpts,Nclass=Nclass,
+                   reps=reps,hyrs=hyrs,pyrs=projyrs,hyrnames=hyrnames,
+                   pyrnames=pyrnames,
+                   larvdisp=larvdisp)
    totans <- list(SAUnames,SAUpop,minc,cw,larvdisp,randomseed,
                   initLML,condC,projC,globals,outctrl,catches,projyrs)
    names(totans) <- c("SAUnames","SAUpop","minc","cw","larvdisp","randomseed",
@@ -906,13 +909,13 @@ replaceVar <- function(infile,invar,newval) {
 #' }
 resetSel <- function(inzone,inLML,glob) {  # inzone <- zone; inLML <- testLML
    outzone <- inzone
-   Nyrs <- glob$Nyrs
+   hyrs <- glob$hyrs
    nblock <- glob$nblock
    Nclass <- glob$Nclass
    midpts <- glob$midpts
    numpop <- glob$numpop
-   useLML <- matrix(rep(inLML,Nyrs),nrow=Nyrs,ncol=nblock,byrow=TRUE)
-   zSelect <- matrix(0,nrow=Nclass,ncol=Nyrs,dimnames=list(midpts,1:Nyrs))
+   useLML <- matrix(rep(inLML,hyrs),nrow=hyrs,ncol=nblock,byrow=TRUE)
+   zSelect <- matrix(0,nrow=Nclass,ncol=hyrs,dimnames=list(midpts,1:hyrs))
    for (pop in 1:numpop) {  #  pop <- 1
       popparam <- inzone[[pop]]$popdef
       blk <- popparam["block"]

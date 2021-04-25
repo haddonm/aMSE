@@ -4,7 +4,7 @@
 \alias{dohistoricC}
 \title{dohistoricC imposes the historical catches on an unfished zone}
 \usage{
-dohistoricC(zoneDD, zoneC, glob, condC, sigR = 1e-08, sigB = 1e-08)
+dohistoricC(zoneDD, zoneC, glob, condC, calcpopC, sigR = 1e-08, sigB = 1e-08)
 }
 \arguments{
 \item{zoneDD}{The input unfished dynamic zone, zoneD, object}
@@ -14,6 +14,9 @@ dohistoricC(zoneDD, zoneC, glob, condC, sigR = 1e-08, sigB = 1e-08)
 \item{glob}{the globals object}
 
 \item{condC}{from the zone1 object, contains historical fisheries data plus}
+
+\item{calcpopC}{a function that takes the output from hcrfun and gernerates
+the actual catch per population expected in the current year.}
 
 \item{sigR}{the recruitment variation included}
 
