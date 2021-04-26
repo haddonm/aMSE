@@ -46,9 +46,18 @@ getFIS <- function(zoneDP=zoneDP, glb=glb,ctrl=ctrl,FISsettings = FISsettings,it
   for(pop in 1:glb$numpop) {
 
     FISN <- Nt[,year,pop,iter] # Absolute size frequency without error
-    ObsFISN <- rowMeans(rmultinom(FISsettings$SFSampleSize,(FISBias[iter]*FISsettings$qFIS*sum(FISN)),FISN)) # generate a multinomial sample
-    # here we scale to qFIS*FISBias[iter] times the actual total so it returns a number in the scale we want.
+    ObsFISNAct <- rowMeans(rmultinom(FISsettings$SFSampleSize,sum(FISN),FISN)) # generate a multinomial sample
+    ObsFISN <- FISBias[iter]*FISsettings$qFIS*ObsFISNAct# we scale to catchability, bias
     # Note selectivity has still not been applied as worth code checking the numbers here
+
+    #plot(glb$midpts,FISN) # Testing the multinomial, don't run
+    #lines(glb$midpts,ObsFISNAct, lty=2) # Testing the multinomial, don't run
+    #temp<- rmultinom(200,sum(FISN),FISN)
+    #plot(glb$midpts[-1],temp[-1,1])
+    #lines(glb$midpts[-1],temp[-1,2], lty=2)
+    #difference <- temp[,1]-temp[,2]
+    #plot(difference)
+
 
     ObsFISSFnFinal <- Select*ObsFISN # Now apply selectivity. This is the actual size-frequency the FIS will obtain
     # Need to check this as numbers strange
