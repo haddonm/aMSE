@@ -1,10 +1,11 @@
 FISsettings <- list("MinIndexSize" = 1, # Lower size class in mm of the Index
                     "MaxIndexSize" = 210, # Upper size class of the index in mm, maybe relate to glb?
-                    "FISKnife" = FALSE, # Knide edged selectivity (TRUE) or logistic (FALSE)
+                    "FISType" = "Rough", # whether want good size frequency or bad "Rough"
+                    "FISKnife" = TRUE, # Knife edged selectivity (TRUE) or logistic (FALSE)
                     "FISSel50" = rep(100, times=ctrl$projection), # FIS 50% selectivity, needs to be more elegant later
                     #If knife-edged will use this number
                     "FISSel95" = rep(140, times=ctrl$projection), # FIS 95% selectivity
-                    "SFSampleSize" = 10, # effective sample size for multinomial distribution to generate size-frequency, NB This one needs to be expanded
+                    "SFSampleSize" = rep(3,times=numpop), # NB NB will put this a FISSettinglist and make SampleSize by year and population. Need to chat how best to do this
                     "qFIS" = 0.01,  # FIS catchability related to numbers not biomass (needs discussion)
                     "FISBiasLower" = 1, # Lower value of uniform random for bias, bias of 1 is no bias
                     "FISBiasUpper" = 1, # Upper value for uniform random for bias
@@ -13,10 +14,26 @@ FISsettings <- list("MinIndexSize" = 1, # Lower size class in mm of the Index
                     "WtaObs" = 2.413551e-05, # Observed length-weight a used in the HS
                     "WtbObs" = 3.385185e+00) # Observed length-weight b used in HS. NB at this stage assuming 1 global l-w regression
 
+
+logisticCD <- function(inL50,delta,lens,knifeedge=0) {
+  ans <- 1/(1+exp(-log(19.0)*(lens-inL50)/(delta)))
+  if (knifeedge > 0) {
+    pick <- which(lens < knifeedge)
+    if (length(pick) > 0) {
+      ans <- rep(1, times =length(lens))
+      ans[1:pick[length(pick)]] <- 0.0
+    } #if length(pick) >0
+  }
+  return(ans)
+} # function logisticCD
+
+
+
+
+
 #' Title getSF
-#' @description Generates the size frequency which is drawn based on the samples size from the population
-#'     of actual numbers by iteration. The more you sample, the more the size-frequency will look like
-#'     the average across all the iteration. This is not the same as the actual or perfect knowledge
+#' @description Generates the average size frequency for a site which is randomly selected
+#'     from the population of actual numbers by iteration. This returns site specific size-frequencies
 #'
 #' @param zoneDP the dynamic components of the simulated zone
 #' @param glb the general global variables
@@ -24,46 +41,62 @@ FISsettings <- list("MinIndexSize" = 1, # Lower size class in mm of the Index
 #' @param iter the iteration number
 #' @param year the year to apply
 #'
-#' @return FISNSF a dataframe of dimension size and population
+#' @return FISNSF a dataframe of dimension size, population, site
 #' @export
 #'
 #' @examples
 getSF <- function(zoneDP=zoneDP, glb=glb,ctrl=ctrl,FISsettings=FISsettings,iter=1, year=1) {
   Nclass <- glb$Nclass
+  numpop <- glb$numpop
   BinSize <- glb$midpts[2]-glb$midpts[1] # this is also in zone1 but big object so hopefully saving time
   Nt <- zoneDP$Nt
+  qFIS <- FISsettings$qFIS # bring in the catchability to scale the size-frequency
   MidSizeAll <- as.numeric(names(Nt[,1,1,1])) # Mid pt sizes of the observed data
-  SampleSize <- rep(FISsettings$SFSampleSize,times=glb$numpop) # NB NB will put this a FISSettinglist and make by year and population. Need to chat how best to do this
-  FISNSF <-data.frame(matrix(NA, nrow=glb$Nclass, ncol=glb$numpop))
-  for (pop in 1:glb$numpop) {
-    for(size in 1:glb$Nclass) {
-      FISNSF[size,pop] <- round(mean(sample(Nt[size,year,pop,],SampleSize[pop],replace=TRUE,prob = NULL)))
-    } # for size
+
+  # Calculate the selectivity
+  knifeedge <- 0
+  if(FISsettings$FISKnife == TRUE) knifeedge <- FISsettings$FISSel50[year] # Test if knifeedged
+  Select <- logisticCD(FISsettings$FISSel50[year],FISsettings$FISSel95[year]-FISsettings$FISSel50[year],
+                     MidSizeAll, knifeedge=knifeedge) # Calculate selectivity. Is knife edged if knifeedge >0
+
+  # set up the array and the calculate the observed size-frequency
+  # the below can be done more elegantly
+  FISNSF <-array(NA,dim = c(Size=Nclass,Pop=numpop,Site=max(SampleSize)))
+  for (pop in 1:numpop) {
+    FISBias <- runif(1,FISsettings$FISBiasLower,FISsettings$FISBiasUpper) # FISBias - Bias changes by year, iteration and population.
+    for(site in 1:SampleSize[pop]) {
+      IterationNumber <- round(runif(1,1,glb$reps)) # Calculate the iteration that will become the observed site's frequency
+      if(FISsettings$FISType=="Smooth") {
+        FISNSF[,pop,site] <- qFIS*FISBias*Select*Nt[,year,pop,IterationNumber] # Create the observed size frequency for each site
+      } else if (FISsettings$FISType=="Rough") {
+        # else Rough
+        for (size in 1: Nclass) {
+          FISNSF[size,pop,site] <- qFIS*FISBias*Select[size]*Nt[size,year,pop,IterationNumber] # randomly select at the size level
+        } # for size
+
+      } else { # if missed something
+        print("One option not considered in FISType")
+      } # else misses
+    } # for site
   } #end for pop
-  return(FISNSF) # return the size frequency dataframe by size and pop
+  round(FISNSF) # round to nearest integer as a size-frequency of individual numbers
+  return(FISNSF) # return the size frequency dataframe by size, pop and site within pop
 } # end function getSF
 
-# The first version of creating a FIS will be to assume that
-# each population will have a FIS and that this function is called in the projection part
-# so called every year of the projection.
-# Also no error as yet. Later I will change the control input files and slowly add
-# all required changes throughout the code as selecting a population needs more thought.
-# I have put all the FIS functions at the top so they can be easily moved if need be
-#' Title GetFIS
+
+
+#' Title getFIS Calculates the FIS data to simulate both a size frequency distribution presently at the zone level and
+#'     an index of numbers and biomass. Will change the code to producing at the SAU level as think this is what is needed
+#'     by all the Australian harvest strategies.
 #'
-#' @description This generates the fishery independent data (FIS) required to run some of the
-#'    harvest strategies. This code is still under development so do not use. At present assumes
-#'    function is being called for each year of the projection and each iteration within that
-#'    loop of DoTasProjection
-#' @param zoneDDR
-#' @param glb global variables
-#' @param ctrl control settings
-#' @param FISsettings FISsettings are settings required to calculate the index.
-#'    Some of this should later be moved to one of csv files but presently in the first_use file.
-#' @param iter replicate number
-#' @param year year of the projection
+#' @param zoneDP Dynamic operating model numbers
+#' @param glb General global variables
+#' @param ctrl Scenario specifi settings
+#' @param FISsettings FIS specific settings
+#' @param iter Iteration number
+#' @param year Year in which the FIS is undertaken
 #'
-#' @return
+#' @return a list with the size-frequency in numbers by site, and the FIS numbers and biomass index
 #' @export
 #'
 #' @examples
@@ -73,77 +106,28 @@ getFIS <- function(zoneDP=zoneDP, glb=glb,ctrl=ctrl,FISsettings = FISsettings,it
   Nt <- zoneDP$Nt
   MidSizeAll <- as.numeric(names(Nt[,1,1,1])) # Mid pt sizes of the observed data
 
-
-  # Calculate selectivity
-  knifeedge <- 0
-  if(FISsettings$FISKnife == TRUE) knifeedge <- FISsettings$FISSel50[year] # Test if knifeedged
-  Select <- logistic(FISsettings$FISSel50[year],FISsettings$FISSel95[year]-FISsettings$FISSel50[year],
-                     MidSizeAll, knifeedge=knifeedge) # Calculate selectivity. Is knife edged if knifeedge >0
-  MinIndexSizeBin <- ceiling(FISsettings$MinIndexSize/BinSize) # Min size of index (bin)
-  MaxIndexSizeBin <- ceiling(FISsettings$MaxIndexSize/BinSize) # Max size of index (bin)
-
-  # ToDo - need to extend the FIS back in time but getting it to work for proejction first
+   # ToDo - need to extend the FIS back in time but getting it to work for proejction first
 
   #FISSF <- data.frame(matrix(NA, nrow=glb$Nclass, ncol=glb$numpop)) # Once I understand the changes MH is making will need to change these 2 lines
   ObsFISIndices <- data.frame(matrix(NA, nrow=glb$numpop,ncol=3))
-  FISSF <- getSF(zoneDP,glb,ctrl,FISsettings, 1,1) # size frequency rows by population in columns
-  for(pop in 1:glb$numpop) {
+  FISSF <- getSF(zoneDP,glb,ctrl,FISsettings,1,1) # this is the size frequency in observed numbers
+  FISSFMean <- rowMeans(FISSF) # For Victoria this is density weighted. Need to check with SA. At this stage using simple mean across sites
+  ObsFISN <- FISSFMean[MinIndexSizeBin:MaxIndexSizeBin] # select size that fall itno the index
+  ObsFISNIndex <- sum(ObsFISN) # Sum so get index in numbers for the selected range
 
-    FISBias <- runif(1,FISsettings$FISBiasLower,FISsettings$FISBiasUpper) # FISBias - Bias changes by year, iteration and population.
-    # May need to change to truncated normal as more likely to centre around 1
+  # Calculate the index in biomass
+  ObsFISB <- FISSFMean * FISsettings$WtaObs*glb$midpts^(FISsettings$WtbObs) # FIS biomass per bin for all sizes
+  ObsFISBIndex <- sum(ObsFISB) # need to add kappa and error here
+  FISIndices <- cbind(year,iter,ObsFISNIndex,ObsFISBIndex)
 
+  FISData <- list(FISSF,FISIndices) # Put the sife frequency and indices together as a list()
 
-    # Preserving the multinomial code in case I come back to this, dlete later if not needed
-    ###################
-    #FISN <- Nt[,year,pop,iter] # Absolute size frequency without error, sampling in same year at the start of the year
-    #ObsFISNAct <- rowMeans(rmultinom(FISsettings$SFSampleSize,sum(FISN),FISN)) # generate a multinomial sample
-    #ObsFISN <- FISBias[iter]*FISsettings$qFIS*ObsFISNAct# we scale to catchability, bias
-    # Note selectivity has still not been applied as worth code checking the numbers here
-
-    #plot(glb$midpts,FISN) # Testing the multinomial, don't run
-    #lines(glb$midpts,ObsFISNAct, lty=2) # Testing the multinomial, don't run
-    #temp<- rmultinom(200,sum(FISN),FISN)
-    #plot(glb$midpts[-1],temp[-1,1])
-    #lines(glb$midpts[-1],temp[-1,2], lty=2)
-    #difference <- temp[,1]-temp[,2]
-    #plot(difference)
-
-    ############################# Stops here, delete above
-
-    ObsFISN <- FISBias[iter]*FISsettings$qFIS*FISSF[,pop] #Scale to catchability and bias
-    ObsFISSFnFinal <- Select*ObsFISN # Now apply selectivity. This is the actual size-frequency the FIS will obtain
-
-    # NB Need to include exp(error)
-    ObsFISSFpFinal <- ObsFISSFnFinal/sum(ObsFISSFnFinal)# Size frequency as a proportion
-
-    ObsFISSFpop <- cbind(as.data.frame(glb$midpts),ObsFISSFnFinal,ObsFISSFpFinal)
-
-    # Creating a numbers index based on the cut-offs required for the HS.
-    ObsFISNIndex <- ObsFISSFnFinal[MinIndexSizeBin:MaxIndexSizeBin]
-    ObsFISNumber <- sum(ObsFISSFnFinal) # Index in numbers for the selected range
-
-    # Creating a biomass index from the same cutoffs
-
-    ObsFISB <- ObsFISSFpop[,"ObsFISSFnFinal"] * FISsettings$WtaObs*ObsFISSFpop[,"glb$midpts"]^(FISsettings$WtbObs) # FIS biomass per bin for all sizes
-    ObsFISBiomass <- sum(ObsFISB[MinIndexSizeBin:MaxIndexSizeBin])
-
-    temp <- cbind(iter,year,pop,ObsFISNumber,ObsFISBiomass)
-    temp2 <- cbind(iter,year,pop,ObsFISSFpop)
-    # IndexInB = q * qyear * B^gamma*exp(error) NB Still need to add gamma and exp error
-    if(pop == 1) {
-      ObsFISIndices <- temp
-      ObsFISSF <- temp2
-    } else {
-      ObsFISIndices <- rbind(ObsFISIndices,temp) # put all the population data together
-      ObsFISSF <- rbind(ObsFISSF, temp2)
-    } # if pop
-
-    # Needs a deep check. Also size frequency is more noisy, but enough?
-  } # for pop
-
-  return(list(ObsFISIndices, ObsFISSF))
 } # function getFIS
 
-test <- getFIS(zoneDP=zoneDP, glb=glb,ctrl=ctrl,FISsettings = FISsettings,iter=1, year=1)
 
-# Note to self: ObsFISBiomass does not seem to have worked. Check this as worked before
+SFOnly <- getSF(zoneDP,glb,ctrl,FISsettings,1,1) # this is the size frequency in observed numbers at the site level
+DataFIS <- getFIS(zoneDP=zoneDP, glb=glb,ctrl=ctrl,FISsettings=FISsettings,iter=1, year=1) # this calculates both SF and Zone level Indices
+
+# not sure why the "rough"version is still smooth
+# code needs a through check
+# havent added the kappa and other errors
