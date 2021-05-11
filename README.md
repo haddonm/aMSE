@@ -3,7 +3,9 @@
 
 # LATEST UPDATE
 
-  - 2021-04-20 0.0.0.2900 Continuing process of modifying the core
+-   2021-05-07 0.0.0.2800
+
+-   2021-04-20 0.0.0.2900 Continuing process of modifying the core
     functions to allow for the numbers-at-size prior to fishing and the
     midyear-exploitB (midyexpB) to be included in teh zoneD object.
     doprojection still requires fursther modification to account for
@@ -15,20 +17,19 @@
 # aMSE
 
 <!-- badges: start -->
-
 <!-- badges: end -->
 
 This packages up a new Abalone Management Strategy Evaluation framework.
 It has a novel structure that is based around the spatial ideas of
 populations within spatial management units (SAUs), within a zone:
 
-  - zone - highest geogrpahical level. Is simply the totality of the
+-   zone - highest geogrpahical level. Is simply the totality of the
     spatial management units.
 
-  - SAU - spatial assessment units. In Tasmania these would currently be
+-   SAU - spatial assessment units. In Tasmania these would currently be
     the classical statistical blocks.
 
-  - population - literally a population. These are the active components
+-   population - literally a population. These are the active components
     within the simulation framework. The dynamics of the simulation are
     based around the populations, although, with positive larval
     dispersal (the default) there is some dependency of neighbouring
@@ -48,7 +49,7 @@ An important change from previous designs is that larval dispersal is
 implemented explicitly rather than implicitly being held constant. This
 alters the dynamics so that analytical equilibrium methods no longer
 work and we need to resort to iterative approaches to equilibrium if the
-larval dispersal rate is \> 0.0.
+larval dispersal rate is &gt; 0.0.
 
 Of course, adding such a component increases the number of options that
 may need to be explored, but currently we envisage including a very low,
@@ -103,8 +104,8 @@ if (dir.exists("c:/Users/User/DropBox")) {
 rundir <- paste0(ddir,"aMSEUse/scenarios/HS652510")
 datadir <- paste0(ddir,"aMSEUse/scenarios/tasdata")
 alldirExists(rundir,datadir)
-#> rundir,  c:/Users/User/DropBox/A_code/aMSEUse/scenarios/HS652510 :  exists  
-#> datadir,  c:/Users/User/DropBox/A_code/aMSEUse/scenarios/tasdata :  exists
+#> rundir,  c:/Users/Malcolm/DropBox/A_code/aMSEUse/scenarios/HS652510 :  exists  
+#> datadir,  c:/Users/Malcolm/DropBox/A_code/aMSEUse/scenarios/tasdata :  exists
 # equilibrium zone -------------------------------------------------------------
 # You now need to ensure that there is, at least, a control.csv, and a 
 # constantsdata.csv file in the data directory plus some other data .csv files
@@ -134,7 +135,7 @@ zone <- makeequilzone(rundir,"controlsau.csv",datadir=datadir,cleanslate = TRUE)
 #> recruitment Stable 
 #> spawning depletion Stable
 equiltime <- (Sys.time()); print(equiltime - starttime2)
-#> Time difference of 20.96232 secs
+#> Time difference of 22.15673 secs
 # declare main objects ---------------------------------------------------------
 glb <- zone$glb
 ctrl <- zone$ctrl
@@ -149,7 +150,7 @@ biology_plots(rundir, glb, zoneC)
 plotproductivity(rundir,product,glb)
 numbersatsize(rundir, glb, zoneD)
 # Condition on Fishery ---------------------------------------------------------
-zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,condC,sigR=1e-08,sigB=1e-08)
+zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,condC,calcexpectpopC,sigR=1e-08,sigB=1e-08)
 
 propD <- t(getzoneprops(zoneC,zoneDD,glb,year=47))
 addtable(round(propD,4),"propertyDD.csv",rundir,category="zoneDD",caption=
@@ -160,7 +161,7 @@ popdefs <- getlistvar(zone$zoneC,"popdef")
 addtable(round(t(popdefs),3),"popdefs.csv",rundir,category="zoneDD",caption=
            "Population specific definitions")
 # Prepare projections ----------------------------------------------------------
-plotconditioning(zoneDD,glb,zoneC,condC$histCE,1973:2019,rundir)
+plotconditioning(zoneDD,glb,zoneC,condC$histCE,rundir)
 
 #explicit definition of indata rather than using the tasdata function
 indata <- list(arrce=condC$histCE,yearnames=rownames(condC$histCE),
@@ -169,8 +170,8 @@ cmcda <- mcdahcr(indata,hsargs=hsargs,saunames=glb$saunames)
 pms <- cmcda$pms
 multTAC <- cmcda$multTAC
 out <- prepareprojection(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
-                            multTAC=multTAC,zoneDD=zoneDD,ctrl=ctrl,varyrs=7,
-                            lastsigR = ctrl$withsigR)
+                         multTAC=multTAC,calcexpectpopC,zoneDD=zoneDD,
+                         ctrl=ctrl,varyrs=7,lastsigR = ctrl$withsigR)
 # prepareprojection needs to be modified so that is uses expected catches rather
 # than calculating them internally (which will differ by jurisdiction)
 zoneDP <- out$zoneDP
@@ -178,8 +179,9 @@ projC <- out$projC
 zoneCP <- out$zoneCP
 zoneDDR <- out$zoneDDR
 
-zoneDP <- doprojections(ctrl,zoneDP,zoneCP,condC$histCE,glb,mcdahcr,hsargs,
-                        tasCPUE,tasFIS,tasNaS)
+zoneDP <- doprojections(ctrl,zoneDP,zoneCP,condC$histCE,glb,hcrfun=mcdahcr,hsargs,
+                        sampleCE=tasCPUE,sampleFIS=tasFIS,sampleNaS=tasNaS,
+                        getdata=tasdata,calcpopC=calcexpectpopC)
 # save more plots to rundir ----------------------------------------------------
 histCE <- condC$histCE
 B0 <- getvar(zoneC,"B0")
@@ -190,10 +192,10 @@ diagnosticsproj(sauout$zonePsau,glb,rundir,nrep=3)
 outzone <- poptozone(zoneDP,glb,
                      B0=sum(getvar(zoneC,"B0")),
                      ExB0=sum(getvar(zoneC,"ExB0")))
-plotZone(outzone,rundir,CIprobs=c(0.05,0.5,0.95),addfile=TRUE)
+plotZone(outzone,rundir,glb,CIprobs=c(0.05,0.5,0.95),addfile=TRUE)
 projtime <- Sys.time()
 print(projtime - starttime)
-#> Time difference of 58.96815 secs
+#> Time difference of 43.88355 secs
 # make results webpage ---------------------------------------------------------
 replist <- list(starttime=as.character(starttime),endtime=as.character(projtime))
 
@@ -217,37 +219,37 @@ webpage, you could also try:
 str(zoneDP,max.level=1)
 #> List of 17
 #>  $ SAU     : num [1:28] 6 6 6 7 7 7 8 8 9 9 ...
-#>  $ matureB : num [1:30, 1:28, 1:100] 27.9 30.1 30.8 29.7 30.1 ...
+#>  $ matureB : num [1:30, 1:28, 1:50] 29.5 31.9 33.3 32.9 31.7 ...
 #>   ..- attr(*, "dimnames")=List of 3
-#>  $ exploitB: num [1:30, 1:28, 1:100] 25.8 21.9 23 24 23.8 ...
+#>  $ exploitB: num [1:30, 1:28, 1:50] 27.3 23.4 25.2 27.1 26.5 ...
 #>   ..- attr(*, "dimnames")=List of 3
-#>  $ midyexpB: num [1:30, 1:28, 1:100] 30.5 27.3 29.3 30.5 29.3 ...
+#>  $ midyexpB: num [1:30, 1:28, 1:50] 32.2 28.9 31.1 32.9 32.4 ...
 #>   ..- attr(*, "dimnames")=List of 3
-#>  $ catch   : num [1:30, 1:28, 1:100] 2.68 3.76 4.49 4.57 3.63 ...
+#>  $ catch   : num [1:30, 1:28, 1:50] 2.8 3.62 3.88 3.68 3.83 ...
 #>   ..- attr(*, "dimnames")=List of 3
-#>  $ acatch  : num [1:30, 1:8, 1:100] 13.6 15 15 15 15.7 ...
+#>  $ acatch  : num [1:30, 1:8, 1:50] 13.6 15 15 15.7 16.5 ...
 #>   ..- attr(*, "dimnames")=List of 3
-#>  $ harvestR: num [1:30, 1:28, 1:100] 0.104 0.172 0.195 0.19 0.153 ...
+#>  $ harvestR: num [1:30, 1:28, 1:50] 0.103 0.154 0.154 0.136 0.144 ...
 #>   ..- attr(*, "dimnames")=List of 3
-#>  $ cpue    : num [1:30, 1:28, 1:100] 186 162 172 180 175 ...
+#>  $ cpue    : num [1:30, 1:28, 1:50] 194 171 184 196 192 ...
 #>   ..- attr(*, "dimnames")=List of 3
-#>  $ cesau   : num [1:30, 1:8, 1:100] 142 121 125 140 159 ...
+#>  $ cesau   : num [1:30, 1:8, 1:50] 148 127 133 151 172 ...
 #>   ..- attr(*, "dimnames")=List of 3
-#>  $ catsau  : num [1:30, 1:8, 1:100] 14.2 15.4 17.7 17.3 15 ...
+#>  $ catsau  : num [1:30, 1:8, 1:50] 16 14.8 15.3 13.9 15.7 ...
 #>   ..- attr(*, "dimnames")=List of 3
-#>  $ recruit : num [1:30, 1:28, 1:100] 62962 18512 24351 16443 19163 ...
+#>  $ recruit : num [1:30, 1:28, 1:50] 21244 61309 70590 28067 24583 ...
 #>   ..- attr(*, "dimnames")=List of 3
-#>  $ deplsB  : num [1:30, 1:28, 1:100] 0.402 0.433 0.443 0.427 0.432 ...
+#>  $ deplsB  : num [1:30, 1:28, 1:50] 0.42 0.454 0.473 0.468 0.451 ...
 #>   ..- attr(*, "dimnames")=List of 3
-#>  $ depleB  : num [1:30, 1:28, 1:100] 0.402 0.342 0.359 0.375 0.371 ...
+#>  $ depleB  : num [1:30, 1:28, 1:50] 0.421 0.362 0.389 0.418 0.409 ...
 #>   ..- attr(*, "dimnames")=List of 3
-#>  $ catchN  : num [1:105, 1:30, 1:28, 1:100] 3.73e-132 1.88e-128 6.97e-125 1.87e-121 3.65e-118 ...
+#>  $ catchN  : num [1:105, 1:30, 1:28, 1:50] 3.76e-132 1.90e-128 7.03e-125 1.89e-121 3.69e-118 ...
 #>   ..- attr(*, "dimnames")=List of 4
-#>  $ Nt      : num [1:105, 1:30, 1:28, 1:100] 6.30e+04 3.07e-07 1.26e-05 3.74e-04 8.08e-03 ...
+#>  $ Nt      : num [1:105, 1:30, 1:28, 1:50] 2.12e+04 3.14e-07 1.29e-05 3.82e-04 8.25e-03 ...
 #>   ..- attr(*, "dimnames")=List of 4
-#>  $ NumNe   : num [1:105, 1:30, 1:28, 1:100] 0 0 0 0 0 0 0 0 0 0 ...
+#>  $ NumNe   : num [1:105, 1:30, 1:28, 1:50] 0 0 0 0 0 0 0 0 0 0 ...
 #>   ..- attr(*, "dimnames")=List of 4
-#>  $ TAC     : num [1:30, 1:100] 703 550 497 496 498 ...
+#>  $ TAC     : num [1:30, 1:50] 703 538 411 409 420 ...
 #>   ..- attr(*, "dimnames")=List of 2
 ```
 

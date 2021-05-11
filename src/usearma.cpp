@@ -48,3 +48,17 @@ double svvC(const arma::vec lhs, const arma::vec rhs){
   double ans = arma::as_scalar(lhs.t() * rhs);
   return ans;
 }
+
+
+//' @title mult multiplies two matrices using RcppArmadillo
+//'
+//' @description mult multiplies two matrices using RcppArmadillo. There are no
+//'    tests for conformity so use at your own risk
+//'
+//' @param A the first matrix
+//' @param B the second matrix
+//' @export
+// [[Rcpp::export("mult")]]
+arma::mat mult(arma::mat A, arma::mat B) {
+  return A*B;
+}

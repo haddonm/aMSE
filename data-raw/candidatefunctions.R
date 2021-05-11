@@ -135,15 +135,26 @@ for (sau in 1:nsau) {
 } # end of actual catches
 
 
-# calcexpectedsauC -----------------------------------------------------
+# selectivity plots -----------------------------------------------------
+
+pop1 <- zoneC[[1]]
+sel <- pop1$Select
+mids <- glb$midpts
+rge <- 50:105
+
+plotprep(width=7,height=3.5,newdev=FALSE)
+parset()
+plot(mids[rge],sel[rge,14],type="l",lwd=2,col=1,panel.first=grid())
+lines(mids[rge],sel[rge,15],lwd=2,col=2)
 
 
+# sort out LF data-------------------------------------------------
 
+datafile <- "C:/Users/User/Dropbox/A_Code/aMSEUse/condition/productivity/sau10LF.csv"
 
+lf <- read.csv(file=datafile,header=TRUE)
 
-
-
-
-
-
+years <- sort(unique(lf[,"year"]))
+yrcount <- tapply(lf[,"counts"],lf[,"year"],sum,na.rm=TRUE)
+cbind(years,yrcount)
 

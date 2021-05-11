@@ -41,11 +41,24 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// mult
+arma::mat mult(arma::mat A, arma::mat B);
+RcppExport SEXP _aMSE_mult(SEXP ASEXP, SEXP BSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type A(ASEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type B(BSEXP);
+    rcpp_result_gen = Rcpp::wrap(mult(A, B));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_aMSE_invC", (DL_FUNC) &_aMSE_invC, 1},
     {"_aMSE_mvC", (DL_FUNC) &_aMSE_mvC, 2},
     {"_aMSE_svvC", (DL_FUNC) &_aMSE_svvC, 2},
+    {"_aMSE_mult", (DL_FUNC) &_aMSE_mult, 2},
     {NULL, NULL, 0}
 };
 

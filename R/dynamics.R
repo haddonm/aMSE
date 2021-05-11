@@ -337,8 +337,6 @@ oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,
   }
   dyn <- sapply(ans,"[[","vect")
   steep <- getvect(zoneCC,"steeph") #sapply(zoneC,"[[","popdef")["steeph",]
-  # r0 <- getvar(zoneCC,"R0") #sapply(zoneC,"[[","R0")
-  # b0 <- getvar(zoneCC,"B0") #sapply(zoneC,"[[","B0")
   recs <- oneyearrec(steep,r0,b0,dyn["matureb",],sigR=sigmar)
   recruits <- as.numeric(movem %*% recs)
   deplsB <- dyn["matureb",]/b0
@@ -351,79 +349,6 @@ oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,
   return(list(dyn=dyn,NaL=NaL,catchN=catchN,NumNe=NumNe))
 } # end of oneyearsauC
 
-#' @title oneyearC conducts one year's dynamics using catch not harvest
-#'
-#' @description oneyearD conducts one year's dynamics in the simulation
-#'     using catches rather than harvest rates. The harvest rates are
-#'     estimated after first estimating the exploitable biomass.
-#'     returning the revised zoneD, which will have had a single year
-#'     of activity included in each of its components.
-#'
-#' @param zoneC the constant portion of the zone with a list of
-#'     properties for each population
-#' @param zoneDP the dynamics portion of the zone, with matrices and
-#'     arrays for the dynamic variables of the dynamics of the
-#'     operating model
-#' @param catchp a vector of catches to be taken in the year from each
-#'     population
-#' @param year the year of the dynamics, would start in year 2 as year
-#'     1 is the year of initiation.
-#' @param iter the specific replicate being considered
-#' @param sigmar the variation in recruitment dynamics, set to 1e-08
-#'     when searching for an equilibria.
-#' @param Ncl the number of size classes used to describe size, global Nclass
-#' @param npop the number of populations, the global numpop
-#' @param movem the larval dispersal movement matrix, global move
-#'
-#' @return a list containing a revised dynamics list
-#' @export
-#'
-#' @examples
-#' print("Wait on new data")
-#' # data(zone)
-#' # zoneC <- zone$zoneC
-#' #  glb <- zone$glb
-#'  #zoneD <- zone$zoneD
-#'  #Nc <- glb$Nclass
-#'  #hyrs <- glb$hyrs
-#'  #catch <- 900.0 # larger than total MSY ~ 870t
-#'  #B0 <- getvar(zoneC,"B0")
-#'  #totB0 <- sum(B0)
-#'  #prop <- B0/totB0
-#'  #catchpop <- catch * prop
-#'  #for (yr in 2:hyrs)
-#'  #  zoneD <- oneyearC(zoneC=zoneC,zoneD=zoneD,Ncl=Nc,
-#'  #                  catchp=catchpop,year=yr,sigmar=1e-08,
-#'  #                  npop=glb$numpop,movem=glb$move)
-#'  #str(zoneD)
-#'  #round(zoneD$catchN[60:105,1:5,1],1)
-oneyearC <- function(zoneC,zoneDP,catchp,year,iter,sigmar,Ncl,npop,movem) {
-  matb <- numeric(npop)
-  for (popn in 1:npop) {  # year=2
-    out <- oneyearcat(inpopC=zoneC[[popn]],inNt=zoneDP$Nt[,year-1,popn,iter],
-                      Nclass=Ncl,incat=catchp[popn],yr=year)
-    zoneDP$exploitB[year,popn,iter] <- out$ExploitB
-    zoneD$matureB[year,popn] <- out$MatureB
-    zoneD$catch[year,popn] <- out$Catch
-    zoneD$harvestR[year,popn] <- out$Harvest
-    zoneD$cpue[year,popn] <- out$ce
-    zoneD$Nt[,year,popn] <- out$Nt
-    zoneD$catchN[,year,popn] <- out$CatchN
-    matb[popn] <- out$MatureB
-  }
-  steep <- getvect(zoneC,"steeph") #sapply(zoneC,"[[","popdef")["steeph",]
-  r0 <- getvar(zoneC,"R0") #sapply(zoneC,"[[","R0")
-  b0 <- getvar(zoneC,"B0") #sapply(zoneC,"[[","B0")
-  recs <- oneyearrec(steep,r0,b0,matb,sigR=sigmar)
-  newrecs <- movem %*% recs
-  zoneD$recruit[year,] <- newrecs
-  zoneD$Nt[1,year,] <- newrecs
-  zoneD$deplsB[year,] <- zoneD$matureB[year,]/b0
-  zoneD$depleB[year,] <- zoneD$exploitB[year,]/getvar(zoneC,"ExB0")
-  return(zoneD)
-} # end of oneyearC
-
-
 #' @title oneyearD conducts one year's dynamics on zoneD in the MSE
 #'
 #' @description oneyearD conducts one year's dynamics on zoneD in the MSE
@@ -431,7 +356,7 @@ oneyearC <- function(zoneC,zoneDP,catchp,year,iter,sigmar,Ncl,npop,movem) {
 #'     of activity included in each of its components. This uses zoneC
 #'     but always within the environment of another function in which
 #'     zoneC (as zoneC) can be found. Used in runthreeH, (and hence
-#'     dodepletion and doproduction) and in testequil
+#'     dodepletion and doproduction) and in testequil.
 #'
 #' @param zoneC the constant portion of the zone with a list of
 #'     properties for each population

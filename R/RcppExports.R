@@ -41,3 +41,15 @@ svvC <- function(lhs, rhs) {
     .Call(`_aMSE_svvC`, lhs, rhs)
 }
 
+#' @title mult multiplies two matrices using RcppArmadillo
+#'
+#' @description mult multiplies two matrices using RcppArmadillo. There are no
+#'    tests for conformity so use at your own risk
+#'
+#' @param A the first matrix
+#' @param B the second matrix
+#' @export
+mult <- function(A, B) {
+    .Call(`_aMSE_mult`, A, B)
+}
+

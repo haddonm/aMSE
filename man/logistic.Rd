@@ -30,7 +30,14 @@ logistic a logistic selectivity function. This uses the
     but uses delta (which is SM95-SM50) as the second. This ensures
     that when adding variation to parameters, to vary between
     populations, when SM95 and SM50 are close together it is not
-    possible for SM50 to become larger than SM95.
+    possible for SM50 to become larger than SM95. Be careful using the
+    knifeedge option. Strictly knifeedge selectivity would entail the
+    selectivity values being zero up to the knife-edge and then being 1.0.
+    This is not what happens here. Instead the knifeedge option literally
+    sets all values to zero at and below the value of knifeedge but leaves
+    any curve above that value as it is. Hence this is not strict knife-edge
+    selectivity. However, it does provide a selectivity curve that reflects
+    the selectivity of a diver led fleet workingon abalone.
 }
 \examples{
 \dontrun{
