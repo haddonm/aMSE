@@ -163,7 +163,7 @@ definepops <- function(inSAU,inSAUindex,const,glob) {
 #'   mean(zoneDD$deplsB[1,])
 #' }
 dodepletion <- function(zoneC,zoneD,glob,depl,product,len=15) {
-  #  zoneC=zoneC; zoneD=zoneD; glob=glb;  product=product; depl=0.2;len=15
+  #  zoneC=zoneC; zoneD=zoneD; glob=glb;  product=zone$product; depl=0.2;len=15
   # use product to find bounds on H around the desired depletion level
   spb <- rowSums(product[,"MatB",])
   initH <- as.numeric(rownames(product))
@@ -184,7 +184,7 @@ dodepletion <- function(zoneC,zoneD,glob,depl,product,len=15) {
   dinitH <- seq(lowl,upl,length=len)
   zoneDepl <- numeric(len)
   numpop <- glob$numpop
-  for (harv in 1:len) {
+  for (harv in 1:len) { # harv=1
     doharv <- rep(dinitH[harv],numpop)
     zoneDD <- runthreeH(zoneC=zoneC,zoneD,inHarv=doharv,glob)
     zoneDepl[harv] <- sum((zoneDD$matureB[1,]/sum(zoneDD$matureB[1,])) *
@@ -585,16 +585,17 @@ makeabpop <- function(popparam,midpts,projLML) {
 #'     equal the rundir, but can be different if desired. default=rundir
 #' @param cleanslate a boolean determining whether any old results are deleted
 #'     from rundir before starting. Default=FALSE
+#' @param verbose Should progress comments be printed to console, default=TRUE
 #'
 #' @return a list of zoneC, zoneD, glb, constants, product, ctrl, and zone1
 #' @export
 #'
 #' @examples
-#' print("wait on datafiles")  #  rundir=rundir; ctrlfile="control2.csv"; cleanslate=FALSE
+#' print("wait on datafiles")
 makeequilzone <- function(rundir,ctrlfile="control.csv",datadir=rundir,
-                          cleanslate=FALSE) {
-  #  rundir=rundir;ctrlfile="controlsau.csv";cleanslate = TRUE;datadir=datadir
-  zone1 <- readctrlfile(rundir,infile=ctrlfile,datadir=datadir)
+                          cleanslate=FALSE,verbose=TRUE) {
+ #  rundir=rundir;ctrlfile="controlsau.csv";cleanslate = TRUE;datadir=datadir;verbose=verbose
+  zone1 <- readctrlfile(rundir,infile=ctrlfile,datadir=datadir,verbose=verbose)
   ctrl <- zone1$ctrl
   glb <- zone1$globals     # glb without the movement matrix
   bysau <- ctrl$bysau
@@ -604,15 +605,15 @@ makeequilzone <- function(rundir,ctrlfile="control.csv",datadir=rundir,
   } else {
     constants <- readdatafile(glb$numpop,datadir,ctrl$datafile)
   }
-  cat("Files read, now making zone \n")
-  out <- setupzone(constants,zone1) # make operating model
+  if (verbose) cat("Files read, now making zone \n")
+  out <- setupzone(constants,zone1,verbose=verbose) # make operating model
   zoneC <- out$zoneC
   zoneD <- out$zoneD
   glb <- out$glb             # glb now has the movement matrix
   product <- out$product     # important bits usually saved in rundir
   zone1$globals <- glb
   # did the larval dispersal level disturb the equilibrium?
-  zoneD <- testequil(zoneC,zoneD,glb)
+  zoneD <- testequil(zoneC,zoneD,glb,verbose=verbose)
   zoneC <- resetexB0(zoneC,zoneD) # rescale exploitB to avexplB after dynamics
   setuphtml(rundir,cleanslate=cleanslate)
   equilzone <- list(zoneC=zoneC,zoneD=zoneD,glb=glb,constants=constants,
@@ -649,14 +650,24 @@ makeequilzone <- function(rundir,ctrlfile="control.csv",datadir=rundir,
 #' recruits <- c(636146,263878,819189,1112513,285025,671573.9)
 #' makemove(npop=6,recs=recruits,ld=0.04)
 makemove <- function(npop,recs,ld,sigmove=0.0) {
-  move <- matrix(0,nrow=npop,ncol=npop,dimnames=list(1:npop,1:npop))
-  ldh <- ld/2.0
-  move[1,1:2] <- c((1-ldh),ldh)
-  recseq <- c(ldh,(1-ld),ldh)
-  for (r in 2:(npop-1)) {
-    move[r,] <- c(rep(0,(r-2)),recseq,rep(0,(npop-3-(r-2))))
+  if (npop < 3) {
+    if (npop == 1) {
+      move <- matrix(0,nrow=1,ncol=1,dimnames=list(1:1,1:1))
+      move[1,1] <- 1
+    }
+    if (npop == 2) {
+      move <- matrix(c(0.5,0.5,0.5,0.5),nrow=npop,ncol=npop,dimnames=list(1:npop,1:npop))
+    }
+  } else {
+    move <- matrix(0,nrow=npop,ncol=npop,dimnames=list(1:npop,1:npop))
+    ldh <- ld/2.0
+    move[1,1:2] <- c((1-ldh),ldh)
+    recseq <- c(ldh,(1-ld),ldh)
+    for (r in 2:(npop-1)) {
+      move[r,] <- c(rep(0,(r-2)),recseq,rep(0,(npop-3-(r-2))))
+    }
+    move[npop,(npop-1):npop] <- c(ldh,(1-ldh))
   }
-  move[npop,(npop-1):npop] <- c(ldh,(1-ldh))
   return(move)
 } # end of makemove
 
@@ -1003,6 +1014,7 @@ resetexB0 <- function(zoneC,zoneD) {
 #' @param zone1 the zonal object driving the construction
 #' @param uplim the upper limit of harvest rate applied, default=0.4
 #' @param inc the harvest rate increment at each step, default=0.005
+#' @param verbose Should progress comments be printed to console, default=TRUE
 #'
 #' @return a list of zoneC, zoneD, product, and glb the main
 #'     components of the zone
@@ -1018,7 +1030,7 @@ resetexB0 <- function(zoneC,zoneD) {
 #' str(zoneC[[1]])
 #' str(glb)
 #' }
-setupzone <- function(constants,zone1,uplim=0.4,inc=0.005) {
+setupzone <- function(constants,zone1,uplim=0.4,inc=0.005,verbose=TRUE) {
   # constants=constants; zone1=zone1; uplim=0.4; inc=0.01
   ans <- makezoneC(zone1,constants) # classical equilibrium
   zoneC <- ans$zoneC
@@ -1026,7 +1038,7 @@ setupzone <- function(constants,zone1,uplim=0.4,inc=0.005) {
   ans <- makezone(glob=glb,zoneC=zoneC) # now make zoneD
   zoneC <- ans$zoneC  # zone constants
   zoneD <- ans$zoneD  # zone dynamics
-  cat("Now estimating population productivity \n")
+  if (verbose) cat("Now estimating population productivity \n")
   ans <- modzoneC(zoneC=zoneC,zoneD=zoneD,glob=glb,uplim=uplim,inc=inc)
   zoneC <- ans$zoneC  # zone constants
   product <- ans$product  # productivity by population

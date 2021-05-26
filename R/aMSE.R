@@ -7,11 +7,9 @@
 #' @importFrom utils write.table head tail
 #' @importFrom rutilsMH getmax getmin setpalette plotprep removeEmpty
 #' @importFrom rutilsMH splitDate which.closest parset getparplots
-#' @importFrom Rcpp evalCpp
 #' @importFrom makehtml addplot addtable dirExists filenametopath
 #' @importFrom makehtml getextension htmltable logfilename make_html pathend
 #' @importFrom makehtml pathtype setuphtml write_css write_head
-#' @useDynLib aMSE, .registration = TRUE
 NULL
 
 #' @title aMSE functions for Conditioning and Running an Invertebrate MSE
@@ -24,7 +22,8 @@ NULL
 #'     to age accurately and consistently). The growth dynamics are
 #'     described using the inverse logistic curve (see Haddon et al.
 #'     2008). Earlier versions of this invertebrate MSE are described
-#'     on A development version is
+#'     on A development version is #useDynLib aMSE, registration = TRUE
+#'     #importom Rcpp evalCpp
 #'     available on GitHub at github.com/haddonm/aMSE.
 #'
 #' @references Haddon, M., Mundy, C., and D. Tarbath (2008) Using an

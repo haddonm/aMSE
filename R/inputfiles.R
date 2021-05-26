@@ -488,6 +488,7 @@ read_conddata <- function(filename) {  # filename=filen
 #'     run.
 #' @param datadir default = rundir. If datadir != rundir then the data files
 #'     for a series of scenarios are kept in this directory.
+#' @param verbose Should progress comments be printed to console, default=TRUE
 #'
 #' @return the control list for the run
 #' @export
@@ -501,8 +502,8 @@ read_conddata <- function(filename) {  # filename=filen
 #' ctrl <- readctrlfile(rundir)
 #' ctrl
 #' }
-readctrlfile <- function(rundir,infile="control.csv",datadir=rundir) {
-   # rundir=rundir; infile="controlsau.csv"; datadir=datadir
+readctrlfile <- function(rundir,infile="control.csv",datadir=rundir,verbose=TRUE) {
+   # rundir=rundir; infile="controlsau.csv"; datadir=datadir; verbose=verbose
    filenames <- dir(rundir)
    if (length(grep(infile,filenames)) != 1)
       stop(cat(infile," not found in ",rundir," \n"))
@@ -521,7 +522,7 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir) {
    filenames2 <- dir(datadir)
    if (length(grep(datafile,filenames2)) != 1)
       stop("population data file not found \n")
-   cat("All required files appear to be present \n")
+   if (verbose) cat("All required files appear to be present \n")
    # Now read zone data
    nSAU <-  getsingleNum("nSAU",indat) # number of spatial management units
    begin <- grep("SAUpop",indat)
@@ -555,34 +556,10 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir) {
          from <- from + 1
          projLML[i] <- getConst(indat[from],1)
       }
-      begin <- grep("HARVESTS",indat)
-      HS <- getStr(indat[begin],1)
-      if (HS == "MCDA") # if HSdetail=1 then get the CPUE calibration data
-         HSdetail <- getsingleNum("HSdetail",indat)
-      if ((HS == "MCDA") & (HSdetail == 1)) {
-         yrce <- getsingleNum("CEYRS",indat)
-         if (yrce == 0) {
-            warning("CPUE calibration has no data")
-         } else {
-            begin <- grep("CPUE",indat)
-            histCE <- matrix(NA,nrow=yrce,ncol=nSAU)
-            yearCE <- numeric(yrce) # of same length as nSAU
-            colnames(histCE) <- SAUnames
-            for (i in 1:yrce) {
-               begin <- begin + 1
-               cenum <- as.numeric(unlist(strsplit(indat[begin],",")))
-               yearCE[i] <- cenum[1]
-               histCE[i,] <- cenum[2:(nSAU+1)]
-            }
-            rownames(histCE) <- yearCE
-         }
-      } # end of if HSdetail test
-      if (HS == "constantCatch")  # get constant inTAC
-         HSdetail <- as.numeric(removeEmpty(unlist(strsplit(indat[begin+1],","))))
    } # end of projyrs if test
    catches <- getsingleNum("CATCHES",indat)
    if (catches > 0) {
-      if (catches > hyrs) hyrs <- catches
+      if (catches > hyrs) hyrs <- catches # fix historical years duration
       begin <- grep("CondYears",indat)
       histCatch <- matrix(0,nrow=catches,ncol=nSAU)
       colnames(histCatch) <- SAUnames
@@ -597,10 +574,11 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir) {
       rownames(histCatch) <- histyr[,1]
       rownames(histyr) <- histyr[,1]
    } # end of catches loop
-   hyrnames <- as.numeric(histyr[,1])
    yrce <- getsingleNum("CEYRS",indat)
-   if (yrce > 0) {
-      begin <- grep("CPUE",indat)
+   if (yrce == 0) {
+      warning("CPUE calibration has no data")
+   } else {
+      begin <- grep("CEYRS",indat)
       histCE <- matrix(NA,nrow=yrce,ncol=nSAU)
       yearCE <- numeric(yrce) # of same length as nSAU
       colnames(histCE) <- SAUnames
@@ -611,7 +589,8 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir) {
          histCE[i,] <- cenum[2:(nSAU+1)]
       }
       rownames(histCE) <- yearCE
-   } # end of histcpue loop
+   } # end of if(yrce == 0)
+   hyrnames <- as.numeric(histyr[,1])
    sizecomp <- getsingleNum("SIZECOMP",indat)
    if (sizecomp > 0) {
       lffiles <- NULL
@@ -628,7 +607,7 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir) {
    condC <- list(histCatch=histCatch,histyr=histyr,
                  histCE=histCE,yearCE=yearCE,initdepl=initdepl,
                  compdat=compdat,Sel=NULL,SelWt=NULL)
-   projC <- list(projLML=projLML,HS=HS,HSdetail=HSdetail,projyrs=projyrs,
+   projC <- list(projLML=projLML,projyrs=projyrs,
                  Sel=NULL,SelWt=NULL,histCE=histCE)
    outctrl <- list(runlabel,datafile,batch,reps,randomseed,randomseedP,
                    withsigR,withsigB,withsigCE,catches,projyrs,bysau)
@@ -798,7 +777,7 @@ readsaudatafile <- function(datadir,infile) {  # rundir=rundir; infile=ctrl$data
    numpop <- sum(saupop)
    saunames <- getConst(indat[grep("saunames",indat)],nsau)
    initdepl <- getConst(indat[grep("initdepl",indat)],nsau)
-   begin <- grep("VARS",indat)
+   begin <- grep("PDFs",indat)
    npar <- getConst(indat[begin],1)
    rows <- c("DLMax","sMaxDL","L50","sL50","L50inc","sL50inc","SigMax",
              "sSigMax","LML","Wtb","sWtb","Wtbtoa","sWtbtoa","Me","sMe",

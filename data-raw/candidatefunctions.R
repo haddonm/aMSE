@@ -97,9 +97,9 @@ palfs
 # copyto -------------------------------------------------------------
 
 
+rundir <- "c:/Users/User/DropBox/A_codeUse/aMSEUse/scenarios/HS652510"
 
-
-destdir <- "c:/Users/Malcolm/DropBox/A_code/aMSEUse/scenarios/tasHS653510"
+destdir <- "c:/Users/User/DropBox/A_codeUse/aMSEUse/scenarios/HS81"
 
 copyto(rundir,todir=destdir,filename="controlsau.csv")
 
@@ -150,11 +150,69 @@ lines(mids[rge],sel[rge,15],lwd=2,col=2)
 
 # sort out LF data-------------------------------------------------
 
-datafile <- "C:/Users/User/Dropbox/A_Code/aMSEUse/condition/productivity/sau10LF.csv"
+datafile <- paste0(ddir,"aMSEUse/condition/productivity/sau10LF.csv")
 
 lf <- read.csv(file=datafile,header=TRUE)
+str1(lf)
 
-years <- sort(unique(lf[,"year"]))
+
 yrcount <- tapply(lf[,"counts"],lf[,"year"],sum,na.rm=TRUE)
-cbind(years,yrcount)
+lfprops <- cbind(years,yrcount)
+lfprops
+
+range(lf[,"length"])
+mids <- seq(136,210,2)
+nc <- length(mids)
+nc
+
+
+
+
+answer <- makewidedat(lf,mids)
+str(answer)
+
+answer <- makewidedat(lf10,mids)
+
+
+
+# Auto-regressive recruitment ------------------------------------------------
+
+
+# R = exp(Xt)   where X is the predicted mean from the Beverton-Holt equation
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

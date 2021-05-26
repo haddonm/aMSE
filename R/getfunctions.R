@@ -18,7 +18,7 @@
 getConst <- function(inline,nb,index=2) { # parses lines containing numbers
   ans <- numeric(nb)
   tmp <- unlist(strsplit(inline,","))
-  if (length(tmp) < (nb+1))
+  if (length(tmp) < (nb+(index-1)))
     warning(paste("possible problem with data",tmp[1],
                   "missing comma?",sep=" "),"\n")
   count <- 0
@@ -228,7 +228,7 @@ getsingleNum <- function(varname,intxt) {
 #'
 #' @examples
 #' print("wait on an example")
-getsauzone <- function(zoneD,glb,B0,ExB0) { # zoneD=zoneDD; glb=glb
+getsauzone <- function(zoneD,glb,B0,ExB0) { # zoneD=zoneDD; glb=glb; B0=B0;ExB0=ExB0
   iSAU <- glb$sauindex
   SAU <- unique(iSAU)
   nSAU <- length(SAU)
@@ -245,9 +245,14 @@ getsauzone <- function(zoneD,glb,B0,ExB0) { # zoneD=zoneDD; glb=glb
   cpue <- catch # just ot have a labelled matrix ready
   wtzone <- zoneD$catch/catch[,(nSAU+1)]
   wtsau <- zoneD$catch
-  for (mu in 1:nSAU) {
+  for (mu in 1:nSAU) { # mu=1
     wtsau[,(iSAU==mu)] <- zoneD$catch[,(iSAU==mu)]/catch[,mu]
-    cpue[,mu] <- rowSums(zoneD$cpue[,(iSAU==mu)] * wtsau[,(iSAU==mu)])
+    pick <- which(iSAU == mu)
+    if (length(pick) > 1) {
+      cpue[,mu] <- rowSums(zoneD$cpue[,(iSAU==mu)] * wtsau[,(iSAU==mu)])
+    } else {
+      cpue[,mu] <- zoneD$cpue[,(iSAU==mu)] * wtsau[,(iSAU==mu)]
+    }
   }
   cpue[,(nSAU+1)] <- rowSums(zoneD$cpue * wtzone)
   ans <- list(matB=matB,expB=expB,catch=catch,recruit=recruit,
@@ -292,12 +297,20 @@ getStr <- function(inline,nb) {
 #'
 #' @examples
 #' print("wait on an example")
-getsum <- function(inmat,index) { # inmat=zoneDD$mature; index=zoneDD$SAU
+getsum <- function(inmat,index) { # inmat=zoneDD$matureB; index=zoneDD$SAU
   nSAU <- length(unique(index))
   nyr <- nrow(inmat)
   matO <- matrix(0,nrow=nyr,ncol=(nSAU+1),
                  dimnames=list(1:nyr,c(paste0("SAU",1:nSAU),"zone")))
-  for (mu in 1:nSAU) matO[,mu] <- rowSums(inmat[,(index==mu)])
+  for (mu in 1:nSAU) { # mu = 1
+    pick <- which(index == mu)
+    dat <- inmat[,pick]
+    if (length(pick) > 1) {
+       matO[,mu] <- rowSums(dat)
+    } else {
+      matO[,mu] <- dat
+    }
+  }
   matO[,(nSAU+1)] <- rowSums(inmat)
   return(matO)
 }

@@ -4,7 +4,7 @@
 \alias{oneyearrec}
 \title{oneyearrec calculates the Beverton-Holt recruitment}
 \usage{
-oneyearrec(steep, R0, B0, Bsp, sigR)
+oneyearrec(steep, R0, B0, Bsp, sigR, devR = -1)
 }
 \arguments{
 \item{steep}{the steepness for the population; scalar}
@@ -17,6 +17,10 @@ oneyearrec(steep, R0, B0, Bsp, sigR)
 
 \item{sigR}{standard deviation of the recruitment residuals;
 scalar. set this to 1e-08 to avoid recruitment variability}
+
+\item{devR}{if recruitment deviates are available then they should be input
+here. If negative values then a random epsilon is used, otherwise
+epsilon is given the value of devR}
 }
 \value{
 an absolute number of recruits from a given spawning biomass
@@ -24,7 +28,12 @@ an absolute number of recruits from a given spawning biomass
 \description{
 oneyearrec calculates the Beverton-Holt recruitment for the
    input populations in a single year; parameterized with steepness,
-   R0, and B0. To drop variation to insignificant levels set sigmar-1-08
+   R0, and B0. To drop variation to insignificant levels set sigmar-1-08. To
+   allow for inclusion of recruitment deviates, which can be required to
+   explain high catches when stock biomass would otherwise be low, we have
+   introduced the devR argument. As the deviates are all multiplicative and
+   range in value > 0, then the default = -1 so this will be ignored unless
+   a deviate is input.
 }
 \examples{
 \dontrun{

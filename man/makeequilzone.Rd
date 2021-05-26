@@ -8,7 +8,8 @@ makeequilzone(
   rundir,
   ctrlfile = "control.csv",
   datadir = rundir,
-  cleanslate = FALSE
+  cleanslate = FALSE,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ equal the rundir, but can be different if desired. default=rundir}
 
 \item{cleanslate}{a boolean determining whether any old results are deleted
 from rundir before starting. Default=FALSE}
+
+\item{verbose}{Should progress comments be printed to console, default=TRUE}
 }
 \value{
 a list of zoneC, zoneD, glb, constants, product, ctrl, and zone1
@@ -36,5 +39,5 @@ makeequilzone is a high level function that merely hides the
     directory, rundir, ready to receive files.
 }
 \examples{
-print("wait on datafiles")  #  rundir=rundir; ctrlfile="control2.csv"; cleanslate=FALSE
+print("wait on datafiles")
 }

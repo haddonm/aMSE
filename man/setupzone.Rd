@@ -4,7 +4,7 @@
 \alias{setupzone}
 \title{setupzone makes zone's constant, dynamic, and productivity parts}
 \usage{
-setupzone(constants, zone1, uplim = 0.4, inc = 0.005)
+setupzone(constants, zone1, uplim = 0.4, inc = 0.005, verbose = TRUE)
 }
 \arguments{
 \item{constants}{the population constants derived from readdatafile}
@@ -14,6 +14,8 @@ setupzone(constants, zone1, uplim = 0.4, inc = 0.005)
 \item{uplim}{the upper limit of harvest rate applied, default=0.4}
 
 \item{inc}{the harvest rate increment at each step, default=0.005}
+
+\item{verbose}{Should progress comments be printed to console, default=TRUE}
 }
 \value{
 a list of zoneC, zoneD, product, and glb the main

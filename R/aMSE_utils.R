@@ -86,8 +86,7 @@ alldirExists <- function(indir1,indir2=indir1,make=FALSE,verbose=TRUE) {
 #'     completely different path and will create the 'todir' if it
 #'     does not already exist.
 #'
-#' @param sourcedir the full path to the directory that contains rundir
-#' @param fromdir the name of the current rundir
+#' @param fromdir the full path of the current rundir
 #' @param todir the name of the new destination rundir
 #' @param filename the filename of the file to be copied
 #' @param makenew if the 'todir' does not exist should it be created using
@@ -104,25 +103,70 @@ alldirExists <- function(indir1,indir2=indir1,make=FALSE,verbose=TRUE) {
 #' # any new requirements.
 #' copyto(fromdir=rundir,todir=destdir,filename="control.csv")
 #' }
-copyto <- function (sourcedir,fromdir, todir, filename="control.csv",
-                    makenew = TRUE,verbose=TRUE) {
-  fdir <- paste0(sourcedir,fromdir)
-  if (!dir.exists(fdir)) stop(cat(fdir, " does not exist!   \n\n"))
-  filen <- filenametopath(fdir,filename)
+copyto <- function (fromdir, todir, filename="control.csv",makenew = TRUE,
+                    verbose=TRUE) {
+  if (!dir.exists(fromdir)) stop(cat(fromdir, " does not exist!   \n\n"))
+  filen <- filenametopath(fromdir,filename)
   if (!file.exists(filen)) stop(cat(filename, " does not exist \n"))
-  tdir <- paste0(sourcedir,todir)
-  if (!dir.exists(tdir)) {
-    if (verbose) cat(tdir," did not exist  \n")
+  if (!dir.exists(todir)) {
+    if (verbose) cat(todir," did not exist  \n")
     if (makenew) {
       dir.create(todir, recursive = TRUE)
       if (verbose) cat(todir," has been created  \n")
     }
   }
-  fileout <- filenametopath(tdir, filename)
+  fileout <- filenametopath(todir, filename)
   file.copy(filen, fileout, overwrite = TRUE, copy.date = TRUE)
   if (verbose) cat(filename, " has been copied to ",todir,"\n")
-}
-# end of copyto
+} # end of copyto
+
+#' @title makewidedat converts long data to a wide data format
+#'
+#' @description makewidedat takes the output of the commlf function makelongdat
+#'     and converts the columns of year x length x count into a matrix of counts
+#'     with axes of lengths x years, ready for comparisons with predicted length
+#'     composition of catches from the operating model.
+#'
+#' @param inlong the long form data.frame derived for commlf's makelongdat
+#'     containing at least 'year', 'length', and 'propcounts'
+#' @param mids the range of lengths to be found within the input data file.
+#'     These are matched with the size distribution for each year of data and
+#'     the appropriate matrix cells filled with the propcounts.
+#' @param counts default = FALSE, which means that the wide format will contain
+#'     the proportion of counts for each year. If TRUE, then the actual counts
+#'     by size-class will be output by year
+#'
+#' @return a matrix of proportional counts for each size-class x year
+#' @export
+#'
+#' @examples
+#' data(lf10)
+#' mids <- seq(138,210,2)
+#' answer <- makewidedat(lf10,mids)
+#' answer[1:20,]
+#' answerC <- makewidedat(lf10,mids,counts=TRUE)
+#' answerC[1:20,]
+makewidedat <- function(inlong,mids,counts=FALSE) { # inlong=lf; mids=mids
+  columns <- colnames(inlong)
+  pickcol <- match(c("year","length","propcounts"),columns)
+  label <- paste0("Data input to makewidedat does not contain ",
+                  "all of year, length, and propcounts")
+  if (length(pickcol) != 3) stop(label)
+  years <- sort(unique(inlong[,"year"]))
+  nyr <- length(years)
+  nc <- length(mids)
+  answer <- matrix(0,nrow=nc,ncol=nyr,dimnames=list(mids,years))
+  for (yr in 1:nyr) { #  yr=1
+    pickyr <- which(inlong[,"year"] == years[yr])
+    pickloc <- match(inlong[pickyr,"length"],mids)
+    if (counts) {
+       answer[pickloc,yr] <- inlong[pickyr,"counts"]
+    } else {
+       answer[pickloc,yr] <- inlong[pickyr,"propcounts"]
+    }
+  }
+  return(answer)
+} # end of makewidedat
 
 #' @title poptosau converts projected population dynamics to SAU scale results
 #'
@@ -394,7 +438,7 @@ zonetosau <- function(inzone,glb, B0, ExB0) { # inzone=zoneDP; glb=glb; B0=B0; E
   popcat <- inzone$catch
   popce <- inzone$cpue
   for (iter in 1:reps) {
-    for (yr in 1:nyrs) {
+    for (yr in 1:nyrs) { # iter=1; yr=1
       saudyn <- poptosauCE(popcat[yr,,iter],popce[yr,,iter],sauindex)
       cpue[yr,,iter] <- saudyn$saucpue
       catch[yr,,iter] <- saudyn$saucatch
@@ -402,8 +446,13 @@ zonetosau <- function(inzone,glb, B0, ExB0) { # inzone=zoneDP; glb=glb; B0=B0; E
       depleB[yr,,iter] <- exploitB[yr,,iter]/sauExB0
       for (sau in 1:nsau) { #  iter=1; yr=1; sau = 1
         pick <- which(sauindex %in% sau)
-        catchN[,yr,sau,iter] <- rowSums(inzone$catchN[,yr,pick,iter])
-        Nt[,yr,sau,iter] <- rowSums(inzone$Nt[,yr,pick,iter])
+        if (length(pick) > 1) {
+          catchN[,yr,sau,iter] <- rowSums(inzone$catchN[,yr,pick,iter])
+          Nt[,yr,sau,iter] <- rowSums(inzone$Nt[,yr,pick,iter])
+        } else {
+          catchN[,yr,sau,iter] <- inzone$catchN[,yr,pick,iter]
+          Nt[,yr,sau,iter] <- inzone$Nt[,yr,pick,iter]
+        }
       }
     }
     harvestR[,,iter] <- catch[,,iter]/exploitB[,,iter]

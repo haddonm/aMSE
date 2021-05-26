@@ -555,6 +555,7 @@ plotTAC <- function(zoneDP,rundir,CIprobs=c(0.05,0.5,0.95)) {
 #'
 #' @examples
 #' print("wait on suitable datasets")
+#' # inzone=outzone;rundir=rundir;glb=glb;CIprobs=c(0.05,0.5,0.95);addfile=TRUE
 plotZone <- function(inzone,rundir,glb,CIprobs=c(0.05,0.5,0.95),addfile=TRUE) {
   onezoneplot(inzone$catch,rundir,glb,CIprobs=CIprobs,"Catch",addfile=addfile)
   onezoneplot(inzone$cpue,rundir,glb,CIprobs=CIprobs,"CPUE",addfile=addfile)

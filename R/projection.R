@@ -304,8 +304,9 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 #' print("wait on suitable internal data sets")
 doprojections <- function(ctrl,zoneDP,zoneCP,otherdata,glb,hcrfun,hsargs,
                              sampleCE,sampleFIS,sampleNaS,getdata,calcpopC,...) {
-#  ctrl=ctrl;zoneDP=zoneDP;zoneCP=zoneCP;otherdata=condC$histCE;glb=glb
+#  ctrl=ctrl;zoneDP=zoneDP;zoneCP=zoneCP;otherdata=condC$histCE;glb=glb; getdata=tasdata
 #  hcrfun=mcdahcr; hsargs=hsargs; sampleCE=tasCPUE;sampleFIS=tasFIS; sampleNaS=tasNaS
+#  calcpopC=calcexpectpopC
   reps <- ctrl$reps
   projyrs <- ctrl$projection
   sigmar <- ctrl$withsigR

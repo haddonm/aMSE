@@ -28,4 +28,5 @@ plotZone plots out the projected TAC for all replicates. The
 }
 \examples{
 print("wait on suitable datasets")
+# inzone=outzone;rundir=rundir;glb=glb;CIprobs=c(0.05,0.5,0.95);addfile=TRUE
 }

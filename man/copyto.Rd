@@ -5,7 +5,6 @@
 \title{copyto copies the control.csv file from a scenario to a new directory}
 \usage{
 copyto(
-  sourcedir,
   fromdir,
   todir,
   filename = "control.csv",
@@ -14,9 +13,7 @@ copyto(
 )
 }
 \arguments{
-\item{sourcedir}{the full path to the directory that contains rundir}
-
-\item{fromdir}{the name of the current rundir}
+\item{fromdir}{the full path of the current rundir}
 
 \item{todir}{the name of the new destination rundir}
 

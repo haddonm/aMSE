@@ -411,7 +411,12 @@ oneyearD <- function(zoneC,zoneD,inHt,year,sigmar,Ncl,npop,movem) {
 #'
 #' @description oneyearrec calculates the Beverton-Holt recruitment for the
 #'    input populations in a single year; parameterized with steepness,
-#'    R0, and B0. To drop variation to insignificant levels set sigmar-1-08
+#'    R0, and B0. To drop variation to insignificant levels set sigmar-1-08. To
+#'    allow for inclusion of recruitment deviates, which can be required to
+#'    explain high catches when stock biomass would otherwise be low, we have
+#'    introduced the devR argument. As the deviates are all multiplicative and
+#'    range in value > 0, then the default = -1 so this will be ignored unless
+#'    a deviate is input.
 #'
 #' @param steep the steepness for the population; scalar
 #' @param R0 the unfished recruitment levels for the population; scalar
@@ -419,6 +424,9 @@ oneyearD <- function(zoneC,zoneD,inHt,year,sigmar,Ncl,npop,movem) {
 #' @param Bsp the current spawning biomass; scalar
 #' @param sigR standard deviation of the recruitment residuals;
 #'     scalar. set this to 1e-08 to avoid recruitment variability
+#' @param devR if recruitment deviates are available then they should be input
+#'     here. If negative values then a random epsilon is used, otherwise
+#'     epsilon is given the value of devR
 #' @return an absolute number of recruits from a given spawning biomass
 #' @export
 #'
@@ -431,8 +439,12 @@ oneyearD <- function(zoneC,zoneD,inHt,year,sigmar,Ncl,npop,movem) {
 #' insigmar <- 0.3
 #' oneyearrec(steep,R0,B0,Bsp,insigmar)
 #' }
-oneyearrec <- function(steep,R0,B0,Bsp,sigR) {
-  epsilon <- exp(rnorm(length(Bsp),mean=0,sd=sigR) - (sigR * sigR)/2)
+oneyearrec <- function(steep,R0,B0,Bsp,sigR,devR=-1) {
+  if (devR > 0) {
+    epsilon <- devR
+  } else {
+    epsilon <- exp(rnorm(length(Bsp),mean=0,sd=sigR) - (sigR * sigR)/2)
+  }
   rec <- ((4*steep*R0*Bsp)/((1-steep)*B0+(5*steep-1)*Bsp)) * epsilon
   return(rec)
 } # end of oneyearrec
@@ -552,7 +564,7 @@ restart <- function(oldzoneD,hyrs,npop,N,zero=TRUE) { # oldzoneD=zoneD; hyrs=hyr
 #'
 #' @examples
 #' print("wait on built in data sets")
-#' # zoneC=zoneC; zoneD=zoneD; glob=glb; inHarv=rep(0.2,numpop)
+#' # zoneC=zoneC; zoneD=zoneD; glob=glob; inHarv=doharv
 runthreeH <- function(zoneC,zoneD,inHarv,glob,maxiter=3) {
   npop <- glob$numpop
   Nclass <- glob$Nclass

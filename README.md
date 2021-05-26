@@ -3,7 +3,16 @@
 
 # LATEST UPDATE
 
--   2021-05-07 0.0.0.2800
+-   2021-05-07 0.0.0.2500 Some relatively large changes this time. I
+    have pulled most of the code used to run the MSE into a separate
+    source file ‘MSE\_source.R’. You can find all required files in
+    abalone MSE\_files. I have moved TasmanianHS.R into tasdata as it is
+    currently common to different uses. I will endeavour to generalize
+    the contents of MSE\_source.R to turn it into a function that can be
+    included in the package. Then any changes made there will flow
+    naturally to other instances of each scenario file. Also, now there
+    is a minimu requirement of 2 SAU but each SAU can have a minimum of
+    1 population.
 
 -   2021-04-20 0.0.0.2900 Continuing process of modifying the core
     functions to allow for the numbers-at-size prior to fishing and the
@@ -97,15 +106,17 @@ library(makehtml)
 library(knitr)
 # OBVIOUSLY you should modify the rundir and datadir to suit your own computer
 if (dir.exists("c:/Users/User/DropBox")) {
-  ddir <- "c:/Users/User/DropBox/A_code/"
+  ddir <- "c:/Users/User/DropBox/A_codeUse/"
 } else {
-  ddir <- "c:/Users/Malcolm/DropBox/A_code/"
+  ddir <- "c:/Users/Malcolm/DropBox/A_codeUse/"
 }
+doproject <- TRUE  # change to FALSE if only conditioning is required
+verbose <- TRUE
 rundir <- paste0(ddir,"aMSEUse/scenarios/HS652510")
 datadir <- paste0(ddir,"aMSEUse/scenarios/tasdata")
 alldirExists(rundir,datadir)
-#> rundir,  c:/Users/Malcolm/DropBox/A_code/aMSEUse/scenarios/HS652510 :  exists  
-#> datadir,  c:/Users/Malcolm/DropBox/A_code/aMSEUse/scenarios/tasdata :  exists
+#> rundir,  c:/Users/Malcolm/DropBox/A_codeUse/aMSEUse/scenarios/HS652510 :  exists  
+#> datadir,  c:/Users/Malcolm/DropBox/A_codeUse/aMSEUse/scenarios/tasdata :  exists
 # equilibrium zone -------------------------------------------------------------
 # You now need to ensure that there is, at least, a control.csv, and a 
 # constantsdata.csv file in the data directory plus some other data .csv files
@@ -123,79 +134,21 @@ alldirExists(rundir,datadir)
 # readme pages for details.
 
 # TasmanianHS.R should be in rundir, but during development is in data-raw
-source(paste0(rundir,"/TasmanianHS.R"))
-# generate equilibrium zone ----------------------------------------------------
-starttime2 <- (Sys.time())
-zone <- makeequilzone(rundir,"controlsau.csv",datadir=datadir,cleanslate = TRUE)
+source(paste0(datadir,"/TasmanianHS.R"))
+controlfile <- "controlsau.csv"
+# run the scenario ----------------------------------------------------
+source(paste0(ddir,"aMSEUse/scenarios/MSE_Source.R"))
 #> All required files appear to be present 
 #> Files read, now making zone 
 #> Now estimating population productivity 
 #> matureB Stable 
 #> exploitB Stable 
 #> recruitment Stable 
-#> spawning depletion Stable
-equiltime <- (Sys.time()); print(equiltime - starttime2)
-#> Time difference of 22.15673 secs
-# declare main objects ---------------------------------------------------------
-glb <- zone$glb
-ctrl <- zone$ctrl
-zone1 <- zone$zone1
-projC <- zone1$projC
-condC <- zone1$condC
-zoneC <- zone$zoneC
-zoneD <- zone$zoneD
-product <- zone$product
-# add some tables and plots into rundir
-biology_plots(rundir, glb, zoneC)
-plotproductivity(rundir,product,glb)
-numbersatsize(rundir, glb, zoneD)
-# Condition on Fishery ---------------------------------------------------------
-zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,condC,calcexpectpopC,sigR=1e-08,sigB=1e-08)
+#> spawning depletion Stable 
+#> Time difference of 21.79685 secs
+#> Conditioning on the Fishery data
+#> Doing the projections
 
-propD <- t(getzoneprops(zoneC,zoneDD,glb,year=47))
-addtable(round(propD,4),"propertyDD.csv",rundir,category="zoneDD",caption=
-           "Properties of zoneD after conditioning on historical catches.")
-addtable(round(t(zoneDD$harvestR[40:47,]),4),"final_harvestR.csv",rundir,
-         category="zoneDD",caption="Last eight years of harvest rate.")
-popdefs <- getlistvar(zone$zoneC,"popdef")
-addtable(round(t(popdefs),3),"popdefs.csv",rundir,category="zoneDD",caption=
-           "Population specific definitions")
-# Prepare projections ----------------------------------------------------------
-plotconditioning(zoneDD,glb,zoneC,condC$histCE,rundir)
-
-#explicit definition of indata rather than using the tasdata function
-indata <- list(arrce=condC$histCE,yearnames=rownames(condC$histCE),
-               acatches=tail(condC$histCatch,1),fis=NULL,nas=NULL)
-cmcda <- mcdahcr(indata,hsargs=hsargs,saunames=glb$saunames)
-pms <- cmcda$pms
-multTAC <- cmcda$multTAC
-out <- prepareprojection(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
-                         multTAC=multTAC,calcexpectpopC,zoneDD=zoneDD,
-                         ctrl=ctrl,varyrs=7,lastsigR = ctrl$withsigR)
-# prepareprojection needs to be modified so that is uses expected catches rather
-# than calculating them internally (which will differ by jurisdiction)
-zoneDP <- out$zoneDP
-projC <- out$projC
-zoneCP <- out$zoneCP
-zoneDDR <- out$zoneDDR
-
-zoneDP <- doprojections(ctrl,zoneDP,zoneCP,condC$histCE,glb,hcrfun=mcdahcr,hsargs,
-                        sampleCE=tasCPUE,sampleFIS=tasFIS,sampleNaS=tasNaS,
-                        getdata=tasdata,calcpopC=calcexpectpopC)
-# save more plots to rundir ----------------------------------------------------
-histCE <- condC$histCE
-B0 <- getvar(zoneC,"B0")
-ExB0 <- getvar(zoneC,"ExB0")
-sauout <- sauplots(zoneDP,zoneDDR,glb,rundir,B0,ExB0,startyr=25,addCI=TRUE,
-                  histCE=histCE)
-diagnosticsproj(sauout$zonePsau,glb,rundir,nrep=3)
-outzone <- poptozone(zoneDP,glb,
-                     B0=sum(getvar(zoneC,"B0")),
-                     ExB0=sum(getvar(zoneC,"ExB0")))
-plotZone(outzone,rundir,glb,CIprobs=c(0.05,0.5,0.95),addfile=TRUE)
-projtime <- Sys.time()
-print(projtime - starttime)
-#> Time difference of 43.88355 secs
 # make results webpage ---------------------------------------------------------
 replist <- list(starttime=as.character(starttime),endtime=as.character(projtime))
 

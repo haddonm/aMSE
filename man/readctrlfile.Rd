@@ -4,7 +4,7 @@
 \alias{readctrlfile}
 \title{readctrlfile checks datadir contains the required csv files}
 \usage{
-readctrlfile(rundir, infile = "control.csv", datadir = rundir)
+readctrlfile(rundir, infile = "control.csv", datadir = rundir, verbose = TRUE)
 }
 \arguments{
 \item{rundir}{the directory in which all files relating to a
@@ -17,6 +17,8 @@ run.}
 
 \item{datadir}{default = rundir. If datadir != rundir then the data files
 for a series of scenarios are kept in this directory.}
+
+\item{verbose}{Should progress comments be printed to console, default=TRUE}
 }
 \value{
 the control list for the run
