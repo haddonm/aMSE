@@ -1,6 +1,11 @@
 ## aMSE Recent Activity.
 
-* 2021-05-11 0.0.0.2600 Modifications to allow for greater internal consistency and to prepare for more generalizations of the code.
+
+* 2021-05-27 aMSE 0.0.0.2400 Have encapsulated the bulk of running the MSE for a particular scenario into the function 'do_MSE'. Check out its help page but also see it in action in the example within the readme file or in the new version of first_use_saudata.R in ~Dropbox\National abalone MSE\aMSE_files\scenarios\HS652510. I have also updated the aMSE_0.0.0.2400.tar.gz file. Any issues get in touch. 
+
+* 2021-05-26 0.0.0.2500 Some relatively large changes this time. I have pulled most of the code used to run the MSE into a separate source file 'MSE_source.R'. You can find all required files in  \Dropbox\National abalone MSE\aMSE_files\scenarios. I have moved TasmanianHS.R into tasdata as it is currently common to different uses. I will endeavour to generalize the contents of MSE_source.R to turn it into a function that can be included in the package. Then any changes made there will flow naturally to other instances of each scenario file. Also, now there is a minimu requirement of 2 SAU but each SAU can have a minimum of 1 population.
+
+* 2021-05-11 0.0.0.2650 Modifications to allow for greater internal consistency and to prepare for more generalizations of the code.
 
 * 2021-04-25 0.0.0.2700 Some large changes relating to generalization. All plots now have correctly labelled year axes. The doprojection function requires functions to sampleCE, sampleFIS and sampleNaS data. It also needs a getdata function which uses the three sample functions to make a data object of the hcrfun, then we need a calcpopC function that uses the output of the hcrfun to calculate the actual catches to be taken from each population. This all needs better documentation but that will take time to catch up with all these changes.
 

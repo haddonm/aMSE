@@ -180,8 +180,81 @@ answer <- makewidedat(lf10,mids)
 
 # R = exp(Xt)   where X is the predicted mean from the Beverton-Holt equation
 
+# MSE_source function -------------------------------------------------------
 
 
+do_MSE <- function(rundir,controlfile,datadir,cleanslate,verbose,doproject,
+                   varyrs,startyr,hsargs,
+                   hcrfun,sampleCE,sampleFIS,sampleNaS,getdata,calcpopC,
+                   ndiagprojs=3) {
+# generate equilibrium zone ----------------------------------------------------
+  starttime <- (Sys.time())
+  zone <- makeequilzone(rundir,controlfile,datadir,
+                        cleanslate=cleanslate,verbose=verbose)
+  equiltime <- (Sys.time()); if (verbose) print(equiltime - starttime)
+  # declare main objects -------------------------------------------------------
+  glb <- zone$glb
+  ctrl <- zone$ctrl
+  zone1 <- zone$zone1
+  projC <- zone$zone1$projC
+  condC <- zone$zone1$condC
+  zoneC <- zone$zoneC
+  zoneD <- zone$zoneD
+  product <- zone$product
+  # save some equil results ----------------------------------------------------
+  biology_plots(rundir, glb, zoneC)
+  plotproductivity(rundir,product,glb)
+  numbersatsize(rundir, glb, zoneD)
+  #Condition on Fishery --------------------------------------------------------
+  if (verbose) cat("Conditioning on the Fishery data  \n")
+  zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,condC,calcpopC=calcpopC,
+                        sigR=1e-08,sigB=1e-08)
+  hyrs <- glb$hyrs
+  propD <- t(getzoneprops(zoneC,zoneDD,glb,year=hyrs))
+  addtable(round(propD,4),"propertyDD.csv",rundir,category="zoneDD",caption=
+             "Properties of zoneD after conditioning on historical catches.")
+  addtable(round(t(zoneDD$harvestR[(hyrs-9):hyrs,]),4),"final_harvestR.csv",
+           rundir,category="zoneDD",
+           caption="Last ten years of population vs harvest rate.")
+  popdefs <- getlistvar(zone$zoneC,"popdef")
+  addtable(round(t(popdefs),3),"popdefs.csv",rundir,category="zoneDD",
+           caption="Population vs Operating model parameter definitions")
+  plotconditioning(zoneDD,glb,zoneC,condC$histCE,rundir)
+  # do projections ------------------------------------------------------------
+  if (doproject) {
+    if (verbose) cat("Doing the projections \n")
+    # uses Tasmania's HCR; generation of indata needs generalization
+    indata <- list(arrce=condC$histCE,yearnames=rownames(condC$histCE),
+                   acatches=tail(condC$histCatch,1),fis=NULL,nas=NULL)
+    cmcda <- mcdahcr(indata,hsargs=hsargs,saunames=glb$saunames)
+    pms <- cmcda$pms
+    multTAC <- cmcda$multTAC
+    out <- prepareprojection(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
+                             multTAC=multTAC,calcpopC=calcpopC,zoneDD=zoneDD,
+                             ctrl=ctrl,varyrs=varyrs,lastsigR = ctrl$withsigR)
+    zoneDP <- out$zoneDP
+    projC <- out$projC
+    zoneCP <- out$zoneCP
+    zoneDDR <- out$zoneDDR
+    zoneDP <- doprojections(ctrl,zoneDP,zoneCP,condC$histCE,glb,hcrfun=hcrfun,
+                            hsargs,sampleCE=sampleCE,sampleFIS=sampleFIS,
+                            sampleNaS=sampleNaS,getdata=getdata,calcpopC=calcpopC)
+    histCE <- condC$histCE
+    B0 <- getvar(zoneC,"B0")
+    ExB0 <- getvar(zoneC,"ExB0")
+    sauout <- sauplots(zoneDP,zoneDDR,glb,rundir,B0,ExB0,startyr=startyr,
+                       addCI=TRUE,histCE=histCE)
+    diagnosticsproj(sauout$zonePsau,glb,rundir,nrep=ndiagprojs)
+    outzone <- poptozone(zoneDP,glb,
+                         B0=sum(getvar(zoneC,"B0")),
+                         ExB0=sum(getvar(zoneC,"ExB0")))
+    plotZone(outzone,rundir,glb,CIprobs=c(0.05,0.5,0.95),addfile=TRUE)
+  }
+  projtime <- Sys.time()
+  tottime <- round((projtime - starttime),3)
+  out <- list(glb=glb,ctrl=ctrl,zoneDD=zoneDD,zoneDP=zoneDP,
+              tottime=tottime,projtime=projtime,starttime=starttime)
+} # end of do_MSE
 
 
 

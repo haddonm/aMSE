@@ -3,25 +3,12 @@
 
 # LATEST UPDATE
 
--   2021-05-07 0.0.0.2500 Some relatively large changes this time. I
-    have pulled most of the code used to run the MSE into a separate
-    source file ‘MSE\_source.R’. You can find all required files in
-    abalone MSE\_files. I have moved TasmanianHS.R into tasdata as it is
-    currently common to different uses. I will endeavour to generalize
-    the contents of MSE\_source.R to turn it into a function that can be
-    included in the package. Then any changes made there will flow
-    naturally to other instances of each scenario file. Also, now there
-    is a minimu requirement of 2 SAU but each SAU can have a minimum of
-    1 population.
-
--   2021-04-20 0.0.0.2900 Continuing process of modifying the core
-    functions to allow for the numbers-at-size prior to fishing and the
-    midyear-exploitB (midyexpB) to be included in teh zoneD object.
-    doprojection still requires fursther modification to account for
-    applying to chosen HCR and HS to the completed conditioned zoneDD to
-    provide the first year of expected catches in the projections (which
-    are to be defined by teh conditoned data prior to projections
-    beginning).
+-   2021-05-27 aMSE 0.0.0.2400 Have encapsulated the bulk of running the
+    MSE for a particular scenario into the function ‘do\_MSE’. Check out
+    its help page but also see it in action in the example within this
+    readme file or in the new version of first\_use\_saudata.R in
+    \~Dropboxabalone MSE\_files. I have also updated the
+    aMSE\_0.0.0.2400.tar.gz file. Any issues get in touch.
 
 # aMSE
 
@@ -92,7 +79,7 @@ and GitHub at <https://r-pkgs.org/index.html>.
 
 This is an example which illustrates the generation of an initial
 equilibrium, which then goes on to apply an early version of the
-Tasmania MCDA using only 100 replicates (that bit takes about 15 seconds
+Tasmania MCDA using only 50 replicates (that bit takes about 15 seconds
 on my computer, hence 2.5 minutes for 1000). It uses built in data-sets
 but usually you would read in a control file, which would contain the
 name of the biological datafile describing each population.
@@ -114,7 +101,7 @@ doproject <- TRUE  # change to FALSE if only conditioning is required
 verbose <- TRUE
 rundir <- paste0(ddir,"aMSEUse/scenarios/HS652510")
 datadir <- paste0(ddir,"aMSEUse/scenarios/tasdata")
-alldirExists(rundir,datadir)
+alldirExists(rundir,datadir,verbose=TRUE)
 #> rundir,  c:/Users/Malcolm/DropBox/A_codeUse/aMSEUse/scenarios/HS652510 :  exists  
 #> datadir,  c:/Users/Malcolm/DropBox/A_codeUse/aMSEUse/scenarios/tasdata :  exists
 # equilibrium zone -------------------------------------------------------------
@@ -137,7 +124,11 @@ alldirExists(rundir,datadir)
 source(paste0(datadir,"/TasmanianHS.R"))
 controlfile <- "controlsau.csv"
 # run the scenario ----------------------------------------------------
-source(paste0(ddir,"aMSEUse/scenarios/MSE_Source.R"))
+#source(paste0(ddir,"aMSEUse/scenarios/MSE_Source.R"))
+out <- do_MSE(rundir,controlfile,datadir,hsargs=hsargs,
+              hcrfun=mcdahcr,sampleCE=tasCPUE,sampleFIS=tasFIS,sampleNaS=tasNaS,
+              getdata=tasdata,calcpopC=calcexpectpopC,varyrs=7,startyr=32,
+              cleanslate=TRUE,verbose=TRUE,doproject=TRUE,ndiagprojs=3)
 #> All required files appear to be present 
 #> Files read, now making zone 
 #> Now estimating population productivity 
@@ -145,12 +136,17 @@ source(paste0(ddir,"aMSEUse/scenarios/MSE_Source.R"))
 #> exploitB Stable 
 #> recruitment Stable 
 #> spawning depletion Stable 
-#> Time difference of 21.79685 secs
+#> Time difference of 21.75963 secs
 #> Conditioning on the Fishery data
 #> Doing the projections
-
 # make results webpage ---------------------------------------------------------
-replist <- list(starttime=as.character(starttime),endtime=as.character(projtime))
+replist <- list(starttime=as.character(out$starttime),
+                endtime=as.character(out$projtime))
+glb <- out$glb
+runnotes <- paste0(out$ctrl$runlabel,":  RunTime = ",out$tottime,
+                   "  replicates = ",glb$reps,",   years projected = ",glb$pyrs,
+                   "  Populations = ",glb$numpop," and SAU = ",glb$nSAU,
+                   "  Randomseed for conditioning = ",out$ctrl$randseed)
 
 # Unhash the make_html command to generate the results webspage
 # make_html(
@@ -161,7 +157,7 @@ replist <- list(starttime=as.character(starttime),endtime=as.character(projtime)
 #   runnotes = NULL,
 #   verbose = FALSE,
 #   packagename = "aMSE",
-#   htmlname = "aMSE"
+#   htmlname = "hs652510"
 # )
 ```
 
@@ -169,7 +165,7 @@ After running the whole, even if you do not generate the results
 webpage, you could also try:
 
 ``` r
-str(zoneDP,max.level=1)
+str(out$zoneDP,max.level=1)
 #> List of 17
 #>  $ SAU     : num [1:28] 6 6 6 7 7 7 8 8 9 9 ...
 #>  $ matureB : num [1:30, 1:28, 1:50] 29.5 31.9 33.3 32.9 31.7 ...
