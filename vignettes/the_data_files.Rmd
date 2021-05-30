@@ -98,7 +98,7 @@ The R packages required to run a scenario include at least:
 Most importantly for this document there are also a number of other data files required for a scenario run and these are all _.csv_ files. In the sections below we will go through their structure and contents in detail to act as a guide to their format and functioning:
 
 * a _control.csv_ file (whose name can be anything the user wishes), that holds control options and many other constants.
-* a _population.csv_ file, that holds parameterizations of the biological properties of the _SAU_ and _populations_ that make up the operating model.
+* a _saubiology.csv_ file, that holds parameterizations of the biological properties of the _SAU_ and _populations_ that make up the operating model.
 
 There may also be other data files if such data are available, these include:
 
@@ -130,14 +130,14 @@ knitr::include_graphics(paste0(ddir,"figures/AlternativeMSE.png"))
 
 Within __aMSE__, it is expected that all data files and all result files will be contained in the same directory. Within the __aMSE__ code, this directory is referred to as the _rundir_ (as in run-directory). It is suggested that each scenario run be given a unique name that is then used as the _rundir_ name. For example, if examining the influence of the legal minimum length (LML) on the outcome of using a particular harvest strategy (perhaps the TasmanianHS) one might have the following scenarios: lml140, lml145, lml150, and so on, all contained in a sub-directory named 'scenarios'. This would make future comparisons simpler to select. But of course, a user may name their _rundir_ whatever they wish.
 
-The intent is that the _control.csv_ and _population.csv_ files (and the _jurisdictionHS.R_ file) be stored in the _rundir_. If this means that the _population.csv_ file would be replicated identically in each scenario sub-directory, then, instead, that file can be stored in a separate _datadir_ as an option. Here we will focus solely on the data files. There are (or will be) functions to generate data file templates for each of the data-file types. These can be run and the resulting templates edited to form the required files. Alternatively, the example data-files, made available with the __aMSE__ package, can be copied and edited appropriately as an alternative option.
+The intent is that the _control.csv_ and _saubiology.csv_ files (and the _jurisdictionHS.R_ file) be stored in the _rundir_. If this means that the _saubiology.csv_ file would be replicated identically in each scenario sub-directory, then, instead, that file can be stored in a separate _datadir_ as an option. Here we will focus solely on the data files. There are (or will be) functions to generate data file templates for each of the data-file types. These can be run and the resulting templates edited to form the required files. Alternatively, the example data-files, made available with the __aMSE__ package, can be copied and edited appropriately as an alternative option.
 
 Similarly, within __aMSE__, there are functions to read in each type of data-file. If there is a formatting error within the data-file it should throw an error which identifies where it has gone wrong. Further development will be applied to these error checks.
 
 
 The input data-files all, currently, are required to be _.csv_ files where components with multiple values use a comma as a separator. This makes their preparation using software such as _Microsoft Excel_ relatively simple. 
 
-The first of the two files is the _control.csv_, which contains a wide range of settings concerning the structure of the Operating Model as well as any historical conditioning data from a given fishery, if such conditioning is required. The second file is the _population.csv_ file that contains the data that is used to define the biological properties of the _populations_ that are contained in the _SAU_ that make up the simulated _zone_. The rest of this document provides a detailed description of the contents and format of these files. 
+The first of the two files is the _control.csv_, which contains a wide range of settings concerning the structure of the Operating Model as well as any historical conditioning data from a given fishery, if such conditioning is required. The second file is the _saubiology.csv_ file that contains the data that is used to define the biological properties of the _populations_ that are contained in the _SAU_ that make up the simulated _zone_. The rest of this document provides a detailed description of the contents and format of these files. 
 
 ## The Conditioning Requirements
 
@@ -168,12 +168,12 @@ _use as many lines as required for your own description_
 
 ### START
 
-The start section currently only has three components, a name for the particular run (which no longer gets used, though it remains presents and so could be used) and the full name of the _population.csv_ file (which is expected to be found in the _datadir_, which may or may not be the same as the _rundir_). In each case, note the use of commas to separate the variable's label from the variable's value (cannot be seen if opened in Excel, but as long as the file is saved as a csv file all will be well). The hopefully descriptive text after the variable's value is ignored by the program and can be expanded if desired (as long as it remains as a single line). 
+The start section currently only has three components, a name for the particular run (which no longer gets used, though it remains presents and so could be used) and the full name of the _saubiology.csv_ file (which is expected to be found in the _datadir_, which may or may not be the same as the _rundir_). In each case, note the use of commas to separate the variable's label from the variable's value (cannot be seen if opened in Excel, but as long as the file is saved as a csv file all will be well). The hopefully descriptive text after the variable's value is ignored by the program and can be expanded if desired (as long as it remains as a single line). 
 
 _START_
 
 * _runlabel,	 zoneX,	 label for particular run currently ignored_
-* _datafile,	 zonewest.csv,	 name of popdefs file = population.csv_
+* _datafile,	 zonewest.csv,	 name of popdefs file = saubiology.csv_
 * _bysau,      1, 1=TRUE, 0 = FALSE are we expecting population data by SAU or population_
 
 
@@ -252,7 +252,7 @@ The value of _larvdisp_ is used to construct a simple larval movement matrix tha
 
 ### RANDOM
 
-There will often be a need to control the generation of random numbers used during both the definition of the populations and the projections. The use of a random seed is especially important when conditioning the operating model as many random numbers are used during that process and if the conditioning is intending to simulate a specific fishery then the distribution of productivity needs to remain the same during each model run. The truth of this will become more apparent during the description of the _population.csv_ file contents and uses in sections below. 
+There will often be a need to control the generation of random numbers used during both the definition of the populations and the projections. The use of a random seed is especially important when conditioning the operating model as many random numbers are used during that process and if the conditioning is intending to simulate a specific fishery then the distribution of productivity needs to remain the same during each model run. The truth of this will become more apparent during the description of the _saubiology.csv_ file contents and uses in sections below. 
 
 The use of specific random seeds might be wanted, for example, if one wanted to be sure to repeat a particular analysis exactly, of perhaps to see only the effect of changing an argument, perhaps the LML, while making no other changes. So, to ensure the production of the same sequence of pseudo-random numbers one uses _set.seed_. Under _RANDOM_ we have two values, the first, _randomseed_ is used for repeatability of population generation when conditioning the model. By default one would expect this to have a value. The second value, _randomseedP_ is used for repeatability during the projections. Each scenario should have a different _randomseed_ and, optionally, _randomseedP_. One can (should) use _getseed()_ from __rutilsMH__ to generate such seeds. It is recommended that one not try to generate one by oneself. 12345 tends to be used more often than would be expected at random(!) so it, and others akin to it are just not good enough. 
 
@@ -348,7 +348,7 @@ _laterdata,lateLF-84-20.csv_
 
 <br><br>
 
-# The _population.csv_ File
+# The _saubiology.csv_ File
 
 
 This file is identified in the _control_ file. This also starts off with some optional descriptive text lines.
@@ -359,7 +359,7 @@ _These are randomly aligned to each population except for the proportion of recr
 
 _which is literally allocated down in the popREC section_
 
-As many of these as are required can be included. The real input is signaled by the _SPATIAL_ heading, though this is not currently used explicitly. The _population.csv_ file contents are read in by the function _readsaudatafile_, and each variable is identified and selected by its name (so type carefully), though they are split into groups that relate to their function. First there are lines describing the implied geographical structure being simulated, then comes a matrix of properties for each _SAU_, following on from the _VARS_ heading.
+As many of these as are required can be included. The real input is signaled by the _SPATIAL_ heading, though this is not currently used explicitly. The _saubiology.csv_ file contents are read in by the function _readsaudatafile_, and each variable is identified and selected by its name (so type carefully), though they are split into groups that relate to their function. First there are lines describing the implied geographical structure being simulated, then comes a matrix of properties for each _SAU_, following on from the _VARS_ heading.
 
 Not all variables input are used to define probability density functions. Thus, each of the _nsau_, _saupop_, _saunames_ are defined explicitly after deciding on the geographical structure to impose. They need to be listed in the order in which they are expected to occur along the coast. Each population is a member of a given _SAU_, and here we are using the Tasmanian block number as the SAU index (and the _saunames_). Each SAU can have a different number of populations. 
 
@@ -430,7 +430,7 @@ This is a troublesome variable. Previous work has generally assumed a natural mo
 
 ### Recruitment
 
-The average unfished recruitment is a major influence on the productivity of each population. During conditioning it is recommended that this be one of the first variables to adjust to set-up each populations unfished production. At very least it should be possible to determine the relative long-term production of each SAU, and this can be used as a guide to determine the relative productivity of each SAU and this should then be distributed among its constituent populations. If a time-series of GPS data-logger information is available (or potentially of a series of surveys) this can be used to scale the relative productivity of each constituent population within SAU (this is done in the _propREC_ section of the _population.csv_ file, as described below). The _AvRec_ value, in each case, is in linear-space for ease of use, but is commonly expressed as log(AvRec) in the model. This is defined using steepness as shown in the _zoneCOAST_ section above.
+The average unfished recruitment is a major influence on the productivity of each population. During conditioning it is recommended that this be one of the first variables to adjust to set-up each populations unfished production. At very least it should be possible to determine the relative long-term production of each SAU, and this can be used as a guide to determine the relative productivity of each SAU and this should then be distributed among its constituent populations. If a time-series of GPS data-logger information is available (or potentially of a series of surveys) this can be used to scale the relative productivity of each constituent population within SAU (this is done in the _propREC_ section of the _saubiology.csv_ file, as described below). The _AvRec_ value, in each case, is in linear-space for ease of use, but is commonly expressed as log(AvRec) in the model. This is defined using steepness as shown in the _zoneCOAST_ section above.
 
 
 * _AvRec,222500, 390000, 128000, 745000, 690000, 1420000, 1250000, 375000, unfished recruitment R0_

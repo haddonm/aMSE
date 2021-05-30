@@ -136,10 +136,14 @@ do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
                          B0=sum(getvar(zoneC,"B0")),
                          ExB0=sum(getvar(zoneC,"ExB0")))
     plotZone(outzone,rundir,glb,CIprobs=c(0.05,0.5,0.95),addfile=TRUE)
+  } else { # in case doproject = FALSE
+    zoneDP <- NULL
+    sauout <- NULL
+    outzone <- NULL
   }
   projtime <- Sys.time()
   tottime <- round((projtime - starttime),3)
   out <- list(tottime=tottime,projtime=projtime,starttime=starttime,
-              glb=glb,ctrl=ctrl,zoneDD=zoneDD,zoneDP=zoneDP,projC=projC,
-              condC=condC,sauout=sauout,outzone=outzone)
+              glb=glb,ctrl=ctrl,zoneC=zoneC,zoneDD=zoneDD,zoneDP=zoneDP,
+              projC=projC,condC=condC,sauout=sauout,outzone=outzone,zone=zone)
 } # end of do_MSE

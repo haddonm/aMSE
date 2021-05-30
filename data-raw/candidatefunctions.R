@@ -180,102 +180,71 @@ answer <- makewidedat(lf10,mids)
 
 # R = exp(Xt)   where X is the predicted mean from the Beverton-Holt equation
 
-# MSE_source function -------------------------------------------------------
+# pot Catch vs Productivity function -------------------------------------------------------
 
-
-do_MSE <- function(rundir,controlfile,datadir,cleanslate,verbose,doproject,
-                   varyrs,startyr,hsargs,
-                   hcrfun,sampleCE,sampleFIS,sampleNaS,getdata,calcpopC,
-                   ndiagprojs=3) {
-# generate equilibrium zone ----------------------------------------------------
-  starttime <- (Sys.time())
-  zone <- makeequilzone(rundir,controlfile,datadir,
-                        cleanslate=cleanslate,verbose=verbose)
-  equiltime <- (Sys.time()); if (verbose) print(equiltime - starttime)
-  # declare main objects -------------------------------------------------------
-  glb <- zone$glb
-  ctrl <- zone$ctrl
-  zone1 <- zone$zone1
-  projC <- zone$zone1$projC
-  condC <- zone$zone1$condC
-  zoneC <- zone$zoneC
-  zoneD <- zone$zoneD
-  product <- zone$product
-  # save some equil results ----------------------------------------------------
-  biology_plots(rundir, glb, zoneC)
-  plotproductivity(rundir,product,glb)
-  numbersatsize(rundir, glb, zoneD)
-  #Condition on Fishery --------------------------------------------------------
-  if (verbose) cat("Conditioning on the Fishery data  \n")
-  zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,condC,calcpopC=calcpopC,
-                        sigR=1e-08,sigB=1e-08)
-  hyrs <- glb$hyrs
-  propD <- t(getzoneprops(zoneC,zoneDD,glb,year=hyrs))
-  addtable(round(propD,4),"propertyDD.csv",rundir,category="zoneDD",caption=
-             "Properties of zoneD after conditioning on historical catches.")
-  addtable(round(t(zoneDD$harvestR[(hyrs-9):hyrs,]),4),"final_harvestR.csv",
-           rundir,category="zoneDD",
-           caption="Last ten years of population vs harvest rate.")
-  popdefs <- getlistvar(zone$zoneC,"popdef")
-  addtable(round(t(popdefs),3),"popdefs.csv",rundir,category="zoneDD",
-           caption="Population vs Operating model parameter definitions")
-  plotconditioning(zoneDD,glb,zoneC,condC$histCE,rundir)
-  # do projections ------------------------------------------------------------
-  if (doproject) {
-    if (verbose) cat("Doing the projections \n")
-    # uses Tasmania's HCR; generation of indata needs generalization
-    indata <- list(arrce=condC$histCE,yearnames=rownames(condC$histCE),
-                   acatches=tail(condC$histCatch,1),fis=NULL,nas=NULL)
-    cmcda <- mcdahcr(indata,hsargs=hsargs,saunames=glb$saunames)
-    pms <- cmcda$pms
-    multTAC <- cmcda$multTAC
-    out <- prepareprojection(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
-                             multTAC=multTAC,calcpopC=calcpopC,zoneDD=zoneDD,
-                             ctrl=ctrl,varyrs=varyrs,lastsigR = ctrl$withsigR)
-    zoneDP <- out$zoneDP
-    projC <- out$projC
-    zoneCP <- out$zoneCP
-    zoneDDR <- out$zoneDDR
-    zoneDP <- doprojections(ctrl,zoneDP,zoneCP,condC$histCE,glb,hcrfun=hcrfun,
-                            hsargs,sampleCE=sampleCE,sampleFIS=sampleFIS,
-                            sampleNaS=sampleNaS,getdata=getdata,calcpopC=calcpopC)
-    histCE <- condC$histCE
-    B0 <- getvar(zoneC,"B0")
-    ExB0 <- getvar(zoneC,"ExB0")
-    sauout <- sauplots(zoneDP,zoneDDR,glb,rundir,B0,ExB0,startyr=startyr,
-                       addCI=TRUE,histCE=histCE)
-    diagnosticsproj(sauout$zonePsau,glb,rundir,nrep=ndiagprojs)
-    outzone <- poptozone(zoneDP,glb,
-                         B0=sum(getvar(zoneC,"B0")),
-                         ExB0=sum(getvar(zoneC,"ExB0")))
-    plotZone(outzone,rundir,glb,CIprobs=c(0.05,0.5,0.95),addfile=TRUE)
-  }
-  projtime <- Sys.time()
-  tottime <- round((projtime - starttime),3)
-  out <- list(glb=glb,ctrl=ctrl,zoneDD=zoneDD,zoneDP=zoneDP,
-              tottime=tottime,projtime=projtime,starttime=starttime)
-} # end of do_MSE
+popdefs <- getlistvar(out$zoneC,"popdef")
+propD <- getzoneprops(out$zoneC,out$zoneDD,out$glb,year=glb$hyrs)
+msy <- findmsy(out$zone$product)[,"Catch"]
+nsau <- glb$nSAU
+saunames <- glb$saunames
+plts <- getparplots(length(msy))
+histcat <- out$condC$histCatch
+yrs <- as.numeric(rownames(histcat))
+nyrs <- length(yrs)
+plotprep(width=6,height=8,newdev = FALSE)
+parset(plots=plts)
+for (i in 1:nsau) {
+  plot(yrs,histcat[,i],type="l",lwd=2,xlab="",ylab=paste0("SAU ",saunames[i]),
+       panel.first=grid())
+  abline(h=c(msy[i],geomean(histcat[,i])),lwd=c(2,1),col=c(2,4),
+         lty=c(1,2))
+ label <- paste0("depletion = ",round(propD["SpBDepl",i],3))
+ x <- trunc(nyrs/4)
+ text(yrs[x],5,label,cex=1.0,pos=4)
+}
 
 
 
 
 
 
+# digits by row ----------------------------------------------------------------
+library(knitr)
+
+
+
+
+x <- matrix(c(rnorm(5,mean=5,sd=1),seq(1,10,1)),nrow=3,ncol=5,byrow=TRUE,
+            dimnames=list(1:3,1:5))
+digitsbyrow(x, c(3,0,0))
+
+
+
+digitsbyrow
+function(df, digits) {
+
+  df <- propDD
+  digits=c(0,2,3,3,3,3,2,3,3,3,3,3,0,3,3,1)
+
+  tmp0 <- data.frame(t(df))
 
 
 
 
 
 
-
-
-
-
-
-
-
-
-
+  tmp1 <- mapply(
+    function(df0, digits0) {
+      formatC(df0, format="f", digits=digits0)
+    },
+    df0=tmp0, digits0=digits
+  )
+  tmp1 <- data.frame(t(tmp1))
+  rownames(tmp1) <- rownames(df)
+  colnames(tmp1) <- colnames(df)
+  if (class(df)[1] == "matrix") tmp1 <- as.matrix(tmp1)
+  return(tmp1)
+}
 
 
 

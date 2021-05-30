@@ -112,7 +112,7 @@ $${\mathbf{{N}^{*}-{S_{p}^{h}}{G_p}{S_{p}^{h}}{N}^{*} = {N}^{*}({I-}{S_{p}^{h}}{
 where $\mathbf{I}$ is the unit matrix, which, if we invert the term in brackets, finally implies:
 
 $${\mathbf{{N}^{*}=\left ({I}-{S_{p}^{h}}{G_p}{S_{p}^{h}} \right )^{-1} {R}}}$$
-If, however, there is even a minor degree of larval dispersal, and for blacklip abalone in Tasmania a value of 0.5 percent (0.005) between populations is plausible, then the analytical solution is no longer valid. In practice, within __aMSE__, the R-package from this project, the analytical solution is used to obtain the starting point for an iterative application of the dynamics from __Equ 1__ until an equilibrium is obtained (see the function _testequil_).
+If, however, there is even a minor degree of larval dispersal, and for blacklip abalone in Tasmania a value of 0.5 percent (0.005) between populations is plausible, then the analytical solution is no longer valid. In practice, within __aMSE__, the R-package from this project (R Core Team, 2020; Haddon, 2021), the analytical solution is used to obtain the starting point for an iterative application of the dynamics from __Equ 1__ until an equilibrium is obtained (see the function _testequil_).
 
 ## Biology and Stock Related Statistics
 
@@ -373,7 +373,7 @@ arrows(23,91,30,91,length=0.1,lwd=2,col=1)
 
 Haddon, M. (2011) _Modelling and Quantitative Methods in Fisheries_. 2nd Ed. CRC/Chapman & Hall. 449p.
 
-Haddon, M. (2020) _Using R for Modelling and Quantitative Methods in Fisheries_. The R Series. CRC/Chapman & Hall.  337p.
+Haddon, M. (2021) _Using R for Modelling and Quantitative Methods in Fisheries_. The R Series. CRC/Chapman & Hall.  337p.
 
 Haddon, M. and F. Helidoniotis (2013) Legal minimum lengths and the management of abalone fisheries. _Journal of Shellfish Research_ __32__:197-208
 
@@ -387,6 +387,8 @@ Helidoniotis, F., Haddon, M., Tuck, G., and D. Tarbath (2011) The relative suita
 
 Miller, K.J., Maynard, B.T. and C.N. Mundy (2008) Genetic diversity and gene flow in
 collapsed and healthy abalone fisheries. _Molecular Ecology_ __18__:200-211.
+
+R Core Team (2020). _R: A language and environment for statistical computing._ R Foundation for Statistical Computing, Vienna, Austria. URL https://www.R-project.org/.
 
 Sullivan, P.J., Han-Lin Lai, and V.F. Gallucci (1990) A catch-at-length analysis that incorporates a stochastic model of growth. _Canadian Journal of Fisheries and Aquatic Sciences_ __47__: 184-198.
 
