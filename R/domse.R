@@ -1,7 +1,7 @@
 
 
 
-#' @title do_MSE an ecapsulating function to hold the details of a single run
+#' @title do_MSE an encapsulating function to hold the details of a single run
 #'
 #' @description do_MSE is a form of meta-function that contains the code and
 #'     function calls that constitute a single scenario run for aMSE. This is
@@ -12,7 +12,7 @@
 #'     to propagate all changes to the code now in this function to all the
 #'     separate MSE run files used to manage each scenario. A potential flaw
 #'     lies with the need to apply the jurisdictionHS functions to any
-#'     histirical fishery data used to condition the operating model, ready for
+#'     historical fishery data used to condition the operating model, ready for
 #'     the first year of the projections. Currently, the code used is unique to
 #'     the Tasmanian case and this obviously still requires generalization.
 #'     This may require a new function to be produced in each jurisdictionHS.R

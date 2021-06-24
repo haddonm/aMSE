@@ -1,5 +1,43 @@
 
 
+#' @title diagnostics generates an array of diagnostic plots
+#'
+#' @description diagnostics can generates an array of diagnostic plots,
+#'     however, currently it only plots the selectivity
+#'
+#' @param zoneC the constants for the zone simulated
+#' @param zoneD the dynamic aspects of the zone simulated
+#' @param glob the general globals
+#' @param plot plot the output or not; default = TRUE
+#'
+#' @return invisibly returns the unique values of LML
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'   print("still to devise an example.")
+#' }
+diagnostics <- function(zoneC,zoneD,glob,plot=TRUE) {   # inzone <- testzone
+  useLML <- sapply(zoneC,"[[","LML") # pulls out vectors
+  colLML <- apply(useLML,2,unique)
+  valLML <- unique(colLML)
+  nLML <- length(valLML)
+  midpts <- glob$midpts
+  Nclass <- glob$Nclass
+  plotprep(width=6,height=4)
+  plot(midpts,seq(0,1,length=Nclass),type="n",xlab="",
+       ylab="",ylim=c(0,1.025),yaxs="i",panel.first=grid())
+  for (i in 1:nLML) {
+    pick <- which(colLML == valLML[i])
+    lines(midpts,zoneC[[pick[1]]]$Select[,1],lwd=2,col=i)
+  }
+  title(ylab=list("Selectivity", cex=1.0, font=7),
+        xlab=list("Shell Length (mm)", cex=1.0, font=7))
+  return(invisible(valLML))
+}  # end of diagnostics
+
+
+
 #' @title initiateHS applies HS to the last years of the historical conditioning
 #'
 #' @description initiateHS uses the last years of fishery conditioning to run
@@ -57,6 +95,66 @@ initiateHS <- function(zoneDP,zoneCP,inN,acatch,sigmar,sigmab,glb) {
   }
   return(zoneDP)
 } # end on initiateHS
+
+
+#' @title makefilename Generates a filename for output files
+#'
+#' @description makefilename Generates a filename for output files based upon
+#'     he name of the HCR (hcrLabel), the runlabel, the number of reps and
+#'     the initial depletion (initDepl), which should be sufficient to
+#'     uniquely identify any different scenarios to be run
+#'     Uses splitDate.
+#'
+#' @param hcrLabel the name of the harvest strategy beign used
+#' @param runlabel the optional additional label for each run
+#' @param reps the number of iterations of the MSE run of the dynamics
+#' @param initDepl the initial depletion for the zone
+#' @return  makefilename generates a filename for output files
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#'  tmp <- splitDate()
+#'  print(tmp)
+#'  print(names(tmp))
+#'  print(as.numeric(tmp[1:3]))
+#'  print("still need a full example for this function")
+#' }
+makefilename <- function(hcrLabel,runlabel,reps,initDepl) {
+  dates <- splitDate()   # Devise filenames for this run from its details and date
+  if (nchar(runlabel) == 0) {
+    fileadd <- paste(hcrLabel,reps,initDepl,dates[5],sep="_")
+  } else { fileadd <- paste(hcrLabel,reps,initDepl,dates[5],runlabel,sep="_")
+  }
+  return(fileadd)
+}  # end of makefilename
+
+
+#' @title makeLabel converts a vector of numbers or strings into a label
+#'
+#' @description makeLabel converts a vector of numbers or strings into a
+#'     single label
+#'
+#' @param invect the input vector of numbers or strings
+#' @param insep the seperator between each part of the label
+#'
+#' @return a text string
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'  x <- 1:5
+#'  makeLabel(x,insep="_")
+#'  makeLabel(x,insep="-")
+#' }
+makeLabel <- function(invect,insep="_") {
+  nlab <- length(invect)
+  invect <- as.character(invect)
+  ans <- invect[1]
+  if (nlab > 1) for (i in 2:nlab) ans <- paste(ans,invect[i],sep=insep)
+  return(ans)
+}  # end of makeLabel
+
 
 
 #' @title oneyearC conducts one year's dynamics using catch not harvest
@@ -425,3 +523,206 @@ plotproj <- function(invar,varlabel,plotconst,miny=0,
   mtext("Years",side=1,line=-0.1,outer=TRUE,cex=1.0,font=7)
   mtext(varlabel,side=2,line=-0.1,outer=TRUE,cex=1.0,font=7)
 } # end of plotproj
+
+
+
+#' @title read_conddata reads datasets used to condition the operating model
+#'
+#' @description read_conddata facilitates the reading of dataset used to
+#'     condition the operating model. It is used in all aspects of conditioning,
+#'     including attempting to model the productivity of each SAU using either
+#'     production models or size-structured models. Once conditioned the catches
+#'     can also be used to generate the initial depletion of the operating
+#'     model, for scenarios which attempt to closely simulate the dynamics of an
+#'     actual fishery. Currently, the function only reads in time-series of
+#'     catches for each SAU across the years of the fishery. The current format
+#'     for the input csv file should have the fishery name in the first line,
+#'     then a heading NYRS with the number of years following that, separated by
+#'     a comma, then another heading YEARS, sau1, sau2, sau3,...,saulast,
+#'     followed by nyrs lines containing the year and catches for each SAU
+#'
+#' @param filename the filename of the text file containing the data to be used
+#'     in the conditioning.
+#'
+#' @return a matrix of reported catches for years vs SAU
+#' @export
+#'
+#' @examples
+#' print("set up a csv file with the format given in the description")
+#' print("then call condat <- read_conddata('yourname.csv')) to read the data")
+read_conddata <- function(filename) {  # filename=filen
+  dat <- readLines(filename)
+  sps <- gsub(",","",removeEmpty(dat[1]))
+  nyrs <- getsingleNum("NYRS",dat)
+  loccat <- grep("YEARS",dat)
+  first <- dat[loccat]
+  columns <- removeEmpty(unlist(strsplit(first,",")))
+  columns[1] <- "year"
+  numcol=length(columns)
+  catches <- matrix(0,nrow=nyrs,ncol=numcol,dimnames=list(1:nyrs,columns))
+  for (i in 1:nyrs) { # i=1
+    txt <- dat[(loccat + i)]
+    catches[i,] <- as.numeric(unlist(strsplit(txt,",")))
+  }
+  ceyrs <- getsingleNum("CEYRS",dat)
+  if ((is.null(ceyrs)) | (is.na(ceyrs))) stop("CPUE data missing")
+  locce <- grep("CPUE",dat)
+  columns <- removeEmpty(unlist(strsplit(dat[locce],",")))
+  columns[1] <- "year"
+  numcol=length(columns)
+  cpue <- matrix(0,nrow=ceyrs,ncol=numcol,dimnames=list(1:ceyrs,columns))
+  for (i in 1:ceyrs) { # i=1
+    txt <- dat[(locce + i)]
+    cpue[i,] <- as.numeric(unlist(strsplit(txt,",")))
+  }
+  # Need to enter the LML by year and block
+  ans <- list(catches=catches,cpue=cpue)
+  return(ans)
+} # end of read_condata
+
+#' @title readhcrfile literally reads a csv file for controling the AbMSE
+#'
+#' @description readhcrfile complements the readdatafile. The MSE requires
+#'     a data file to condition the operating model but it also needs a
+#'     control file to setup the details of the simulation test being
+#'     conducted. See ctrlfileTemplate./
+#'
+#' @param infile the filename of the control file
+#'
+#' @return a list object containing the contro variables
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'   print("Still to be developed.")
+#' }
+readhcrfile <- function(infile) {  # infile <- "C:/A_CSIRO/Rcode/AbMSERun/ctrl_west.csv"
+  indat <- readLines(infile)   # reads the whole file as character strings
+  begin <- grep("batch",indat)
+  batch <-  getLogical(indat[begin],1) # minimum size class
+  reps <- getsingleNum("replicates",indat)
+  initDepl <- getsingleNum("initDepl",indat)
+  assessInterval <- getsingleNum("assessInterval",indat)
+  recthreshold <- getsingleNum("recthreshold",indat)
+  begin <- grep("hcrLabel",indat)
+  hcrLabel <- getStr(indat[begin],1)
+  begin <- grep("ConstC",indat)
+  ConstC <- getLogical(indat[begin],1)
+  begin <- grep("mcdaHCR",indat)
+  if (length(begin) > 1) begin <- begin[2]
+  mcdaHCR <- getLogical(indat[begin],1)
+  begin <- grep("ConstH",indat)
+  ConstH <- getLogical(indat[begin],1)
+  pickSched <- getsingleNum("pickSched",indat)
+  begin <- grep("TACadj",indat)
+  TACadj <- getConst(indat[begin],11,2)
+  begin <- grep("TACadj2",indat)
+  TACadj2 <- getConst(indat[begin],11,2)
+  begin <- grep("mcdaWts",indat)
+  mcdaWts <- getConst(indat[begin],3,2)
+  runlabel <-  paste0("_",assessInterval,"_",pickSched,"_",mcdaWts[1],"_",mcdaWts[2])
+  begin <- grep("postmcdaWts",indat)
+  postmcdaWts <- getConst(indat[begin],3,2)
+  begin <- grep("withVariation",indat)
+  withVariation <- getLogical(indat[begin],1)
+  cpuePeriod <- getsingleNum("cpuePeriod",indat)
+  maxGrad4 <- getsingleNum("maxGrad4",indat)
+  maxRate1 <- getsingleNum("maxRate1",indat)
+  begin <- grep("CETarg",indat)
+  CETarg <- getConst(indat[begin],4,2)
+  begin <- grep("deltaCE",indat)
+  deltaCE <- getConst(indat[begin],4,2)
+  implementE <- getsingleNum("implementE",indat)
+  begin <- grep("LRPTAC",indat)
+  LRPTAC <- getLogical(indat[begin],1)
+  TACLower <- getsingleNum("TACLower",indat)
+  TACUpper <- getsingleNum("TACUpper",indat)
+  refyr <- getsingleNum("refyr",indat)
+  withsigR <- getsingleNum("withsigR",indat)
+  withsigB <- getsingleNum("withsigB",indat)
+  withsigCE <- getsingleNum("withsigCE",indat)
+  outctrl <- list(batch,reps,initDepl,assessInterval,runlabel,
+                  recthreshold,hcrLabel,mcdaHCR,ConstC,mcdaWts,postmcdaWts,
+                  pickSched,TACadj,TACadj2,withVariation,cpuePeriod,maxGrad4,
+                  maxRate1,CETarg,deltaCE,
+                  implementE,LRPTAC,TACLower,TACUpper,refyr,ConstH,
+                  withsigR,withsigB,withsigCE)
+  names(outctrl) <- c("batch","reps","initDepl","assessInterval","runlabel",
+                      "recthreshold","hcrLabel","mcdaHCR","ConstC","mcdaWts",
+                      "postmcdaWts","picksched","TACadj","TACadj2",
+                      "withVariation","cpuePeriod","maxGrad4","maxRate1",
+                      "CETarg","deltaCE","implementE","LRPTAC","TACLower",
+                      "TACUpper","refyr","ConstH","withsigR","withsigB",
+                      "withsigCE")
+  return(outctrl)
+} # end of readhcrfile
+
+
+#' @title resetSel alters the selectivity of all popualtions
+#'
+#' @description resetSel alters the selectivity of all populations before
+#'     proceeding with further dynamics
+#'
+#' @param inzone the simulated zone
+#' @param inLML the new LML
+#' @param glob the global variables object
+#'
+#' @return a revised zone
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'   print("develop an example.")
+#'
+#' }
+resetSel <- function(inzone,inLML,glob) {  # inzone <- zone; inLML <- testLML
+  outzone <- inzone
+  hyrs <- glob$hyrs
+  nblock <- glob$nblock
+  Nclass <- glob$Nclass
+  midpts <- glob$midpts
+  numpop <- glob$numpop
+  useLML <- matrix(rep(inLML,hyrs),nrow=hyrs,ncol=nblock,byrow=TRUE)
+  zSelect <- matrix(0,nrow=Nclass,ncol=hyrs,dimnames=list(midpts,1:hyrs))
+  for (pop in 1:numpop) {  #  pop <- 1
+    popparam <- inzone[[pop]]$popdef
+    blk <- popparam["block"]
+    verLML <- unique(useLML[,blk])
+    selL50 <- popparam["SelP1"]
+    selL95 <- popparam["SelP2"]
+    for (LML in verLML) {
+      Sel <- logistic((LML+selL50),(LML+selL95),midpts)    # uses SelP1 and SelP2
+      pick <- which(useLML[,blk] == LML)
+      zSelect[,pick] <- rep(Sel,length(pick))
+      outzone[[pop]]$LML[pick] <- LML
+    }
+    outzone[[pop]]$Select <- zSelect
+    outzone[[pop]]$SelWt <- zSelect * outzone[[pop]]$WtL
+  }
+  return(outzone)
+}
+
+
+
+#' @title scaletoOne divides a vector by its means to scale it to mean = 1.0
+#'
+#' @description scaletoOne divides a vector by its mean which scales it
+#'     to have a mean of 1.0
+#'
+#' @param invect te vector in need of re-scaling
+#'
+#' @return a rescaled vector
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'   x <- 1:9
+#'   y <- scaletoOne(x)
+#'   cbind(x,y)
+#' }
+scaletoOne <- function(invect) {
+  avCE <- mean(invect,na.rm=T)
+  invect <- invect/avCE
+  return(invect)
+} # end of scaleto1
+

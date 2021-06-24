@@ -163,7 +163,6 @@ dosauplot <- function(ylabel,prerep,postrep,glb,startyr,addCI=FALSE,
                       CIprobs=c(0.05,0.5,0.95),histCE=NULL) {
   # ylabel="harvestR";prerep=zoneDsau[["harvestR"]];postrep=zonePsau[["harvestR"]];glb=glb;
   # startyr=startyr;histCE=histCE; CIprobs=c(0.05,0.5,0.95); addCI=TRUE
-
   label <- glb$saunames
   nsau <- glb$nSAU
   sauCI <- vector("list",nsau)
@@ -193,7 +192,6 @@ dosauplot <- function(ylabel,prerep,postrep,glb,startyr,addCI=FALSE,
       lines(pyrnames,CI[1L,],lwd=1L,col=2L)
       lines(pyrnames,CI[3L,],lwd=1L,col=2L)
     }
-
     if (is.numeric(histCE)) {  # add the historical cpue line
       nhistce <- dim(histCE)[1L]
       if (length(pickyr) > nhistce) {

@@ -3,29 +3,29 @@
 
 # LATEST UPDATE
 
--   2021-05-27 aMSE 0.0.0.2400 Have encapsulated the bulk of running the
-    MSE for a particular scenario into the function ‘do\_MSE’. Check out
-    its help page but also see it in action in the example within this
-    readme file or in the new version of first\_use\_saudata.R in
-    \~Dropboxabalone MSE\_files. I have also updated the
-    aMSE\_0.0.0.2400.tar.gz file. Any issues get in touch.
+  - 2021-06-24 aMSE 0.0.0.2100 Big jump in number as some larger
+    changes. I have removed a bunch of deprecated functions (which are
+    now in ‘deprecated.R’ in the data-raw directory). I have tidied many
+    other functions, and have modified listall files to aid in the
+    auto-documentation of the package.
 
 # aMSE
 
 <!-- badges: start -->
+
 <!-- badges: end -->
 
 This packages up a new Abalone Management Strategy Evaluation framework.
 It has a novel structure that is based around the spatial ideas of
 populations within spatial management units (SAUs), within a zone:
 
--   zone - highest geogrpahical level. Is simply the totality of the
+  - zone - highest geogrpahical level. Is simply the totality of the
     spatial management units.
 
--   SAU - spatial assessment units. In Tasmania these would currently be
+  - SAU - spatial assessment units. In Tasmania these would currently be
     the classical statistical blocks.
 
--   population - literally a population. These are the active components
+  - population - literally a population. These are the active components
     within the simulation framework. The dynamics of the simulation are
     based around the populations, although, with positive larval
     dispersal (the default) there is some dependency of neighbouring
@@ -45,7 +45,7 @@ An important change from previous designs is that larval dispersal is
 implemented explicitly rather than implicitly being held constant. This
 alters the dynamics so that analytical equilibrium methods no longer
 work and we need to resort to iterative approaches to equilibrium if the
-larval dispersal rate is &gt; 0.0.
+larval dispersal rate is \> 0.0.
 
 Of course, adding such a component increases the number of options that
 may need to be explored, but currently we envisage including a very low,
@@ -91,6 +91,7 @@ library(aMSE)
 library(rutilsMH)
 library(makehtml)
 library(knitr)
+#> Warning: package 'knitr' was built under R version 4.0.5
 # OBVIOUSLY you should modify the rundir and datadir to suit your own computer
 if (dir.exists("c:/Users/User/DropBox")) {
   ddir <- "c:/Users/User/DropBox/A_codeUse/"
@@ -102,8 +103,8 @@ verbose <- TRUE
 rundir <- paste0(ddir,"aMSEUse/scenarios/HS652510")
 datadir <- paste0(ddir,"aMSEUse/scenarios/tasdata")
 alldirExists(rundir,datadir,verbose=TRUE)
-#> rundir,  c:/Users/Malcolm/DropBox/A_codeUse/aMSEUse/scenarios/HS652510 :  exists  
-#> datadir,  c:/Users/Malcolm/DropBox/A_codeUse/aMSEUse/scenarios/tasdata :  exists
+#> rundir,  c:/Users/User/DropBox/A_codeUse/aMSEUse/scenarios/HS652510 :  exists  
+#> datadir,  c:/Users/User/DropBox/A_codeUse/aMSEUse/scenarios/tasdata :  exists
 # equilibrium zone -------------------------------------------------------------
 # You now need to ensure that there is, at least, a control.csv, and a 
 # constantsdata.csv file in the data directory plus some other data .csv files
@@ -134,9 +135,9 @@ out <- do_MSE(rundir,controlfile,datadir,hsargs=hsargs,
 #> Now estimating population productivity 
 #> matureB Stable 
 #> exploitB Stable 
-#> recruitment Stable 
+#> recruitment varies 
 #> spawning depletion Stable 
-#> Time difference of 21.75963 secs
+#> Time difference of 41.31817 secs
 #> Conditioning on the Fishery data
 #> Doing the projections
 # make results webpage ---------------------------------------------------------
@@ -167,38 +168,38 @@ webpage, you could also try:
 ``` r
 str(out$zoneDP,max.level=1)
 #> List of 17
-#>  $ SAU     : num [1:28] 6 6 6 7 7 7 8 8 9 9 ...
-#>  $ matureB : num [1:30, 1:28, 1:50] 29.5 31.9 33.3 32.9 31.7 ...
+#>  $ SAU     : num [1:56] 6 6 6 7 7 7 8 8 8 8 ...
+#>  $ matureB : num [1:30, 1:56, 1:100] 139 139 143 145 153 ...
 #>   ..- attr(*, "dimnames")=List of 3
-#>  $ exploitB: num [1:30, 1:28, 1:50] 27.3 23.4 25.2 27.1 26.5 ...
+#>  $ exploitB: num [1:30, 1:56, 1:100] 130 113 105 108 111 ...
 #>   ..- attr(*, "dimnames")=List of 3
-#>  $ midyexpB: num [1:30, 1:28, 1:50] 32.2 28.9 31.1 32.9 32.4 ...
+#>  $ midyexpB: num [1:30, 1:56, 1:100] 152 134 127 133 133 ...
 #>   ..- attr(*, "dimnames")=List of 3
-#>  $ catch   : num [1:30, 1:28, 1:50] 2.8 3.62 3.88 3.68 3.83 ...
+#>  $ catch   : num [1:30, 1:56, 1:100] 11.7 12.3 13.3 16.2 13.3 ...
 #>   ..- attr(*, "dimnames")=List of 3
-#>  $ acatch  : num [1:30, 1:8, 1:50] 13.6 15 15 15.7 16.5 ...
+#>  $ acatch  : num [1:30, 1:8, 1:100] 13.6 16.3 18 18.8 18.8 ...
 #>   ..- attr(*, "dimnames")=List of 3
-#>  $ harvestR: num [1:30, 1:28, 1:50] 0.103 0.154 0.154 0.136 0.144 ...
+#>  $ harvestR: num [1:30, 1:56, 1:100] 0.0897 0.1094 0.126 0.15 0.1198 ...
 #>   ..- attr(*, "dimnames")=List of 3
-#>  $ cpue    : num [1:30, 1:28, 1:50] 194 171 184 196 192 ...
+#>  $ cpue    : num [1:30, 1:56, 1:100] 174 152 143 148 150 ...
 #>   ..- attr(*, "dimnames")=List of 3
-#>  $ cesau   : num [1:30, 1:8, 1:50] 148 127 133 151 172 ...
+#>  $ cesau   : num [1:30, 1:8, 1:100] 170 150 145 148 149 ...
 #>   ..- attr(*, "dimnames")=List of 3
-#>  $ catsau  : num [1:30, 1:8, 1:50] 16 14.8 15.3 13.9 15.7 ...
+#>  $ catsau  : num [1:30, 1:8, 1:100] 16 16.9 18.4 23.1 18.7 ...
 #>   ..- attr(*, "dimnames")=List of 3
-#>  $ recruit : num [1:30, 1:28, 1:50] 21244 61309 70590 28067 24583 ...
+#>  $ recruit : num [1:30, 1:56, 1:100] 167429 195829 168013 103647 142860 ...
 #>   ..- attr(*, "dimnames")=List of 3
-#>  $ deplsB  : num [1:30, 1:28, 1:50] 0.42 0.454 0.473 0.468 0.451 ...
+#>  $ deplsB  : num [1:30, 1:56, 1:100] 0.433 0.433 0.445 0.45 0.474 ...
 #>   ..- attr(*, "dimnames")=List of 3
-#>  $ depleB  : num [1:30, 1:28, 1:50] 0.421 0.362 0.389 0.418 0.409 ...
+#>  $ depleB  : num [1:30, 1:56, 1:100] 0.449 0.389 0.364 0.372 0.384 ...
 #>   ..- attr(*, "dimnames")=List of 3
-#>  $ catchN  : num [1:105, 1:30, 1:28, 1:50] 3.76e-132 1.90e-128 7.03e-125 1.89e-121 3.69e-118 ...
+#>  $ catchN  : num [1:105, 1:30, 1:56, 1:100] 2.35e-131 1.18e-127 4.39e-124 1.18e-120 2.30e-117 ...
 #>   ..- attr(*, "dimnames")=List of 4
-#>  $ Nt      : num [1:105, 1:30, 1:28, 1:50] 2.12e+04 3.14e-07 1.29e-05 3.82e-04 8.25e-03 ...
+#>  $ Nt      : num [1:105, 1:30, 1:56, 1:100] 1.67e+05 2.21e-06 9.08e-05 2.70e-03 5.83e-02 ...
 #>   ..- attr(*, "dimnames")=List of 4
-#>  $ NumNe   : num [1:105, 1:30, 1:28, 1:50] 0 0 0 0 0 0 0 0 0 0 ...
+#>  $ NumNe   : num [1:105, 1:30, 1:56, 1:100] 0 0 0 0 0 0 0 0 0 0 ...
 #>   ..- attr(*, "dimnames")=List of 4
-#>  $ TAC     : num [1:30, 1:50] 703 538 411 409 420 ...
+#>  $ TAC     : num [1:30, 1:100] 703 517 417 425 433 ...
 #>   ..- attr(*, "dimnames")=List of 2
 ```
 

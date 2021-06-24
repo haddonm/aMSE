@@ -180,6 +180,22 @@ answer <- makewidedat(lf10,mids)
 
 # R = exp(Xt)   where X is the predicted mean from the Beverton-Holt equation
 
+oneyearrec <- function(steep,R0,B0,Bsp,sigR,devR=-1,rho=0.0) {
+  if (devR > 0) {
+    epsilon <- devR
+  } else {
+    epsilon <- exp(rnorm(length(Bsp),mean=0,sd=sigR) - (sigR * sigR)/2)
+  }
+  rec <- ((4*steep*R0*Bsp)/((1-steep)*B0+(5*steep-1)*Bsp)) * epsilon
+  return(rec)
+} # end of oneyearrec
+
+
+
+
+
+
+
 # pot Catch vs Productivity function -------------------------------------------------------
 
 popdefs <- getlistvar(out$zoneC,"popdef")
@@ -250,11 +266,19 @@ function(df, digits) {
 
 
 
+x <- matrix(rnorm(25,mean=5,sd=1),nrow=5,ncol=5)
+kablerow(x,rowdigits=c(2,3,4,3,2))
+
+rownames(x) <-  c("a","b","c","d","e")
+colnames(x) <- c(1:5)
+kablerow(x,rowdigits=c(2,3,4,3,2),namerows=TRUE)
 
 
-
-
-
-
+x <- matrix(rnorm(25,mean=5,sd=1),nrow=5,ncol=5)
+numdig <- c(2,3,4,3,2)
+colnames(x) <- 1:5
+kable(x,digits=numdig)
+rownames(x) <- c("a","b","c","d","e")
+kablerow(x,rowdigits=c(2,3,4,3,2),namerows=TRUE)
 
 

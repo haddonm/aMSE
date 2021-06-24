@@ -1,5 +1,6 @@
 ## aMSE Recent Activity.
 
+* 2021-06-24 aMSE 0.0.0.2100 Big jump in number as some larger changes. I have removed a bunch of deprecated functions (which are now in 'deprecated.R' in the data-raw directory). I have tidied many other functions, and have modified listall files to aid in the auto-documentation of the package.
 
 * 2021-05-27 aMSE 0.0.0.2400 Have encapsulated the bulk of running the MSE for a particular scenario into the function 'do_MSE'. Check out its help page but also see it in action in the example within the readme file or in the new version of first_use_saudata.R in ~Dropbox\National abalone MSE\aMSE_files\scenarios\HS652510. I have also updated the aMSE_0.0.0.2400.tar.gz file. Any issues get in touch. 
 
