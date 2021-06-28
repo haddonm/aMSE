@@ -1,4 +1,26 @@
 
+#' @title addNA can add NAs to the start and end of a vector
+#'
+#' @description addNA fulfils a common requirement to expand a vector with NAs
+#'     to assist a plot by ensuring the x and y vectors are the same length.
+#'     It can accept both character and numeric vectors.
+#'
+#' @param x the vector to which NAs are to be added
+#' @param pre how many NA to be added the front
+#' @param post how many to be added to the end
+#'
+#' @return a vector of length(x) + pre + post
+#' @export
+#'
+#' @examples
+#' vect <- rnorm(10,mean=5,sd=1)
+#' addNA(vect,3,5)
+addNA <- function(x,pre,post) { # x=med14; pre=0; post=5
+  n <- length(x) + pre + post
+  if (pre > 0) x <- c(rep(NA,pre),x)
+  if (post > 0) x <- c(x,rep(NA,post))
+  return(x)
+} # end of addNA
 
 # x <- rutilsMH::describefunctions("C:/Users/User/Dropbox/A_code/aMSE/R/","aMSE_utils.R")
 
@@ -78,6 +100,71 @@ alldirExists <- function(indir1,indir2=indir1,make=FALSE,verbose=TRUE) {
     }
   } # end of datadir != rundir
 }  # end of alldirExists
+
+#' @title changevar can alter the value in a single line in, eg, the control file
+#'
+#' @description changevar is a DANGEROUS function for lazy people. I say that
+#'     because it can damage your control files if not used carefully. It speeds
+#'     changing a single value within, say, the control.csv file. For example,
+#'     if one wanted to conduct a retrospective analysis on what would have
+#'     happened should we have introduced the HS sooner, one could use
+#'     something like the following to change the value to 44 implying to start
+#'     projections in 2017.
+#'     changevar(varname="CATCHES",newvalue=44,filename="controlsau.csv",
+#'               rundir=rundir)
+#'      This can only change a single value on a single line but can be used to
+#'      alter the values of the variables listed in 'goodnames'. Currently, this
+#'      only works for Windows machine. Let me know if others are required.
+#'
+#' @param filename name of the file to be changed. eg 'control.csv'
+#' @param rundir name of the scenario directory in which the file is to be found
+#' @param varname the name of the object whose value is to be changed
+#' @param newvalue the new value of the object
+#' @param prompt should allowable names first be listed with current values?
+#' @param verbose should concluding remarks to console be made. default=TRUE
+#'
+#' @return nothing but a file is changed - be careful
+#' @export
+#'
+#' @examples
+#' print("Wait on some time passing")
+changevar <- function(filename,rundir,varname,newvalue,prompt=FALSE,verbose=TRUE) {
+  #  varname = "CATCHES"; newvalue=47; filename="controlsau.csv";rundir=rundir
+  filen <- paste0(rundir,"/",filename)
+  dat <- readLines(filen)
+  goodnames <- c("larvdisp","PROJECT","CATCHES","replicates",
+                 "withsigR","withsigB","withsigCE")
+  ngood <- length(goodnames)
+  if (prompt) {
+    cat("\n Allowable names and current values \n")
+    for (i in 1:ngood) {
+      cat(goodnames[i],"  ",getsingleNum(goodnames[i],dat),"\n")
+    }
+    if (Sys.info()["sysname"] == "Windows") {
+      ans <- winDialog(type = "yesno", message = "Make the value change?")
+      ans <- ifelse(ans == "YES", 1L, 2L)
+    }
+    if (ans == 2) {
+      if (verbose) {
+        label <- paste0("No change made to ",varname)
+      } else { label <- ""}
+      return(cat(label," \n"))
+    }
+  }
+  if (varname %ni% goodnames) {
+    print(goodnames)
+    stop("Input varname in changevar, not in allowable names \n")
+  }
+  pick <- grep(varname,dat)
+  txtbits <- removeEmpty(unlist(strsplit(dat[pick],",")))
+  newtext <- paste0(txtbits[1],",",as.character(newvalue))
+  if (length(txtbits) > 2) newtext <- paste0(newtext,",",txtbits[3])
+  dat[pick] <- newtext
+  writeLines(dat,con=filen)
+  if (verbose) { label <- paste0("Set ",varname," to ",newvalue)
+  } else { label <- "" }
+  return(cat(label," \n"))
+} # end of changevar
 
 #' @title copyto copies the control.csv file from a scenario to a new directory
 #'
@@ -318,6 +405,37 @@ prepareDDNt <- function(inNt,incatchN,glb) { # Nt=zoneDD$Nt; catchN=zoneDD$catch
   }
   return(list(Nt=Nt,catchN=catchN))
 } # end of prepareDDNt
+
+#' @title saveobject is used to save RData files of particular objects
+#'
+#' @description saveobject is used to save RData files of particular objects.
+#'     Currently, after projecting 56 populations for 100 replicates the final
+#'     'out' object is over 500Mb, and zoneDP, the projection object, makes up
+#'     430Mb of that. Save that if you wish, but if, say, one wanted only to
+#'     save the outzone object (which summarizes outcomes at the zone level),
+#'     that is only 22kb. This function facilitates the saving process.
+#'
+#' @param obname the name of the object to be saved, as a character string
+#' @param object the parent object from which the object$obname is to extracted
+#' @param postfix any postfix addition you want for the name default=""
+#' @param rundir the run directory for the scenario
+#'
+#' @return nothing but it does save a file to the rundir
+#' @export
+#'
+#' @examples
+#' print("wait on tempdir use")
+#' # obname="outzone"; postfix="test"; object=out; rundir=rundir
+saveobject <- function(obname,object,postfix="",rundir) {
+  if (nchar(postfix) == 0) {
+    outfile <- paste0(rundir,"/",obname,".RData")
+  } else {
+    outfile <- paste0(rundir,"/",obname,postfix,".RData")
+  }
+  x <- object[[obname]]
+  save(x,file=outfile)
+} # end of save object
+
 
 #' @title summarizeprod generates a summary of the productivity properties
 #'

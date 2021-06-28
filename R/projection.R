@@ -7,7 +7,11 @@
 #'     variation to the dynamics for the last varyrs years. This is so that
 #'     when the projections begin each replicate will already have recruitment
 #'     variability fully developed and there will be no time lag on the
-#'     recruitment and subsequent dynamics.
+#'     recruitment and subsequent dynamics. Take especial note that prior to the
+#'     projections the proposed harvest strategy needs to be applied to the
+#'     historical fishery data (in Tasmania this is currently catches and CPUE).
+#'     This application occurs in lines 60 - 65 in the addrecvar function. This
+#'     WILL NEED ATTENTION with other jurisdictions.
 #'
 #' @param zoneDD the dynamic zone after historical fishery data has been used
 #'     to finalize the conditioning
@@ -34,8 +38,9 @@
 addrecvar <- function(zoneDD,zoneDP,zoneC,glob,condC,ctrl,varyrs,multTAC,
                       calcpopC,sigR=1e-08,sigB=1e-08,lastsigR=0.3) {
  #  zoneDD=zoneDD;zoneDP=zoneDR;zoneC=zoneC;glob=glb
- #  condC=condC;ctrl=ctrl;varyrs=6;lastsigR=lastsigR; multTAC=multTAC
- #  sigR=1e-08; sigB=1e-08; lastsigR=0.1
+ #  condC=condC;ctrl=ctrl;varyrs=7;lastsigR=lastsigR; multTAC=multTAC
+ #  sigR=1e-08; sigB=1e-08;
+
   sauindex <- glob$sauindex
   histC <- condC$histCatch
   yrs <- condC$histyr[,"year"]
@@ -57,11 +62,10 @@ addrecvar <- function(zoneDD,zoneDP,zoneC,glob,condC,ctrl,varyrs,multTAC,
   zoneDDR$Nt[,1:finalyr,,] <- zoneDD$Nt[,1:finalyr,]
   for (iter in 1:reps) { # iter = 1
     for (year in (finalyr+1):nyrs) { # year = finalyr + 1
-      catchsau <- histC[year,]
-      hcrout <- list(acatch=catchsau)
-      popC <- calcpopC(hcrout,exb=zoneDD$exploitB[year-1,],
-                             sauindex,sigmab=sigB)
-    #  exb <- zoneDDR$exploitB[year-1,,iter]
+      catchsau <- histC[year,]       # Use actual catches
+      hcrout <- list(acatch=catchsau) #attention needed in other jurisdictions
+      popC <- calcpopC(hcrout,exb=zoneDD$exploitB[year-1,], # needed to allocate
+                       sauindex,sigmab=sigB)  # SAU catches to populations
       inN <- zoneDDR$Nt[,year-1,,iter]
       out <- oneyearsauC(zoneCC=zoneC,inN=inN,popC=popC,year=year,
                          Ncl=glob$Nclass,sauindex=sauindex,movem=glob$move,
@@ -371,33 +375,34 @@ doprojections <- function(ctrl,zoneDP,zoneCP,otherdata,glb,hcrfun,hsargs,
 #' @examples
 #' print("Could add variation to the harvest rates so that when ")
 #' print("prepareprojection was run the range of initial H values would increase ")
-makezoneDP <- function(projyr,iter,glb) {
+makezoneDP <- function(projyr,iter,glb) { #  projyr=nyrs;iter=reps;glb=glob
   numpop <- glb$numpop
   nSAU <- glb$nSAU
   saunames <- glb$saunames
   N <- glb$Nclass
   SAU <- glb$SAUpop
-  namedims <- list(1:projyr,1:numpop,1:iter)
-  namendims <- list(glb$midpts,1:projyr,1:numpop,1:iter)
+  yrnames <- 1:projyr
+  namedims <- list(yrnames,1:numpop,1:iter)
+  namendims <- list(glb$midpts,yrnames,1:numpop,1:iter)
   MatB <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
   ExplB <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
   midyexpB <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
   catch <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
   acatch <- array(0,dim=c(projyr,nSAU,iter),
-                  dimnames=list(1:projyr,saunames,1:iter)) #aspirational catches
+                  dimnames=list(yrnames,saunames,1:iter)) #aspirational catches
   harvest <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
   cpue <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
   cesau <- array(0,dim=c(projyr,nSAU,iter),
-                 dimnames=list(1:projyr,saunames,1:iter))
+                 dimnames=list(yrnames,saunames,1:iter))
   catsau <- array(0,dim=c(projyr,nSAU,iter),
-                  dimnames=list(1:projyr,saunames,1:iter))
+                  dimnames=list(yrnames,saunames,1:iter))
   recruit <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
   deplSpB <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
   deplExB <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
   catchN <- array(data=0,dim=c(N,projyr,numpop,iter),dimnames=namendims)
   Nt <- array(data=0,dim=c(N,projyr,numpop,iter),dimnames=namendims)
   NumNe <- array(data=0,dim=c(N,projyr,numpop,iter),dimnames=namendims)
-  TAC <- array(0,dim=c(projyr,iter),dimnames=list(1:projyr,1:iter))
+  TAC <- array(0,dim=c(projyr,iter),dimnames=list(yrnames,1:iter))
   zoneDP <- list(SAU=SAU,matureB=MatB,exploitB=ExplB,midyexpB=midyexpB,catch=catch,
                  acatch=acatch,harvestR=harvest,cpue=cpue,cesau=cesau,
                  catsau=catsau,recruit=recruit,deplsB=deplSpB,depleB=deplExB,
@@ -585,12 +590,12 @@ modzoneCSel <- function(zoneC,sel,selwt,glb,yrs) {
 #' print("wait on data files")
 prepareprojection <- function(projC,condC,zoneC,glb,zoneDD,ctrl,varyrs,
                                  multTAC,calcpopC,lastsigR = 0.3) {
-  # projC=projC;condC=condC;zoneC=zoneC; glb=glb; zoneDD=zoneDD; ctrl=ctrl;
-  # varyrs=6;lastsigR=0.1; multTAc=multTAC
+  # projC=projC;condC=condC;zoneC=zoneC;glb=glb;zoneDD=zoneDD;ctrl=ctrl
+  # multTAC=multTAC;calcpopC=calcpopC; varyrs=varyrs;lastsigR = ctrl$withsigR
   if (ctrl$randseedP > 0) set.seed(ctrl$randseedP)
   projyrs <- projC$projyrs
-  projC <- modprojC(zoneC,glb,projC) # include selectivity into projC
-  zoneCR <- modzoneCSel(zoneC,projC$Sel,projC$SelWt,glb,projyrs)
+  projC <- modprojC(zoneC,glb,projC) # modify selectivity and SelWt in projC
+  zoneCR <- modzoneCSel(zoneC,projC$Sel,projC$SelWt,glb,projyrs) #now zoneC
   zoneDR <- makezoneDP(projyrs,ctrl$reps,glb) #,zoneDep) # zoneDReplicates
   endyr <- nrow(zoneDD$matureB)
   endcatch <- tapply(zoneDD$catch[endyr,],glb$sauindex,sum,na.rm=TRUE)

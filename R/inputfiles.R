@@ -368,7 +368,7 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir,verbose=TRUE
    withsigR <- getsingleNum("withsigR",indat)
    withsigB <- getsingleNum("withsigB",indat)
    withsigCE <- getsingleNum("withsigCE",indat)
-   hyrs=40 # minimum to set up equilibrium unfished population
+   hyrs=40 # minimum to set up equilibrium; should this be altered?
    filenames2 <- dir(datadir)
    if (length(grep(datafile,filenames2)) != 1)
       stop("population data file not found \n")
@@ -389,9 +389,6 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir,verbose=TRUE
    randomseedP <- getsingleNum("randomseedP",indat)
    initLML <- getsingleNum("initLML",indat)
    projyrs <- getsingleNum("PROJECT",indat)
-   firstyear <- getsingleNum("firstyear",indat)
-   lastyear <- getsingleNum("lastyear",indat)
-   pyrnames <- firstyear:lastyear # projection year names
    projLML <- NULL
    HS <- NULL
    histCatch <- NULL
@@ -415,7 +412,7 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir,verbose=TRUE
       colnames(histCatch) <- SAUnames
       histyr <- matrix(0,nrow=hyrs,ncol=2)
       colnames(histyr) <- c("year","histLML")
-      for (i in 1:catches) {
+      for (i in 1:hyrs) {
          begin <- begin + 1
          asnum <- as.numeric(unlist(strsplit(indat[begin],",")))
          histyr[i,] <- asnum[1:2]
@@ -424,7 +421,8 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir,verbose=TRUE
       rownames(histCatch) <- histyr[,1]
       rownames(histyr) <- histyr[,1]
    } # end of catches loop
-   yrce <- getsingleNum("CEYRS",indat)
+   startce <- getsingleNum("CEYRS",indat)
+   yrce <- hyrs - startce + 1
    if (yrce == 0) {
       warning("CPUE calibration has no data")
    } else {
@@ -441,6 +439,8 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir,verbose=TRUE
       rownames(histCE) <- yearCE
    } # end of if(yrce == 0)
    hyrnames <- as.numeric(histyr[,1])
+   firstyear <- tail(hyrnames,1) + 1
+   pyrnames <- firstyear:(firstyear + projyrs - 1) # projection year names
    sizecomp <- getsingleNum("SIZECOMP",indat)
    if (sizecomp > 0) {
       lffiles <- NULL

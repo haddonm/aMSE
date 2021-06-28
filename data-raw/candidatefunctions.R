@@ -282,3 +282,31 @@ rownames(x) <- c("a","b","c","d","e")
 kablerow(x,rowdigits=c(2,3,4,3,2),namerows=TRUE)
 
 
+
+# compare runs-----------------------------------------------------------------
+
+outzone6 <- out$outzone
+TAC6 <- t(outzone6$TAC)
+med2016 <- apply(TAC6,2,median)
+
+load(paste0(ddir,"aMSEUse/scenarios/HS652510_2019/outzone2019.RData"))
+
+paste0(ddir,"aMSEUse/scenarios/HS652510_2019/o")
+outzone9 <- outzone
+TAC9 <- t(outzone9$TAC)
+med2019 <- apply(TAC9,2,median)
+
+yrs <- 2017:2049
+plotprep(width=7, height=4,newdev = FALSE)
+parset()
+ymax <- getmax(c(med2016,med2019))
+plot(yrs,c(med2016,NA,NA,NA),type="l",lwd=2,xlab="",ylim=c(0,ymax),
+     ylab="Median TAC from 100 Replicates",panel.first=grid())
+lines(yrs,c(NA,NA,NA,med2019),lwd=2,col=2)
+
+
+
+
+changevar(filename="controlsau.csv",rundir=rundir,varname="CATCHES",newvalue=44,
+          prompt=TRUE)
+

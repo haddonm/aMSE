@@ -1,6 +1,6 @@
-# The objective here is to explore the description of growth as used in teh MSE model,
+# The objective here is to explore the description of growth as used in the MSE model,
 # How to express summer and winter growth summer = Sep - Feb, winter = Mar - Aug
-# include the option of diferent proportions of that growth by season
+# include the option of different proportions of that growth by season
 
 
 library(rutilsMH)
@@ -16,13 +16,13 @@ glb <- condDat$globals
 nblock <- condDat$nblock
 blkdef <- condDat$blkpop
 numpop <- condDat$numpop
-blockI <- defineBlock(nblock,blkdef,numpop)   
+blockI <- defineBlock(nblock,blkdef,numpop)
 midpts <- condDat$midpts
 set.seed(condDat$randomseed)
 blockNames <- condDat$blockNames
 projectionLML <- condDat$projLML
 historicalLML <- condDat$histLML
-if (condDat$Condition) 
+if (condDat$Condition)
   projLML <- historicalLML else projLML <- projectionLML
 
 
@@ -30,7 +30,7 @@ popdefs <- definepops(nblock,blockI,condDat) # define all pops in one go
 popnum <- 1
 popdef <- popdefs[popnum,]
 pop <- makeabpop(popdef,midpts,projLML)
-  
+
 str(pop)
 
 round(pop$Nt[,1],1)
@@ -69,7 +69,7 @@ for (yrp in 2:(yrs*npart)) {
   if (!(yrp %% 2))  {
      Nt[,yrp] <- Gs %*% Nt[,(yrp-1)]
   } else {
-     Nt[,yrp] <- Gw %*% Nt[,(yrp-1)]    
+     Nt[,yrp] <- Gw %*% Nt[,(yrp-1)]
   }
 }
 
@@ -78,7 +78,7 @@ summer <- c(1,seq(2,16,2))
 plotprep(width=7,height=4)
 plot1(midpts,N1[,1],limity=c(0,400))
 for (yr in 2:yrs) lines(midpts,N1[,yr],lwd=2,col=1)
-for (yrp in 2:(yrs*npart)) 
+for (yrp in 2:(yrs*npart))
   if (!(yrp %% 2)) lines(midpts,Nt[,yrp],lwd=2,col=2,lty=2)
 ssq <- 0.0
 for (yr in 2:yrs) ssq <- ssq + sum((N1[,yr] - Nt[,summer[yr]])^2)

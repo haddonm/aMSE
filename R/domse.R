@@ -1,4 +1,21 @@
 
+# rundir=rundir
+# controlfile="controlsau.csv"
+# datadir=datadir
+# hsargs=hsargs
+# hcrfun=mcdahcr
+# sampleCE=tasCPUE
+# sampleFIS=tasFIS
+# sampleNaS=tasNaS
+# getdata=tasdata
+# calcpopC=calcexpectpopC
+# varyrs=7
+# startyr=32
+# cleanslate=FALSE
+# verbose=TRUE
+# doproject=doproject
+# ndiagprojs=4
+
 
 
 #' @title do_MSE an encapsulating function to hold the details of a single run

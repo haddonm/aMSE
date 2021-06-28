@@ -3,11 +3,15 @@
 
 # LATEST UPDATE
 
-  - 2021-06-24 aMSE 0.0.0.2100 Big jump in number as some larger
-    changes. I have removed a bunch of deprecated functions (which are
-    now in ‘deprecated.R’ in the data-raw directory). I have tidied many
-    other functions, and have modified listall files to aid in the
-    auto-documentation of the package.
+  - 2021-06-28 aMSE 0.0.0.2000 The AMSE can now conduct what are
+    effectively retrospective analyses. This is affected by changing the
+    ‘CATCHES, 47, if\>1 this is the number of historical catch years’
+    line in the control.csv file, which can now be done in a loop using
+    the new ‘changevar’ function. This has necessitated also changing
+    the ‘CEYRS, 20, The first year of catches for which there are CPUE
+    records, ie 1992 is 20th year of catches’, which used to take a
+    direct value of how any years of CPUE data there are. We could have
+    just changed two numbers but along that path errors lay.
 
 # aMSE
 
@@ -88,10 +92,14 @@ name of the biological datafile describing each population.
 # a constant TAC example
 starttime <- (Sys.time())
 library(aMSE)
+#> 
+#> Attaching package: 'aMSE'
+#> The following object is masked from 'package:base':
+#> 
+#>     addNA
 library(rutilsMH)
 library(makehtml)
 library(knitr)
-#> Warning: package 'knitr' was built under R version 4.0.5
 # OBVIOUSLY you should modify the rundir and datadir to suit your own computer
 if (dir.exists("c:/Users/User/DropBox")) {
   ddir <- "c:/Users/User/DropBox/A_codeUse/"
@@ -124,31 +132,19 @@ alldirExists(rundir,datadir,verbose=TRUE)
 # TasmanianHS.R should be in rundir, but during development is in data-raw
 source(paste0(datadir,"/TasmanianHS.R"))
 controlfile <- "controlsau.csv"
-# run the scenario ----------------------------------------------------
-#source(paste0(ddir,"aMSEUse/scenarios/MSE_Source.R"))
-out <- do_MSE(rundir,controlfile,datadir,hsargs=hsargs,
-              hcrfun=mcdahcr,sampleCE=tasCPUE,sampleFIS=tasFIS,sampleNaS=tasNaS,
-              getdata=tasdata,calcpopC=calcexpectpopC,varyrs=7,startyr=32,
-              cleanslate=TRUE,verbose=TRUE,doproject=TRUE,ndiagprojs=3)
-#> All required files appear to be present 
-#> Files read, now making zone 
-#> Now estimating population productivity 
-#> matureB Stable 
-#> exploitB Stable 
-#> recruitment varies 
-#> spawning depletion Stable 
-#> Time difference of 41.31817 secs
-#> Conditioning on the Fishery data
-#> Doing the projections
+# run the scenario --------------------- Obviously unhash this to make it work
+#out <- do_MSE(rundir,controlfile,datadir,hsargs=hsargs,
+#              hcrfun=mcdahcr,sampleCE=tasCPUE,sampleFIS=tasFIS,sampleNaS=tasNaS,
+#              getdata=tasdata,calcpopC=calcexpectpopC,varyrs=7,startyr=32,
+#              cleanslate=TRUE,verbose=TRUE,doproject=TRUE,ndiagprojs=3)
 # make results webpage ---------------------------------------------------------
-replist <- list(starttime=as.character(out$starttime),
-                endtime=as.character(out$projtime))
-glb <- out$glb
-runnotes <- paste0(out$ctrl$runlabel,":  RunTime = ",out$tottime,
-                   "  replicates = ",glb$reps,",   years projected = ",glb$pyrs,
-                   "  Populations = ",glb$numpop," and SAU = ",glb$nSAU,
-                   "  Randomseed for conditioning = ",out$ctrl$randseed)
-
+# replist <- list(starttime=as.character(out$starttime),
+#                 endtime=as.character(out$projtime))
+# glb <- out$glb
+# runnotes <- paste0(out$ctrl$runlabel,":  RunTime = ",out$tottime,
+#                    "  replicates = ",glb$reps,",   years projected = ",glb$pyrs,
+#                    "  Populations = ",glb$numpop," and SAU = ",glb$nSAU,
+#                    "  Randomseed for conditioning = ",out$ctrl$randseed)
 # Unhash the make_html command to generate the results webspage
 # make_html(
 #   replist = replist,
@@ -166,41 +162,7 @@ After running the whole, even if you do not generate the results
 webpage, you could also try:
 
 ``` r
-str(out$zoneDP,max.level=1)
-#> List of 17
-#>  $ SAU     : num [1:56] 6 6 6 7 7 7 8 8 8 8 ...
-#>  $ matureB : num [1:30, 1:56, 1:100] 139 139 143 145 153 ...
-#>   ..- attr(*, "dimnames")=List of 3
-#>  $ exploitB: num [1:30, 1:56, 1:100] 130 113 105 108 111 ...
-#>   ..- attr(*, "dimnames")=List of 3
-#>  $ midyexpB: num [1:30, 1:56, 1:100] 152 134 127 133 133 ...
-#>   ..- attr(*, "dimnames")=List of 3
-#>  $ catch   : num [1:30, 1:56, 1:100] 11.7 12.3 13.3 16.2 13.3 ...
-#>   ..- attr(*, "dimnames")=List of 3
-#>  $ acatch  : num [1:30, 1:8, 1:100] 13.6 16.3 18 18.8 18.8 ...
-#>   ..- attr(*, "dimnames")=List of 3
-#>  $ harvestR: num [1:30, 1:56, 1:100] 0.0897 0.1094 0.126 0.15 0.1198 ...
-#>   ..- attr(*, "dimnames")=List of 3
-#>  $ cpue    : num [1:30, 1:56, 1:100] 174 152 143 148 150 ...
-#>   ..- attr(*, "dimnames")=List of 3
-#>  $ cesau   : num [1:30, 1:8, 1:100] 170 150 145 148 149 ...
-#>   ..- attr(*, "dimnames")=List of 3
-#>  $ catsau  : num [1:30, 1:8, 1:100] 16 16.9 18.4 23.1 18.7 ...
-#>   ..- attr(*, "dimnames")=List of 3
-#>  $ recruit : num [1:30, 1:56, 1:100] 167429 195829 168013 103647 142860 ...
-#>   ..- attr(*, "dimnames")=List of 3
-#>  $ deplsB  : num [1:30, 1:56, 1:100] 0.433 0.433 0.445 0.45 0.474 ...
-#>   ..- attr(*, "dimnames")=List of 3
-#>  $ depleB  : num [1:30, 1:56, 1:100] 0.449 0.389 0.364 0.372 0.384 ...
-#>   ..- attr(*, "dimnames")=List of 3
-#>  $ catchN  : num [1:105, 1:30, 1:56, 1:100] 2.35e-131 1.18e-127 4.39e-124 1.18e-120 2.30e-117 ...
-#>   ..- attr(*, "dimnames")=List of 4
-#>  $ Nt      : num [1:105, 1:30, 1:56, 1:100] 1.67e+05 2.21e-06 9.08e-05 2.70e-03 5.83e-02 ...
-#>   ..- attr(*, "dimnames")=List of 4
-#>  $ NumNe   : num [1:105, 1:30, 1:56, 1:100] 0 0 0 0 0 0 0 0 0 0 ...
-#>   ..- attr(*, "dimnames")=List of 4
-#>  $ TAC     : num [1:30, 1:100] 703 517 417 425 433 ...
-#>   ..- attr(*, "dimnames")=List of 2
+#str(out$zoneDP,max.level=1)
 ```
 
 To see the structure of the dynamic object generated by the projections.

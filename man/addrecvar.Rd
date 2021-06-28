@@ -58,7 +58,11 @@ addrecvar replicates the historical depletion step in zoneDD
     variation to the dynamics for the last varyrs years. This is so that
     when the projections begin each replicate will already have recruitment
     variability fully developed and there will be no time lag on the
-    recruitment and subsequent dynamics.
+    recruitment and subsequent dynamics. Take especial note that prior to the
+    projections the proposed harvest strategy needs to be applied to the
+    historical fishery data (in Tasmania this is currently catches and CPUE).
+    This application occurs in lines 60 - 65 in the addrecvar function. This
+    WILL NEED ATTENTION with other jurisdictions.
 }
 \examples{
 print("wait on suitable data-sets")
