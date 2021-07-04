@@ -20,7 +20,8 @@ scalar. set this to 1e-08 to avoid recruitment variability}
 
 \item{devR}{if recruitment deviates are available then they should be input
 here. If negative values then a random epsilon is used, otherwise
-epsilon is given the value of devR}
+epsilon is given the value of devR. default=-1, so by default fixed
+recruitment deviates are off.}
 }
 \value{
 an absolute number of recruits from a given spawning biomass
@@ -44,4 +45,5 @@ Bsp <- 147
 insigmar <- 0.3
 oneyearrec(steep,R0,B0,Bsp,insigmar)
 }
+# steep=steep;r0=r0;b0=b0;Bsp=dyn["matureb",];sigR=sigmar;devR=rdev
 }

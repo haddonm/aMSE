@@ -3,9 +3,20 @@
 
 # LATEST UPDATE
 
-  - 2021-06-28 aMSE 0.0.0.2000 The AMSE can now conduct what are
+-   2021-07-04 aMSE 0.0.0.1900 More big changes. I have removed the
+    numbers-at-size large matrices from the zoneDP object into a NAS
+    object. zoneDP is now only 12Mb instead of 450Mb and so can now be
+    stored conveniently for each run. In addition, fixed recruitment
+    deviates have now been implemented (although the default is to not
+    use them - all are set to -1). But, expreimentally, in Tasmania,
+    setting the deviate in 1991 = 2.0 meaning that the base level of
+    recruitment off the recruitment curve is doubled, improves the
+    relationship between predicted cpue and observed cpue so this holds
+    great promise for improved conditioning.
+
+-   2021-06-28 aMSE 0.0.0.2000 The AMSE can now conduct what are
     effectively retrospective analyses. This is affected by changing the
-    ‘CATCHES, 47, if\>1 this is the number of historical catch years’
+    ‘CATCHES, 47, if&gt;1 this is the number of historical catch years’
     line in the control.csv file, which can now be done in a loop using
     the new ‘changevar’ function. This has necessitated also changing
     the ‘CEYRS, 20, The first year of catches for which there are CPUE
@@ -16,20 +27,19 @@
 # aMSE
 
 <!-- badges: start -->
-
 <!-- badges: end -->
 
 This packages up a new Abalone Management Strategy Evaluation framework.
 It has a novel structure that is based around the spatial ideas of
 populations within spatial management units (SAUs), within a zone:
 
-  - zone - highest geogrpahical level. Is simply the totality of the
+-   zone - highest geogrpahical level. Is simply the totality of the
     spatial management units.
 
-  - SAU - spatial assessment units. In Tasmania these would currently be
+-   SAU - spatial assessment units. In Tasmania these would currently be
     the classical statistical blocks.
 
-  - population - literally a population. These are the active components
+-   population - literally a population. These are the active components
     within the simulation framework. The dynamics of the simulation are
     based around the populations, although, with positive larval
     dispersal (the default) there is some dependency of neighbouring
@@ -49,7 +59,7 @@ An important change from previous designs is that larval dispersal is
 implemented explicitly rather than implicitly being held constant. This
 alters the dynamics so that analytical equilibrium methods no longer
 work and we need to resort to iterative approaches to equilibrium if the
-larval dispersal rate is \> 0.0.
+larval dispersal rate is &gt; 0.0.
 
 Of course, adding such a component increases the number of options that
 may need to be explored, but currently we envisage including a very low,
@@ -92,11 +102,6 @@ name of the biological datafile describing each population.
 # a constant TAC example
 starttime <- (Sys.time())
 library(aMSE)
-#> 
-#> Attaching package: 'aMSE'
-#> The following object is masked from 'package:base':
-#> 
-#>     addNA
 library(rutilsMH)
 library(makehtml)
 library(knitr)

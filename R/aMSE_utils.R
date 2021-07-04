@@ -1,9 +1,11 @@
 
-#' @title addNA can add NAs to the start and end of a vector
+#' @title putNA can add NAs to the start and end of a vector
 #'
-#' @description addNA fulfils a common requirement to expand a vector with NAs
+#' @description putNA fulfils a common requirement to expand a vector with NAs
 #'     to assist a plot by ensuring the x and y vectors are the same length.
-#'     It can accept both character and numeric vectors.
+#'     It can accept both character and numeric vectors. This used to be called
+#'     addNA, but there is a function in base R with that name that does
+#'     something completely different.
 #'
 #' @param x the vector to which NAs are to be added
 #' @param pre how many NA to be added the front
@@ -14,8 +16,8 @@
 #'
 #' @examples
 #' vect <- rnorm(10,mean=5,sd=1)
-#' addNA(vect,3,5)
-addNA <- function(x,pre,post) { # x=med14; pre=0; post=5
+#' putNA(vect,3,5)
+putNA <- function(x,pre,post) { # x=med14; pre=0; post=5
   n <- length(x) + pre + post
   if (pre > 0) x <- c(rep(NA,pre),x)
   if (post > 0) x <- c(x,rep(NA,post))
@@ -100,6 +102,38 @@ alldirExists <- function(indir1,indir2=indir1,make=FALSE,verbose=TRUE) {
     }
   } # end of datadir != rundir
 }  # end of alldirExists
+
+
+#' @title catchweightCE uses historical catch-by-sau to make weighted zone cpue
+#'
+#' @description catchweightCE is used when characterizing the historical
+#'     fisheries data. It uses matching catch-by-sau to generate catch-weighted
+#'     estimates of zone-wide CPUE through time.
+#'
+#' @param cedat historical cpue from condC
+#' @param cdat historical catches from condC
+#' @param nsau the number of SAU, from glb
+#'
+#' @return a vector of catch-weghted cpue for the zone from SAU cpue estimates
+#' @export
+#'
+#' @examples
+#' print("wait on suitable data sets")
+catchweightCE <- function(cedat,cdat,nsau) {
+  ceyrs <- as.numeric(rownames(cedat))
+  nyr <- length(ceyrs)
+  totCE <- numeric(nyr)
+  names(totCE) <- ceyrs
+  for (yr in 1:nyr) { #  yr = 1
+    picks <- which(cedat[yr,] > 0)
+    wts <- numeric(nsau)
+    totC <- sum(cdat[yr,picks])
+    wts[picks] <- cdat[yr,picks]/totC
+    totCE[yr] <- sum(cedat[yr,] * wts,na.rm=TRUE)
+  }
+  return(totCE)
+} # end of catchweightCE
+
 
 #' @title changevar can alter the value in a single line in, eg, the control file
 #'
@@ -325,6 +359,8 @@ poptosauCE <- function(catvect,cpuevect,sauindex) {
 #'
 #' @param inzone one of the zone dynamics objects containing replicates, made
 #'     up of populations
+#' @param NAS the numbers-at-size 4D arrays from doprojection; default=NULL so
+#'     it can be ignored during conditioning
 #' @param glb the object containing the global constants
 #' @param B0 the sum of B0 across all populations, use getvar(zoneC,"B0")
 #' @param ExB0 the sum of ExB0 across all populations use getvar(zoneC,"ExB0")
@@ -334,7 +370,7 @@ poptosauCE <- function(catvect,cpuevect,sauindex) {
 #'
 #' @examples
 #' print("wait on suitable internal data sets ")
-poptozone <- function(inzone,glb, B0, ExB0) {
+poptozone <- function(inzone,NAS=NULL,glb, B0, ExB0) {
   # inzone=zoneDP; glb=glb; B0=sum(getvar(zoneC,"B0")); ExB0=sum(getvar(zoneC,"ExB0"))
   N <- glb$Nclass
   invar <- inzone$matureB
@@ -359,8 +395,13 @@ poptozone <- function(inzone,glb, B0, ExB0) {
     for (yr in 1:nyrs) {
       totC <- sum(popcat[yr,,iter],na.rm=TRUE)
       cpue[yr,iter] <- sum(popce[yr,,iter] * (popcat[yr,,iter]/totC),na.rm=TRUE)
-      catchN[,yr,iter] <- rowSums(inzone$catchN[,yr,,iter])
-      Nt[,yr,iter] <- rowSums(inzone$Nt[,yr,,iter])
+      if (is.null(NAS)) {
+        catchN[,yr,iter] <- rowSums(inzone$catchN[,yr,,iter])
+        Nt[,yr,iter] <- rowSums(inzone$Nt[,yr,,iter])
+      } else {
+        catchN[,yr,iter] <- rowSums(NAS$catchN[,yr,,iter])
+        Nt[,yr,iter] <- rowSums(NAS$Nt[,yr,,iter])
+      }
     }
   }
   outzone <- list(matureB=matureB,exploitB=exploitB,catch=catch,
@@ -522,6 +563,8 @@ sumpop2sau <- function(invect,sauindex) {
 #'     respective unfished estimated by SAU obtained using getvar(zoneC,"B0").
 #'
 #' @param inzone one of the zone dynamics objects made up of populations
+#' @param NAS the numbers-at-size 4D arrays from doprojection; default=NULL so
+#'     it can be ignored during conditioning
 #' @param glb the object containing the global constants
 #' @param B0 the estimate B0 for each population use getvar(zoneC,"B0")
 #' @param ExB0 the estimate ExB0 for each population use getvar(zoneC,"ExB0")
@@ -531,7 +574,7 @@ sumpop2sau <- function(invect,sauindex) {
 #'
 #' @examples
 #' print("wait on suitable internal data sets ")
-zonetosau <- function(inzone,glb, B0, ExB0) { # inzone=zoneDP; glb=glb; B0=B0; ExB0=ExB0
+zonetosau <- function(inzone,NAS=NULL,glb, B0, ExB0) { # inzone=zoneDDR; NAS=NULL; glb=glb; B0=B0; ExB0=ExB0
   nsau <- glb$nSAU
   sauindex <- glb$sauindex
   saunames <- glb$saunames
@@ -562,16 +605,27 @@ zonetosau <- function(inzone,glb, B0, ExB0) { # inzone=zoneDP; glb=glb; B0=B0; E
       catch[yr,,iter] <- saudyn$saucatch
       deplsB[yr,,iter] <- matureB[yr,,iter]/sauB0
       depleB[yr,,iter] <- exploitB[yr,,iter]/sauExB0
+
       for (sau in 1:nsau) { #  iter=1; yr=1; sau = 1
         pick <- which(sauindex %in% sau)
         if (length(pick) > 1) {
-          catchN[,yr,sau,iter] <- rowSums(inzone$catchN[,yr,pick,iter])
-          Nt[,yr,sau,iter] <- rowSums(inzone$Nt[,yr,pick,iter])
+          if (is.null(NAS)) {
+            catchN[,yr,sau,iter] <- rowSums(inzone$catchN[,yr,pick,iter])
+            Nt[,yr,sau,iter] <- rowSums(inzone$Nt[,yr,pick,iter])
+          } else {
+            catchN[,yr,sau,iter] <- rowSums(NAS$catchN[,yr,pick,iter])
+            Nt[,yr,sau,iter] <- rowSums(NAS$Nt[,yr,pick,iter])
+          }
         } else {
-          catchN[,yr,sau,iter] <- inzone$catchN[,yr,pick,iter]
-          Nt[,yr,sau,iter] <- inzone$Nt[,yr,pick,iter]
+          if (is.null(NAS)) {
+            catchN[,yr,sau,iter] <- inzone$catchN[,yr,pick,iter]
+            Nt[,yr,sau,iter] <- inzone$Nt[,yr,pick,iter]
+          } else {
+            catchN[,yr,sau,iter] <- NAS$catchN[,yr,pick,iter]
+            Nt[,yr,sau,iter] <- NAS$Nt[,yr,pick,iter]
+          }
         }
-      }
+      } # end of dealing with numbers-at-size
     }
     harvestR[,,iter] <- catch[,,iter]/exploitB[,,iter]
   }

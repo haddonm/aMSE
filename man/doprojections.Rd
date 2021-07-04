@@ -66,7 +66,10 @@ a replacement for zoneDP containing the dynamics for all populations,
 }
 \description{
 doprojections conducts the replicate model runs for
-    Tasmania using the mcdahcr and the input hsargs
+    Tasmania using the mcdahcr and the input hsargs. The model dynamics and
+    the numbers-at-size variablkes have been separated and returned separately
+    because the size components are very large and mean saving such objects
+    is both slow and space limiting.
 }
 \examples{
 print("wait on suitable internal data sets")

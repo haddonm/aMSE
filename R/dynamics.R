@@ -99,10 +99,10 @@ depleteSAU <- function(zoneC,zoneD,glob,initdepl,product,len=15) {
 #' @examples
 #' print("wait on some data sets")
 dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,sigR=1e-08,sigB=1e-08) {
-  # zoneC=zone$zoneC; zoneDD=zone$zoneD;glob=zone$glb;condC=zone$zone1$condC
-  # sigR=1e-08; sigB=1e-08; Ncl=glob$Nclass;sauindex=glob$sauindex;movem=glob$move;
+  # zoneC=zoneC; zoneDD=zoneD;glob=glb;condC=condC;calcpopC=calcpopC; sigR=1e-08; sigB=1e-08;
   histC <- condC$histCatch
   yrs <- condC$histyr[,"year"]
+  recdevs <- condC$recdevs
   nyrs <- length(yrs)
   sauindex <- glob$sauindex
   r0 <- getvar(zoneC,"R0") #sapply(zoneC,"[[","R0")
@@ -110,12 +110,13 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,sigR=1e-08,sigB=1e-08) 
   exb0 <- getvar(zoneC,"ExB0")
   for (year in 2:nyrs) {  # year=2 # ignores the initial unfished year
     catchsau <- histC[year,]
+    rdev <- recdevs[year,]
     hcrout <- list(acatch=catchsau)
     popC <- calcpopC(hcrout,exb=zoneDD$exploitB[year-1,],sauindex,sigmab=sigB)
     inN <- zoneDD$Nt[,year-1,]
     out <- oneyearsauC(zoneCC=zoneC,inN=inN,popC=popC,year=year,
                        Ncl=glob$Nclass,sauindex=sauindex,movem=glob$move,
-                       sigmar=sigR,r0=r0,b0=b0,exb0=exb0)
+                       sigmar=sigR,r0=r0,b0=b0,exb0=exb0,rdev=rdev)
     dyn <- out$dyn
     zoneDD$exploitB[year,] <- dyn["exploitb",]
     zoneDD$midyexpB[year,] <- dyn["midyexpB",]
@@ -315,6 +316,7 @@ oneyearcat <- function(inpopC,inNt,Nclass,incat,yr) {  #
 #' @param r0 the unfished R0 level used by oneyearrec
 #' @param b0 the unfished mature biomass B0, used in recruitment and depletion
 #' @param exb0 the unfished exploitable biomass used in depletion
+#' @param rdev the recruitment deviates for each SAU for the given year
 #'
 #' @return a list containing a revised dynamics list
 #' @export
@@ -322,12 +324,10 @@ oneyearcat <- function(inpopC,inNt,Nclass,incat,yr) {  #
 #' @examples
 #' print("Wait on new data")
 oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,
-                        movem,sigmar=1e-08,r0,b0,exb0) {
- # zoneCC=zoneCP;exb=zoneDP$exploitB[year-1,,iter]
-#  inN=zoneDP$Nt[,year-1,,iter];catchsau=acatch;year=year
-#  Ncl=Nclass;sauindex=sauindex;movem=movem
-#  sigmar=sigmar;sigmab=sigmab
-#  popC <- imperr(catchsau,exb,sauindex,sigmab)
+                        movem,sigmar=1e-08,r0,b0,exb0,rdev) {
+ # zoneCC=zoneC;inN=inN;popC=popC;year=year;Ncl=glob$Nclass;sauindex=sauindex;
+#  movem=glob$movem; sigmar=sigR;r0=r0;b0=b0;exb0=exb0; rdev=rdev
+
   npop <- length(popC)
   matb <- numeric(npop)
   ans <- vector("list",npop)
@@ -337,7 +337,7 @@ oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,
   }
   dyn <- sapply(ans,"[[","vect")
   steep <- getvect(zoneCC,"steeph") #sapply(zoneC,"[[","popdef")["steeph",]
-  recs <- oneyearrec(steep,r0,b0,dyn["matureb",],sigR=sigmar)
+  recs <- oneyearrec(steep,r0,b0,dyn["matureb",],sigR=sigmar,devR=rdev)
   recruits <- as.numeric(movem %*% recs)
   deplsB <- dyn["matureb",]/b0
   depleB <- dyn["exploitb",]/exb0 # end of year exploitB
@@ -377,7 +377,7 @@ oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,
 #' @export
 #'
 #' @examples
-#'  print("wait oin revised data")
+#'  print("wait on revised data")
 oneyearD <- function(zoneC,zoneD,inHt,year,sigmar,Ncl,npop,movem) {
 #  zoneC=zoneC;zoneD=zoneD;Ncl=Nclass;inHt=inHarv;year=yr;sigmar=1e-08;npop=npop;movem=glob$move
   matb <- numeric(npop)
@@ -426,7 +426,8 @@ oneyearD <- function(zoneC,zoneD,inHt,year,sigmar,Ncl,npop,movem) {
 #'     scalar. set this to 1e-08 to avoid recruitment variability
 #' @param devR if recruitment deviates are available then they should be input
 #'     here. If negative values then a random epsilon is used, otherwise
-#'     epsilon is given the value of devR
+#'     epsilon is given the value of devR. default=-1, so by default fixed
+#'     recruitment deviates are off.
 #' @return an absolute number of recruits from a given spawning biomass
 #' @export
 #'
@@ -439,8 +440,9 @@ oneyearD <- function(zoneC,zoneD,inHt,year,sigmar,Ncl,npop,movem) {
 #' insigmar <- 0.3
 #' oneyearrec(steep,R0,B0,Bsp,insigmar)
 #' }
+#' # steep=steep;r0=r0;b0=b0;Bsp=dyn["matureb",];sigR=sigmar;devR=rdev
 oneyearrec <- function(steep,R0,B0,Bsp,sigR,devR=-1) {
-  if (devR > 0) {
+  if (devR[1] > 0) {
     epsilon <- devR
   } else {
     epsilon <- exp(rnorm(length(Bsp),mean=0,sd=sigR) - (sigR * sigR)/2)

@@ -1,4 +1,28 @@
 
+#' @title getaav calculates annual absolute variation in catch
+#'
+#' @description getaav calculates the annual absolute change in catch
+#'     for an input vector of catches, which could be across a series
+#'     of years or even across different spatial units for a single
+#'     year (an unusual use).
+#'     The equation used is aav = 100 x sum(|Ct - Ct-1|)/(sum(Ct).
+#'
+#' @param invect a vector of catches
+#'
+#' @return a single scalar value the AAV of the input catches
+#' @export
+#'
+#' @examples
+#'   catch <- c(1,2,3,4,5,4,3,2,1)
+#'   getaav(catch)  # should equal 0.32
+getaav <- function(invect) { # invect=x
+  nyr <- length(invect)
+  totC <- sum(invect,na.rm=T)
+  aac <- sum(abs(invect[2:nyr] - invect[1:(nyr-1)]))
+  aav <- 0.0
+  if (totC > 0.0) aav <- aac/totC
+  return(aav)
+} # end of getaav
 
 #' @title getConst extracts 'nb' numbers from a line of text
 #'

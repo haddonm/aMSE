@@ -15,7 +15,8 @@ oneyearsauC(
   sigmar = 1e-08,
   r0,
   b0,
-  exb0
+  exb0,
+  rdev
 )
 }
 \arguments{
@@ -44,6 +45,8 @@ when searching for an equilibrium.}
 \item{b0}{the unfished mature biomass B0, used in recruitment and depletion}
 
 \item{exb0}{the unfished exploitable biomass used in depletion}
+
+\item{rdev}{the recruitment deviates for each SAU for the given year}
 }
 \value{
 a list containing a revised dynamics list

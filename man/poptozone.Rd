@@ -4,11 +4,14 @@
 \alias{poptozone}
 \title{poptozone translates the zone_pop objects to a single zone object}
 \usage{
-poptozone(inzone, glb, B0, ExB0)
+poptozone(inzone, NAS = NULL, glb, B0, ExB0)
 }
 \arguments{
 \item{inzone}{one of the zone dynamics objects containing replicates, made
 up of populations}
+
+\item{NAS}{the numbers-at-size 4D arrays from doprojection; default=NULL so
+it can be ignored during conditioning}
 
 \item{glb}{the object containing the global constants}
 

@@ -41,5 +41,5 @@ oneyearD conducts one year's dynamics on zoneD in the MSE
     dodepletion and doproduction) and in testequil.
 }
 \examples{
- print("wait oin revised data")
+ print("wait on revised data")
 }

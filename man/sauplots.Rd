@@ -7,6 +7,7 @@
 sauplots(
   zoneDP,
   zoneDDR,
+  NAS,
   glb,
   rundir,
   B0,
@@ -22,6 +23,8 @@ sauplots(
 
 \item{zoneDDR}{the dynamic conditioning object after preparing for replicates
 and the addition of recruitment variation in the final years.}
+
+\item{NAS}{the numbers-at-size 4D arrays from doprojection}
 
 \item{glb}{the object containing the global variables}
 

@@ -4,8 +4,8 @@
 
 B0 <- getvar(zoneC,"B0")
 ExB0 <- getvar(zoneC,"ExB0")
-zoneDsau <- zonetosau(zoneDDR,glb,B0,ExB0)
-zonePsau <- zonetosau(zoneDP,glb,B0,ExB0)
+zoneDsau <- zonetosau(zoneDDR,NAS,glb,B0,ExB0)
+zonePsau <- zonetosau(zoneDP,NAS,glb,B0,ExB0)
 
 
 plotprep(width=8,height=8,newdev=FALSE)
@@ -20,7 +20,7 @@ plotCNt(lcomp$Nt,glb,vline=c(140),start=3) # plot the conditioning history
 plotCNt(zonePsau$Nt[,,,51],glb,vline=140,start=3) # plot a single replicate from projections
 
 
-zonePsau <- zonetosau(zoneDP,glb,B0,ExB0)
+zonePsau <- zonetosau(zoneDP,NAS,glb,B0,ExB0)
 
 plotprep(width=6,height=8,newdev=FALSE)
 
@@ -305,8 +305,48 @@ plot(yrs,c(med2016,NA,NA,NA),type="l",lwd=2,xlab="",ylim=c(0,ymax),
 lines(yrs,c(NA,NA,NA,med2019),lwd=2,col=2)
 
 
+load(paste0(rundir,"/out.RData"))
+
+str1(out)
+
+condC <- out$condC
+saunames <- paste0("sau",6:13)
+hcatch <- condC$histCatch
+hcatch <- hcatch[-1,]
+totC <- rowSums(hcatch)
 
 
-changevar(filename="controlsau.csv",rundir=rundir,varname="CATCHES",newvalue=44,
-          prompt=TRUE)
+plotprep(width=8,height=6,newdev=FALSE)
+plotzonesau(zonetot=totC,saudat=hcatch,saunames=saunames,label="Zone Catch (t)",
+            labelsau="sauCatch",side=4,sauscale=FALSE)
+
+
+
+hce <- condC$histCE
+yrs <- as.numeric(rownames(hcatch))
+ceyrs <- as.numeric(rownames(hce))
+pick <- match(ceyrs,yrs)
+relC <- hcatch[pick,]
+zonece <- catchweightCE(cedat=hce,cdat=relC,nsau=out$glb$nSAU)
+
+plotprep(width=8,height=6,newdev=FALSE)
+plotzonesau(zonetot=zonece,saudat=relC,saunames=saunames,label="Zone CPUE",
+            labelsau="sauCatch",side=3,sauscale=FALSE)
+
+
+plotprep(width=8,height=6,newdev=FALSE)
+plotzonesau(zonetot=zonece,saudat=hce,saunames=saunames,label="Zone CPUE",
+            labelsau="sauCPUE",side=1,sauscale=FALSE)
+
+
+
+zoneDP <- out$zoneDP
+str1(zoneDP)
+NAS <- list(Nt=zoneDP$Nt,NumNe=zoneDP$NumNe,catchN=zoneDP$catchN)
+
+
+
+str1(zoneDyn)
+
+
 

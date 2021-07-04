@@ -271,7 +271,10 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 #' @title doprojections conducts the replicate model runs for Tasmania
 #'
 #' @description doprojections conducts the replicate model runs for
-#'     Tasmania using the mcdahcr and the input hsargs
+#'     Tasmania using the mcdahcr and the input hsargs. The model dynamics and
+#'     the numbers-at-size variablkes have been separated and returned separately
+#'     because the size components are very large and mean saving such objects
+#'     is both slow and space limiting.
 #'
 #' @param ctrl the ctrl object from readctrlfile
 #' @param zoneDP the object used to contain the dynamics from the replicate
@@ -311,6 +314,8 @@ doprojections <- function(ctrl,zoneDP,zoneCP,otherdata,glb,hcrfun,hsargs,
 #  ctrl=ctrl;zoneDP=zoneDP;zoneCP=zoneCP;otherdata=condC$histCE;glb=glb; getdata=tasdata
 #  hcrfun=mcdahcr; hsargs=hsargs; sampleCE=tasCPUE;sampleFIS=tasFIS; sampleNaS=tasNaS
 #  calcpopC=calcexpectpopC
+
+
   reps <- ctrl$reps
   projyrs <- ctrl$projection
   sigmar <- ctrl$withsigR
@@ -355,7 +360,9 @@ doprojections <- function(ctrl,zoneDP,zoneCP,otherdata,glb,hcrfun,hsargs,
       zoneDP$TAC[year,iter] <- hcrout$TAC
     } # year loop
   }   # iter loop
-  return(zoneDP)
+  NAS <- list(Nt=zoneDP$Nt,NumNe=zoneDP$NumNe,catchN=zoneDP$catchN)
+  zoneDP <- zoneDP[-c(14,15,16)]  # DANGER. ONLY ADD NEW VARIABLES AT END
+  return(list(zoneDP=zoneDP,NAS=NAS))
 } # end of doprojections
 
 #' @title makezoneDP generates the container for the projection dynamics

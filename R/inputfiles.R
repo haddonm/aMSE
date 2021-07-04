@@ -1,5 +1,5 @@
 
-# rutilsMH::listFunctions("C:/Users/User/Dropbox/rcode2/makehtml/R/makehtml_funs.R")
+# rutilsMH::listFunctions("C:/Users/User/Dropbox/A_code/aMSE/R/inputfiles.R")
 
 #' @title ctrlzonetemplate generates a template input control file
 #'
@@ -453,10 +453,22 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir,verbose=TRUE
          compdat[[i]] <- read.csv(file=filename,header=TRUE)
       }
    }  # end of sizecomp loop
+   recdevs <- matrix(-1,nrow=hyrs,ncol=nSAU,dimnames=list(hyrnames,SAUnames))
+   rdevs <- getsingleNum("RECDEV",indat)
+   if (rdevs > 0) {
+      if (rdevs != hyrs)
+         stop("rows of recdevs not equal to conditioning years \n")
+      begin <- grep("RECDEV",indat) + 1
+      for (i in 1:rdevs) {
+         begin <- begin + 1
+         devs <- as.numeric(unlist(strsplit(indat[begin],",")))
+         recdevs[i,] <- devs[2:(nSAU+1)]
+      }
+   } # end of recdev loop
    # make output objects
    condC <- list(histCatch=histCatch,histyr=histyr,
                  histCE=histCE,yearCE=yearCE,initdepl=initdepl,
-                 compdat=compdat,Sel=NULL,SelWt=NULL)
+                 compdat=compdat,recdevs=recdevs,Sel=NULL,SelWt=NULL)
    projC <- list(projLML=projLML,projyrs=projyrs,
                  Sel=NULL,SelWt=NULL,histCE=histCE)
    outctrl <- list(runlabel,datafile,batch,reps,randomseed,randomseedP,

@@ -568,6 +568,64 @@ plotZone <- function(inzone,rundir,glb,CIprobs=c(0.05,0.5,0.95),addfile=TRUE) {
   onezoneplot(inzone$TAC,rundir,glb,CIprobs=CIprobs,"TAC",addfile=addfile)
 } # end of plotZone
 
+#' @title plotzonesau generates a plot of the zone scale and sau scale
+#'
+#' @description plotsonesau enables the zone catch or catch weighted zone cpue
+#'    (from catchweightCE) to be compared with the sau catch or the sau cpue
+#'    within a single plot. This has value for gaining insights into the
+#'    fishery dynamics of a zone and how it responds to fishing pressure.
+#'    NOTE WELL: Currently, this function is setup for Tasmania's set of 8 SAU.
+#'    Assuming other jurisdictions have more or less then the layout of the
+#'    plots would need to be altered. Until these are known this function will
+#'    likely only work as intended with Tasmanian data!
+#'
+#' @param zonetot a vector of either the total catch or zone summary cpue for a
+#'     zone. Ideally, the vector should be named using the year in which each
+#'     value was taken.
+#' @param saudat either the catch or the cpue for each SAU (year x sau), again
+#'     this matrix should have both row and column names
+#' @param saunames a vector of nSAU names. Ideally very short ones to ensure
+#'     they fit on each small plot
+#' @param label the y-axis label for the zone plot
+#' @param labelsau the y-axis label for each row of the SAU plots
+#' @param side should the SAU label be at the top of bottom of each plot.
+#'     default = 3 (= top of plot). The main alternative would be 1 (the bottom)
+#'     but 2 (left side) and 4 (right side) also work.
+#' @param sauscale should all SAU plots have the own y-axis scale = TRUE, the
+#'     default. If you want each plot to have the same scale sauscale=FALSE.
+#'
+#' @return nothing but this does generate a plot.
+#' @export
+#'
+#' @seealso catchweightCE
+#'
+#' @examples
+#' print("wait on suitable internal dats sets")
+plotzonesau <- function(zonetot,saudat,saunames,label,labelsau,side=3,
+                        sauscale=TRUE) {
+  yrs <- as.numeric(names(zonetot))
+  nyrs <- length(yrs)
+  addn <- nyrs - nrow(saudat)
+  nsau <- ncol(saudat)
+  layout(rbind(c(1,1,1,1),
+               c(2,3,4,5),
+               c(6,7,8,9)),
+         heights=c(4,1.5,1.5))
+  par(mai=c(0.3,0.45,0.05,0.05),oma=c(0,1,0,0.4),cex=1.0)
+  #layout.show(9)
+  ymax <- getmax(zonetot)
+  plot(yrs,zonetot,type="l",lwd=2,xlab="",ylab=label,ylim=c(0,ymax),
+       panel.first=grid(),yaxs="i")
+  par(mai=c(0.25,0.3,0.05,0.05),cex=0.7)
+  ymax <- getmax(saudat)
+  for (i in 1:nsau) {
+    if (sauscale) ymax <- getmax(saudat[,i])
+    plot(yrs,putNA(saudat[,i],addn,0),type="l",lwd=2,xlab="",ylab="",ylim=c(0,ymax),
+         yaxs="i",panel.first=grid())
+    if ((i == 1) | (i == 5)) mtext(labelsau,side=2,outer=FALSE,line=1.5,cex=1.0)
+    mtext(saunames[i],side=side,outer=FALSE,line = -1.1,cex=1.0)
+  }
+} # end of plotzonesau
 
 
 #' @title sauplots generates the dosauplots for the dynamic variables
@@ -579,6 +637,7 @@ plotZone <- function(inzone,rundir,glb,CIprobs=c(0.05,0.5,0.95),addfile=TRUE) {
 #' @param zoneDP the dynamic object produced by the projections
 #' @param zoneDDR the dynamic conditioning object after preparing for replicates
 #'     and the addition of recruitment variation in the final years.
+#' @param NAS the numbers-at-size 4D arrays from doprojection
 #' @param glb the object containing the global variables
 #' @param rundir the results directory
 #' @param B0 the B0 values by population use getvar(zoneC,"B0")
@@ -596,12 +655,12 @@ plotZone <- function(inzone,rundir,glb,CIprobs=c(0.05,0.5,0.95),addfile=TRUE) {
 #'
 #' @examples
 #' print("wait on suitable internal data-sets")
-sauplots <- function(zoneDP,zoneDDR,glb,rundir,B0,ExB0,startyr,addCI=TRUE,
+sauplots <- function(zoneDP,zoneDDR,NAS,glb,rundir,B0,ExB0,startyr,addCI=TRUE,
                      histCE=NULL,tabcat="projSAU") {
-  # zoneDP=zoneDP;zoneDDR=zoneDDR;glb=glb;rundir=rundir;B0=B0;ExB0=ExB0;
+  # zoneDP=zoneDP;zoneDDR=zoneDDR;NAS=NAS;glb=glb;rundir=rundir;B0=B0;ExB0=ExB0;
   # startyr=32; addCI=TRUE;histCE=histCE; tabcat="projSAU"
-  zoneDsau <- zonetosau(zoneDDR,glb,B0,ExB0)
-  zonePsau <- zonetosau(zoneDP,glb,B0,ExB0)
+  zoneDsau <- zonetosau(zoneDDR,NAS=NULL,glb,B0,ExB0)
+  zonePsau <- zonetosau(zoneDP,NAS,glb,B0,ExB0)
   label <-  c("cpue","catch","acatch","matureB","exploitB","recruit","harvestR")
   out <- vector("list",length(label))
   names(out) <- label
