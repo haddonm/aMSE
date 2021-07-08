@@ -23,13 +23,13 @@
 #' @param varyrs the number of years at the end of the historical period to
 #'     which recruitment variation is to be added
 #' @param multTAC the TAC multiplication matrix from the HCR
-#' @param calcpopC a function that takes the output from hcrfun and gernerates
+#' @param calcpopC a function that takes the output from hcrfun and generates
 #'     the actual catch per population expected in the current year.
 #' @param sigR the initial recruitment variation default=1e-08
 #' @param sigB the initial biomass cpuie variation default = 1e-08
 #' @param lastsigR the recruitment variation to be added to the final varyrs
 #'
-#' @return an initialized dynamics zone object for the projecitons with the
+#' @return an initialized dynamics zone object for the projections with the
 #'     first year populated
 #' @export
 #'
@@ -69,7 +69,7 @@ addrecvar <- function(zoneDD,zoneDP,zoneC,glob,condC,ctrl,varyrs,multTAC,
       inN <- zoneDDR$Nt[,year-1,,iter]
       out <- oneyearsauC(zoneCC=zoneC,inN=inN,popC=popC,year=year,
                          Ncl=glob$Nclass,sauindex=sauindex,movem=glob$move,
-                         sigmar=lastsigR,r0=r0,b0=b0,exb0=exb0)
+                         sigmar=lastsigR,r0=r0,b0=b0,exb0=exb0,rdev=condC$recdevs)
       dyn <- out$dyn
       saudyn <- poptosauCE(dyn["catch",],dyn["cpue",],sauindex)
       zoneDDR$exploitB[year,,iter] <- dyn["exploitb",]
@@ -282,14 +282,14 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 #' @param zoneCP the object used to contain the constants for each population
 #'     used in model dynamics
 #' @param otherdata an object containing any other data used by the different
-#'     functions used n the projections. For example, for Tasmania this would
+#'     functions used in the projections. For example, for Tasmania this would
 #'     be pointed at the histCE data set which is appended to each year's new
 #'     predicted cpue data from each replicate to calibrate the HCR within the
 #'     current HS. Other jurisdictions may use other data.
 #' @param glb the object containing the global constants for the given run
 #' @param hcrfun the name of the harvest control rule that is used to
 #'     calculate the multiplier for the previous aspirational catches (possibly
-#'     for each SAU but possibly the TAC for the wholse zone) so as to
+#'     for each SAU but possibly the TAC for the whole zone) so as to
 #'     estimate the aspirational catches or TAC or the following year
 #' @param hsargs the constants used to define the workings of the hcr
 #' @param sampleCE a function that generates the CPUE statistics
@@ -297,11 +297,15 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 #' @param sampleNaS a function that generates the Numbers-at-size samples
 #' @param getdata a function that gathers all the data required by the hcrfun
 #'     and combines it into an hcrdata object ready for the hcrfun
-#' @param calcpopC a function that takes the output from hcrfun and gernerates
+#' @param calcpopC a function that takes the output from hcrfun and generates
 #'     the actual catch per population expected in the current year.
 #' @param ... the ellipsis used in case any of the functions hcrfun, sampleCE,
 #'     sampleFIS, sampleNas, and getdata require extra arguments not included
 #'     in the default named collection
+#'
+#' @seealso{
+#'  \link{oneyearsauC}, \link[makehtml]{make_html}
+#' }
 #'
 #' @return a replacement for zoneDP containing the dynamics for all populations,
 #'     for all replicates, and for all projection years
@@ -310,12 +314,10 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 #' @examples
 #' print("wait on suitable internal data sets")
 doprojections <- function(ctrl,zoneDP,zoneCP,otherdata,glb,hcrfun,hsargs,
-                             sampleCE,sampleFIS,sampleNaS,getdata,calcpopC,...) {
+                          sampleCE,sampleFIS,sampleNaS,getdata,calcpopC,...) {
 #  ctrl=ctrl;zoneDP=zoneDP;zoneCP=zoneCP;otherdata=condC$histCE;glb=glb; getdata=tasdata
 #  hcrfun=mcdahcr; hsargs=hsargs; sampleCE=tasCPUE;sampleFIS=tasFIS; sampleNaS=tasNaS
 #  calcpopC=calcexpectpopC
-
-
   reps <- ctrl$reps
   projyrs <- ctrl$projection
   sigmar <- ctrl$withsigR

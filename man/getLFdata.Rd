@@ -4,11 +4,10 @@
 \alias{getLFdata}
 \title{getLFdata reads the observed LF-composition data}
 \usage{
-getLFdata(rundir, filename)
+getLFdata(datadir, filename)
 }
 \arguments{
-\item{rundir}{the run directory containing the control and data files for a
-particular run}
+\item{datadir}{the directory containing the LF data files}
 
 \item{filename}{the complete filename for the length-composition data file}
 }
@@ -27,4 +26,9 @@ getLFdata reads the observed LF-composition data, which needs
 }
 \examples{
 print("wait on suitable internal data files")
+}
+\seealso{
+{
+ \link{getzoneLF}, \link{getnas}
+}
 }

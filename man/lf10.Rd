@@ -33,7 +33,6 @@ lf10 is a data.frame of length-composition of commercial catch
    \item size-based stock assessment model fitting
    \item size-distributions of commercial catches
  }
- @export
 }
 
 \examples{

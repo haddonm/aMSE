@@ -30,7 +30,7 @@ model runs}
 used in model dynamics}
 
 \item{otherdata}{an object containing any other data used by the different
-functions used n the projections. For example, for Tasmania this would
+functions used in the projections. For example, for Tasmania this would
 be pointed at the histCE data set which is appended to each year's new
 predicted cpue data from each replicate to calibrate the HCR within the
 current HS. Other jurisdictions may use other data.}
@@ -39,7 +39,7 @@ current HS. Other jurisdictions may use other data.}
 
 \item{hcrfun}{the name of the harvest control rule that is used to
 calculate the multiplier for the previous aspirational catches (possibly
-for each SAU but possibly the TAC for the wholse zone) so as to
+for each SAU but possibly the TAC for the whole zone) so as to
 estimate the aspirational catches or TAC or the following year}
 
 \item{hsargs}{the constants used to define the workings of the hcr}
@@ -53,7 +53,7 @@ estimate the aspirational catches or TAC or the following year}
 \item{getdata}{a function that gathers all the data required by the hcrfun
 and combines it into an hcrdata object ready for the hcrfun}
 
-\item{calcpopC}{a function that takes the output from hcrfun and gernerates
+\item{calcpopC}{a function that takes the output from hcrfun and generates
 the actual catch per population expected in the current year.}
 
 \item{...}{the ellipsis used in case any of the functions hcrfun, sampleCE,
@@ -73,4 +73,9 @@ doprojections conducts the replicate model runs for
 }
 \examples{
 print("wait on suitable internal data sets")
+}
+\seealso{
+{
+ \link{oneyearsauC}, \link[makehtml]{make_html}
+}
 }

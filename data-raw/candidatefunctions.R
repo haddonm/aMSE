@@ -83,15 +83,31 @@ for (sau in 1:nsau) { #  sau=1
 
 # Read the Obs LF-comp data-----------------------------------------------
 
+options("show.signif.stars"=FALSE,
+        "stringsAsFactors"=FALSE,
+        "max.print"=50000,
+        "width"=240)
+# declare libraries ------------------------------------------------------------
+library(aMSE)
+library(rutilsMH)
+# Obviously you should modify the rundir and datadir to suit your own setup
+if (dir.exists("c:/Users/User/DropBox")) {
+  ddir <- "c:/Users/User/DropBox/A_codeUse/aMSEUse/scenarios/"
+} else {
+  ddir <- "c:/Users/Malcolm/DropBox/A_codeUse/aMSEUse/scenarios/"
+}
+doproject <- FALSE  # change to FALSE if only conditioning is required
+verbose <- TRUE
+rundir <- paste0(ddir,"HS652510")
+datadir <- paste0(ddir,"tasdata")
+
+zone1 <- readctrlfile(rundir,infile="controlsau.csv",datadir=datadir,verbose=verbose)
+
+compdat <- zone1$condC$compdat
 
 
-outLF <- getLFdata(datadir,"lateLF-84-20.csv")
-
-palfs=outLF$palfs
+palfs=compdat$palfs
 palfs
-
-
-
 
 
 # copyto -------------------------------------------------------------
@@ -107,36 +123,9 @@ copyto(rundir,todir=destdir,filename="controlsau.csv")
   #     picksau=9; histCE=histCE;CIprobs=c(0.05,0.5,0.95); addCI=TRUE
 
 
-# Diagnostic plots --------------------------------------------------------
-
-
-
-invar <- zonePsau$catch
-invar2 <- zonePsau$acatch
-filen <- ""
-nsau=8
-nrep=3
-reps=100
-saunames=glb$saunames
-label <- "_catches"
-
-nyrs <- dim(invar)[1]
-reps <- dim(invar)[3]
-plotprep(width=7,height=7,filename=filen,cex=1.0,verbose=FALSE,newdev = FALSE)
-parset(plots=c(4,2))
-for (sau in 1:nsau) {
-  pickrep <- sample(1:reps,nrep,replace=FALSE)
-  ymax <- getmax(invar[,sau,pickrep])
-  ylabel <- paste0(paste0("SAU_",saunames[sau],label))
-  plot(1:nyrs,invar[,sau,pickrep[1]],type="l",lwd=2,ylim=c(0,ymax),
-       ylab=ylabel,xlab="Years",panel.first=grid())
-  for (i in 2:nrep) lines(1:nyrs,invar[,sau,pickrep[i]],lwd=2,col=i)
-  for (i in 1:nrep) lines(1:nyrs,invar2[,sau,pickrep[i]],lwd=2,col=i,lty=3)
-} # end of actual catches
-
 
 # selectivity plots -----------------------------------------------------
-
+zoneC <- out$zoneC
 pop1 <- zoneC[[1]]
 sel <- pop1$Select
 mids <- glb$midpts
@@ -224,48 +213,6 @@ for (i in 1:nsau) {
 
 
 
-# digits by row ----------------------------------------------------------------
-library(knitr)
-
-
-
-
-x <- matrix(c(rnorm(5,mean=5,sd=1),seq(1,10,1)),nrow=3,ncol=5,byrow=TRUE,
-            dimnames=list(1:3,1:5))
-digitsbyrow(x, c(3,0,0))
-
-
-
-digitsbyrow
-function(df, digits) {
-
-  df <- propDD
-  digits=c(0,2,3,3,3,3,2,3,3,3,3,3,0,3,3,1)
-
-  tmp0 <- data.frame(t(df))
-
-
-
-
-
-
-  tmp1 <- mapply(
-    function(df0, digits0) {
-      formatC(df0, format="f", digits=digits0)
-    },
-    df0=tmp0, digits0=digits
-  )
-  tmp1 <- data.frame(t(tmp1))
-  rownames(tmp1) <- rownames(df)
-  colnames(tmp1) <- colnames(df)
-  if (class(df)[1] == "matrix") tmp1 <- as.matrix(tmp1)
-  return(tmp1)
-}
-
-
-
-
-
 x <- matrix(rnorm(25,mean=5,sd=1),nrow=5,ncol=5)
 kablerow(x,rowdigits=c(2,3,4,3,2))
 
@@ -289,9 +236,9 @@ outzone6 <- out$outzone
 TAC6 <- t(outzone6$TAC)
 med2016 <- apply(TAC6,2,median)
 
-load(paste0(ddir,"aMSEUse/scenarios/HS652510_2019/outzone2019.RData"))
+load(paste0(ddir,"HS652510/ozoneDP.RData"))
 
-paste0(ddir,"aMSEUse/scenarios/HS652510_2019/o")
+paste0(ddir,"aMSEUse/scenarios/HS652510_2019/")
 outzone9 <- outzone
 TAC9 <- t(outzone9$TAC)
 med2019 <- apply(TAC9,2,median)
@@ -347,6 +294,83 @@ NAS <- list(Nt=zoneDP$Nt,NumNe=zoneDP$NumNe,catchN=zoneDP$catchN)
 
 
 str1(zoneDyn)
+
+# change controlsau.csv by linenumber-------------------------------------------
+
+
+findlinenumber(rundir,"controlsau.csv")
+
+changeline(rundir,"controlsau.csv",210,"1991,-1,-1,-1,-1,-1,-1,-1,-1,")
+
+changeline(rundir,"controlsau.csv",210,"1991,2,2,2,2,2,2,2,2,")
+
+
+# SAU assessment ---------------------------------------------------------------
+
+options("show.signif.stars"=FALSE,
+        "stringsAsFactors"=FALSE,
+        "max.print"=50000,
+        "width"=240)
+# declare libraries
+library(aMSE)
+library(rutilsMH)
+# Obviously you should modify the rundir and datadir to suit your own setup
+if (dir.exists("c:/Users/User/DropBox")) {
+  ddir <- "c:/Users/User/DropBox/A_codeUse/aMSEUse/scenarios/"
+} else {
+  ddir <- "c:/Users/Malcolm/DropBox/A_codeUse/aMSEUse/scenarios/"
+}
+doproject <- FALSE  # change to FALSE if only conditioning is required
+verbose <- TRUE
+rundir <- paste0(ddir,"HS652510")
+datadir <- paste0(ddir,"tasdata")
+
+zone1 <- readctrlfile(rundir,infile="controlsau.csv",datadir=datadir,verbose=verbose)
+consts <- getsaudata(datadir,zone1$ctrl$datafile)
+condC <- zone1$condC
+str(condC)
+sau <- 7 #  sau12
+LF <- condC$compdat$lfs[,,sau]
+catch <- condC$histCatch[,sau]
+ce <- condC$histCE[,sau]
+LML <- condC$histyr
+biol <- consts[,sau]
+
+# identify years with data
+pickc <- which(catch>0)
+catch <- catch[pickc]
+LML <- LML[pickc,]
+yrs <- as.numeric(names(catch))
+yrce <- as.numeric(names(ce))
+pickce <- match(yrce,yrs)
+cena <- putNA(ce,(pickce[1]-1),0)
+names(cena) <- yrs
+cbind(catch,cena,LML[,2])
+
+printV(round(biol,5))
+
+
+
+
+
+# align projections -------------------------------------------------------------------
+
+histce <- out$sauout$zoneDsau$cpue[58,1,]
+histcer <- out$zoneDDR$cesau[58,1,]
+projce <- out$sauout$zonePsau$cpue[1,1,]
+
+cat(mean(histce),mean(histcer),mean(projce))
+
+plotprep(width=8,height=4,newdev=FALSE)
+parset(plots=c(2,1))
+hist(histce,breaks=25)
+hist(histcer,breaks=25)
+
+
+
+
+
+
 
 
 

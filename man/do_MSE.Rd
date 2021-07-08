@@ -16,7 +16,7 @@ do_MSE(
   getdata,
   calcpopC,
   varyrs = 7,
-  startyr = 32,
+  startyr = 42,
   cleanslate = FALSE,
   verbose = FALSE,
   doproject = TRUE,
@@ -108,4 +108,10 @@ do_MSE is a form of meta-function that contains the code and
 }
 \examples{
 print("wait on suitable data sets in data")
+}
+\seealso{
+{
+ \link{makeequilzone}, \link{dohistoricC}, \link{prepareprojection},
+ \link{doprojections}
+}
 }

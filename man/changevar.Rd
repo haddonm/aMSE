@@ -39,3 +39,8 @@ changevar is a DANGEROUS function for lazy people. I say that
 \examples{
 print("Wait on some time passing")
 }
+\seealso{
+{
+ \link{findlinenumber}, \link{changeline}
+}
+}

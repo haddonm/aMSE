@@ -134,6 +134,41 @@ catchweightCE <- function(cedat,cdat,nsau) {
   return(totCE)
 } # end of catchweightCE
 
+#' @title changeline replaces a given line in a given file with new text
+#'
+#' @description changeline enables a text file to be changed line by line.
+#'     One identifies a given line, perhaps by using 'findlinenumber', and
+#'     this can then be replaced by an input character string. Obviously this
+#'     is a fine way to mess up a data file so use with care.
+#'
+#' @param rundir the directory path in which to find the text file.
+#' @param filename the full name of the text file in quotations.
+#' @param linenumber the line number of the text file to be changed
+#' @param newline the character string with which to replace the line
+#' @param verbose should confirmation be output to the console. default=FALSE
+#'
+#' @seealso{
+#'  \link{findlinenumber}, \link{changevar}
+#' }
+#'
+#' @return nothing but it does alter a line in a text file. Optionally it may
+#'     confirm the action to the console
+#' @export
+#'
+#' @examples
+#' print("wait on an example")
+changeline <- function(rundir, filename, linenumber, newline,verbose=FALSE) {
+  # rundir=rundir; filename="controlsau.csv"; linenumber=210; newline="1991,-1,-1,-1,-1,-1,-1,-1,-1,"
+  filen <- filenametopath(rundir,filename)
+  dat <- readLines(filen)
+  origtext <- dat[linenumber]
+  dat[linenumber] <- newline
+  writeLines(dat,filen)
+  if (verbose) {
+    cat(origtext," \n")
+    cat("replaced with ",newline)
+  }
+} # end of changeline
 
 #' @title changevar can alter the value in a single line in, eg, the control file
 #'
@@ -157,13 +192,17 @@ catchweightCE <- function(cedat,cdat,nsau) {
 #' @param prompt should allowable names first be listed with current values?
 #' @param verbose should concluding remarks to console be made. default=TRUE
 #'
+#' @seealso{
+#'  \link{findlinenumber}, \link{changeline}
+#' }
+#'
 #' @return nothing but a file is changed - be careful
 #' @export
 #'
 #' @examples
 #' print("Wait on some time passing")
 changevar <- function(filename,rundir,varname,newvalue,prompt=FALSE,verbose=TRUE) {
-  #  varname = "CATCHES"; newvalue=47; filename="controlsau.csv";rundir=rundir
+  #  varname = "CATCHES"; newvalue=57; filename="controlsau.csv";rundir=rundir
   filen <- paste0(rundir,"/",filename)
   dat <- readLines(filen)
   goodnames <- c("larvdisp","PROJECT","CATCHES","replicates",
@@ -240,6 +279,35 @@ copyto <- function (fromdir, todir, filename="control.csv",makenew = TRUE,
   file.copy(filen, fileout, overwrite = TRUE, copy.date = TRUE)
   if (verbose) cat(filename, " has been copied to ",todir,"\n")
 } # end of copyto
+
+#' @title findlinenumber prints out the contents of a text file with line numbers
+#'
+#' @description findlinenumber solves the problem of finding the line number in
+#'     a given text file when one wants to change a specific line using the
+#'     function changeline. After inc lines are printed the function stops and
+#'     waits for any character to be input (a space will suffice) before printing
+#'     the next inc lines
+#'
+#' @param rundir the directory path in which to find the text file.
+#' @param filename the full name of the text file in quotations.
+#' @param inc the number of lines on screen
+#'
+#' @return nothing, but it does print the contents of a text file with the
+#'     respective line numbers on the console.
+#' @export
+#'
+#' @examples
+#' print("wait on a suitable example")
+findlinenumber <- function(rundir,filename,inc=20) {  # rundir=rundir; filename="controlsau.csv"
+  filen <- filenametopath(rundir,filename)
+  dat <- readLines(filen)
+  nline <- length(dat)
+  cat(nline," lines long  \n")
+  for (i in 1:nline) {
+    cat(i,"|  ",dat[i],"\n")
+    if ((i %% inc) == 0)  x <- scan(what="character",n=1,quiet=TRUE)
+  }
+} # end of findlinenumber
 
 #' @title makewidedat converts long data to a wide data format
 #'
@@ -446,6 +514,34 @@ prepareDDNt <- function(inNt,incatchN,glb) { # Nt=zoneDD$Nt; catchN=zoneDD$catch
   }
   return(list(Nt=Nt,catchN=catchN))
 } # end of prepareDDNt
+
+#' @title sautopop translates a vector of SAU properties into population properties
+#'
+#' @description sautopop uses teh sauindex object to distribute a set of SAU
+#'     properties (for example recruitment deviates) into a set of population
+#'     properties.
+#'
+#' @param x the vector of length nsau, of properties
+#' @param sauindex the index of which populations are in which SAU
+#'
+#' @return a vector of length numpop with each population having the property
+#'     of the respective SAU
+#' @export
+#'
+#' @examples
+#' sauprop <- c(1,2,3,4,5)  # 5 SAU each with 3 populations
+#' sauind <- c(1,1,1,2,2,2,3,3,3,4,4,4,5,5,5) # the sauindex
+#' sautopop(sauprop,sauind)
+sautopop <- function(x,sauindex) {
+  nsau <- length(x)
+  numpop <- length(sauindex)
+  ans <- numeric(numpop)
+  for (i in 1:nsau) {
+    pick <- which(sauindex == i)
+    ans[pick] <- x[i]
+  }
+  return(ans)
+} # end of sautopop
 
 #' @title saveobject is used to save RData files of particular objects
 #'

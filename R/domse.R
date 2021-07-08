@@ -10,7 +10,7 @@
 # getdata=tasdata
 # calcpopC=calcexpectpopC
 # varyrs=7
-# startyr=32
+# startyr=42
 # cleanslate=FALSE
 # verbose=TRUE
 # doproject=doproject
@@ -82,6 +82,11 @@
 #'     diagnostics tab to illustrate ndiagprojs trajectories to ensure that
 #'     such projections appear realistic; default=3
 #'
+#' @seealso{
+#'  \link{makeequilzone}, \link{dohistoricC}, \link{prepareprojection},
+#'  \link{doprojections}
+#' }
+#'
 #' @return a large list containing tottime, projtime, starttime, glb, ctrl,
 #'     zoneDD, zoneDP, projC, condC, sauout, and outzone
 #' @export
@@ -89,7 +94,7 @@
 #' @examples
 #' print("wait on suitable data sets in data")
 do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
-                   sampleNaS,getdata,calcpopC,varyrs=7,startyr=32,
+                   sampleNaS,getdata,calcpopC,varyrs=7,startyr=42,
                    cleanslate=FALSE,verbose=FALSE,doproject=TRUE,ndiagprojs=3) {
   # generate equilibrium zone ----------------------------------------------------
   starttime <- (Sys.time())
@@ -139,16 +144,16 @@ do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
     zoneDP <- out$zoneDP
     projC <- out$projC
     zoneCP <- out$zoneCP
-    zoneDDR <- out$zoneDDR
-    outproj <- doprojections(ctrl,zoneDP,zoneCP,condC$histCE,glb,hcrfun=hcrfun,
-                            hsargs,sampleCE=sampleCE,sampleFIS=sampleFIS,
-                            sampleNaS=sampleNaS,getdata=getdata,calcpopC=calcpopC)
+    outproj <- doprojections(ctrl,zoneDP,zoneCP,otherdata=condC$histCE,glb,
+                             hcrfun=hcrfun,hsargs,sampleCE=sampleCE,
+                             sampleFIS=sampleFIS,sampleNaS=sampleNaS,
+                             getdata=getdata,calcpopC=calcpopC)
     zoneDP <- outproj$zoneDP
     NAS <- outproj$NAS
     histCE <- condC$histCE
     B0 <- getvar(zoneC,"B0")
     ExB0 <- getvar(zoneC,"ExB0")
-    sauout <- sauplots(zoneDP,zoneDDR,NAS,glb,rundir,B0,ExB0,startyr=startyr,
+    sauout <- sauplots(zoneDP,out$zoneDDR,NAS,glb,rundir,B0,ExB0,startyr=startyr,
                        addCI=TRUE,histCE=histCE)
     diagnosticsproj(sauout$zonePsau,glb,rundir,nrep=ndiagprojs)
     outzone <- poptozone(zoneDP,NAS,glb,
@@ -165,5 +170,6 @@ do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
   tottime <- round((projtime - starttime),3)
   out <- list(tottime=tottime,projtime=projtime,starttime=starttime,glb=glb,
               ctrl=ctrl,zoneC=zoneC,zoneDD=zoneDD,zoneDP=zoneDP,NAS=NAS,
-              projC=projC,condC=condC,sauout=sauout,outzone=outzone,zone=zone)
+              projC=projC,condC=condC,sauout=sauout,outzone=outzone,zone=zone,
+              zoneDDR=out$zoneDDR)
 } # end of do_MSE

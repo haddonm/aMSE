@@ -93,6 +93,10 @@ depleteSAU <- function(zoneC,zoneD,glob,initdepl,product,len=15) {
 #'     this value should be is unknown, the default=1e-08, is arbitrary but
 #'     avoids any effective fisher allocation error between populations.
 #'
+#' @seealso{
+#'  \link{oneyearsauC}, \link{oneyearcat}, \link{oneyearrec}, \link{do_MSE}
+#' }
+#'
 #' @return a zoneD object
 #' @export
 #'
@@ -108,7 +112,7 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,sigR=1e-08,sigB=1e-08) 
   r0 <- getvar(zoneC,"R0") #sapply(zoneC,"[[","R0")
   b0 <- getvar(zoneC,"B0") #sapply(zoneC,"[[","B0")
   exb0 <- getvar(zoneC,"ExB0")
-  for (year in 2:nyrs) {  # year=2 # ignores the initial unfished year
+  for (year in 2:nyrs) {  # year=19 # ignores the initial unfished year
     catchsau <- histC[year,]
     rdev <- recdevs[year,]
     hcrout <- list(acatch=catchsau)
@@ -259,6 +263,10 @@ oneyear <- function(inpopC,inNt,Nclass,inH,yr) {  #
 #'     is generated when the zone is defined or when it is initially
 #'     depleted. All dynamics are appllied from year 2 - Nyrs; scalar
 #'
+#' @seealso{
+#'  \link{dohistoricC}, \link{oneyearcat}, \link{oneyearrec}
+#' }
+#'
 #' @return a list containing a vector of ExploitB, MatureB, Catch, and ce, and
 #'     a matrix NaL containing Nt and CatchN used to update a pop in yr + 1
 #' @export
@@ -318,16 +326,19 @@ oneyearcat <- function(inpopC,inNt,Nclass,incat,yr) {  #
 #' @param exb0 the unfished exploitable biomass used in depletion
 #' @param rdev the recruitment deviates for each SAU for the given year
 #'
+#' @seealso{
+#'  \link{dohistoricC}, \link{oneyearcat}, \link{oneyearrec}
+#' }
+#'
 #' @return a list containing a revised dynamics list
 #' @export
 #'
 #' @examples
 #' print("Wait on new data")
 oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,
-                        movem,sigmar=1e-08,r0,b0,exb0,rdev) {
+                        movem,sigmar=1e-08,r0,b0,exb0,rdev=-1) {
  # zoneCC=zoneC;inN=inN;popC=popC;year=year;Ncl=glob$Nclass;sauindex=sauindex;
 #  movem=glob$movem; sigmar=sigR;r0=r0;b0=b0;exb0=exb0; rdev=rdev
-
   npop <- length(popC)
   matb <- numeric(npop)
   ans <- vector("list",npop)
@@ -337,6 +348,7 @@ oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,
   }
   dyn <- sapply(ans,"[[","vect")
   steep <- getvect(zoneCC,"steeph") #sapply(zoneC,"[[","popdef")["steeph",]
+  if (rdev[1] > 0) rdev <- sautopop(rdev,sauindex)
   recs <- oneyearrec(steep,r0,b0,dyn["matureb",],sigR=sigmar,devR=rdev)
   recruits <- as.numeric(movem %*% recs)
   deplsB <- dyn["matureb",]/b0
@@ -428,6 +440,11 @@ oneyearD <- function(zoneC,zoneD,inHt,year,sigmar,Ncl,npop,movem) {
 #'     here. If negative values then a random epsilon is used, otherwise
 #'     epsilon is given the value of devR. default=-1, so by default fixed
 #'     recruitment deviates are off.
+#'
+#' @seealso{
+#'  \link{oneyearsauC}, \link{oneyearcat}, \link{dohistoricC}
+#' }
+#'
 #' @return an absolute number of recruits from a given spawning biomass
 #' @export
 #'
@@ -440,7 +457,7 @@ oneyearD <- function(zoneC,zoneD,inHt,year,sigmar,Ncl,npop,movem) {
 #' insigmar <- 0.3
 #' oneyearrec(steep,R0,B0,Bsp,insigmar)
 #' }
-#' # steep=steep;r0=r0;b0=b0;Bsp=dyn["matureb",];sigR=sigmar;devR=rdev
+#' # steep=steep;R0=r0;B0=b0;Bsp=dyn["matureb",];sigR=sigmar;devR=rdev
 oneyearrec <- function(steep,R0,B0,Bsp,sigR,devR=-1) {
   if (devR[1] > 0) {
     epsilon <- devR

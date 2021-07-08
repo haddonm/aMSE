@@ -49,3 +49,8 @@ oneyear does one year's dynamics for one input
 \examples{
 print("need to wait on built in data sets")
 }
+\seealso{
+{
+ \link{dohistoricC}, \link{oneyearcat}, \link{oneyearrec}
+}
+}

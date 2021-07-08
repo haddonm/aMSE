@@ -445,12 +445,15 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir,verbose=TRUE
    if (sizecomp > 0) {
       lffiles <- NULL
       locsizecomp <- grep("SIZECOMP",indat)
-      for (i in 1:sizecomp)
-         lffiles <- c(lffiles,getStr(indat[locsizecomp+i],1))
-      compdat <- vector("list",sizecomp)
-      for (i in 1:sizecomp) {
-         filename <- filenametopath(datadir,lffiles[i])
-         compdat[[i]] <- read.csv(file=filename,header=TRUE)
+      if (sizecomp > 1) {
+         compdat <- vector("list",sizecomp)
+         for (i in 1:sizecomp) {
+            lffilename <- removeEmpty(unlist(strsplit(indat[locsizecomp+i],",")))
+            compdat[[i]] <- getLFdata(datadir,lffilename)
+         }
+       } else {
+         lffilename <- removeEmpty(unlist(strsplit(indat[locsizecomp+1],",")))
+         compdat <- getLFdata(datadir,lffilename)
       }
    }  # end of sizecomp loop
    recdevs <- matrix(-1,nrow=hyrs,ncol=nSAU,dimnames=list(hyrnames,SAUnames))

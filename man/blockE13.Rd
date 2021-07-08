@@ -35,7 +35,6 @@ blockE13 is a fishery data-set for blacklip abalone
    \item performance measure estimation
    \item relationship between catch and CPUE
  }
- @export
 }
 
 \examples{

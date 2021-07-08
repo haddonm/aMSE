@@ -34,7 +34,6 @@ midg is a tagging data-set for blacklip abalone
    \item inverse logistic, von Bertalanffy, Gompertz
    \item Static model fitting
  }
- @export
 }
 
 \examples{

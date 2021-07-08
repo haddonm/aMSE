@@ -29,7 +29,6 @@
 #'    \item performance measure estimation
 #'    \item relationship between catch and CPUE
 #'  }
-#'  @export
 #'
 #' @source Mundy, C. and J.M. McAllister (2020) Tasmanian Abalone Assessment
 #'     2019. IMAS, University of Tasmania.
@@ -65,7 +64,6 @@ NULL
 #'    \item size-based stock assessment model fitting
 #'    \item size-distributions of commercial catches
 #'  }
-#'  @export
 #'
 #' @source Thanks to the Institute of Marine and Antarctic Science,
 #'     which is part of the University of Tasmania, and especially to
@@ -107,7 +105,6 @@ NULL
 #'    \item inverse logistic, von Bertalanffy, Gompertz
 #'    \item Static model fitting
 #'  }
-#'  @export
 #'
 #' @source Thanks to the Institute of Marine and Antarctic Science,
 #'     which is part of the University of Tasmania, and especially to
@@ -179,7 +176,6 @@ NULL
 #'    \item maturity ogives or logistic curves
 #'    \item Binomial likelihoods
 #'  }
-#'  @export
 #'
 #' @source Thanks to the Institute of Marine and Antarctic Science,
 #'     which is part of the University of Tasmania, and especially to

@@ -1,5 +1,11 @@
 ## aMSE Recent Activity.
 
+* 2021_07-04 aMSE 0.0.0.1500 Another big change. Functions added to aid conditioning, and aspects of the projections streamlined.  No errors, warnings, or notes
+
+* 2021-07-04 aMSE 0.0.0.1900 More big changes. I have removed the numbers-at-size large matrices from the zoneDP object into a NAS object. zoneDP is now only 12Mb instead of 450Mb and so can now be stored conveniently for each run. In addition, fixed recruitment deviates have now been implemented (although the default is to not use them - all are set to -1). But, expreimentally, in Tasmania, setting the deviate in 1991 = 2.0 meaning that the base level of recruitment off the recruitment curve is doubled, improves the relationship between predicted cpue and observed cpue so this holds great promise for improved conditioning.
+
+* 2021-06-28 aMSE 0.0.0.2000 The AMSE can now conduct what are effectively retrospective analyses. This is affected by changing the 'CATCHES, 47, if>1 this is the number of historical catch years' line in the control.csv file, which can now be done in a loop using the new 'changevar' function. This has necessitated also changing the 'CEYRS, 20, The first year of catches for which there are CPUE records, ie 1992 is 20th year of catches', which used to take a direct value of how any years of CPUE data there are. We could have just changed two numbers but along that path errors lay.
+
 * 2021-06-24 aMSE 0.0.0.2100 Big jump in number as some larger changes. I have removed a bunch of deprecated functions (which are now in 'deprecated.R' in the data-raw directory). I have tidied many other functions, and have modified listall files to aid in the auto-documentation of the package.
 
 * 2021-05-27 aMSE 0.0.0.2400 Have encapsulated the bulk of running the MSE for a particular scenario into the function 'do_MSE'. Check out its help page but also see it in action in the example within the readme file or in the new version of first_use_saudata.R in ~Dropbox\National abalone MSE\aMSE_files\scenarios\HS652510. I have also updated the aMSE_0.0.0.2400.tar.gz file. Any issues get in touch. 

@@ -39,3 +39,8 @@ dohistoricC is used during the conditioning of the zone/region
 \examples{
 print("wait on some data sets")
 }
+\seealso{
+{
+ \link{oneyearsauC}, \link{oneyearcat}, \link{oneyearrec}, \link{do_MSE}
+}
+}

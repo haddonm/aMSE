@@ -38,7 +38,7 @@ which recruitment variation is to be added}
 
 \item{multTAC}{the TAC multiplication matrix from the HCR}
 
-\item{calcpopC}{a function that takes the output from hcrfun and gernerates
+\item{calcpopC}{a function that takes the output from hcrfun and generates
 the actual catch per population expected in the current year.}
 
 \item{sigR}{the initial recruitment variation default=1e-08}
@@ -48,7 +48,7 @@ the actual catch per population expected in the current year.}
 \item{lastsigR}{the recruitment variation to be added to the final varyrs}
 }
 \value{
-an initialized dynamics zone object for the projecitons with the
+an initialized dynamics zone object for the projections with the
     first year populated
 }
 \description{

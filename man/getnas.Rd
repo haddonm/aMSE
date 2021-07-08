@@ -2,9 +2,9 @@
 % Please edit documentation in R/getfunctions.R
 \name{getnas}
 \alias{getnas}
-\title{getnas gets the numbers-at-size for all spatial scales}
+\title{getnas gets the numbers-at-size for all populations and the zone}
 \usage{
-getnas(zoneD, yr, glob, zone)
+getnas(zoneD, yr, glob)
 }
 \arguments{
 \item{zoneD}{the dynamic portion of the zone}
@@ -12,8 +12,6 @@ getnas(zoneD, yr, glob, zone)
 \item{yr}{which yr from the range available should be summarized}
 
 \item{glob}{the global variables object}
-
-\item{zone}{the zone constants}
 }
 \value{
 a matrix of numpop + 1 columns of numbers-at-size for each population
@@ -21,11 +19,15 @@ a matrix of numpop + 1 columns of numbers-at-size for each population
 }
 \description{
 getnas extracts numbers-at-size for all populations,
-    SAUs, and the zone. There will therefore be numpop + nSAU + 1
+    SAUs, and the zone. There will therefore be numpop + 1
     columns of numbers-at-size fr the particular year given.
 }
 \examples{
-data(zone)
-nas <- getnas(zone$zoneD,yr=1,glob=zone$glb,zone=zone$zone1)
-round(nas[1:30,],1)
+print("wait on suitable data sets")
+}
+\seealso{
+{
+ \link{getLFdata}, \link{getzoneLF}, \link{prepareprojection},
+ \link{doprojections}
+}
 }

@@ -33,7 +33,6 @@ tasab is a 715 x 4 matrix of maturity-at-length data
    \item maturity ogives or logistic curves
    \item Binomial likelihoods
  }
- @export
 }
 
 \examples{

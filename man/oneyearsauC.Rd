@@ -16,7 +16,7 @@ oneyearsauC(
   r0,
   b0,
   exb0,
-  rdev
+  rdev = -1
 )
 }
 \arguments{
@@ -61,4 +61,9 @@ oneyearsauC conducts one year's dynamics in the simulation
 }
 \examples{
 print("Wait on new data")
+}
+\seealso{
+{
+ \link{dohistoricC}, \link{oneyearcat}, \link{oneyearrec}
+}
 }

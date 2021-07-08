@@ -63,9 +63,12 @@ getConst <- function(inline,nb,index=2) { # parses lines containing numbers
 #'     the SAU. See the 'data-file-description.docx', and the example data files
 #'     to see examples of the required format.
 #'
-#' @param rundir the run directory containing the control and data files for a
-#'     particular run
+#' @param datadir the directory containing the LF data files
 #' @param filename the complete filename for the length-composition data file
+#'
+#' @seealso{
+#'  \link{getzoneLF}, \link{getnas}
+#' }
 #'
 #' @return a list containing the lfs array (lengths x years x sau) and palfs
 #'     matrix of the count of observations in each year for each sau
@@ -73,8 +76,8 @@ getConst <- function(inline,nb,index=2) { # parses lines containing numbers
 #'
 #' @examples
 #' print("wait on suitable internal data files")
-getLFdata <- function(rundir,filename) {
-  filen <- filenametopath(rundir,filename)
+getLFdata <- function(datadir,filename) {
+  filen <- filenametopath(datadir,filename)
   lfdat <- read.csv(filen,header=TRUE)
   colnames(lfdat) <- tolower(colnames(lfdat))
   sau <- sort(unique(lfdat[,"sau"]))
@@ -170,26 +173,28 @@ getLogical <- function(inline,nb) {  #inline <- txtline; nb=2
   return(outtmp)
 }
 
-#' @title getnas gets the numbers-at-size for all spatial scales
+#' @title getnas gets the numbers-at-size for all populations and the zone
 #'
 #' @description getnas extracts numbers-at-size for all populations,
-#'     SAUs, and the zone. There will therefore be numpop + nSAU + 1
+#'     SAUs, and the zone. There will therefore be numpop + 1
 #'     columns of numbers-at-size fr the particular year given.
 #'
 #' @param zoneD the dynamic portion of the zone
 #' @param yr which yr from the range available should be summarized
 #' @param glob the global variables object
-#' @param zone the zone constants
+#'
+#' @seealso{
+#'  \link{getLFdata}, \link{getzoneLF}, \link{prepareprojection},
+#'  \link{doprojections}
+#' }
 #'
 #' @return a matrix of numpop + 1 columns of numbers-at-size for each population
 #'     and for the zone
 #' @export
 #'
 #' @examples
-#' data(zone)
-#' nas <- getnas(zone$zoneD,yr=1,glob=zone$glb,zone=zone$zone1)
-#' round(nas[1:30,],1)
-getnas <- function(zoneD,yr,glob,zone) {# zoneD=zoneD;yr=1;glob=glb;zone=zone1
+#' print("wait on suitable data sets")
+getnas <- function(zoneD,yr,glob) {# zoneD=zoneD;yr=1;glob=glb;
   numpop <- glob$numpop
   nSAU <- glob$nSAU
   columns <- c(paste0("p",1:numpop),"zone") # ,zone$SAUnames
@@ -204,6 +209,60 @@ getnas <- function(zoneD,yr,glob,zone) {# zoneD=zoneD;yr=1;glob=glb;zone=zone1
   return(nas)
 } #end of getnas
 
+#' @title getsaudata reads in the sau properties data from teh control.csv file
+#'
+#' @description getsaudata is used when attempting to condition the aMSE zone by
+#'     conducting formal stock assessments on the data available for single
+#'     sau. We use 'readctrlfile' to obtain the fishery data held in the object
+#'     condC, and use getsaudata to get the growth, maturity, and selectivity
+#'     data required by any size-based stock assessment model. We cannot use
+#'     'readsaudatafile' because that also distributed the properties among the
+#'     designated populations for each sau, and outputs the population
+#'     propoerties. Maybe I should change the sequence, first to read in the
+#'     saudata, and only then distribute those among the populations.
+#'
+#' @param datadir the full path to where the zone's and sau's property datafile
+#'     is to be found
+#' @param infile the name of the datafile, usually zone1$ctrl$datafile, which is
+#'     obtained by first running 'readctrlfile'.
+#'
+#' @seealso{
+#'  \link{readctrlfile}
+#' }
+#'
+#' @return a matrix of properties by sau
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'   getsaudata(datadir=datadir,infile=ctrl$datafile)
+#' }
+getsaudata <- function(datadir,infile) {  # datadir=datadir; infile=zone1$ctrl$datafile
+  filename <- filenametopath(datadir,infile)
+  indat <- readLines(filename)   # reads the whole file as character strings
+  nsau <- getsingleNum("nsau",indat)
+  # saupop <- getConst(indat[grep("saupop",indat)],nsau)
+  # numpop <- sum(saupop)
+  saunames <- getConst(indat[grep("saunames",indat)],nsau)
+  initdepl <- getConst(indat[grep("initdepl",indat)],nsau)
+  begin <- grep("PDFs",indat)
+  npar <- getConst(indat[begin],1)
+  rows <- c("DLMax","sMaxDL","L50","sL50","L50inc","sL50inc","SigMax",
+            "sSigMax","LML","Wtb","sWtb","Wtbtoa","sWtbtoa","Me","sMe",
+            "AvRec","sAvRec","defsteep","sdefsteep","L50C","sL50C",
+            "deltaC","sdeltaC","MaxCEpars","sMaxCEpars","selL50p",
+            "selL95p","SaMa","L50Mat","sL50Mat")
+  numrow <- length(rows)
+  ans <- matrix(0,nrow=numrow,ncol=nsau)
+  begin <- begin + 1
+  for (i in 1:npar) {
+    ans[i,] <- getConst(indat[begin],nsau)
+    begin <- begin + 1
+  } # completed filling ans matrix
+  rownames(ans) <- rows
+  colnames(ans) <- saunames
+  return(ans)
+} # end of getsaudata
 
 #' @title getsingleNum find a line of text and extracts a single number
 #'
