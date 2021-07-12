@@ -6,13 +6,11 @@
 \usage{
 addrecvar(
   zoneDD,
-  zoneDP,
   zoneC,
   glob,
   condC,
   ctrl,
   varyrs,
-  multTAC,
   calcpopC,
   sigR = 1e-08,
   sigB = 1e-08,
@@ -21,9 +19,8 @@ addrecvar(
 }
 \arguments{
 \item{zoneDD}{the dynamic zone after historical fishery data has been used
-to finalize the conditioning}
-
-\item{zoneDP}{the empty dynamic zone object ready to receive its first year}
+    to finalize the conditioning
+#param zoneDDR the empty dynamic zone object ready for expansion and variation}
 
 \item{zoneC}{the zone's constants object for each population}
 
@@ -35,8 +32,6 @@ to finalize the conditioning}
 
 \item{varyrs}{the number of years at the end of the historical period to
 which recruitment variation is to be added}
-
-\item{multTAC}{the TAC multiplication matrix from the HCR}
 
 \item{calcpopC}{a function that takes the output from hcrfun and generates
 the actual catch per population expected in the current year.}

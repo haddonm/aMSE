@@ -238,13 +238,13 @@ doproduction <- function(zoneC,zoneD,glob,
   columns <- c("ExB","MatB","AnnH","Catch","Deplet","RelCE")
   results <- array(0,dim=c(nH,6,numpop),dimnames=list(initH,columns,1:numpop))
   for (aH in 1:nH) { # aH=1 ; yr=2
-    zoneD <- runthreeH(zoneC=zoneC,zoneD,inHarv=rep(initH[aH],numpop),glob)
-    results[aH,"ExB",] <- zoneD$exploitB[1,]
-    results[aH,"MatB",] <- zoneD$matureB[1,]
-    results[aH,"AnnH",] <- zoneD$harvestR[1,]
-    results[aH,"Catch",] <- zoneD$catch[1,]
-    results[aH,"Deplet",] <- zoneD$deplsB[1,]
-    results[aH,"RelCE",] <- zoneD$cpue[1,]
+    zoneP <- runthreeH(zoneC=zoneC,zoneD,inHarv=rep(initH[aH],numpop),glob)
+    results[aH,"ExB",] <- zoneP$exploitB[1,]
+    results[aH,"MatB",] <- zoneP$matureB[1,]
+    results[aH,"AnnH",] <- zoneP$harvestR[1,]
+    results[aH,"Catch",] <- zoneP$catch[1,]
+    results[aH,"Deplet",] <- zoneP$deplsB[1,]
+    results[aH,"RelCE",] <- zoneP$cpue[1,]
   } # end of yr loop
   return(results)
 } # end of doproduction
@@ -781,6 +781,7 @@ makezone <- function(glob,zoneC) { #glob=glb; zoneC=zoneC;
   Recruit <- matrix(0,nrow=hyrs,ncol=numpop)
   CatchN <- array(data=0,dim=c(N,hyrs,numpop))
   Nt <- array(data=0,dim=c(N,hyrs,numpop))
+  NumNe <- Nt
   SAU <- getvar(zoneC,"SAU") #as.numeric(sapply(zoneC,"[[","SAU"))
   recs <- getvar(zoneC,"R0") #sapply(zoneC,"[[","R0")
   move <- glob$move
@@ -811,7 +812,7 @@ makezone <- function(glob,zoneC) { #glob=glb; zoneC=zoneC;
   }
   ans <- list(SAU=SAU,matureB=MatB,exploitB=ExplB,midyexpB=midyexpB,
               catch=Catch,harvestR=Harvest,cpue=cpue,recruit=Recruit,
-              deplsB=deplSpB,depleB=deplExB,catchN=CatchN,Nt=Nt)
+              deplsB=deplSpB,depleB=deplExB,catchN=CatchN,Nt=Nt,NumNe=NumNe)
   return(list(zoneD=ans,zoneC=zoneC))
 } # end of makezone
 

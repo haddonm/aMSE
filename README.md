@@ -3,20 +3,36 @@
 
 # LATEST UPDATE
 
--   2021\_07-04 aMSE 0.0.0.1500 Another big change. Functions added to
-    aid conditioning, and aspects of the projections streamlined. No
-    errors, warnings, or notes
-
--   2021-07-04 aMSE 0.0.0.1900 More big changes. I have removed the
-    numbers-at-size large matrices from the zoneDP object into a NAS
-    object. zoneDP is now only 12Mb instead of 450Mb and so can now be
-    stored conveniently for each run. In addition, fixed recruitment
-    deviates have now been implemented (although the default is to not
-    use them - all are set to -1). But, expreimentally, in Tasmania,
-    setting the deviate in 1991 = 2.0 meaning that the base level of
-    recruitment off the recruitment curve is doubled, improves the
-    relationship between predicted cpue and observed cpue so this holds
-    great promise for improved conditioning.
+-   2021\_07-12 aMSE 0.0.0.1000 Announcing some rather large changes.
+    Early on in development I made a strategic decision which has proved
+    to make the documentation of the code and implementation of
+    extraction of results overly complex. It is now clear that it was a
+    strategic mistake to separate the historical conditioning from the
+    future projections. Combining them, for purposes of applying a
+    Harvest control rule, or tabulating or plotting results, was adding
+    complexity to every scenario, new plot and table. For example,
+    previously, plots where there were traces of the historical data
+    added to the projections were greatly flawed by having the final
+    year of historical data repeated in the projection data. Obviously,
+    that plotting error could have been solved by selecting which years
+    to plot, instead I decided to simplify everything (for both me and
+    other maintainers) by combining the conditioned dynamic component of
+    the zone and the projection years of the dynamics. Now, in the
+    ‘zoneDP’ object (see ‘out$zoneDP’ after a run), for each replicate,
+    we have a continuous set of years from the first year of historical
+    catches out to the last year of the projections. This simplifies
+    everything from the documentation of the code base, the application
+    of the harvest strategy, the plotting of results, basically
+    everything I can think of. The next steps are to expand the results
+    sections and re-write the documentation. The current Tasmania
+    example has now been expanded to 56 populations among the 8 SAU. The
+    fit of the operating model the historical CPUE is now rather
+    improved because now it is possible to include recruitment deviates
+    in the historical conditioning. Currently in the included example it
+    is very ad hoc. One can use ad hoc recruitment deviates or ones
+    derived from some form of localized model fitting. The ad hoc ones
+    currently in use were mainly used to test the new utility functions
+    provided to assist with such things.
 
 # aMSE
 
@@ -27,7 +43,7 @@ This packages up a new Abalone Management Strategy Evaluation framework.
 It has a novel structure that is based around the spatial ideas of
 populations within spatial management units (SAUs), within a zone:
 
--   zone - highest geogrpahical level. Is simply the totality of the
+-   zone - highest geographical level. Is simply the totality of the
     spatial management units.
 
 -   SAU - spatial assessment units. In Tasmania these would currently be
@@ -101,17 +117,20 @@ library(makehtml)
 library(knitr)
 # OBVIOUSLY you should modify the rundir and datadir to suit your own computer
 if (dir.exists("c:/Users/User/DropBox")) {
-  ddir <- "c:/Users/User/DropBox/A_codeUse/"
+  ddir <- "c:/Users/User/DropBox/A_codeUse/aMSEUse/scenarios/"
 } else {
-  ddir <- "c:/Users/Malcolm/DropBox/A_codeUse/"
+  ddir <- "c:/Users/Malcolm/DropBox/A_codeUse/aMSEUse/scenarios/"
 }
 doproject <- TRUE  # change to FALSE if only conditioning is required
 verbose <- TRUE
-rundir <- paste0(ddir,"aMSEUse/scenarios/HS652510")
-datadir <- paste0(ddir,"aMSEUse/scenarios/tasdata")
-alldirExists(rundir,datadir,verbose=TRUE)
-#> rundir,  c:/Users/User/DropBox/A_codeUse/aMSEUse/scenarios/HS652510 :  exists  
+postdir <- "testnew"  # this is used to label the output HTML file 
+rundir <- paste0(ddir,postdir)
+datadir <- paste0(ddir,"tasdata")
+alldirExists(rundir,datadir,verbose=verbose)
+#> rundir,  c:/Users/User/DropBox/A_codeUse/aMSEUse/scenarios/testnew :  exists  
 #> datadir,  c:/Users/User/DropBox/A_codeUse/aMSEUse/scenarios/tasdata :  exists
+source(paste0(datadir,"/TasmanianHS.R"))
+controlfile <- "controlsau.csv"
 # equilibrium zone -------------------------------------------------------------
 # You now need to ensure that there is, at least, a control.csv, and a 
 # constantsdata.csv file in the data directory plus some other data .csv files
@@ -128,33 +147,26 @@ alldirExists(rundir,datadir,verbose=TRUE)
 # to rundir, so both packages will need updating. See their respective GitHub
 # readme pages for details.
 
-# TasmanianHS.R should be in rundir, but during development is in data-raw
+# HarvestStrategy.R should be in datadir, if it is to be shared by scenarios
 source(paste0(datadir,"/TasmanianHS.R"))
-controlfile <- "controlsau.csv"
 # run the scenario --------------------- Obviously unhash this to make it work
-#out <- do_MSE(rundir,controlfile,datadir,hsargs=hsargs,
-#              hcrfun=mcdahcr,sampleCE=tasCPUE,sampleFIS=tasFIS,sampleNaS=tasNaS,
-#              getdata=tasdata,calcpopC=calcexpectpopC,varyrs=7,startyr=32,
-#              cleanslate=TRUE,verbose=TRUE,doproject=TRUE,ndiagprojs=3)
+# out <- do_MSE(rundir,controlfile,datadir,hsargs=hsargs,hcrfun=mcdahcr,
+#                  sampleCE=tasCPUE,sampleFIS=tasFIS,sampleNaS=tasNaS,
+#                  getdata=tasdata,calcpopC=calcexpectpopC,varyrs=7,startyr=50,
+#                  cleanslate=TRUE,verbose=TRUE,doproject=doproject,ndiagprojs=4)
 # make results webpage ---------------------------------------------------------
 # replist <- list(starttime=as.character(out$starttime),
 #                 endtime=as.character(out$projtime))
 # glb <- out$glb
+# projy <- ifelse(doproject,glb$pyrs,0)
 # runnotes <- paste0(out$ctrl$runlabel,":  RunTime = ",out$tottime,
-#                    "  replicates = ",glb$reps,",   years projected = ",glb$pyrs,
+#                    "  replicates = ",glb$reps,",   years projected = ",projy,
 #                    "  Populations = ",glb$numpop," and SAU = ",glb$nSAU,
 #                    "  Randomseed for conditioning = ",out$ctrl$randseed)
-# Unhash the make_html command to generate the results webspage
-# make_html(
-#   replist = replist,
-#   rundir = rundir,
-#   width = 500,
-#   openfile = TRUE,
-#   runnotes = NULL,
-#   verbose = FALSE,
-#   packagename = "aMSE",
-#   htmlname = "hs652510"
-# )
+# 
+# make_html(replist = replist,  rundir = rundir,  width = 500,  openfile = TRUE,
+#           runnotes = runnotes,   verbose = FALSE,  packagename = "aMSE",
+#           htmlname = postdir)
 ```
 
 After running the whole, even if you do not generate the results
@@ -162,6 +174,7 @@ webpage, you could also try:
 
 ``` r
 #str(out$zoneDP,max.level=1)
+#str1(out$hcrout)
 ```
 
 To see the structure of the dynamic object generated by the projections.

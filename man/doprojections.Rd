@@ -8,7 +8,6 @@ doprojections(
   ctrl,
   zoneDP,
   zoneCP,
-  otherdata,
   glb,
   hcrfun,
   hsargs,
@@ -17,6 +16,7 @@ doprojections(
   sampleNaS,
   getdata,
   calcpopC,
+  verbose = FALSE,
   ...
 )
 }
@@ -28,12 +28,6 @@ model runs}
 
 \item{zoneCP}{the object used to contain the constants for each population
 used in model dynamics}
-
-\item{otherdata}{an object containing any other data used by the different
-functions used in the projections. For example, for Tasmania this would
-be pointed at the histCE data set which is appended to each year's new
-predicted cpue data from each replicate to calibrate the HCR within the
-current HS. Other jurisdictions may use other data.}
 
 \item{glb}{the object containing the global constants for the given run}
 
@@ -56,18 +50,20 @@ and combines it into an hcrdata object ready for the hcrfun}
 \item{calcpopC}{a function that takes the output from hcrfun and generates
 the actual catch per population expected in the current year.}
 
+\item{verbose}{should the iterations be counted on the console?}
+
 \item{...}{the ellipsis used in case any of the functions hcrfun, sampleCE,
 sampleFIS, sampleNas, and getdata require extra arguments not included
 in the default named collection}
 }
 \value{
-a replacement for zoneDP containing the dynamics for all populations,
-    for all replicates, and for all projection years
+a list containing the full dynamics across all years zoneDP, and the
+    final output from the HCR as hcrout
 }
 \description{
 doprojections conducts the replicate model runs for
     Tasmania using the mcdahcr and the input hsargs. The model dynamics and
-    the numbers-at-size variablkes have been separated and returned separately
+    the numbers-at-size variables have been separated and returned separately
     because the size components are very large and mean saving such objects
     is both slow and space limiting.
 }

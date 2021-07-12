@@ -23,4 +23,5 @@ poptosauCE combines cpue from separate populations into their
 }
 \examples{
 print("wait on appropriate built-in data files")
+# catvect=zoneDD$catch[1:finalyr,]; cpuevect=zoneDD$cpue[1:finalyr,]
 }

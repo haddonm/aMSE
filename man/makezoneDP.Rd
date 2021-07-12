@@ -4,14 +4,14 @@
 \alias{makezoneDP}
 \title{makezoneDP generates the container for the projection dynamics}
 \usage{
-makezoneDP(projyr, iter, glb)
+makezoneDP(allyr, iter, glb)
 }
 \arguments{
-\item{projyr}{the number of years of the projection}
+\item{allyr}{number of years of historical catches plus projection years}
 
 \item{iter}{the number of replicates}
 
-\item{glb}{the global object}
+\item{glb}{the object containing the global variables}
 }
 \value{
 a large list containing an object ready for the projection dynamics

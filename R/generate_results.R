@@ -1,6 +1,3 @@
-  # These plots use both zoneC and zoneD
-  # characterize productivity ----------------------------------------
-
 
 #' @title biology_plots generates a series of stored plots and tables
 #'
@@ -24,7 +21,7 @@ biology_plots <- function(rundir, glb, zoneC) {
   popdef <- getlistvar(zoneC,"popdef")
   SAU <- unique(popdef["SAU",])
   nSAU <- glb$nSAU
-  # Yield vs Spawning biomass-----------------------
+  # Yield vs Spawning biomass
   # maturation uses zoneC
   matur <- getlistvar(zoneC,"Maturity")
   rownames(matur) <- mids
@@ -39,7 +36,7 @@ biology_plots <- function(rundir, glb, zoneC) {
   caption <- "The maturity vs length for each population."
   addplot(filen,rundir=rundir,category="Biology",caption)
 
-  # weight-at-length using zoneC--------------------------------------
+  # weight-at-length using zoneC
   WtL <- getlistvar(zoneC,"WtL")
   rownames(WtL) <- mids
   filen <- filenametopath(rundir,"Weight_at_Length_pop.png")
@@ -53,7 +50,7 @@ biology_plots <- function(rundir, glb, zoneC) {
                       "The x-axis is constrained to encompass legal sizes.")
   addplot(filen,rundir=rundir,category="Biology",caption)
 
-  # emergence uses zoneC----------------------------------------------
+  # emergence uses zoneC
   emerg <- getlistvar(zoneC,"Emergent")
   rownames(emerg) <- mids
   filen <- filenametopath(rundir,"Emergence_at_Length_pop.png")
@@ -63,9 +60,10 @@ biology_plots <- function(rundir, glb, zoneC) {
        ylab="Emergence",panel.first=grid(),xlim=c(110,145))
   for (pop in 2:numpop) lines(mids,emerg[,pop],lwd=2,col=pop)
   legend("topleft",paste0("P",1:numpop),lwd=3,col=c(1:numpop),bty="n",cex=1.2)
-  caption <- "The emergence-at-length for each population. The x-axis is constrained to emphasize differences."
+  caption <- paste0("The emergence-at-length for each population.",
+                    "The x-axis is constrained to emphasize differences.")
   addplot(filen,rundir=rundir,category="Biology",caption)
-  # Tabulate biological properties uses zoneC-------------------------
+  # Tabulate biological properties uses zoneC
   rows <- c("SAU","M","R0","B0","ExB0","MSY","MSYDepl","bLML",
             "MaxDL","L50","L95","AvRec","steep")
   sau <- getlistvar(zoneC,"SAU")
@@ -90,14 +88,6 @@ biology_plots <- function(rundir, glb, zoneC) {
   resultpop["L95",] <- popdefs["L95",]
   resultpop["AvRec",] <- round(popdefs["AvRec",])
   resultpop["steep",] <- popdefs["steeph",]
-  # for (mu in 1:nSAU) { # mu = 2
-  #   pickcol <- which(sau == mu)
-  #   wtmu <- length(pickcol)
-  #   wtmu <- results["B0",pickcol]/results["B0",(numpop + mu)]
-  #   results["M",(numpop + mu)] <- sum(M[pickcol]*wtmu)
-  #   results["MSYDepl",(numpop + mu)] <- sum(MSYD[pickcol]*wtmu)
-  #   results["bLML",(numpop + mu)] <- sum(bLML[pickcol]*wtmu)
-  # }
   res <- round(t(resultpop),3)
   filen <- paste0("zonebiology.csv")
   caption <- "Population Biological Properties."
@@ -140,6 +130,59 @@ compzoneN <- function(unfN,curN,glb,yr,depl,LML=0,rundir="") {
   if (nchar(filen) > 0) dev.off()
   return(invisible(filen))
 } # end of compzoneN
+
+
+
+#' @title fishery_plots generates a set of plots relating to the fishery properties
+#'
+#' @description fishery_plots produces a series of plots relating to the fishery
+#'     and its properties. The selectivity curves reflect the LML through time
+#'     and so this needs to be represented.
+#'
+#' @param rundir the rundir for the particular scenario
+#' @param glb the object contianing the global constants
+#' @param select the selectivity matrix from zoneCP, with all years of selectivity
+#' @param histyr the object from condC containing the historical LML
+#' @param projLML the object containing the LML in the projections
+#' @param rge the range of the midpts for the size classes so that the view can
+#'     be limited so that the lower arm set to zero and the upper set to 1 need
+#'     not all be viewed and to give greater separation to any set of LML, which
+#'     will usually be close to each other.
+#'
+#' @return invisibly, the matrix of unique selectivities
+#' @export
+#'
+#' @examples
+#' print("wait on suitable internal data sets")
+fishery_plots <- function(rundir,glb,select,histyr,projLML, rge=50:90) {
+  mids <- glb$midpts
+  lml <- as.numeric(c(histyr[,"histLML"],projLML))
+  values <- unique(lml)
+  nsel <- length(values)
+  selyrs <- numeric(nsel)
+  pickcol <- numeric(nsel)
+  yrnames <- cbind(lml,as.numeric(c(glb$hyrnames,glb$pyrnames)))
+  for (i in 1:nsel) {  #  i=2
+    pick <- which(yrnames[,1] == values[i])
+    pickcol[i] <- pick[1]
+    selyrs[i] <- yrnames[pick[1],2]
+  }
+  # selyrs; pickcol
+  selplot <- select[,pickcol]
+  rownames(selplot) <- mids
+  filen <- filenametopath(rundir,"fishery_Selectivity_through_time.png")
+  plotprep(width=7,height=4,newdev=FALSE,filename=filen,cex=0.9,
+           verbose=FALSE)
+  parset(cex=1.0)
+  plot(mids[rge],selplot[rge,1],type="l",lwd=2,col=1,panel.first=grid(),
+       xlab="Shell Length (mm)",ylab="Selectivity")
+  for (i in 2:nsel) lines(mids[rge],selplot[rge,i],lwd=2,col=i)
+  legend("right",legend=paste0("lml ",selyrs),col=c(1:nsel),lwd=3,
+         bty="n",cex=1.2)
+  caption <- "The selectivity vs length through the years of the Dynamics."
+  addplot(filen,rundir=rundir,category="Fishery",caption)
+  return(invisible(selplot))
+} # end of fishery_plots
 
 #' @title numbersatsize plots details of the numbers-at-size
 #'
@@ -271,7 +314,7 @@ plotproductivity <- function(rundir,product,glb) {
   # All these plots only use the product array
   xval <- findmsy(product)
   numpop <- glb$numpop
-  # Yield vs Spawning biomass --------
+  # Yield vs Spawning biomass
   filen <- filenametopath(rundir,"production_SpB.png")
   plotprod(product,xname="MatB",xlab="Spawning Biomass t",
            ylab="Production t",filename = filen,devoff=FALSE)
@@ -312,7 +355,7 @@ plotproductivity <- function(rundir,product,glb) {
                     "curve about the MSY points.")
   addplot(filen,rundir=rundir,category="Production",caption)
 
-  # Now do total production --------------------------------------------
+  # Now do total production
   yield <- rowSums(product[,"Catch",])
   spb <- rowSums(product[,"MatB",])
   Ht <- yield/spb

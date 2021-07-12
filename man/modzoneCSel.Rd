@@ -4,7 +4,7 @@
 \alias{modzoneCSel}
 \title{modzoneCSel changes the selectivity characteristics in zoneC}
 \usage{
-modzoneCSel(zoneC, sel, selwt, glb, yrs)
+modzoneCSel(zoneC, sel, selwt, glb)
 }
 \arguments{
 \item{zoneC}{the constant zone object from setupzone}
@@ -14,8 +14,6 @@ modzoneCSel(zoneC, sel, selwt, glb, yrs)
 \item{selwt}{new selectivity x WtL as a matrix of SelWt x Population}
 
 \item{glb}{the globals object}
-
-\item{yrs}{the number of years of projection}
 }
 \value{
 the zoneC object modified ready for projection
@@ -23,8 +21,7 @@ the zoneC object modified ready for projection
 \description{
 modzoneCSel  changes the selectivity characteristics in zoneC
     which is necessary when making a projection under a different LML.
-    This function is designed to allow multiple LML during any
-    projections.
+    This function assumes a constant LML during any projections.
 }
 \examples{
 print("wait on suitable data")

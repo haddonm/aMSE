@@ -1,6 +1,6 @@
 ## aMSE Recent Activity.
 
-* 2021_07-04 aMSE 0.0.0.1500 Another big change. Functions added to aid conditioning, and aspects of the projections streamlined.  No errors, warnings, or notes
+* 2021_07-08 aMSE 0.0.0.1500 Another big change. Functions added to aid conditioning, and aspects of the projections streamlined.  No errors, warnings, or notes
 
 * 2021-07-04 aMSE 0.0.0.1900 More big changes. I have removed the numbers-at-size large matrices from the zoneDP object into a NAS object. zoneDP is now only 12Mb instead of 450Mb and so can now be stored conveniently for each run. In addition, fixed recruitment deviates have now been implemented (although the default is to not use them - all are set to -1). But, expreimentally, in Tasmania, setting the deviate in 1991 = 2.0 meaning that the base level of recruitment off the recruitment curve is doubled, improves the relationship between predicted cpue and observed cpue so this holds great promise for improved conditioning.
 

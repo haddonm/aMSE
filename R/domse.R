@@ -1,4 +1,4 @@
-
+#
 # rundir=rundir
 # controlfile="controlsau.csv"
 # datadir=datadir
@@ -15,8 +15,6 @@
 # verbose=TRUE
 # doproject=doproject
 # ndiagprojs=4
-
-
 
 #' @title do_MSE an encapsulating function to hold the details of a single run
 #'
@@ -94,8 +92,8 @@
 #' @examples
 #' print("wait on suitable data sets in data")
 do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
-                   sampleNaS,getdata,calcpopC,varyrs=7,startyr=42,
-                   cleanslate=FALSE,verbose=FALSE,doproject=TRUE,ndiagprojs=3) {
+                      sampleNaS,getdata,calcpopC,varyrs=7,startyr=42,
+                      cleanslate=FALSE,verbose=FALSE,doproject=TRUE,ndiagprojs=3) {
   # generate equilibrium zone ----------------------------------------------------
   starttime <- (Sys.time())
   zone <- makeequilzone(rundir,controlfile,datadir,
@@ -132,44 +130,47 @@ do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
   # do projections ------------------------------------------------------------
   if (doproject) {
     if (verbose) cat("Doing the projections \n")
-    # uses Tasmania's HCR; generation of indata needs generalization
-    indata <- list(arrce=condC$histCE,yearnames=rownames(condC$histCE),
-                   acatches=tail(condC$histCatch,1),fis=NULL,nas=NULL)
-    cmcda <- hcrfun(indata,hsargs=hsargs,saunames=glb$saunames)
-    pms <- cmcda$pms
-    multTAC <- cmcda$multTAC
-    out <- prepareprojection(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
-                             multTAC=multTAC,calcpopC=calcpopC,zoneDD=zoneDD,
-                             ctrl=ctrl,varyrs=varyrs,lastsigR = ctrl$withsigR)
-    zoneDP <- out$zoneDP
-    projC <- out$projC
-    zoneCP <- out$zoneCP
-    outproj <- doprojections(ctrl,zoneDP,zoneCP,otherdata=condC$histCE,glb,
-                             hcrfun=hcrfun,hsargs,sampleCE=sampleCE,
+    outpp <- prepareprojection(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
+                               calcpopC=calcpopC,zoneDD=zoneDD,
+                               ctrl=ctrl,varyrs=varyrs,lastsigR = ctrl$withsigR)
+    zoneDP <- outpp$zoneDP
+    projC <- outpp$projC
+    zoneCP <- outpp$zoneCP
+    outproj <- doprojections(ctrl=ctrl,zoneDP=zoneDP,zoneCP=zoneCP,glb=glb,
+                             hcrfun=hcrfun,hsargs=hsargs,sampleCE=sampleCE,
                              sampleFIS=sampleFIS,sampleNaS=sampleNaS,
-                             getdata=getdata,calcpopC=calcpopC)
-    zoneDP <- outproj$zoneDP
-    NAS <- outproj$NAS
+                             getdata=getdata,calcpopC=calcpopC,verbose=TRUE)
+    if (verbose) cat("Now generating final plots and tables \n")
+    zoneDP=outproj$zoneDP
+    hcrout <- outproj$hcrout; #str(hcrout)
+    NAS <- list(Nt=zoneDP$Nt,NumNe=zoneDP$NumNe,catchN=zoneDP$catchN)
+    zoneDP <- zoneDP[-c(14,15,16)]
     histCE <- condC$histCE
     B0 <- getvar(zoneC,"B0")
     ExB0 <- getvar(zoneC,"ExB0")
-    sauout <- sauplots(zoneDP,out$zoneDDR,NAS,glb,rundir,B0,ExB0,startyr=startyr,
-                       addCI=TRUE,histCE=histCE)
+    sauout <- sauplots(zoneDP,NAS,glb,rundir,B0,ExB0,
+                       startyr=startyr,addCI=TRUE,histCE=histCE)
     diagnosticsproj(sauout$zonePsau,glb,rundir,nrep=ndiagprojs)
     outzone <- poptozone(zoneDP,NAS,glb,
                          B0=sum(getvar(zoneC,"B0")),
                          ExB0=sum(getvar(zoneC,"ExB0")))
-    plotZone(outzone,rundir,glb,CIprobs=c(0.05,0.5,0.95),addfile=TRUE)
+    plotZone(outzone,rundir,glb,startyr=startyr,CIprobs=c(0.05,0.5,0.95),
+             addfile=TRUE)
+    fishery_plots(rundir=rundir,glb=glb,select=zoneCP[[1]]$Select,
+                  histyr=condC$histyr,projLML=projC$projLML)
   } else { # in case doproject = FALSE
     zoneDP <- NULL
     NAS <- NULL
     sauout <- NULL
     outzone <- NULL
+    outpp=NULL
+    hcrout=NULL
   }
   projtime <- Sys.time()
   tottime <- round((projtime - starttime),3)
   out <- list(tottime=tottime,projtime=projtime,starttime=starttime,glb=glb,
-              ctrl=ctrl,zoneC=zoneC,zoneDD=zoneDD,zoneDP=zoneDP,NAS=NAS,
+              ctrl=ctrl,zoneCP=zoneCP,zoneDD=zoneDD,zoneDP=zoneDP,NAS=NAS,
               projC=projC,condC=condC,sauout=sauout,outzone=outzone,zone=zone,
-              zoneDDR=out$zoneDDR)
+              hcrout=hcrout)
+  return(out)
 } # end of do_MSE

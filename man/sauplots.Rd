@@ -6,7 +6,6 @@
 \usage{
 sauplots(
   zoneDP,
-  zoneDDR,
   NAS,
   glb,
   rundir,
@@ -20,9 +19,6 @@ sauplots(
 }
 \arguments{
 \item{zoneDP}{the dynamic object produced by the projections}
-
-\item{zoneDDR}{the dynamic conditioning object after preparing for replicates
-and the addition of recruitment variation in the final years.}
 
 \item{NAS}{the numbers-at-size 4D arrays from doprojection}
 

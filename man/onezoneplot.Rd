@@ -4,7 +4,7 @@
 \alias{onezoneplot}
 \title{onezoneplot plots out one variable from the zone}
 \usage{
-onezoneplot(invar, rundir, glb, CIprobs, varname, addfile = TRUE)
+onezoneplot(invar, rundir, glb, CIprobs, varname, startyr, addfile = TRUE)
 }
 \arguments{
 \item{invar}{which zone variable to plot}
@@ -16,6 +16,8 @@ onezoneplot(invar, rundir, glb, CIprobs, varname, addfile = TRUE)
 \item{CIprobs}{the quantiles to use for the CI.}
 
 \item{varname}{the name of the variable for use in labels}
+
+\item{startyr}{in what year number should the plot begin.}
 
 \item{addfile}{should a png file be added to the results, default = TRUE}
 }

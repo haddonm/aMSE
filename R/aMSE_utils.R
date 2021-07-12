@@ -406,6 +406,7 @@ poptosau <- function(invar,glb) {  # invar=zoneDP$matureB; glb=glb
 #'
 #' @examples
 #' print("wait on appropriate built-in data files")
+#' # catvect=zoneDD$catch[1:finalyr,]; cpuevect=zoneDD$cpue[1:finalyr,]
 poptosauCE <- function(catvect,cpuevect,sauindex) {
   saucatch <- tapply(catvect,sauindex,sum,na.rm=TRUE)
   wts <- catvect/saucatch[sauindex]
@@ -450,6 +451,7 @@ poptozone <- function(inzone,NAS=NULL,glb, B0, ExB0) {
   depleB <- exploitB/ExB0
   recruit <- addpops(inzone$recruit,nyrs,reps)
   catch <- addpops(inzone$catch,nyrs,reps)
+  TAC <- addpops(inzone$acatch,nyrs,reps)
   catchN <- array(data=0,dim=c(N,nyrs,reps), # define some arrays
                   dimnames=list(glb$midpts,1:nyrs,1:reps))
   Nt <- array(data=0,dim=c(N,nyrs,reps),
@@ -473,7 +475,7 @@ poptozone <- function(inzone,NAS=NULL,glb, B0, ExB0) {
     }
   }
   outzone <- list(matureB=matureB,exploitB=exploitB,catch=catch,
-                  TAC=inzone$TAC,harvestR=harvestR,cpue=cpue,
+                  acatch=inzone$acatch,TAC=TAC,harvestR=harvestR,cpue=cpue,
                   recruit=recruit,deplsB=deplsB,depleB=depleB,
                   catchN=catchN,Nt=Nt)
   return(outzone)
@@ -670,7 +672,7 @@ sumpop2sau <- function(invect,sauindex) {
 #'
 #' @examples
 #' print("wait on suitable internal data sets ")
-zonetosau <- function(inzone,NAS=NULL,glb, B0, ExB0) { # inzone=zoneDDR; NAS=NULL; glb=glb; B0=B0; ExB0=ExB0
+zonetosau <- function(inzone,NAS=NULL,glb, B0, ExB0) { # inzone=zoneDP; NAS=NAS; glb=glb; B0=B0; ExB0=ExB0
   nsau <- glb$nSAU
   sauindex <- glb$sauindex
   saunames <- glb$saunames
@@ -687,6 +689,8 @@ zonetosau <- function(inzone,NAS=NULL,glb, B0, ExB0) { # inzone=zoneDDR; NAS=NUL
                   dimnames=list(glb$midpts,1:nyrs,saunames,1:reps))
   Nt <- array(data=0,dim=c(N,nyrs,nsau,reps),
               dimnames=list(glb$midpts,1:nyrs,saunames,1:reps))
+  NumNe <- array(data=0,dim=c(N,nyrs,nsau,reps),
+                 dimnames=list(glb$midpts,1:nyrs,saunames,1:reps))
   catch <- inzone$acatch
   cpue <- catch
   harvestR <- catch
@@ -708,17 +712,21 @@ zonetosau <- function(inzone,NAS=NULL,glb, B0, ExB0) { # inzone=zoneDDR; NAS=NUL
           if (is.null(NAS)) {
             catchN[,yr,sau,iter] <- rowSums(inzone$catchN[,yr,pick,iter])
             Nt[,yr,sau,iter] <- rowSums(inzone$Nt[,yr,pick,iter])
+            NumNe[,yr,sau,iter] <- rowSums(inzone$NumNe[,yr,pick,iter])
           } else {
             catchN[,yr,sau,iter] <- rowSums(NAS$catchN[,yr,pick,iter])
             Nt[,yr,sau,iter] <- rowSums(NAS$Nt[,yr,pick,iter])
+            NumNe[,yr,sau,iter] <- rowSums(NAS$NumNe[,yr,pick,iter])
           }
         } else {
           if (is.null(NAS)) {
             catchN[,yr,sau,iter] <- inzone$catchN[,yr,pick,iter]
             Nt[,yr,sau,iter] <- inzone$Nt[,yr,pick,iter]
+            NumNe[,yr,sau,iter] <- inzone$NumNe[,yr,pick,iter]
           } else {
             catchN[,yr,sau,iter] <- NAS$catchN[,yr,pick,iter]
             Nt[,yr,sau,iter] <- NAS$Nt[,yr,pick,iter]
+            NumNe[,yr,sau,iter] <- NAS$NumNe[,yr,pick,iter]
           }
         }
       } # end of dealing with numbers-at-size
@@ -728,7 +736,7 @@ zonetosau <- function(inzone,NAS=NULL,glb, B0, ExB0) { # inzone=zoneDDR; NAS=NUL
   outsau <- list(matureB=matureB,exploitB=exploitB,catch=catch,
                  acatch=inzone$acatch,harvestR=harvestR,cpue=cpue,
                  recruit=recruit,deplsB=deplsB,depleB=depleB,
-                 catchN=catchN,Nt=Nt)
+                 catchN=catchN,Nt=Nt,NumNe=NumNe)
   return(outsau)
 } # end of zonetosau
 

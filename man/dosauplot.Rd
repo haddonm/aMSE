@@ -6,24 +6,20 @@
 \usage{
 dosauplot(
   ylabel,
-  prerep,
   postrep,
   glb,
   startyr,
   addCI = FALSE,
   CIprobs = c(0.05, 0.5, 0.95),
-  histCE = NULL
+  histCE = NULL,
+  addCE = FALSE
 )
 }
 \arguments{
 \item{ylabel}{the variable name to be plotted, used as a y-axis label}
 
-\item{prerep}{the replicate values from the replicated initial zoneDDR after
-recruitment variability has been added to a given number of years for a
-selected variable taken from the output of 'zonetosau'.}
-
 \item{postrep}{the replicate values from the replicated projection zoneDP for
-the variable selected}
+the variable selected taken from the output of 'zonetosau'.}
 
 \item{glb}{the global constants object}
 
@@ -37,6 +33,8 @@ default=FALSE}
 default = c(0.05,0.5,0.95)}
 
 \item{histCE}{the historical cpue data if included, default = NULL}
+
+\item{addCE}{should historical cpue be included on the plots, default=FALSE}
 }
 \value{
 invisibly, a list of CI and median for each SAU

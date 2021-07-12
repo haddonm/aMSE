@@ -222,6 +222,72 @@ makeLabel <- function(invect,insep="_") {
 }  # end of makeLabel
 
 
+#' @title makezoneDR generates the container for the projection dynamics
+#'
+#' @description makezoneDR generates an object designed to hold the outputs
+#'     from each replicate within a set of projections. This is identical to
+#'     zoneD except it contains a repeat for each iteration and now includes
+#'     a cesau and a acatch, which is the population-catch-weighted cpue for
+#'     each SAU, and the aspirational catch. Variation should be added by
+#'     addrecvar.
+#'
+#' @param projyr the number of years of the projection
+#' @param iter the number of replicates
+#' @param glb the global object
+#' @param inzoneD the zoneD object after any preliminary depletion
+#'
+#' @return a large list containing an object ready for the projection dynamics
+#' @export
+#'
+#' @examples
+#' print("Could add variation to the harvest rates so that when the ")
+#' print("prepareprojection was run the range of initial H values would increase ")
+makezoneDR <- function(projyr,iter,glb,inzoneD) {
+  # projyr=projyrs; iter=reps; glob=glb; inzoneD=zoneDD
+  numpop <- glb$numpop
+  nSAU <- glb$nSAU
+  N <- glb$Nclass
+  sauindex <- glb$sauindex
+  endyr <- nrow(inzoneD$catch)
+  namedims <- list(1:projyr,1:numpop,1:iter)
+  namendims <- list(glb$midpts,1:projyr,1:numpop,1:iter)
+  SAU <- inzoneD$SAU #as.numeric(sapply(zoneC,"[[","SAU"))
+  MatB <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
+  MatB[1,,] <- inzoneD$matureB[endyr,]
+  ExplB <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
+  ExplB[1,,] <- inzoneD$exploitB[endyr,]
+  Catch <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
+  Catch[1,,] <- inzoneD$catch[endyr,]
+  aCatch <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims) #aspirational
+  Harvest <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
+  Harvest[1,,] <- inzoneD$harvestR[endyr,]
+  cpue <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
+  cesau <- array(0,dim=c(projyr,nSAU,iter),
+                 dimnames=list(1:projyr,1:nSAU,1:iter))
+  catsau <- array(0,dim=c(projyr,nSAU,iter),
+                  dimnames=list(1:projyr,1:nSAU,1:iter))
+  catwt <- tapply(inzoneD$catch[endyr,],sauindex,sum,na.rm=TRUE)
+  catsau[1,,] <- catwt
+  wts <- inzoneD$catch[endyr,] / catwt[sauindex]
+  for (i in 1:nSAU)
+    cesau[1,i,] <- sum(inzoneD$cpue[endyr,(sauindex==i)] * wts[(sauindex==i)])
+  Recruit <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
+  Recruit[1,,] <- inzoneD$recruit[endyr,]
+  deplSpB <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
+  deplSpB[1,,] <- inzoneD$deplsB[endyr,]
+  deplExB <- array(0,dim=c(projyr,numpop,iter),dimnames=namedims)
+  deplExB[1,,] <- inzoneD$depleB[endyr,]
+  CatchN <- array(data=0,dim=c(N,projyr,numpop,iter),dimnames=namendims)
+  CatchN[,1,,] <- inzoneD$catchN[,endyr,]
+  Nt <- array(data=0,dim=c(N,projyr,numpop,iter),dimnames=namendims)
+  Nt[,1,,] <- inzoneD$Nt[,endyr,]
+  zoneDP <- list(SAU=SAU,matureB=MatB,exploitB=ExplB,catch=Catch,acatch=aCatch,
+                 catsau=catsau,harvestR=Harvest,cpue=cpue,cesau=cesau,
+                 recruit=Recruit,deplsB=deplSpB,depleB=deplExB,catchN=CatchN,
+                 Nt=Nt)
+  return(zoneDP)
+} # end of makezoneDR
+
 
 #' @title oneyearC conducts one year's dynamics using catch not harvest
 #'

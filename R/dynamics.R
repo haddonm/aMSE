@@ -133,6 +133,7 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,sigR=1e-08,sigB=1e-08) 
     zoneDD$depleB[year,] <- dyn["depleB",]
     zoneDD$Nt[,year,] <- out$NaL
     zoneDD$catchN[,year,] <- out$catchN
+    zoneDD$NumNe[,year,] <- out$NumNe
   }
   return(zoneDD)
 } # end of dohistoricC
@@ -213,21 +214,21 @@ oneyear <- function(inpopC,inNt,Nclass,inH,yr) {  #
   Cat <- numeric(Nclass)
   Os <- exp(-inpopC$Me/2)
   #  MatureB <- sum(MatWt*inNt)
-  NumNe <- (Os * (inpopC$G %*% inNt))
-  ExploitB <- sum(SelectWt * NumNe) #SelectWt=Select*WtL
+  preNe <- (Os * (inpopC$G %*% inNt)) # pre-fishing NAS
+  ExploitB <- sum(SelectWt * preNe) #SelectWt=Select*WtL
   oldExpB <- ExploitB   # oldExpB = ExploitB after growth and 0.5NatM
   Fish <- 1-(inH*selyr)
-  newNt <- (Os * (Fish * NumNe)) #+ Rec # Nt - catch - 0.5M,
-  Cat <- (inH*selyr) * NumNe  #numbers at size in the catch
+  newNt <- (Os * (Fish * preNe)) #+ Rec # Nt - catch - 0.5M,
+  Cat <- (inH*selyr) * preNe  #numbers at size in the catch
   newExpB <- sum(SelectWt * newNt)
   avExpB <- (newExpB + oldExpB)/2.0 #av start and end
   MatureB <- sum(MatWt*newNt) #+ MatBC
   Catch <- sum(inpopC$WtL*Cat)/1e06
  # Harvest <- Catch/avExpB  # uses average of the start and end
   ce <- inpopC$popq * avExpB * 1000.0  # Need to add CPUE variation
-  ans <- list(newExpB,MatureB,Catch,inH,newNt,ce,Cat,oldExpB)
+  ans <- list(newExpB,MatureB,Catch,inH,newNt,ce,Cat,oldExpB,preNe)
   names(ans) <- c("ExploitB","MatureB","Catch","Harvest","Nt","ce",
-                  "CatchN","midyexpB")
+                  "CatchN","midyexpB","NumNe")
   return(ans)
 } # End of oneyear
 
@@ -289,7 +290,7 @@ oneyearcat <- function(inpopC,inNt,Nclass,incat,yr) {  #
   newNt <- (Os * (Fish * NumNe))
   Cat <- (estH*selyr) * NumNe  #numbers at size in the catch
   ExploitB <- sum(SelectWt * newNt) # end of year exploitable biomass
-  avExpB <- (midyexpB + ExploitB)/2.0 #av start and end
+  avExpB <- (midyexpB + ExploitB)/2.0 #av start and end exploitB
   MatureB <- sum(MatWt*newNt)
   Catch <- sum(inpopC$WtL*Cat)/1e06
   ce <- inpopC$popq * avExpB * 1000.0  #ExploitB
@@ -404,6 +405,7 @@ oneyearD <- function(zoneC,zoneD,inHt,year,sigmar,Ncl,npop,movem) {
     zoneD$cpue[year,popn] <- out$ce
     zoneD$Nt[,year,popn] <- out$Nt
     zoneD$catchN[,year,popn] <- out$CatchN
+    zoneD$NumNe[,year,popn] <- out$NumNe
     matb[popn] <- out$MatureB
   }
   steep <- getvect(zoneC,"steeph") #sapply(zoneC,"[[","popdef")["steeph",]
@@ -541,9 +543,10 @@ restart <- function(oldzoneD,hyrs,npop,N,zero=TRUE) { # oldzoneD=zoneD; hyrs=hyr
   Recruit <- matrix(0,nrow=hyrs,ncol=npop)
   CatchN <- array(data=0,dim=c(N,hyrs,npop))
   Nt <- array(data=0,dim=c(N,hyrs,npop))
+  NumNe <- array(data=0,dim=c(N,hyrs,npop))
   zoneD <- list(SAU=oldzoneD$SAU,matureB=MatB,exploitB=ExplB,midyexpB=midyexpB,
                 catch=Catch,harvestR=Harvest,cpue=cpue,recruit=Recruit,
-                deplsB=deplSpB,depleB=deplExB,catchN=CatchN,Nt=Nt)
+                deplsB=deplSpB,depleB=deplExB,catchN=CatchN,Nt=Nt,NumNe=NumNe)
   if (!zero) zoneD <- oldzoneD
   zoneD$matureB[1,] <- oldzoneD$matureB[hyrs,]
   zoneD$exploitB[1,] <- oldzoneD$exploitB[hyrs,]
@@ -556,6 +559,7 @@ restart <- function(oldzoneD,hyrs,npop,N,zero=TRUE) { # oldzoneD=zoneD; hyrs=hyr
   zoneD$depleB[1,] <- oldzoneD$depleB[hyrs,]
   zoneD$catchN[,1,] <- oldzoneD$catchN[,hyrs,]
   zoneD$Nt[,1,] <- oldzoneD$Nt[,hyrs,]
+  zoneD$NumNe[,1,] <- oldzoneD$NumNe[,hyrs,]
   return(zoneD)
 } # end of restart
 
@@ -583,7 +587,7 @@ restart <- function(oldzoneD,hyrs,npop,N,zero=TRUE) { # oldzoneD=zoneD; hyrs=hyr
 #'
 #' @examples
 #' print("wait on built in data sets")
-#' # zoneC=zoneC; zoneD=zoneD; glob=glob; inHarv=doharv
+#' # zoneC=zoneC; zoneD=zoneD; glob=glob; inHarv=rep(initH[aH],numpop); maxiter=2
 runthreeH <- function(zoneC,zoneD,inHarv,glob,maxiter=3) {
   npop <- glob$numpop
   Nclass <- glob$Nclass

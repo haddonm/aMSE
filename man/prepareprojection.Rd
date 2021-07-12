@@ -5,15 +5,14 @@
 \title{prepareprojection high level function that sets up a projection}
 \usage{
 prepareprojection(
-  projC,
-  condC,
-  zoneC,
-  glb,
-  zoneDD,
-  ctrl,
-  varyrs,
-  multTAC,
-  calcpopC,
+  projC = projC,
+  condC = condC,
+  zoneC = zoneC,
+  glb = glb,
+  zoneDD = zoneDD,
+  ctrl = ctrl,
+  varyrs = varyrs,
+  calcpopC = calcpopC,
   lastsigR = 0.3
 )
 }
@@ -32,8 +31,6 @@ fishery}
 \item{ctrl}{the ctrl object for the scenario run}
 
 \item{varyrs}{how many years at the end to add recruitment variation}
-
-\item{multTAC}{the TAC multiplication matrix from the HCR}
 
 \item{calcpopC}{a function that takes the output from hcrfun and gernerates
 the actual catch per population expected in the current year.}

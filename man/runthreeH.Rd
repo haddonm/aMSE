@@ -34,5 +34,5 @@ runthreeH is used when searching numerically for an
 }
 \examples{
 print("wait on built in data sets")
-# zoneC=zoneC; zoneD=zoneD; glob=glob; inHarv=doharv
+# zoneC=zoneC; zoneD=zoneD; glob=glob; inHarv=rep(initH[aH],numpop); maxiter=2
 }

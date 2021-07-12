@@ -125,16 +125,22 @@ copyto(rundir,todir=destdir,filename="controlsau.csv")
 
 
 # selectivity plots -----------------------------------------------------
-zoneC <- out$zoneC
-pop1 <- zoneC[[1]]
-sel <- pop1$Select
-mids <- glb$midpts
-rge <- 50:105
 
-plotprep(width=7,height=3.5,newdev=FALSE)
-parset()
-plot(mids[rge],sel[rge,14],type="l",lwd=2,col=1,panel.first=grid())
-lines(mids[rge],sel[rge,15],lwd=2,col=2)
+rundir=rundir; glb=out$glb;select=out$zoneC[[1]]$Select; histyr=out$condC$histyr;projLML=out$projC$projLML
+rge=50:90
+
+
+
+
+
+
+
+
+
+select <- out$zoneC[[1]]$Select
+
+rge <- 50:105
+plotprep(width=7,height=4,newdev=FALSE)
 
 
 # sort out LF data-------------------------------------------------
@@ -365,6 +371,31 @@ plotprep(width=8,height=4,newdev=FALSE)
 parset(plots=c(2,1))
 hist(histce,breaks=25)
 hist(histcer,breaks=25)
+
+
+
+zoneC <- out$zoneC
+condC <- out$condC
+
+
+plotselectivity
+
+
+saudyn <- poptosauCE(zoneDD$catch[1:finalyr,],zoneDD$cpue[1:finalyr,],sauindex)
+
+for (i in 1:finalyr) { # i = 10
+  saudyn <- poptosauCE(zoneDD$catch[i,],zoneDD$cpue[i,],sauindex)
+  print(saudyn)
+}
+
+
+
+
+
+
+
+
+
 
 
 
