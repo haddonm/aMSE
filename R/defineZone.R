@@ -583,6 +583,8 @@ makeabpop <- function(popparam,midpts,projLML) {
 #'     numpop populations
 #' @param datadir the directory containing the data csv files. This defaults to
 #'     equal the rundir, but can be different if desired. default=rundir
+#' @param doproduct boolean, should the productivity calculations be made
+#'     during the conditioning. Set to FALSE conditionOM
 #' @param cleanslate a boolean determining whether any old results are deleted
 #'     from rundir before starting. Default=FALSE
 #' @param verbose Should progress comments be printed to console, default=TRUE
@@ -593,7 +595,7 @@ makeabpop <- function(popparam,midpts,projLML) {
 #' @examples
 #' print("wait on datafiles")
 makeequilzone <- function(rundir,ctrlfile="control.csv",datadir=rundir,
-                          cleanslate=FALSE,verbose=TRUE) {
+                          doproduct=TRUE,cleanslate=FALSE,verbose=TRUE) {
  #  rundir=rundir;ctrlfile="controlsau.csv";cleanslate = TRUE;datadir=datadir;verbose=verbose
   zone1 <- readctrlfile(rundir,infile=ctrlfile,datadir=datadir,verbose=verbose)
   ctrl <- zone1$ctrl
@@ -606,7 +608,7 @@ makeequilzone <- function(rundir,ctrlfile="control.csv",datadir=rundir,
     constants <- readdatafile(glb$numpop,datadir,ctrl$datafile)
   }
   if (verbose) cat("Files read, now making zone \n")
-  out <- setupzone(constants,zone1,verbose=verbose) # make operating model
+  out <- setupzone(constants,zone1,doproduct,verbose=verbose) # make operating model
   zoneC <- out$zoneC
   zoneD <- out$zoneD
   glb <- out$glb             # glb now has the movement matrix
@@ -1013,6 +1015,8 @@ resetexB0 <- function(zoneC,zoneD) {
 #'
 #' @param constants the population constants derived from readdatafile
 #' @param zone1 the zonal object driving the construction
+#' @param doproduct boolean, should the productivity calculations be made
+#'     during the conditioning. defined in do_MSE and makeequilzone
 #' @param uplim the upper limit of harvest rate applied, default=0.4
 #' @param inc the harvest rate increment at each step, default=0.005
 #' @param verbose Should progress comments be printed to console, default=TRUE
@@ -1031,7 +1035,7 @@ resetexB0 <- function(zoneC,zoneD) {
 #' str(zoneC[[1]])
 #' str(glb)
 #' }
-setupzone <- function(constants,zone1,uplim=0.4,inc=0.005,verbose=TRUE) {
+setupzone <- function(constants,zone1,doproduct,uplim=0.4,inc=0.005,verbose=TRUE) {
   # constants=constants; zone1=zone1; uplim=0.4; inc=0.01
   ans <- makezoneC(zone1,constants) # classical equilibrium
   zoneC <- ans$zoneC
@@ -1039,10 +1043,13 @@ setupzone <- function(constants,zone1,uplim=0.4,inc=0.005,verbose=TRUE) {
   ans <- makezone(glob=glb,zoneC=zoneC) # now make zoneD
   zoneC <- ans$zoneC  # zone constants
   zoneD <- ans$zoneD  # zone dynamics
-  if (verbose) cat("Now estimating population productivity \n")
-  ans <- modzoneC(zoneC=zoneC,zoneD=zoneD,glob=glb,uplim=uplim,inc=inc)
-  zoneC <- ans$zoneC  # zone constants
-  product <- ans$product  # productivity by population
+  product <- NULL
+  if (doproduct) {
+    if (verbose) cat("Now estimating population productivity \n")
+    ans <- modzoneC(zoneC=zoneC,zoneD=zoneD,glob=glb,uplim=uplim,inc=inc)
+    zoneC <- ans$zoneC  # zone constants
+    product <- ans$product  # productivity by population
+  }
   out <- list(zoneC=zoneC, zoneD=zoneD, product=product,glb=glb)
   return(out)
 } # end of setupzone

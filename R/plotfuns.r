@@ -1,4 +1,55 @@
 
+
+#' @title compareCPUE plots the historical cpue against conditioned cpue
+#'
+#' @description compareCPUE generates a plot of the historical cpue and compares
+#'     it with the predicted cpue from the conditioning. The predicted is black
+#'     and the observed is green. This is primarily there are an aid to
+#'     conditioning the operating model. It also calculates the simple sum of
+#'     squared differences between the observed and predicted, again to aid in
+#'     the conditioning.
+#'
+#' @param histCE the matrix of historical cpue by SAU
+#' @param saucpue the predicted cpue from the conditioning on historical data
+#' @param glb the globals object
+#' @param rundir the rundir for the given scenario
+#' @param filen the file name of the plot if it is to be saved
+#'
+#' @return a vector of length nsau containing the ssq for each SAU
+#' @export
+#'
+#' @examples
+#' print("wait on suitable internal data sets")
+compareCPUE <- function(histCE,saucpue,glb,rundir,filen="") {
+  if (nchar(filen) > 0) filen <- filenametopath(rundir,filen)
+  years <- as.numeric(rownames(histCE))
+  hyrs <- glb$hyrnames
+  pick <- match(years,hyrs)
+  nsau <- glb$nSAU
+  cpue <- saucpue[pick,1:nsau]
+  rownames(cpue) <- years
+  label <- paste0("sau",glb$saunames)
+  colnames(cpue) <- label
+  ssq <- numeric(nsau)
+  plotprep(width=8,height=8,newdev=FALSE,filename=filen,verbose=FALSE)
+  parset(plots=c(4,2),margin=c(0.3,0.3,0.05,0.05),outmargin=c(0,1,0,0))
+  for (sau in 1:nsau) {
+    ssq[sau] <- sum((histCE[,sau] - cpue[,sau])^2,na.rm=TRUE)
+    ymax <- getmax(c(cpue[,sau],histCE[,sau]))
+    plot(years,cpue[,sau],type="l",lwd=2,col=1,xlab="",ylab="",panel.first=grid(),
+         ylim=c(0,ymax),yaxs="i")
+    lines(years,histCE[,sau],lwd=2,col=3)
+    lab2 <- paste0(label[sau],"  ",round(ssq[sau],1))
+    mtext(lab2,side=1,line=-1.3,cex=1.25)
+  }
+  mtext("CPUE",side=2,line=-0.3,outer=TRUE,cex=1.25)
+  if (nchar(filen) > 0) {
+    caption <- "Comparison of Observed CPUE with that predicted by operating model."
+    addplot(filen,rundir=rundir,category="condition",caption)
+  }
+  return(ssq)
+} # end of compareCPUE
+
 #' @title diagnosticsproj plots a series of diagnostics to DiagProj
 #'
 #' @description diagnosticsproj provides a series of plots and results that
@@ -374,7 +425,7 @@ plotCNt <- function(Nt,glb,vline=NULL,start=3) {
 #' @examples
 #' print("wait on suitable data sets")
 plotconditioning <- function(zoneDD,glb,zoneC,histCE,rundir) {
-  # zoneDD=zoneDD;glb=glb;zoneC=zoneC;histCE=condC$histCE;rundir=rundir
+  # zoneDD=out$zoneDD;glb=out$glb;zoneC=out$zoneC;histCE=out$condC$histCE;rundir=rundir
   sauindex <- glb$sauindex
   popB0 <- getlistvar(zoneC,"B0")
   B0 <- tapply(popB0,sauindex,sum)
@@ -383,6 +434,7 @@ plotconditioning <- function(zoneDD,glb,zoneC,histCE,rundir) {
   sauZone <- getsauzone(zoneDD,glb,B0=B0,ExB0=ExB0)
   allsau <- glb$saunames
   yrnames <- glb$hyrnames
+  ssq <- compareCPUE(histCE,sauZone$cpue,glb,rundir,filen="compareCPUE.png")
   for (sau in allsau) {  #  sau=allsau[1]; filen=""
     filen <- filenametopath(rundir,paste0("SAU",sau,"_conditioned.png"))
     plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
@@ -390,7 +442,7 @@ plotconditioning <- function(zoneDD,glb,zoneC,histCE,rundir) {
     caption <- "Dynamics during conditioning on the fishery."
     addplot(filen,rundir=rundir,category="condition",caption)
   }
-  return(invisible(sauZone))
+  return(invisible(list(sauZone=sauZone,ssq=ssq)))
 } # end plotconditioning
 
 #' @title plotNt plots the size-composition for each SAU

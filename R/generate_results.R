@@ -177,9 +177,11 @@ fishery_plots <- function(rundir,glb,select,histyr,projLML, rge=50:90) {
   plot(mids[rge],selplot[rge,1],type="l",lwd=2,col=1,panel.first=grid(),
        xlab="Shell Length (mm)",ylab="Selectivity")
   for (i in 2:nsel) lines(mids[rge],selplot[rge,i],lwd=2,col=i)
-  legend("right",legend=paste0("lml ",selyrs),col=c(1:nsel),lwd=3,
+  legend("right",legend=paste0("lml ",values," ",selyrs),col=c(1:nsel),lwd=3,
          bty="n",cex=1.2)
-  caption <- "The selectivity vs length through the years of the Dynamics."
+  caption <- paste0("The selectivity vs length through the years of the Dynamics.",
+                      "The years after the LML value are the first year in the data",
+                      " in which that LML is expressed.")
   addplot(filen,rundir=rundir,category="Fishery",caption)
   return(invisible(selplot))
 } # end of fishery_plots
@@ -353,6 +355,44 @@ plotproductivity <- function(rundir,product,glb) {
                     "level of each population. Here the x-axis is ",
                     "shortened to clarify the flatness of the production ",
                     "curve about the MSY points.")
+  addplot(filen,rundir=rundir,category="Production",caption)
+
+  # what CPUE at Bmsy would be exhibited at MSY
+  filen <- filenametopath(rundir,"production_CPUE_at_Bmsy.png")
+  nsau <- glb$nSAU
+  npop <- glb$numpop
+  nh <- dim(product)[1]
+  label <- dimnames(product)
+  sauindex <- glb$sauindex
+  wts <- matrix(0,nrow=nh,ncol=npop,dimnames=list(label[[1]],label[[3]]))
+  sauyield <- matrix(0,nrow=nh,ncol=nsau,dimnames=list(label[[1]],glb$saunames))
+  saucpue <- matrix(0,nrow=nh,ncol=nsau,dimnames=list(label[[1]],glb$saunames))
+  # Now do sau production
+  for (i in 1:nh) {
+    sauyield[i,] <- tapply(product[i,"Catch",],sauindex,sum,na.rm=TRUE)
+    wts[i,] <- product[i,"Catch",]/sauyield[i,sauindex]
+    saucpue[i,] <- tapply((product[i,"RelCE",] * wts[i,]),sauindex,sum,na.rm=TRUE)
+  }
+  label <- paste0("sau ",glb$saunames)
+  plotprep(width=8,height=7,newdev=FALSE,filename=filen,verbose=FALSE)
+  parset(plots=pickbound(nsau),margin=c(0.3,0.3,0.05,0.05),outmargin=c(1,1,0,0))
+  for (i in 1:nsau) { # i=1
+    ymax <- getmax(sauyield[,i])
+    pick <- which.max(sauyield[,i])
+    msyce <- saucpue[pick,i]
+    plot(saucpue[2:nh,i],sauyield[2:nh,i],type="l",lwd=2,xlab="",ylab="",
+         panel.first=grid(),ylim=c(0,ymax),yaxs="i")
+    abline(v=msyce,col=2,lwd=2)
+    text(0.8*max(saucpue[,i]),0.8*ymax,label[i],cex=1.5,pos=4)
+    text(1.1*msyce,0.15*ymax,round(msyce,2),cex=1.25,pos=4)
+  }
+  mtext("CPUE at Bmsy (note different scales)",side=1,outer=TRUE,cex=1.0,
+        line = -0.1)
+  mtext("Equilibrium Yield  (note different scales)",side=2,outer=TRUE,cex=1.0,
+        line=-0.2)
+  caption <- paste0("The equilibrium production vs CPUE for each SAU. The red ",
+                    "vertical lines and related number represent the expected",
+                    "CPUE when biomass is at Bmsy.")
   addplot(filen,rundir=rundir,category="Production",caption)
 
   # Now do total production

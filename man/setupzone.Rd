@@ -4,12 +4,22 @@
 \alias{setupzone}
 \title{setupzone makes zone's constant, dynamic, and productivity parts}
 \usage{
-setupzone(constants, zone1, uplim = 0.4, inc = 0.005, verbose = TRUE)
+setupzone(
+  constants,
+  zone1,
+  doproduct,
+  uplim = 0.4,
+  inc = 0.005,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{constants}{the population constants derived from readdatafile}
 
 \item{zone1}{the zonal object driving the construction}
+
+\item{doproduct}{boolean, should the productivity calculations be made
+during the conditioning. defined in do_MSE and makeequilzone}
 
 \item{uplim}{the upper limit of harvest rate applied, default=0.4}
 

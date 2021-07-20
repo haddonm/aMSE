@@ -8,6 +8,7 @@ makeequilzone(
   rundir,
   ctrlfile = "control.csv",
   datadir = rundir,
+  doproduct = TRUE,
   cleanslate = FALSE,
   verbose = TRUE
 )
@@ -23,6 +24,9 @@ numpop populations}
 
 \item{datadir}{the directory containing the data csv files. This defaults to
 equal the rundir, but can be different if desired. default=rundir}
+
+\item{doproduct}{boolean, should the productivity calculations be made
+during the conditioning. Set to FALSE conditionOM}
 
 \item{cleanslate}{a boolean determining whether any old results are deleted
 from rundir before starting. Default=FALSE}

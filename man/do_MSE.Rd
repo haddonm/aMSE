@@ -94,7 +94,7 @@ do_MSE is a form of meta-function that contains the code and
     the reason the argument list is as long as it is. The code has been
     encapsulated like this to simplify development, maintenance, and
     distribution. Already with the number of variant conditioning examples
-    produced as tests of the code-base errors have arisen through a failure
+    produced as tests of the code-base, errors have arisen through a failure
     to propagate all changes to the code now in this function to all the
     separate MSE run files used to manage each scenario. A potential flaw
     lies with the need to apply the jurisdictionHS functions to any
@@ -105,6 +105,9 @@ do_MSE is a form of meta-function that contains the code and
     file, but that is still under consideration. Part of the development of
     this meta-function will be to further articulate the generation of
     results, and the inclusion of error traps on the argument list entries.
+    To aid in the conditioning the option of not calculating the productivity
+    has been added. By default it will occur and when projecting it will also
+    always occur.
 }
 \examples{
 print("wait on suitable data sets in data")

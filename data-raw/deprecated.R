@@ -103,6 +103,61 @@ diagnostics <- function(zoneC,zoneD,glob,plot=TRUE) {   # inzone <- testzone
 }  # end of diagnostics
 
 
+#' @title getsaudata reads in the sau properties data from teh control.csv file
+#'
+#' @description getsaudata is used when attempting to condition the aMSE zone by
+#'     conducting formal stock assessments on the data available for single
+#'     sau. We use 'readctrlfile' to obtain the fishery data held in the object
+#'     condC, and use getsaudata to get the growth, maturity, and selectivity
+#'     data required by any size-based stock assessment model. We cannot use
+#'     'readsaudatafile' because that also distributed the properties among the
+#'     designated populations for each sau, and outputs the population
+#'     propoerties. Maybe I should change the sequence, first to read in the
+#'     saudata, and only then distribute those among the populations.
+#'
+#' @param datadir the full path to where the zone's and sau's property datafile
+#'     is to be found
+#' @param infile the name of the datafile, usually zone1$ctrl$datafile, which is
+#'     obtained by first running 'readctrlfile'.
+#'
+#' @seealso{
+#'  \link{readctrlfile}
+#' }
+#'
+#' @return a matrix of properties by sau
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'   getsaudata(datadir=datadir,infile=ctrl$datafile)
+#' }
+getsaudata <- function(datadir,infile) {  # datadir=datadir; infile=zone1$ctrl$datafile
+  filename <- filenametopath(datadir,infile)
+  indat <- readLines(filename)   # reads the whole file as character strings
+  nsau <- getsingleNum("nsau",indat)
+  # saupop <- getConst(indat[grep("saupop",indat)],nsau)
+  # numpop <- sum(saupop)
+  saunames <- getConst(indat[grep("saunames",indat)],nsau)
+  initdepl <- getConst(indat[grep("initdepl",indat)],nsau)
+  begin <- grep("PDFs",indat)
+  npar <- getConst(indat[begin],1)
+  rows <- c("DLMax","sMaxDL","L50","sL50","L50inc","sL50inc","SigMax",
+            "sSigMax","LML","Wtb","sWtb","Wtbtoa","sWtbtoa","Me","sMe",
+            "AvRec","sAvRec","defsteep","sdefsteep","L50C","sL50C",
+            "deltaC","sdeltaC","MaxCEpars","sMaxCEpars","selL50p",
+            "selL95p","SaMa","L50Mat","sL50Mat")
+  numrow <- length(rows)
+  ans <- matrix(0,nrow=numrow,ncol=nsau)
+  begin <- begin + 1
+  for (i in 1:npar) {
+    ans[i,] <- getConst(indat[begin],nsau)
+    begin <- begin + 1
+  } # completed filling ans matrix
+  rownames(ans) <- rows
+  colnames(ans) <- saunames
+  return(ans)
+} # end of getsaudata
+
 
 #' @title initiateHS applies HS to the last years of the historical conditioning
 #'
@@ -220,6 +275,50 @@ makeLabel <- function(invect,insep="_") {
   if (nlab > 1) for (i in 2:nlab) ans <- paste(ans,invect[i],sep=insep)
   return(ans)
 }  # end of makeLabel
+
+#' @title makeprojpm creates arrays to hold the projection PMs and HCR results
+#'
+#' @description makeprojpm creates the arrays required to hold the three
+#'     performance measures, grad1val, grad4val, and targval, used in MCDA
+#'     calculations. It also creates arrays to hold the multipliers for the
+#'     aspirational catches in each SAU, as well as those to hold the updated
+#'     values of the target and limit cpue. These are then all output ready to
+#'     be used as an argument in doprojection
+#'
+#' @param histpms the historical performance measure estimates from
+#'     calibrateMCDA
+#' @param reps the number of replicate projections
+#' @param projyrs the number of years of projection
+#'
+#' @return a list of arrays for the three PMs, the result of the MCDA, and the
+#'     updated limit and target reference points for cpue. Finally the number
+#'     of years of historical values used.
+#' @export
+#'
+#' @examples
+#' print("Wait on suitable internal zone data")
+makeprojpm <- function(histpms,reps,projyrs) {
+  # glb=glb; histpms=cmcda$pms; reps=ctrl$reps; projyrs=projC$projyrs
+  saunames <- colnames(histpms$grad1val)
+  nSAU <- length(saunames)
+  yearCE <- as.numeric(rownames(histpms$grad1val))
+  yrce <- length(yearCE)
+  allyrs <- yrce + projyrs
+  projname <- (yearCE[yrce]+1):(yearCE[yrce]+projyrs)
+  yearnames <- c(yearCE,projname)
+  grad1val <- array(0,dim=c(allyrs,nSAU,reps),
+                    dimnames=list(yearnames,saunames,1:reps))
+  grad4val <- targval <- grad1val
+  grad1val[1:yrce,,] <- histpms$grad1val
+  grad4val[1:yrce,,] <- histpms$grad4val
+  targval[1:yrce,,] <- histpms$targval
+  multTAC <- array(0,dim=c(projyrs,nSAU,reps),
+                   dimnames=list(projname,saunames,1:reps))
+  trpCE <- lrpCE <- multTAC
+  ans <- list(grad1val=grad1val,grad4val=grad4val,targval=targval,
+              multTAC=multTAC,trpCE=trpCE,lrpCE=lrpCE,histyr=yrce)
+  return(ans)
+} # end of makeprojpm
 
 
 #' @title makezoneDR generates the container for the projection dynamics

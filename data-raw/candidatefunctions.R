@@ -301,15 +301,6 @@ NAS <- list(Nt=zoneDP$Nt,NumNe=zoneDP$NumNe,catchN=zoneDP$catchN)
 
 str1(zoneDyn)
 
-# change controlsau.csv by linenumber-------------------------------------------
-
-
-findlinenumber(rundir,"controlsau.csv")
-
-changeline(rundir,"controlsau.csv",210,"1991,-1,-1,-1,-1,-1,-1,-1,-1,")
-
-changeline(rundir,"controlsau.csv",210,"1991,2,2,2,2,2,2,2,2,")
-
 
 # SAU assessment ---------------------------------------------------------------
 
@@ -356,52 +347,201 @@ cbind(catch,cena,LML[,2])
 printV(round(biol,5))
 
 
+# changeline ------------------------------------------------------
+
+findlinenumber(rundir,"controlsau.csv")
 
 
 
-# align projections -------------------------------------------------------------------
+# HCR -------------------------------------------------------
+str1(out)
 
-histce <- out$sauout$zoneDsau$cpue[58,1,]
-histcer <- out$zoneDDR$cesau[58,1,]
-projce <- out$sauout$zonePsau$cpue[1,1,]
+glb <- out$glb
+nsau <- glb$nSAU
+hcr <- out$hcrout
+cpue <- out$zoneDP$cesau
+saucpue <- matrix(0,nrow=nrow(cpue),ncol=nsau)
 
-cat(mean(histce),mean(histcer),mean(projce))
+for (i in 1:nsau) saucpue[,i] <- apply(cpue[,i,],1,median)
 
-plotprep(width=8,height=4,newdev=FALSE)
-parset(plots=c(2,1))
-hist(histce,breaks=25)
-hist(histcer,breaks=25)
-
-
-
-zoneC <- out$zoneC
-condC <- out$condC
+head(saucpue)
+details <- hcr$details
 
 
-plotselectivity
+rownames(details$scoret) <- 1992:2049
+scoret <- details$scoret
 
+invar=scoret
+incpue <- saucpue[30:87,]
 
-saudyn <- poptosauCE(zoneDD$catch[1:finalyr,],zoneDD$cpue[1:finalyr,],sauindex)
+plotprep(width=8, height=10,newdev=FALSE)
+parset(plots=c(8,1),margin=c(0.3,0.3,0.05,0.05))
+yrs <- as.numeric(rownames(invar))
+for (i in 1:nsau) {
+  ymax <- getmax(hcr$multTAC[,i])
+  plot(yrs,hcr$multTAC[,i],type="l",lwd=2,xlab="",ylab="",ylim=c(0.3,1.5),yaxs="i",
+       panel.first=grid())
+  # plot(yrs,scoret[,i],type="l",lwd=2,xlab="",ylab="",ylim=c(0,10),yaxs="i",
+  #      panel.first=grid())
+  # lines(yrs,details$score4[,i],lwd=2,col=2)
+  # lines(yrs,details$score1[,i],lwd=2,col=3)
+  # lines(yrs,details$scoretot[,i],lwd=4,col=4)
+  # abline(h=5,lwd=1,col=2)
+  abline(v=2020.5,lwd=1,col=2)
 
-for (i in 1:finalyr) { # i = 10
-  saudyn <- poptosauCE(zoneDD$catch[i,],zoneDD$cpue[i,],sauindex)
-  print(saudyn)
 }
 
 
 
+hcr$refpts
+
+
+
+# BATCH Job -------------------------------------------------------------------
+
+wkdir <- "C:/Users/user/Dropbox/A_CodeUse/aMSEUse/scenarios/testnew/"
+setwd(wkdir)
+
+command <- "R.exe --vanilla < C:/Users/user/Dropbox/A_CodeUse/aMSEUse/scenarios/testnew/testnewaMSE.R"
+shell(command,wait=FALSE)
+
+
+# Compare CPUE ----------------------------------------------------------------
+
+
+
+options("show.signif.stars"=FALSE,
+        "stringsAsFactors"=FALSE,
+        "max.print"=50000,
+        "width"=240)
+# declare libraries ------------------------------------------------------------
+library(aMSE)
+library(rutilsMH)
+library(makehtml)
+library(knitr)
+# Obviously you should modify the rundir and datadir to suit your own setup
+if (dir.exists("c:/Users/User/DropBox")) {
+  ddir <- "c:/Users/User/DropBox/A_codeUse/aMSEUse/scenarios/"
+} else {
+  ddir <- "c:/Users/Malcolm/DropBox/A_codeUse/aMSEUse/scenarios/"
+}
+verbose=TRUE
+postdir <- "M125"
+rundir <- paste0(ddir,postdir)
+datadir <- paste0(ddir,"tasdata")
+alldirExists(rundir,datadir,verbose=verbose)
+source(paste0(datadir,"/TasmanianHS.R"))
+controlfile <- "controlM125.csv"
+
+
+
+gettasrecssq <- function(param,rundir,datadir,controlfile,datafile,linenum,calcpopC,
+                      extra,pickpar) {
+  if (pickpar == 1)
+    replacetxt <- paste0("AvRec,",as.character(param),",",
+                         paste0(as.character(extra[1:7]),collapse=","),
+                         collapse=",")
+  if ((pickpar > 1) & (pickpar < 8))
+    replacetxt <- paste0("AvRec,",
+                         paste0(as.character(extra[1:(pickpar-1)]),collapse=","),
+                         ",",as.character(param),",",
+                         paste0(as.character(extra[pickpar:7]),collapse=","))
+  if (pickpar == 8)
+    replacetxt <- paste0("AvRec,",paste0(as.character(extra[1:7]),collapse=","),
+                         ",",as.character(param),collapse=",")
+  changeline(datadir,datafile,linenum,replacetxt)
+  out <- do_condition(rundir,controlfile,datadir,calcpopC=calcexpectpopC,
+                      cleanslate=TRUE,verbose=FALSE)
+  return(out$condout$ssq[pickpar])
+} # end of gettasrecsqq
+
+startime <- Sys.time()
+initial <- c(142552,268460,124031,609782,516835,972480,909946,240484)
+final <- numeric(8)
+
+for (pickpar in 1:8) {
+  param <- initial[pickpar]
+  low <- param * 0.95
+  high <- param * 1.05
+
+  extra <- initial[-pickpar]
+
+  origssq <- gettasrecssq(param,rundir,datadir,controlfile,datafile="saudataM1.csv",
+         linenum=28,calcpopC=calcexpectpopC,extra=extra,pickpar=pickpar)
+  ans <- optim(param,gettasrecssq,method="Brent",lower=low,upper=high,rundir=rundir,datadir=datadir,
+               controlfile=controlfile,datafile="saudataM1.csv",linenum=28,
+               calcpopC=calcexpectpopC,extra=extra,pickpar=pickpar,control=list(maxit=25))
+  MQMF::outfit(ans,backtran=FALSE)
+  if ((abs(low - ans$par) < 1) | (abs(high - ans$par) < 1))
+    warning(cat("Boundary reached for param ",pickpar,low,high,ans$par,"\n"))
+  final[pickpar] <- trunc(ans$par)
+  cat(pickpar,"   ",low,"    ",param,"   ",trunc(ans$par),"   ",high,"\n")
+  cat(round(origssq,1),"      ",rounbd(ans$value,1),"\n\n")
+}
+endtime <- Sys.time()
+print(initial); print(final)
+print(endtime - startime)
+
+
+
+
+# SAU and Zone productivity ----------------------------------------------------
+
+glb <- out$glb
+nsau <- glb$nSAU
+sauindex <- glb$sauindex
+saunames <- glb$saunames
+maxpop <- max(table(sauindex))
+columns <- c(1:12,"SAU")
+msybypop <- matrix(NA,nrow=nsau,ncol=(maxpop+1),dimnames=list(saunames,columns))
+product <- out$production
+popmsy <- findmsy(product)
+saumsy <- tapply(popmsy[,"Catch"],out$glb$sauindex,sum)
+zonemsy <- sum(saumsy)
+for (i in 1:nsau) {
+  picks <- which(sauindex == i)
+  sauprod <- round(popmsy[picks,"Catch"],3)
+  npop <- length(sauprod)
+  msybypop[i,1:npop] <- sauprod
+  msybypop[i,(maxpop+1)] <- sum(sauprod,na.rm=TRUE)
+}
+msybypop
+popdefs <- t(getlistvar(out$zoneCP,"popdef"))
+
+options(knitr.kable.NA = '')
+kable(msybypop)
+
+
+plotprep(width=8,height=4,newdev=FALSE,filen="")
+parset(cex=1.0,margin=c(0.5,0.5,0.1,0.1))
+plot(popmsy[,"Catch"],glb$SAUpop,col=sauindex,pch=16,cex=1.25,xlab="MSY by Population (t)",
+     ylab="SAU",panel.first=grid())
+
+
+plotprep(width=8,height=4,newdev=FALSE,filen="")
+parset(cex=1.0,margin=c(0.5,0.5,0.1,0.1))
+plot(popmsy[,"MatB"],popmsy[,"Catch"],col=sauindex,pch=16,cex=1.25,xlab="MSY by Population (t)",
+     ylab="SAU",panel.first=grid())
 
 
 
 
 
+model1 <- lm(popmsy[,"Catch"] ~ popmsy[,"MatB"])
+summary(model1)
+
+model2 <- lm(popmsy[,"Catch"] ~ popmsy[,"MatB"] + popdefs[,"steeph"])
+summary(model2)
+
+model3 <- lm(popmsy[,"Catch"] ~ popmsy[,"MatB"] + popdefs[,"steeph"] + popdefs[,"AvRec"])
+summary(model3)
+
+model4 <- lm(popmsy[,"Catch"] ~ popmsy[,"MatB"] + popdefs[,"steeph"] + popdefs[,"AvRec"] + popdefs[,"L50mat"])
+summary(model4)
 
 
+#anova(model1,model2)
+anova(model2,model3)
 
-
-
-
-
-
-
-
+AIC(model1,model2,model3,model4)
+BIC(model1,model2,model3,model4)

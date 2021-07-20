@@ -209,61 +209,6 @@ getnas <- function(zoneD,yr,glob) {# zoneD=zoneD;yr=1;glob=glb;
   return(nas)
 } #end of getnas
 
-#' @title getsaudata reads in the sau properties data from teh control.csv file
-#'
-#' @description getsaudata is used when attempting to condition the aMSE zone by
-#'     conducting formal stock assessments on the data available for single
-#'     sau. We use 'readctrlfile' to obtain the fishery data held in the object
-#'     condC, and use getsaudata to get the growth, maturity, and selectivity
-#'     data required by any size-based stock assessment model. We cannot use
-#'     'readsaudatafile' because that also distributed the properties among the
-#'     designated populations for each sau, and outputs the population
-#'     propoerties. Maybe I should change the sequence, first to read in the
-#'     saudata, and only then distribute those among the populations.
-#'
-#' @param datadir the full path to where the zone's and sau's property datafile
-#'     is to be found
-#' @param infile the name of the datafile, usually zone1$ctrl$datafile, which is
-#'     obtained by first running 'readctrlfile'.
-#'
-#' @seealso{
-#'  \link{readctrlfile}
-#' }
-#'
-#' @return a matrix of properties by sau
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#'   getsaudata(datadir=datadir,infile=ctrl$datafile)
-#' }
-getsaudata <- function(datadir,infile) {  # datadir=datadir; infile=zone1$ctrl$datafile
-  filename <- filenametopath(datadir,infile)
-  indat <- readLines(filename)   # reads the whole file as character strings
-  nsau <- getsingleNum("nsau",indat)
-  # saupop <- getConst(indat[grep("saupop",indat)],nsau)
-  # numpop <- sum(saupop)
-  saunames <- getConst(indat[grep("saunames",indat)],nsau)
-  initdepl <- getConst(indat[grep("initdepl",indat)],nsau)
-  begin <- grep("PDFs",indat)
-  npar <- getConst(indat[begin],1)
-  rows <- c("DLMax","sMaxDL","L50","sL50","L50inc","sL50inc","SigMax",
-            "sSigMax","LML","Wtb","sWtb","Wtbtoa","sWtbtoa","Me","sMe",
-            "AvRec","sAvRec","defsteep","sdefsteep","L50C","sL50C",
-            "deltaC","sdeltaC","MaxCEpars","sMaxCEpars","selL50p",
-            "selL95p","SaMa","L50Mat","sL50Mat")
-  numrow <- length(rows)
-  ans <- matrix(0,nrow=numrow,ncol=nsau)
-  begin <- begin + 1
-  for (i in 1:npar) {
-    ans[i,] <- getConst(indat[begin],nsau)
-    begin <- begin + 1
-  } # completed filling ans matrix
-  rownames(ans) <- rows
-  colnames(ans) <- saunames
-  return(ans)
-} # end of getsaudata
-
 #' @title getsingleNum find a line of text and extracts a single number
 #'
 #' @description getsingleNum uses grep to find an input line. If the variable

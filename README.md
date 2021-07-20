@@ -3,6 +3,14 @@
 
 # LATEST UPDATE
 
+-   2021-07-20 aMSE 0.0.0.900 Added do\_condition and compareCPUE. Both
+    used to speed the conditioning of the operating model, though a
+    number of developments are still under development. Currently can
+    automatically search for the AvRec value that will optimize the
+    sum-of-squared residual fit between the observed CPUE in the
+    historical period, and those predicted by the conditioned model. The
+    undeveloped bit related to the ad hoc recruitment deviates.
+
 -   2021\_07-12 aMSE 0.0.0.1000 Announcing some rather large changes.
     Early on in development I made a strategic decision which has proved
     to make the documentation of the code and implementation of
@@ -127,7 +135,8 @@ postdir <- "testnew"  # this is used to label the output HTML file
 rundir <- paste0(ddir,postdir)
 datadir <- paste0(ddir,"tasdata")
 alldirExists(rundir,datadir,verbose=verbose)
-#> rundir,  c:/Users/User/DropBox/A_codeUse/aMSEUse/scenarios/testnew :  exists  
+#> c:/Users/User/DropBox/A_codeUse/aMSEUse/scenarios/testnew :  does not exist
+#> Warning in alldirExists(rundir, datadir, verbose = verbose):
 #> datadir,  c:/Users/User/DropBox/A_codeUse/aMSEUse/scenarios/tasdata :  exists
 source(paste0(datadir,"/TasmanianHS.R"))
 controlfile <- "controlsau.csv"

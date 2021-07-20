@@ -23,7 +23,7 @@
 #'     the reason the argument list is as long as it is. The code has been
 #'     encapsulated like this to simplify development, maintenance, and
 #'     distribution. Already with the number of variant conditioning examples
-#'     produced as tests of the code-base errors have arisen through a failure
+#'     produced as tests of the code-base, errors have arisen through a failure
 #'     to propagate all changes to the code now in this function to all the
 #'     separate MSE run files used to manage each scenario. A potential flaw
 #'     lies with the need to apply the jurisdictionHS functions to any
@@ -34,6 +34,9 @@
 #'     file, but that is still under consideration. Part of the development of
 #'     this meta-function will be to further articulate the generation of
 #'     results, and the inclusion of error traps on the argument list entries.
+#'     To aid in the conditioning the option of not calculating the productivity
+#'     has been added. By default it will occur and when projecting it will also
+#'     always occur.
 #'
 #' @param rundir the full path to the directory in which all files relating to a
 #'     particular run are to be held. If datadir != rundir then the main data
@@ -92,12 +95,12 @@
 #' @examples
 #' print("wait on suitable data sets in data")
 do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
-                      sampleNaS,getdata,calcpopC,varyrs=7,startyr=42,
-                      cleanslate=FALSE,verbose=FALSE,doproject=TRUE,ndiagprojs=3) {
+                   sampleNaS,getdata,calcpopC,varyrs=7,startyr=42,
+                   cleanslate=FALSE,verbose=FALSE,doproject=TRUE,ndiagprojs=3) {
   # generate equilibrium zone ----------------------------------------------------
   starttime <- (Sys.time())
-  zone <- makeequilzone(rundir,controlfile,datadir,
-                        cleanslate=cleanslate,verbose=verbose)
+  zone <- makeequilzone(rundir,controlfile,datadir,cleanslate=cleanslate,
+                        verbose=verbose)
   equiltime <- (Sys.time()); if (verbose) print(equiltime - starttime)
   # declare main objects -------------------------------------------------------
   glb <- zone$glb
@@ -107,10 +110,10 @@ do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
   condC <- zone$zone1$condC
   zoneC <- zone$zoneC
   zoneD <- zone$zoneD
-  product <- zone$product
+  production <- zone$product
   # save some equil results ----------------------------------------------------
   biology_plots(rundir, glb, zoneC)
-  plotproductivity(rundir,product,glb)
+  plotproductivity(rundir,production,glb)
   numbersatsize(rundir, glb, zoneD)
   #Condition on Fishery --------------------------------------------------------
   if (verbose) cat("Conditioning on the Fishery data  \n")
@@ -126,7 +129,7 @@ do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
   popdefs <- getlistvar(zone$zoneC,"popdef")
   addtable(round(t(popdefs),3),"popdefs.csv",rundir,category="zoneDD",
            caption="Population vs Operating model parameter definitions")
-  plotconditioning(zoneDD,glb,zoneC,condC$histCE,rundir)
+  condout <- plotconditioning(zoneDD,glb,zoneC,condC$histCE,rundir)
   # do projections ------------------------------------------------------------
   if (doproject) {
     if (verbose) cat("Doing the projections \n")
@@ -160,6 +163,7 @@ do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
                   histyr=condC$histyr,projLML=projC$projLML)
   } else { # in case doproject = FALSE
     zoneDP <- NULL
+    zoneCP <- NULL
     NAS <- NULL
     sauout <- NULL
     outzone <- NULL
@@ -170,7 +174,7 @@ do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
   tottime <- round((projtime - starttime),3)
   out <- list(tottime=tottime,projtime=projtime,starttime=starttime,glb=glb,
               ctrl=ctrl,zoneCP=zoneCP,zoneDD=zoneDD,zoneDP=zoneDP,NAS=NAS,
-              projC=projC,condC=condC,sauout=sauout,outzone=outzone,zone=zone,
-              hcrout=hcrout)
+              projC=projC,condC=condC,sauout=sauout,outzone=outzone,
+              hcrout=hcrout,production=production,condout=condout)
   return(out)
 } # end of do_MSE

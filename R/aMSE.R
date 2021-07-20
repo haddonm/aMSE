@@ -7,7 +7,7 @@
 #' @importFrom utils write.table head tail winDialog
 #' @importFrom rutilsMH getmax getmin setpalette plotprep removeEmpty
 #' @importFrom rutilsMH splitDate which.closest parset getparplots
-#' @importFrom rutilsMH digitsbyrow %ni%
+#' @importFrom rutilsMH digitsbyrow %ni% pickbound
 #' @importFrom makehtml addplot addtable dirExists filenametopath
 #' @importFrom makehtml getextension htmltable logfilename make_html pathend
 #' @importFrom makehtml pathtype setuphtml write_css write_head
