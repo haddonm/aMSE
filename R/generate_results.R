@@ -240,6 +240,45 @@ fishery_plots <- function(rundir,glb,select,histyr,projLML, rge=50:90) {
   return(invisible(selplot))
 } # end of fishery_plots
 
+#' @title makeoutput take the output from do_MSE and generates the HTML files
+#'
+#' @description makeoutput simplifies taking the output from do_MSE and
+#'     producing the HTML files used to display all the results in rundir.
+#'
+#' @param out the output from do_MSE
+#' @param rundir the full path to the directory holding the results
+#' @param datadir the full path to the directory holding data and jurisdictionHS.R
+#' @param postdir the name of the directory holding the results, also used to
+#'     name the internal webpage
+#' @param controlfile the controlfile used to run the MSE
+#' @param doproject have the projections been run? default = TRUE.
+#' @param openfile should the website be opened automatically? default=TRUE
+#' @param verbose should details of producing the HTML files be written to the
+#'     console?  default=FALSE
+#'
+#' @return nothing but it does generate a set of HTML files in rundir. If
+#'     verbose=TRUE it also writes text to the console
+#' @export
+#'
+#' @examples
+#' print("wait on internal data-sets")
+makeoutput <- function(out,rundir,datadir,postdir,controlfile,doproject=TRUE,
+                       openfile=TRUE,verbose=FALSE) {
+  replist <- list(starttime=as.character(out$starttime),
+                  endtime=as.character(out$projtime))
+  glb <- out$glb
+  projy <- ifelse(doproject,glb$pyrs,0)
+  runnotes <- paste0(out$ctrl$runlabel,":  RunTime = ",out$tottime,
+                     "  replicates = ",glb$reps,",   years projected = ",projy,
+                     "  Populations = ",glb$numpop," and SAU = ",glb$nSAU,
+                     "  Randomseed for conditioning = ",out$ctrl$randseed)
+  make_html(replist = replist,  rundir = rundir,  datadir=datadir,
+            controlfile=controlfile, datafile=out$ctrl$datafile, width = 500,
+            openfile = TRUE,  runnotes = runnotes,   verbose = verbose,
+            packagename = "aMSE",  htmlname = postdir)
+  if (verbose) cat("finished  \n")
+} # makeoutput
+
 #' @title numbersatsize plots details of the numbers-at-size
 #'
 #' @description numbersatsize plots up the initial unfished numbers-

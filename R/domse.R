@@ -82,7 +82,6 @@
 #' @param ndiagprojs the number of replicate trajectories to plot in the
 #'     diagnostics tab to illustrate ndiagprojs trajectories to ensure that
 #'     such projections appear realistic; default=3
-#' @param openfile should the HTML pages be opened automatically? default=TRUE
 #' @param savesauout should the sau dynamics object be saved as an sauoutD.RData
 #'     file? 100 replicates of 56 populations for 58 years of conditioning and
 #'     30 years of projection = about 5.7 Mb. default=FALSE.
@@ -101,7 +100,7 @@
 do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
                    sampleNaS,getdata,calcpopC,varyrs=7,startyr=42,
                    cleanslate=FALSE,verbose=FALSE,doproject=TRUE,ndiagprojs=3,
-                   openfile=TRUE,savesauout=FALSE) {
+                   savesauout=FALSE) {
   # generate equilibrium zone ----------------------------------------------------
   starttime <- (Sys.time())
   zone <- makeequilzone(rundir,controlfile,datadir,cleanslate=cleanslate,
@@ -181,23 +180,11 @@ do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
   }
   projtime <- Sys.time()
   tottime <- round((projtime - starttime),3)
-  replist <- list(starttime=as.character(starttime),
-                  endtime=as.character(projtime))
+
   if (savesauout) {
     sauoutD <- sauout[-c(12,11,10)]
     save(sauoutD,file=paste0(rundir,"/sauoutD.RData"))
   }
-  projy <- ifelse(doproject,glb$pyrs,0)
-  runnotes <- paste0(ctrl$runlabel,":  RunTime = ",tottime,
-                     "  replicates = ",glb$reps,",   years projected = ",projy,
-                     "  Populations = ",glb$numpop," and SAU = ",glb$nSAU,
-                     "  Randomseed for conditioning = ",ctrl$randseed)
-
-  make_html(replist = replist,  rundir = rundir,  datadir=datadir,
-            controlfile=controlfile, datafile=ctrl$datafile, width = 500,
-            openfile = openfile,  runnotes = runnotes,   verbose = FALSE,
-            packagename = "aMSE",  htmlname = postdir)
-
   out <- list(tottime=tottime,projtime=projtime,starttime=starttime,glb=glb,
               ctrl=ctrl,zoneCP=zoneCP,zoneDD=zoneDD,zoneDP=zoneDP,NAS=NAS,
               projC=projC,condC=condC,sauout=sauout,outzone=outzone,

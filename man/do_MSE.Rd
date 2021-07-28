@@ -21,7 +21,6 @@ do_MSE(
   verbose = FALSE,
   doproject = TRUE,
   ndiagprojs = 3,
-  openfile = TRUE,
   savesauout = FALSE
 )
 }
@@ -85,8 +84,6 @@ outputs.}
 \item{ndiagprojs}{the number of replicate trajectories to plot in the
 diagnostics tab to illustrate ndiagprojs trajectories to ensure that
 such projections appear realistic; default=3}
-
-\item{openfile}{should the HTML pages be opened automatically? default=TRUE}
 
 \item{savesauout}{should the sau dynamics object be saved as an sauoutD.RData
 file? 100 replicates of 56 populations for 58 years of conditioning and
