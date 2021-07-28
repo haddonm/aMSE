@@ -4,7 +4,7 @@
 \alias{biology_plots}
 \title{biology_plots generates a series of stored plots and tables}
 \usage{
-biology_plots(rundir, glb, zoneC)
+biology_plots(rundir, glb, zoneC, matL = c(30, 210), Lwt = c(80, 210))
 }
 \arguments{
 \item{rundir}{the results directory}
@@ -12,6 +12,12 @@ biology_plots(rundir, glb, zoneC)
 \item{glb}{the globals list}
 
 \item{zoneC}{the zonal constants by population, zoneC}
+
+\item{matL}{a vector of two containing the left and right hand size classes
+for use in the maturity-at-length plots}
+
+\item{Lwt}{a vector of two containing the left and right hand size classes
+for use in the wight-atlength plots}
 }
 \value{
 invisibly returns the biological properties of the populations

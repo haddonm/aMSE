@@ -187,16 +187,17 @@ imperr <- function(catchsau,exb,sauindex,sigmab=1e-08) {
 #'    that larval dispersal can be accounted for. Thus, oneyear requires
 #'    oneyearD.
 #'
-#' @param inpopC a single population from a zoneC, an abpop
+#' @param MatWt maturity x Weight-at-size from zoneCC for the population and year
+#' @param SelWt selectivity x Weight-at-size from zoneCC for the population and year
+#' @param selyr selectivity from zoneC for the population and year
+#' @param Me natural morality from zoneC for the population
+#' @param G growth transtion matrix from zoneC for the population
+#' @param popq the catchability from zoneCC for the population
+#' @param WtL the weight-at-alength from zoneC for the population
 #' @param inNt the numbers at size for the year previous to the year
 #'     of dynamics. These are projected into the active year.
-#' @param Nclass the number of size classes used to describe growth.
-#'     used to define vectors
 #' @param inH a literal annual harvest rate as a proportion to be
 #'     removed as catch during the year, a scalar
-#' @param yr the year in the dynamics being worked on. The first year
-#'     is generated when the zone is defined or when it is initially
-#'     depleted. All dynamics are applied from year 2 - Nyrs; scalar
 #'
 #' @return a list containing ExploitB, MatureB, Catch, Harvest, Nt,
 #'     ce, CatchN, and midyexpB used to update the given pop in yr + 1
@@ -204,17 +205,17 @@ imperr <- function(catchsau,exb,sauindex,sigmab=1e-08) {
 #'
 #' @examples
 #' print("need to wait on built in data sets")
-oneyear <- function(inpopC,inNt,Nclass,inH,yr) {  #
+oneyear <- function(MatWt,SelWt,selyr,Me,G,popq,WtL,inNt,inH) {  #
   # yr=2; pop=2; inpopC=zoneC[[pop]]; inNt=zoneD$Nt[,yr-1,pop];
   # Nclass=glb$Nclass; inH=0.2;
-  MatWt <- inpopC$MatWt/1e06
-  SelectWt <- inpopC$SelWt[,yr]/1e06
-  selyr <- inpopC$Select[,yr]
+  MatWt <- MatWt/1e06
+  SelectWt <- SelWt/1e06
+  Nclass <- length(selyr)
   Ne <- numeric(Nclass)
   Cat <- numeric(Nclass)
-  Os <- exp(-inpopC$Me/2)
+  Os <- exp(-Me/2)
   #  MatureB <- sum(MatWt*inNt)
-  preNe <- (Os * (inpopC$G %*% inNt)) # pre-fishing NAS
+  preNe <- (Os * (G %*% inNt)) # pre-fishing NAS
   ExploitB <- sum(SelectWt * preNe) #SelectWt=Select*WtL
   oldExpB <- ExploitB   # oldExpB = ExploitB after growth and 0.5NatM
   Fish <- 1-(inH*selyr)
@@ -223,9 +224,9 @@ oneyear <- function(inpopC,inNt,Nclass,inH,yr) {  #
   newExpB <- sum(SelectWt * newNt)
   avExpB <- (newExpB + oldExpB)/2.0 #av start and end
   MatureB <- sum(MatWt*newNt) #+ MatBC
-  Catch <- sum(inpopC$WtL*Cat)/1e06
+  Catch <- sum(WtL*Cat)/1e06
  # Harvest <- Catch/avExpB  # uses average of the start and end
-  ce <- inpopC$popq * avExpB * 1000.0  # Need to add CPUE variation
+  ce <- popq * avExpB * 1000.0  # Need to add CPUE variation
   ans <- list(newExpB,MatureB,Catch,inH,newNt,ce,Cat,oldExpB,preNe)
   names(ans) <- c("ExploitB","MatureB","Catch","Harvest","Nt","ce",
                   "CatchN","midyexpB","NumNe")
@@ -251,18 +252,19 @@ oneyear <- function(inpopC,inNt,Nclass,inH,yr) {  #
 #'     be accounted for. oneyearcat is not used independently of
 #'     oneyearC.
 #'
-#' @param inpopC a single population from a zoneC, an abpop
+#' @param MatWt maturity x Weight-at-size from zoneCC for the population and year
+#' @param SelWt selectivity x Weight-at-size from zoneCC for the population and year
+#' @param selyr selectivity from zoneCC for the population and year
+#' @param Me natural morality from zoneCC for the population
+#' @param G growth transtion matrix from zoneCC for the population
+#' @param popq the catchability from zoneCC for the population
+#' @param WtL the weight-at-alength from zoneCC for the population
 #' @param inNt the numbers at size for the year previous to the year
 #'     of dynamics. These are projected into the active year.
-#' @param Nclass the number of size classes used to describe growth.
-#'     used to define vectors
 #' @param incat the literal annual catch from the population. Derived
-#'     from teh harvest control rule for each SAU, then allocated to
+#'     from the harvest control rule for each SAU, then allocated to
 #'     each population with respect to its relative catching
 #'     performance.
-#' @param yr the year in the dynamics being worked on. The first year
-#'     is generated when the zone is defined or when it is initially
-#'     depleted. All dynamics are appllied from year 2 - Nyrs; scalar
 #'
 #' @seealso{
 #'  \link{dohistoricC}, \link{oneyearcat}, \link{oneyearrec}
@@ -274,16 +276,16 @@ oneyear <- function(inpopC,inNt,Nclass,inH,yr) {  #
 #'
 #' @examples
 #' print("need to wait on built in data sets")
-oneyearcat <- function(inpopC,inNt,Nclass,incat,yr) {  #
+oneyearcat <- function(MatWt,SelWt,selyr,Me,G,popq,WtL,inNt,incat) {
   # yr=2; pop=2; inpopC=zoneC[[pop]]; inNt=zoneD$Nt[,yr-1,pop];
   # Nclass=glb$Nclass; inH=0.05;
-  MatWt <- inpopC$MatWt/1e06
-  SelectWt <- inpopC$SelWt[,yr]/1e06
-  selyr <- inpopC$Select[,yr]
+  MatWt <- MatWt/1e06
+  SelectWt <- SelWt/1e06
+  Nclass <- length(selyr)
   Ne <- numeric(Nclass)
   Cat <- numeric(Nclass)
-  Os <- exp(-inpopC$Me/2)
-  NumNe <- (Os * (inpopC$G %*% inNt))
+  Os <- exp(-Me/2)
+  NumNe <- (Os * (G %*% inNt))
   midyexpB <- sum(SelectWt * NumNe) #SelectWt=Select*WtL =midyrexB
   estH <- min(incat/midyexpB,0.8) # no more than 0.8 harvest rate
   Fish <- 1-(estH*selyr)
@@ -292,8 +294,8 @@ oneyearcat <- function(inpopC,inNt,Nclass,incat,yr) {  #
   ExploitB <- sum(SelectWt * newNt) # end of year exploitable biomass
   avExpB <- (midyexpB + ExploitB)/2.0 #av start and end exploitB
   MatureB <- sum(MatWt*newNt)
-  Catch <- sum(inpopC$WtL*Cat)/1e06
-  ce <- inpopC$popq * avExpB * 1000.0  #ExploitB
+  Catch <- sum(WtL*Cat)/1e06
+  ce <- popq * avExpB * 1000.0  #ExploitB
   vect <- c(exploitb=ExploitB,midyexpB=midyexpB,matureb=MatureB,
             catch=Catch,cpue=ce)
   ans <- list(vect=vect,NaL=newNt,catchN=Cat,NumNe=NumNe)
@@ -344,8 +346,13 @@ oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,
   matb <- numeric(npop)
   ans <- vector("list",npop)
   for (popn in 1:npop) {  # popn=14
-    ans[[popn]] <- oneyearcat(inpopC=zoneCC[[popn]],inNt=inN[,popn],
-                              Nclass=Ncl,incat=popC[popn],yr=year)
+    pop <- zoneCC[[popn]]
+    ans[[popn]] <- oneyearcat(MatWt=pop$MatWt,SelWt=pop$SelWt[,year],
+                              selyr=pop$Select[,year],Me=pop$Me,G=pop$G,
+                              popq=pop$popq,WtL=pop$WtL,inNt=inN[,popn],
+                              incat=popC[popn])
+    # ans[[popn]] <- oneyearcat(inpopC=zoneCC[[popn]],inNt=inN[,popn],
+    #                           Nclass=Ncl,incat=popC[popn],yr=year)
   }
   dyn <- sapply(ans,"[[","vect")
   steep <- getvect(zoneCC,"steeph") #sapply(zoneC,"[[","popdef")["steeph",]
@@ -395,8 +402,11 @@ oneyearD <- function(zoneC,zoneD,inHt,year,sigmar,Ncl,npop,movem) {
 #  zoneC=zoneC;zoneD=zoneD;Ncl=Nclass;inHt=inHarv;year=yr;sigmar=1e-08;npop=npop;movem=glob$move
   matb <- numeric(npop)
   for (popn in 1:npop) {  # year=2; popn=1
-    out <- oneyear(inpopC=zoneC[[popn]],inNt=zoneD$Nt[,year-1,popn],
-                   Nclass=Ncl,inH=inHt[popn],yr=year)
+    pop <- zoneC[[popn]]
+    out <- oneyear(MatWt=pop$MatWt,SelWt=pop$SelWt[,year],
+                   selyr=pop$Select[,year],Me=pop$Me,G=pop$G,
+                   popq=pop$popq,WtL=pop$WtL,inNt=zoneD$Nt[,year-1,popn],
+                   inH=inHt[popn])
     zoneD$exploitB[year,popn] <- out$ExploitB
     zoneD$midyexpB[year,popn] <- out$midyexpB
     zoneD$matureB[year,popn] <- out$MatureB

@@ -134,42 +134,6 @@ catchweightCE <- function(cedat,cdat,nsau) {
   return(totCE)
 } # end of catchweightCE
 
-#' @title changeline replaces a given line in a given file with new text
-#'
-#' @description changeline enables a text file to be changed line by line.
-#'     One identifies a given line, perhaps by using 'findlinenumber', and
-#'     this can then be replaced by an input character string. Obviously this
-#'     is a fine way to mess up a data file so use with care.
-#'
-#' @param rundir the directory path in which to find the text file.
-#' @param filename the full name of the text file in quotations.
-#' @param linenumber the line number of the text file to be changed
-#' @param newline the character string with which to replace the line
-#' @param verbose should confirmation be output to the console. default=FALSE
-#'
-#' @seealso{
-#'  \link{findlinenumber}, \link{changevar}
-#' }
-#'
-#' @return nothing but it does alter a line in a text file. Optionally it may
-#'     confirm the action to the console
-#' @export
-#'
-#' @examples
-#' print("wait on an example")
-changeline <- function(rundir, filename, linenumber, newline,verbose=FALSE) {
-  # rundir=rundir; filename="controlsau.csv"; linenumber=210; newline="1991,-1,-1,-1,-1,-1,-1,-1,-1,"
-  filen <- filenametopath(rundir,filename)
-  dat <- readLines(filen)
-  origtext <- dat[linenumber]
-  dat[linenumber] <- newline
-  writeLines(dat,filen)
-  if (verbose) {
-    cat(origtext," \n")
-    cat("replaced with ",newline)
-  }
-} # end of changeline
-
 #' @title changevar can alter the value in a single line in, eg, the control file
 #'
 #' @description changevar is a DANGEROUS function for lazy people. I say that

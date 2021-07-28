@@ -3,6 +3,13 @@
 
 # LATEST UPDATE
 
+-   2021\_07-28 aMSE 0.0.0.800 Added functions (changecolumn,
+    getrecdevcolumn, gettasdevssq) to assist in automated operating
+    model conditioning on the fishery. Also modified the biology\_plots
+    and oneyear and oneyearcat to assist with speeding the processes.
+    Lots of additional minor changes but some important ones to do\_MSE
+    (read the help, ?do\_MSE).
+
 -   2021-07-20 aMSE 0.0.0.900 Added do\_condition and compareCPUE. Both
     used to speed the conditioning of the operating model, though a
     number of developments are still under development. Currently can
@@ -10,37 +17,6 @@
     sum-of-squared residual fit between the observed CPUE in the
     historical period, and those predicted by the conditioned model. The
     undeveloped bit related to the ad hoc recruitment deviates.
-
--   2021\_07-12 aMSE 0.0.0.1000 Announcing some rather large changes.
-    Early on in development I made a strategic decision which has proved
-    to make the documentation of the code and implementation of
-    extraction of results overly complex. It is now clear that it was a
-    strategic mistake to separate the historical conditioning from the
-    future projections. Combining them, for purposes of applying a
-    Harvest control rule, or tabulating or plotting results, was adding
-    complexity to every scenario, new plot and table. For example,
-    previously, plots where there were traces of the historical data
-    added to the projections were greatly flawed by having the final
-    year of historical data repeated in the projection data. Obviously,
-    that plotting error could have been solved by selecting which years
-    to plot, instead I decided to simplify everything (for both me and
-    other maintainers) by combining the conditioned dynamic component of
-    the zone and the projection years of the dynamics. Now, in the
-    ‘zoneDP’ object (see ‘out$zoneDP’ after a run), for each replicate,
-    we have a continuous set of years from the first year of historical
-    catches out to the last year of the projections. This simplifies
-    everything from the documentation of the code base, the application
-    of the harvest strategy, the plotting of results, basically
-    everything I can think of. The next steps are to expand the results
-    sections and re-write the documentation. The current Tasmania
-    example has now been expanded to 56 populations among the 8 SAU. The
-    fit of the operating model the historical CPUE is now rather
-    improved because now it is possible to include recruitment deviates
-    in the historical conditioning. Currently in the included example it
-    is very ad hoc. One can use ad hoc recruitment deviates or ones
-    derived from some form of localized model fitting. The ad hoc ones
-    currently in use were mainly used to test the new utility functions
-    provided to assist with such things.
 
 # aMSE
 
@@ -131,13 +107,13 @@ if (dir.exists("c:/Users/User/DropBox")) {
 }
 doproject <- TRUE  # change to FALSE if only conditioning is required
 verbose <- TRUE
-postdir <- "testnew"  # this is used to label the output HTML file 
+postdir <- "testnew"  # also used to label the output HTML file 
 rundir <- paste0(ddir,postdir)
 datadir <- paste0(ddir,"tasdata")
 alldirExists(rundir,datadir,verbose=verbose)
-#> c:/Users/User/DropBox/A_codeUse/aMSEUse/scenarios/testnew :  does not exist
+#> c:/Users/Malcolm/DropBox/A_codeUse/aMSEUse/scenarios/testnew :  does not exist
 #> Warning in alldirExists(rundir, datadir, verbose = verbose):
-#> datadir,  c:/Users/User/DropBox/A_codeUse/aMSEUse/scenarios/tasdata :  exists
+#> datadir,  c:/Users/Malcolm/DropBox/A_codeUse/aMSEUse/scenarios/tasdata :  exists
 source(paste0(datadir,"/TasmanianHS.R"))
 controlfile <- "controlsau.csv"
 # equilibrium zone -------------------------------------------------------------
@@ -162,7 +138,8 @@ source(paste0(datadir,"/TasmanianHS.R"))
 # out <- do_MSE(rundir,controlfile,datadir,hsargs=hsargs,hcrfun=mcdahcr,
 #                  sampleCE=tasCPUE,sampleFIS=tasFIS,sampleNaS=tasNaS,
 #                  getdata=tasdata,calcpopC=calcexpectpopC,varyrs=7,startyr=50,
-#                  cleanslate=TRUE,verbose=TRUE,doproject=doproject,ndiagprojs=4)
+#                  cleanslate=TRUE,verbose=TRUE,doproject=doproject,ndiagprojs=4,
+#                  openfile=TRUE,savesauout=FALSE)
 # make results webpage ---------------------------------------------------------
 # replist <- list(starttime=as.character(out$starttime),
 #                 endtime=as.character(out$projtime))

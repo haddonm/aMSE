@@ -4,25 +4,30 @@
 \alias{oneyearcat}
 \title{oneyearcat one year's catch dynamics for one abpop}
 \usage{
-oneyearcat(inpopC, inNt, Nclass, incat, yr)
+oneyearcat(MatWt, SelWt, selyr, Me, G, popq, WtL, inNt, incat)
 }
 \arguments{
-\item{inpopC}{a single population from a zoneC, an abpop}
+\item{MatWt}{maturity x Weight-at-size from zoneCC for the population and year}
+
+\item{SelWt}{selectivity x Weight-at-size from zoneCC for the population and year}
+
+\item{selyr}{selectivity from zoneCC for the population and year}
+
+\item{Me}{natural morality from zoneCC for the population}
+
+\item{G}{growth transtion matrix from zoneCC for the population}
+
+\item{popq}{the catchability from zoneCC for the population}
+
+\item{WtL}{the weight-at-alength from zoneCC for the population}
 
 \item{inNt}{the numbers at size for the year previous to the year
 of dynamics. These are projected into the active year.}
 
-\item{Nclass}{the number of size classes used to describe growth.
-used to define vectors}
-
 \item{incat}{the literal annual catch from the population. Derived
-from teh harvest control rule for each SAU, then allocated to
+from the harvest control rule for each SAU, then allocated to
 each population with respect to its relative catching
 performance.}
-
-\item{yr}{the year in the dynamics being worked on. The first year
-is generated when the zone is defined or when it is initially
-depleted. All dynamics are appllied from year 2 - Nyrs; scalar}
 }
 \value{
 a list containing a vector of ExploitB, MatureB, Catch, and ce, and

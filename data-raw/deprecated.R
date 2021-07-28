@@ -460,6 +460,73 @@ oneyearC <- function(zoneC,zoneDP,catchp,year,iter,sigmar,Ncl,npop,movem) {
   return(zoneD)
 } # end of oneyearC
 
+#' @title oneyearcatold one year's catch dynamics for one abpop
+#'
+#' @description oneyear does one year's dynamics for one input
+#'     population. Where the fishing is based on a given catch per
+#'     population, which would be determined by any harvest control
+#'     rule. It is used to step through populations of a zone.
+#'     Its dynamics are such that each population first undergoes
+#'     growth, then half natural mortality. This allows an estimate of
+#'     exploitable biomass before fishing occurs. The remaining
+#'     dynamics involve the removal of the catch, after estimating the
+#'     harvest rate from catch/exploitb, the application of the last
+#'     half of natural mortality and the addition of recruits. This
+#'     allows the exploitable biomass to be estimated after fishing.
+#'     The cpue uses the average of the pre-fishing and post-fishing
+#'     exploitB to smooth over any changes brought about by fishing.
+#'     The recruitment occurs in oneyearC so that larval dispersal can
+#'     be accounted for. oneyearcat is not used independently of
+#'     oneyearC.
+#'
+#' @param inpopC a single population from a zoneC, an abpop
+#' @param inNt the numbers at size for the year previous to the year
+#'     of dynamics. These are projected into the active year.
+#' @param Nclass the number of size classes used to describe growth.
+#'     used to define vectors
+#' @param incat the literal annual catch from the population. Derived
+#'     from teh harvest control rule for each SAU, then allocated to
+#'     each population with respect to its relative catching
+#'     performance.
+#' @param yr the year in the dynamics being worked on. The first year
+#'     is generated when the zone is defined or when it is initially
+#'     depleted. All dynamics are appllied from year 2 - Nyrs; scalar
+#'
+#' @seealso{
+#'  \link{dohistoricC}, \link{oneyearcat}, \link{oneyearrec}
+#' }
+#'
+#' @return a list containing a vector of ExploitB, MatureB, Catch, and ce, and
+#'     a matrix NaL containing Nt and CatchN used to update a pop in yr + 1
+#' @export
+#'
+#' @examples
+#' print("need to wait on built in data sets")
+oneyearcatold <- function(inpopC,inNt,Nclass,incat,yr) {  #
+  # yr=2; pop=2; inpopC=zoneC[[pop]]; inNt=zoneD$Nt[,yr-1,pop];
+  # Nclass=glb$Nclass; inH=0.05;
+  MatWt <- inpopC$MatWt/1e06
+  SelectWt <- inpopC$SelWt[,yr]/1e06
+  selyr <- inpopC$Select[,yr]
+  Ne <- numeric(Nclass)
+  Cat <- numeric(Nclass)
+  Os <- exp(-inpopC$Me/2)
+  NumNe <- (Os * (inpopC$G %*% inNt))
+  midyexpB <- sum(SelectWt * NumNe) #SelectWt=Select*WtL =midyrexB
+  estH <- min(incat/midyexpB,0.8) # no more than 0.8 harvest rate
+  Fish <- 1-(estH*selyr)
+  newNt <- (Os * (Fish * NumNe))
+  Cat <- (estH*selyr) * NumNe  #numbers at size in the catch
+  ExploitB <- sum(SelectWt * newNt) # end of year exploitable biomass
+  avExpB <- (midyexpB + ExploitB)/2.0 #av start and end exploitB
+  MatureB <- sum(MatWt*newNt)
+  Catch <- sum(inpopC$WtL*Cat)/1e06
+  ce <- inpopC$popq * avExpB * 1000.0  #ExploitB
+  vect <- c(exploitb=ExploitB,midyexpB=midyexpB,matureb=MatureB,
+            catch=Catch,cpue=ce)
+  ans <- list(vect=vect,NaL=newNt,catchN=Cat,NumNe=NumNe)
+  return(ans)
+} # End of oneyearcatold
 
 
 #' @title product is the productivity curve matrix from doproduction

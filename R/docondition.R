@@ -1,7 +1,107 @@
 
+#' @title changecolumn alters a selected column of recdevs in the control file
+#'
+#' @description changecolumn is designed to be used when conditioning the OM
+#'     when optimizing ad hoc recruitment deviates by calculating the SSQ
+#'     between the predicted and observed CPUE for a selected range of years.
+#'     If the length of new values is not the same as the selected linerange
+#'     the function will stop with a warning. When a line is changed then all
+#'     -1 values are changed to +1
+#'
+#' @param rundir the rundir for the scenario
+#' @param filename the character name of the control file
+#' @param linerange the linerange within the control file containing the rows
+#'     representing the selected years of recruitment deviates. Obtained by
+#'     using 'getrecdevcolumn
+#' @param column the sau + 1 to account for the initial year in each row of
+#'     deviates
+#' @param newvect the new values to replace those present. If using optim these
+#'     would be exp(ans$par), if 'nlm' exp(ans$estimate)
+#' @param verbose should console reports of before and after be made?
+#'     default = FALSE
+#'
+#' @return nothing although values within the control file will be changed and,
+#'     if verbose=TRUE, it will write to the console.
+#' @export
+#'
+#' @examples
+#' print("wait on suitable internal data sets")
+changecolumn <- function(rundir, filename, linerange, column,newvect,
+                         verbose=FALSE) {
+  num <- length(newvect)
+  if (num != length(linerange))
+    stop("length of line-range differs from number of parameters")
+  filen <- filenametopath(rundir,filename)
+  dat <- readLines(filen)
+  if (verbose) {
+    print(dat[linerange])
+    cat("\n\n")
+  }
+  for (linen in 1:num) { # linen=linerange[1]
+    origtext <- dat[linerange[linen]]
+    txt <- unlist(strsplit(origtext,","))
+    txt[column] <- as.character(newvect[linen])
+    pickt <- which(txt == "-1")
+    if (length(pickt) > 0) txt[pickt] <- "1"
+    outtxt <- paste0(txt,collapse=",")
+    dat[linerange[linen]] <- outtxt
+  }
+  writeLines(dat,filen)
+  if (verbose) print(dat[linerange])
+} # end of changecolumn
+
+#' @title changeline replaces a given line in a given file with new text
+#'
+#' @description changeline enables a text file to be changed line by line.
+#'     One identifies a given line, perhaps by using 'findlinenumber', and
+#'     this can then be replaced by an input character string. Obviously this
+#'     is a fine way to mess up a data file so use with care.
+#'
+#' @param indir the directory path in which to find the text file. Usually,
+#'     rundir or datadir
+#' @param filename the full name of the text file in quotations.
+#' @param linenumber either the line number within the text file to be changed,
+#'     or, the character name of the variable to be changed, e.g. 'AvRec'
+#' @param newline the character string with which to replace the line
+#' @param verbose should confirmation be output to the console. default=FALSE
+#'
+#' @seealso{
+#'  \link{findlinenumber}, \link{changevar}
+#' }
+#'
+#' @return nothing but it does alter a line in a text file. Optionally it may
+#'     confirm the action to the console
+#' @export
+#'
+#' @examples
+#' print("wait on an example")
+changeline <- function(indir, filename, linenumber, newline,verbose=FALSE) {
+  # indir=datadir; filename="saudataM15h5.csv"; linenumber="AvRec"; newline=chgevals
+  filen <- filenametopath(indir,filename)
+  dat <- readLines(filen)
+  if (class(linenumber) == "numeric") {
+    origtext <- dat[linenumber]
+    dat[linenumber] <- newline
+    writeLines(dat,filen)
+  }
+  if (class(linenumber) == "character") { # ie the name of the variable
+    pickL <- grep(linenumber,dat)[1]
+    if (length(pickL) == 0)
+      stop(cat(paste0(linenumber," does not appear in ",filename),"\n"))
+    origtext <- dat[pickL]
+    dat[pickL] <- newline
+    writeLines(dat,filen)
+  }
+  if (verbose) {
+    cat(origtext," \n")
+    cat("replaced with ",newline)
+  }
+} # end of changeline
+
+
 #
 # rundir=rundir
-# controlfile="controlsau.csv"
+# controlfile="control81.csv"
 # datadir=datadir
 # hsargs=hsargs
 # hcrfun=mcdahcr
@@ -63,12 +163,11 @@
 #' print("wait on suitable data sets in data")
 do_condition <- function(rundir,controlfile,datadir,calcpopC,cleanslate=FALSE,
                          verbose=FALSE) {
-  # generate equilibrium zone ----------------------------------------------------
   starttime <- Sys.time()
   zone <- makeequilzone(rundir,controlfile,datadir,doproduct=FALSE,
                         cleanslate=cleanslate,verbose=verbose)
   equiltime <- (Sys.time()); if (verbose) print(equiltime - starttime)
-  # declare main objects -------------------------------------------------------
+  # declare main objects
   glb <- zone$glb
   ctrl <- zone$ctrl
   zone1 <- zone$zone1
@@ -76,10 +175,7 @@ do_condition <- function(rundir,controlfile,datadir,calcpopC,cleanslate=FALSE,
   condC <- zone$zone1$condC
   zoneC <- zone$zoneC
   zoneD <- zone$zoneD
-  # save some equil results ----------------------------------------------------
- # biology_plots(rundir, glb, zoneC)
- #numbersatsize(rundir, glb, zoneD)
-  #Condition on Fishery --------------------------------------------------------
+  #Condition on Fishery
   if (verbose) cat("Conditioning on the Fishery data  \n")
   zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,condC,calcpopC=calcpopC,
                         sigR=1e-08,sigB=1e-08)
@@ -102,4 +198,118 @@ do_condition <- function(rundir,controlfile,datadir,calcpopC,cleanslate=FALSE,
   return(out)
 } # end of do_MSE
 
+
+
+#' @title gettasdevssq calculates the SSQ between observed and predicted CPUE
+#'
+#' @description gettasdevssq is used when conditioning the aMSE operating model
+#'     using ad hoc recruitment deviates after conditioning on AvRec. It focuses
+#'     on a single SAU at a time. log transformed recdevs are used to avoid the
+#'     possibility of negative recdevs (a no-no).
+#'
+#' @param param the log transformed sequence of recdevs for the selected years
+#' @param rundir the rundir for the scenario
+#' @param datadir the datadir for the scenario
+#' @param ctrlfile the character name of the control file
+#' @param calcpopC the function used to distribute catches among populations.
+#'     This is from the external JurisdictionHS.R file that is 'sourced' in.
+#' @param locyrs the rows within the matrix of recruitment deviates
+#'     corresponding to the selected years.
+#' @param sau which sau (in TAS 1 - 8) is to be worked on
+#' @param verbose should console reports be made? default = FALSE
+#'
+#' @return a scalar value which is the SSQ for the selected years of CPUE
+#' @export
+#'
+#' @examples
+#' print("wait on suitable internal data sets")
+gettasdevssq <- function(param,rundir,datadir,ctrlfile,calcpopC,locyrs,sau,
+                         verbose=FALSE) {
+  zone1 <- readctrlfile(rundir,infile=ctrlfile,datadir=datadir,verbose=verbose)
+  # pickX <- which(param > 1.0)
+  # if (length(pickX) > 0) param[pickX] <- 1.0
+  zone1$condC$recdevs[locyrs,sau] <- exp(param)
+  ctrl <- zone1$ctrl
+  glb <- zone1$globals     # glb without the movement matrix
+  bysau <- ctrl$bysau
+  if (is.null(bysau)) bysau <- 0
+  if (bysau) {
+    constants <- readsaudatafile(datadir,ctrl$datafile)
+  } else {
+    constants <- readdatafile(glb$numpop,datadir,ctrl$datafile)
+  }
+  out <- setupzone(constants,zone1,doproduct=FALSE,verbose=verbose) # make operating model
+  zoneC <- out$zoneC
+  zoneD <- out$zoneD
+  glb <- out$glb             # glb now has the movement matrix
+  zone1$globals <- glb
+  # did the larval dispersal level disturb the equilibrium?
+  zoneD <- testequil(zoneC,zoneD,glb,verbose=verbose)
+  zoneC <- resetexB0(zoneC,zoneD) # rescale exploitB to avexplB after dynamics
+  setuphtml(rundir,cleanslate=FALSE)
+  zone <- list(zoneC=zoneC,zoneD=zoneD,glb=glb,constants=constants,
+               product=NULL,ctrl=ctrl,zone1=zone1)
+  projC <- zone1$projC
+  condC <- zone1$condC
+  #Condition on Fishery
+  zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,condC,calcpopC=calcpopC,
+                        sigR=1e-08,sigB=1e-08)
+  hyrs <- glb$hyrs
+  sauindex <- glb$sauindex
+  popB0 <- getlistvar(zoneC,"B0")
+  B0 <- tapply(popB0,sauindex,sum)
+  popExB0 <- getlistvar(zoneC,"ExB0")
+  ExB0 <- tapply(popExB0,sauindex,sum)
+  sauZone <- getsauzone(zoneDD,glb,B0=B0,ExB0=ExB0)
+  ssq <- compareCPUE(condC$histCE,sauZone$cpue,glb,rundir,filen="SAU_compareCPUE.png")
+  return(ssq[sau])
+} # end of gettasdevssq
+
+
+#' @title getrecdevcolumn extracts a column of recdevs from a control file
+#'
+#' @description getrecdevcolumn is used when conditioning the operating model
+#'     by modifying the recruitment deviates. getrecdevcolumn extracts a column
+#'     of years selected from a selected controlfile. It does this to use those
+#'     values as the starting parameter vector for optim.
+#'
+#' @param rundir the rundir for the scenario
+#' @param filename the character name of the control file
+#' @param yearrange the range of years of rec devs to be selected
+#' @param sau which SAU or block is to be fitted?
+#' @param verbose should details of the run be made. default=FALSE
+#'
+#' @return a list of the vewctor of recdevs, the vector of the yearrange, and
+#'     a vector of the linenumbers within the control file that are to be
+#'     changed
+#' @export
+#'
+#' @examples
+#' print("wait on suitable internal data-sets")
+getrecdevcolumn <- function(rundir, filename, yearrange, sau,verbose=FALSE) {
+  column <- sau+1
+  nyr <- length(yearrange)
+  recdevs <- numeric(nyr)
+  filen <- filenametopath(rundir,filename)
+  dat <- readLines(filen)
+  nlines <- length(dat)
+  begin <- grep("RECDEV",dat) + 2
+  reclines <- length(begin:nlines)
+  years <- matrix(0,nrow=reclines,ncol=2)
+  years[,1] <- begin:nlines
+  for (i in begin:nlines) {
+    txt <- unlist(strsplit(dat[i],","))
+    years[(i-begin+1),2] <- as.numeric(txt[1])
+  }
+  picky <- match(yearrange,years[,2])
+  line1 <- years[picky[1],1]
+  line2 <- years[tail(picky,1),1]
+  for (i in line1:line2) { # i = line1
+    txt <- unlist(strsplit(dat[i],","))
+    x <- as.numeric(txt[column])
+    if (x < 0) x <- 1
+    recdevs[i-line1+1] <- x
+  }
+  return(list(recdevs=recdevs,yearrange=yearrange,linerange=line1:line2))
+}
 

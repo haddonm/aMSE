@@ -82,6 +82,10 @@
 #' @param ndiagprojs the number of replicate trajectories to plot in the
 #'     diagnostics tab to illustrate ndiagprojs trajectories to ensure that
 #'     such projections appear realistic; default=3
+#' @param openfile should the HTML pages be opened automatically? default=TRUE
+#' @param savesauout should the sau dynamics object be saved as an sauoutD.RData
+#'     file? 100 replicates of 56 populations for 58 years of conditioning and
+#'     30 years of projection = about 5.7 Mb. default=FALSE.
 #'
 #' @seealso{
 #'  \link{makeequilzone}, \link{dohistoricC}, \link{prepareprojection},
@@ -96,7 +100,8 @@
 #' print("wait on suitable data sets in data")
 do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
                    sampleNaS,getdata,calcpopC,varyrs=7,startyr=42,
-                   cleanslate=FALSE,verbose=FALSE,doproject=TRUE,ndiagprojs=3) {
+                   cleanslate=FALSE,verbose=FALSE,doproject=TRUE,ndiagprojs=3,
+                   openfile=TRUE,savesauout=FALSE) {
   # generate equilibrium zone ----------------------------------------------------
   starttime <- (Sys.time())
   zone <- makeequilzone(rundir,controlfile,datadir,cleanslate=cleanslate,
@@ -112,7 +117,7 @@ do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
   zoneD <- zone$zoneD
   production <- zone$product
   # save some equil results ----------------------------------------------------
-  biology_plots(rundir, glb, zoneC)
+  biology_plots(rundir, glb, zoneC, matL=c(70,200))
   plotproductivity(rundir,production,glb)
   numbersatsize(rundir, glb, zoneD)
   #Condition on Fishery --------------------------------------------------------
@@ -139,15 +144,19 @@ do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
     zoneDP <- outpp$zoneDP
     projC <- outpp$projC
     zoneCP <- outpp$zoneCP
+   # Rprof()
     outproj <- doprojections(ctrl=ctrl,zoneDP=zoneDP,zoneCP=zoneCP,glb=glb,
                              hcrfun=hcrfun,hsargs=hsargs,sampleCE=sampleCE,
                              sampleFIS=sampleFIS,sampleNaS=sampleNaS,
                              getdata=getdata,calcpopC=calcpopC,verbose=TRUE)
+  #  Rprof(NULL)
     if (verbose) cat("Now generating final plots and tables \n")
     zoneDP=outproj$zoneDP
     hcrout <- outproj$hcrout; #str(hcrout)
     NAS <- list(Nt=zoneDP$Nt,NumNe=zoneDP$NumNe,catchN=zoneDP$catchN)
-    zoneDP <- zoneDP[-c(14,15,16)]
+    zoneDP <- zoneDP[-c(17,16,15)]
+   # zoneDP <- zoneDP[-16]
+   #  zoneDP <- zoneDP[-15]
     histCE <- condC$histCE
     B0 <- getvar(zoneC,"B0")
     ExB0 <- getvar(zoneC,"ExB0")
@@ -172,6 +181,23 @@ do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
   }
   projtime <- Sys.time()
   tottime <- round((projtime - starttime),3)
+  replist <- list(starttime=as.character(starttime),
+                  endtime=as.character(projtime))
+  if (savesauout) {
+    sauoutD <- sauout[-c(12,11,10)]
+    save(sauoutD,file=paste0(rundir,"/sauoutD.RData"))
+  }
+  projy <- ifelse(doproject,glb$pyrs,0)
+  runnotes <- paste0(ctrl$runlabel,":  RunTime = ",tottime,
+                     "  replicates = ",glb$reps,",   years projected = ",projy,
+                     "  Populations = ",glb$numpop," and SAU = ",glb$nSAU,
+                     "  Randomseed for conditioning = ",ctrl$randseed)
+
+  make_html(replist = replist,  rundir = rundir,  datadir=datadir,
+            controlfile=controlfile, datafile=ctrl$datafile, width = 500,
+            openfile = openfile,  runnotes = runnotes,   verbose = FALSE,
+            packagename = "aMSE",  htmlname = postdir)
+
   out <- list(tottime=tottime,projtime=projtime,starttime=starttime,glb=glb,
               ctrl=ctrl,zoneCP=zoneCP,zoneDD=zoneDD,zoneDP=zoneDP,NAS=NAS,
               projC=projC,condC=condC,sauout=sauout,outzone=outzone,

@@ -124,25 +124,6 @@ copyto(rundir,todir=destdir,filename="controlsau.csv")
 
 
 
-# selectivity plots -----------------------------------------------------
-
-rundir=rundir; glb=out$glb;select=out$zoneC[[1]]$Select; histyr=out$condC$histyr;projLML=out$projC$projLML
-rge=50:90
-
-
-
-
-
-
-
-
-
-select <- out$zoneC[[1]]$Select
-
-rge <- 50:105
-plotprep(width=7,height=4,newdev=FALSE)
-
-
 # sort out LF data-------------------------------------------------
 
 datafile <- paste0(ddir,"aMSEUse/condition/productivity/sau10LF.csv")
@@ -347,10 +328,6 @@ cbind(catch,cena,LML[,2])
 printV(round(biol,5))
 
 
-# changeline ------------------------------------------------------
-
-findlinenumber(rundir,"controlsau.csv")
-
 
 
 # HCR -------------------------------------------------------
@@ -399,88 +376,79 @@ hcr$refpts
 
 # BATCH Job -------------------------------------------------------------------
 
-wkdir <- "C:/Users/user/Dropbox/A_CodeUse/aMSEUse/scenarios/testnew/"
+wkdir <- "C:/Users/user/Dropbox/A_CodeUse/aMSEUse/scenarios/"
 setwd(wkdir)
 
-command <- "R.exe --vanilla < C:/Users/user/Dropbox/A_CodeUse/aMSEUse/scenarios/testnew/testnewaMSE.R"
+ctxt <- paste0("R.exe --vanilla < ",wkdir,"/conditionOMdevel.R")
+
+command <- ctxt
 shell(command,wait=FALSE)
 
 
-# Compare CPUE ----------------------------------------------------------------
-
-
-
-options("show.signif.stars"=FALSE,
-        "stringsAsFactors"=FALSE,
-        "max.print"=50000,
-        "width"=240)
-# declare libraries ------------------------------------------------------------
-library(aMSE)
-library(rutilsMH)
-library(makehtml)
-library(knitr)
-# Obviously you should modify the rundir and datadir to suit your own setup
-if (dir.exists("c:/Users/User/DropBox")) {
-  ddir <- "c:/Users/User/DropBox/A_codeUse/aMSEUse/scenarios/"
-} else {
-  ddir <- "c:/Users/Malcolm/DropBox/A_codeUse/aMSEUse/scenarios/"
+# Compare CatchN through time ----------------------------------------------------------------
+glb <- out$glb
+product <- out$production
+filen=""
+nsau <- glb$nSAU
+npop <- glb$numpop
+sauindex=glb$sauindex
+saunames <- glb$saunames
+catchN <- out$zoneDD$catchN[55:glb$Nclass,,]
+mids <- glb$midpts[55:glb$Nclass]
+saupops <- as.numeric(table(sauindex))
+commonyaxs <- FALSE
+count <- 0
+plotprep(width=9,height=9,newdev=FALSE,filename=filen,verbose=FALSE)
+parset(plots=c(8,7),margin=c(0.01,0.01,0.01,0.01),outmargin=c(3,3,0.1,0.1))
+for (i in 1:npop) { # i=1
+  if (commonyaxs) {
+    ymax <- getmax(catchN[,58,])
+  } else {
+    ymax <- getmax(catchN[,58,i])
+  }
+  count <- count + 1
+  label <- paste0(saunames[sauindex[i]],"_",count)
+  if (sauindex[(i+1)] != sauindex[i]) count <- 0
+  plot(mids,catchN[,2,i],type="l",lwd=2,xlab="",ylab="",xaxt="n",yaxt="n",
+       yaxs="i",panel.first=grid(),ylim=c(0,ymax))
+  lines(mids,catchN[,58,i],lwd=1,col=4)
+  text(mids[1],0.9*ymax,label,cex=1.25,pos=4)
 }
-verbose=TRUE
-postdir <- "M125"
-rundir <- paste0(ddir,postdir)
-datadir <- paste0(ddir,"tasdata")
-alldirExists(rundir,datadir,verbose=verbose)
-source(paste0(datadir,"/TasmanianHS.R"))
-controlfile <- "controlM125.csv"
 
+filen=""
+nsau <- glb$nSAU
+nyr <- 58
+mids <- glb$midpts[55:glb$Nclass]
+saunames <- glb$saunames
+hyrnames <- glb$hyrnames
 
+result <- array(0,dim=c(51,58,8),dimnames = list(mids,hyrnames,saunames))
 
-gettasrecssq <- function(param,rundir,datadir,controlfile,datafile,linenum,calcpopC,
-                      extra,pickpar) {
-  if (pickpar == 1)
-    replacetxt <- paste0("AvRec,",as.character(param),",",
-                         paste0(as.character(extra[1:7]),collapse=","),
-                         collapse=",")
-  if ((pickpar > 1) & (pickpar < 8))
-    replacetxt <- paste0("AvRec,",
-                         paste0(as.character(extra[1:(pickpar-1)]),collapse=","),
-                         ",",as.character(param),",",
-                         paste0(as.character(extra[pickpar:7]),collapse=","))
-  if (pickpar == 8)
-    replacetxt <- paste0("AvRec,",paste0(as.character(extra[1:7]),collapse=","),
-                         ",",as.character(param),collapse=",")
-  changeline(datadir,datafile,linenum,replacetxt)
-  out <- do_condition(rundir,controlfile,datadir,calcpopC=calcexpectpopC,
-                      cleanslate=TRUE,verbose=FALSE)
-  return(out$condout$ssq[pickpar])
-} # end of gettasrecsqq
-
-startime <- Sys.time()
-initial <- c(142552,268460,124031,609782,516835,972480,909946,240484)
-final <- numeric(8)
-
-for (pickpar in 1:8) {
-  param <- initial[pickpar]
-  low <- param * 0.95
-  high <- param * 1.05
-
-  extra <- initial[-pickpar]
-
-  origssq <- gettasrecssq(param,rundir,datadir,controlfile,datafile="saudataM1.csv",
-         linenum=28,calcpopC=calcexpectpopC,extra=extra,pickpar=pickpar)
-  ans <- optim(param,gettasrecssq,method="Brent",lower=low,upper=high,rundir=rundir,datadir=datadir,
-               controlfile=controlfile,datafile="saudataM1.csv",linenum=28,
-               calcpopC=calcexpectpopC,extra=extra,pickpar=pickpar,control=list(maxit=25))
-  MQMF::outfit(ans,backtran=FALSE)
-  if ((abs(low - ans$par) < 1) | (abs(high - ans$par) < 1))
-    warning(cat("Boundary reached for param ",pickpar,low,high,ans$par,"\n"))
-  final[pickpar] <- trunc(ans$par)
-  cat(pickpar,"   ",low,"    ",param,"   ",trunc(ans$par),"   ",high,"\n")
-  cat(round(origssq,1),"      ",rounbd(ans$value,1),"\n\n")
+for (i in 1:nyr) { # i = 1
+  dat <- catchN[,i,]
+  for (sau in 1:8) {
+    pick <- which(sauindex == sau)
+    result[,i,sau] <- rowSums(dat[,pick])
+  }
 }
-endtime <- Sys.time()
-print(initial); print(final)
-print(endtime - startime)
+
+years=56:58
+plotprep(width=8,height=7,newdev=FALSE,filename=filen,verbose=FALSE)
+parset(plots=pickbound(nsau),margin=c(0.3,0.3,0.05,0.05),outmargin=c(1,1,0,0))
+for (sau in 1:nsau) { # i=1
+  saucatch <- result[,years,sau]
+  ymax <- getmax(saucatch)
+  plot(mids,saucatch[,1],type="l",lwd=2,xlab="",ylab="",
+       panel.first=grid(),ylim=c(0,ymax),yaxs="i")
+  lines(mids,saucatch[,2],lwd=2,col=4)
+  lines(mids,saucatch[,3],lwd=2,col=3)
+  # text(0.7*max(saucpue[,i]),0.92*ymax,msylab,cex=1.2,pos=4)
+  # text(0.8*max(saucpue[,i]),0.75*ymax,label[i],cex=1.5,pos=4)
+  # text(1.1*msyce,0.15*ymax,round(msyce,2),cex=1.25,pos=4)
+}
+
+
+
 
 
 
@@ -545,3 +513,23 @@ anova(model2,model3)
 
 AIC(model1,model2,model3,model4)
 BIC(model1,model2,model3,model4)
+
+
+
+
+microbenchmark(
+  t(vect) %*% vect,
+   vect %*% vect,
+   crossprod(vect,vect),
+   times=1000
+)
+
+x <- c(2,2,2,2,2)
+y <- c(3,3,3,3,3)
+
+x * y
+
+
+
+
+

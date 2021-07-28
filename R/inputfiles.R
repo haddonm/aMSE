@@ -353,7 +353,7 @@ datafiletemplate <- function(numpop,indir,filename="tmpdat.csv") {
 #' ctrl
 #' }
 readctrlfile <- function(rundir,infile="control.csv",datadir=rundir,verbose=TRUE) {
-   # rundir=rundir; infile="controlsau.csv"; datadir=datadir; verbose=verbose
+   # rundir=rundir; infile="control81.csv"; datadir=datadir; verbose=verbose
    filenames <- dir(rundir)
    if (length(grep(infile,filenames)) != 1)
       stop(cat(infile," not found in ",rundir," \n"))

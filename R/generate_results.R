@@ -9,57 +9,96 @@
 #' @param rundir the results directory
 #' @param glb the globals list
 #' @param zoneC the zonal constants by population, zoneC
+#' @param matL a vector of two containing the left and right hand size classes
+#'     for use in the maturity-at-length plots
+#' @param Lwt a vector of two containing the left and right hand size classes
+#'     for use in the wight-atlength plots
 #'
 #' @return invisibly returns the biological properties of the populations
 #' @export
 #'
 #' @examples
 #' print("this will be quite long when I get to it")
-biology_plots <- function(rundir, glb, zoneC) {
+biology_plots <- function(rundir, glb, zoneC, matL=c(30,210), Lwt=c(80,210)) {
+  # rundir=rundir; glb=out$glb;zoneC=out$zoneCP;matL=c(70,200);Lwt=c(100,210)
   mids <- glb$midpts
   numpop <- glb$numpop
   popdef <- getlistvar(zoneC,"popdef")
   SAU <- unique(popdef["SAU",])
   nSAU <- glb$nSAU
+  saunames <- glb$saunames
+  sauindex <- glb$sauindex
   # Yield vs Spawning biomass
   # maturation uses zoneC
   matur <- getlistvar(zoneC,"Maturity")
   rownames(matur) <- mids
   filen <- filenametopath(rundir,"maturity_v_Length_pop.png")
-  plotprep(width=7,height=4,newdev=FALSE,filename=filen,cex=0.9,
+  plotprep(width=7,height=8,newdev=FALSE,filename=filen,cex=0.9,
            verbose=FALSE)
-  plot(mids,matur[,1],type="l",lwd=2,xlab="Shell Length mm",
-       ylab="Proportion Mature",panel.first=grid(),xlim=c(50,210))
-  for (pop in 2:numpop) lines(mids,matur[,pop],lwd=2,col=pop)
-  legend("topright",paste0("P",1:numpop),lwd=3,col=c(1:numpop),bty="n",
-         cex=1.2)
-  caption <- "The maturity vs length for each population."
+  parset(plots=pickbound(nSAU),margin=c(0.25,0.3,0.05,0.05),
+         outmargin=c(1.5,1.5,0,0))
+  for (sau in 1:nSAU) {
+    pickP <- which(sauindex == sau)
+    popsau <- length(pickP)
+    plot(mids,matur[,pickP[1]],type="l",lwd=1,xlab="",
+         ylab="",panel.first=grid(),xlim=c(matL[1],matL[2]))
+    if (popsau > 1)
+      for (pop in 2:popsau) lines(mids,matur[,pickP[pop]],lwd=1,col=pop)
+    legend("topright",paste0("P",pickP),lwd=3,col=c(1:popsau),bty="n",
+           cex=0.85)
+    text(68,0.9,paste0("SAU ",saunames[sau]),cex=1.5,pos=4)
+  }
+  mtext("Shell Length (mm)",side=1,outer=TRUE,line = -0.1,cex=1.1)
+  mtext("Proportion Mature",side=2,outer=TRUE,line = -0.1,cex=1.1)
+  caption <- "The maturity vs length for each population in each SAU."
   addplot(filen,rundir=rundir,category="Biology",caption)
-
   # weight-at-length using zoneC
   WtL <- getlistvar(zoneC,"WtL")
   rownames(WtL) <- mids
   filen <- filenametopath(rundir,"Weight_at_Length_pop.png")
-  plotprep(width=7,height=4,newdev=FALSE,filename=filen,cex=0.9,
+  plotprep(width=7,height=8,newdev=FALSE,filename=filen,cex=0.9,
            verbose=FALSE)
-  plot(mids,WtL[,1],type="l",lwd=2,xlab="Shell Length mm",
-       ylab="Weight Kg",panel.first=grid(),xlim=c(110,210))
-  for (pop in 2:numpop) lines(mids,WtL[,pop],lwd=2,col=pop)
-  legend("topleft",paste0("P",1:numpop),lwd=3,col=c(1:numpop),bty="n",cex=1.2)
-  caption <- paste0("The weight-at-length for each population. ",
+  parset(plots=pickbound(nSAU),margin=c(0.25,0.3,0.05,0.05),
+         outmargin=c(1.5,1.5,0,0))
+  ymax <- getmax(WtL,mult=1.01)
+  for (sau in 1:nSAU) {
+    pickP <- which(sauindex == sau)
+    popsau <- length(pickP)
+    plot(mids,WtL[,pickP[1]],type="l",lwd=1,xlab="",ylim=c(0,ymax),
+         ylab="",panel.first=grid(),xlim=c(Lwt[1],Lwt[2]))
+    if (popsau > 1)
+      for (pop in 2:popsau) lines(mids,WtL[,pickP[pop]],lwd=1,col=pop)
+    legend("topleft",paste0("P",pickP),lwd=3,col=c(1:popsau),bty="n",
+           cex=0.85)
+    labpos <- round(Lwt[1] + (Lwt[2]-Lwt[1])/2)
+    text(labpos,0.85*ymax,paste0("SAU ",saunames[sau]),cex=1.5,pos=3)
+  }
+  mtext("Shell Length (mm)",side=1,outer=TRUE,line = -0.1,cex=1.1)
+  mtext("Weight (g)",side=2,outer=TRUE,line = -0.1,cex=1.1)
+  caption <- paste0("The weight-at-length for each population in each SAU. ",
                       "The x-axis is constrained to encompass legal sizes.")
   addplot(filen,rundir=rundir,category="Biology",caption)
-
   # emergence uses zoneC
   emerg <- getlistvar(zoneC,"Emergent")
   rownames(emerg) <- mids
   filen <- filenametopath(rundir,"Emergence_at_Length_pop.png")
-  plotprep(width=7,height=4,newdev=FALSE,filename=filen,cex=0.9,
+  plotprep(width=7,height=8,newdev=FALSE,filename=filen,cex=0.9,
            verbose=FALSE)
-  plot(mids,emerg[,1],type="l",lwd=2,xlab="Shell Length mm",
-       ylab="Emergence",panel.first=grid(),xlim=c(110,145))
-  for (pop in 2:numpop) lines(mids,emerg[,pop],lwd=2,col=pop)
-  legend("topleft",paste0("P",1:numpop),lwd=3,col=c(1:numpop),bty="n",cex=1.2)
+  parset(plots=pickbound(nSAU),margin=c(0.25,0.3,0.05,0.05),
+         outmargin=c(1.5,1.5,0,0))
+  for (sau in 1:nSAU) {
+    pickP <- which(sauindex == sau)
+    popsau <- length(pickP)
+    plot(mids,emerg[,pickP[1]],type="l",lwd=1,xlab="",
+         ylab="",panel.first=grid(),xlim=c(matL[1],matL[2]))
+    if (popsau > 1)
+      for (pop in 2:popsau) lines(mids,emerg[,pickP[pop]],lwd=1,col=pop)
+    legend("topright",paste0("P",pickP),lwd=3,col=c(1:popsau),bty="n",
+           cex=0.85)
+    text(68,0.9,paste0("SAU ",saunames[sau]),cex=1.5,pos=4)
+  }
+  mtext("Shell Length (mm)",side=1,outer=TRUE,line = -0.1,cex=1.1)
+  mtext("Proportion Emergent",side=2,outer=TRUE,line = -0.1,cex=1.1)
   caption <- paste0("The emergence-at-length for each population.",
                     "The x-axis is constrained to emphasize differences.")
   addplot(filen,rundir=rundir,category="Biology",caption)
@@ -92,6 +131,21 @@ biology_plots <- function(rundir, glb, zoneC) {
   filen <- paste0("zonebiology.csv")
   caption <- "Population Biological Properties."
   addtable(res,filen,rundir=rundir,category="Tables",caption)
+  # histograms of Me,Growth pars, MSY
+  filen <- filenametopath(rundir,"Basic_Biology_pop.png")
+  plotprep(width=7,height=8,newdev=FALSE,filename=filen,cex=1.0,
+           verbose=FALSE)
+  parset(plots=c(4,2),margin=c(0.5,0.5,0.05,0.05),cex=1.0)
+  hist(resultpop["M",],xlab="M",main="",breaks=16,panel.first=grid())
+  hist(resultpop["MSY",],xlab="MSY",main="",breaks=16,panel.first=grid())
+  hist(resultpop["MaxDL",],xlab="MaxDL",main="",breaks=16,panel.first=grid())
+  hist(resultpop["L50",],xlab="L50",main="",breaks=16,panel.first=grid())
+  hist(resultpop["L95",],xlab="L95",main="",breaks=16,panel.first=grid())
+  hist(resultpop["steep",],xlab="steep",main="",breaks=16,panel.first=grid())
+  hist(resultpop["bLML",],xlab="bLML",main="",breaks=16,panel.first=grid())
+  hist(resultpop["AvRec",]/1000,xlab="AvRec '000s",main="",breaks=20,panel.first=grid())
+  caption <- paste0("The range of biological properties across the zone.")
+  addplot(filen,rundir=rundir,category="Biology",caption)
   return(invisible(resultpop))
 } # end of biology_plots
 
@@ -316,47 +370,48 @@ plotproductivity <- function(rundir,product,glb) {
   # All these plots only use the product array
   xval <- findmsy(product)
   numpop <- glb$numpop
+  if (numpop <= 16) {
   # Yield vs Spawning biomass
-  filen <- filenametopath(rundir,"production_SpB.png")
-  plotprod(product,xname="MatB",xlab="Spawning Biomass t",
-           ylab="Production t",filename = filen,devoff=FALSE)
-  caption <- paste0("The production curve relative to each population's ",
-                    "spawning biomass. The vertical lines identify the ",
-                    "Bmsy values.")
-  addplot(filen,rundir=rundir,category="Production",caption)
+    filen <- filenametopath(rundir,"production_SpB.png")
+    plotprod(product,xname="MatB",xlab="Spawning Biomass t",
+             ylab="Production t",filename = filen,devoff=FALSE)
+    caption <- paste0("The production curve relative to each population's ",
+                      "spawning biomass. The vertical lines identify the ",
+                      "Bmsy values.")
+    addplot(filen,rundir=rundir,category="Production",caption)
 
-  # Yield vs Annual Harvest Rate
-  filen <- filenametopath(rundir,"production_AnnH.png")
-  plotprod(product,xname="AnnH",xlab="Annual Harvest Rate",filename = filen,
-           devoff=FALSE)
-  caption <- paste0("The production curve relative to the Annual ",
-                    "Harvest Rate applied to each population. The ",
-                    "vertical lines identify the Hmsy values.")
-  addplot(filen,rundir=rundir,category="Production",caption)
+    # Yield vs Annual Harvest Rate
+    filen <- filenametopath(rundir,"production_AnnH.png")
+    plotprod(product,xname="AnnH",xlab="Annual Harvest Rate",filename = filen,
+             devoff=FALSE)
+    caption <- paste0("The production curve relative to the Annual ",
+                      "Harvest Rate applied to each population. The ",
+                      "vertical lines identify the Hmsy values.")
+    addplot(filen,rundir=rundir,category="Production",caption)
 
-  # plot of Yield vs population depletion
-  filen <- filenametopath(rundir,"production_Deplet.png")
-  plotprod(product,xname="Deplet",xlab="Population Depletion Level",
-           filename = filen,devoff=FALSE)
-  for (pop in 1:numpop) abline(v=xval[pop,"Deplet"],lwd=2,col=pop)
-  caption <- paste0("The production curve relative to the depletion ",
-              "level of each population. The vertical lines identify ",
-              "the Depletion level giving rise to the MSY.")
-  addplot(filen,rundir=rundir,category="Production",caption)
+    # plot of Yield vs population depletion
+    filen <- filenametopath(rundir,"production_Deplet.png")
+    plotprod(product,xname="Deplet",xlab="Population Depletion Level",
+             filename = filen,devoff=FALSE)
+    for (pop in 1:numpop) abline(v=xval[pop,"Deplet"],lwd=2,col=pop)
+    caption <- paste0("The production curve relative to the depletion ",
+                "level of each population. The vertical lines identify ",
+                "the Depletion level giving rise to the MSY.")
+    addplot(filen,rundir=rundir,category="Production",caption)
 
-  # plot of Yield vs population depletion but constrained to within
-  # 0.2 and 0.35 levels, to illustrate nearly flat rpoduction curve
-  # and more clearly identify the population depletion at MSY
-  filen <- filenametopath(rundir,"production_Deplet_0.2_0.35.png")
-  plotprod(product,xname="Deplet",xlab="Population Depletion Level",
-           xlimit=c(0.2,0.35),filename = filen,devoff=FALSE)
-  for (pop in 1:numpop) abline(v=xval[pop,"Deplet"],lwd=2,col=pop)
-  caption <- paste0("The production curve relative to the depletion ",
-                    "level of each population. Here the x-axis is ",
-                    "shortened to clarify the flatness of the production ",
-                    "curve about the MSY points.")
-  addplot(filen,rundir=rundir,category="Production",caption)
-
+    # plot of Yield vs population depletion but constrained to within
+    # 0.2 and 0.35 levels, to illustrate nearly flat rpoduction curve
+    # and more clearly identify the population depletion at MSY
+    filen <- filenametopath(rundir,"production_Deplet_0.2_0.35.png")
+    plotprod(product,xname="Deplet",xlab="Population Depletion Level",
+             xlimit=c(0.2,0.35),filename = filen,devoff=FALSE)
+    for (pop in 1:numpop) abline(v=xval[pop,"Deplet"],lwd=2,col=pop)
+    caption <- paste0("The production curve relative to the depletion ",
+                      "level of each population. Here the x-axis is ",
+                      "shortened to clarify the flatness of the production ",
+                      "curve about the MSY points.")
+    addplot(filen,rundir=rundir,category="Production",caption)
+  } # end of numpop <= 16 if statement
   # what CPUE at Bmsy would be exhibited at MSY
   filen <- filenametopath(rundir,"production_CPUE_at_Bmsy.png")
   nsau <- glb$nSAU
@@ -383,7 +438,9 @@ plotproductivity <- function(rundir,product,glb) {
     plot(saucpue[2:nh,i],sauyield[2:nh,i],type="l",lwd=2,xlab="",ylab="",
          panel.first=grid(),ylim=c(0,ymax),yaxs="i")
     abline(v=msyce,col=2,lwd=2)
-    text(0.8*max(saucpue[,i]),0.8*ymax,label[i],cex=1.5,pos=4)
+    msylab <- paste0("MSY = ",round(sauyield[pick,i],1))
+    text(0.7*max(saucpue[,i]),0.92*ymax,msylab,cex=1.2,pos=4)
+    text(0.8*max(saucpue[,i]),0.75*ymax,label[i],cex=1.5,pos=4)
     text(1.1*msyce,0.15*ymax,round(msyce,2),cex=1.25,pos=4)
   }
   mtext("CPUE at Bmsy (note different scales)",side=1,outer=TRUE,cex=1.0,

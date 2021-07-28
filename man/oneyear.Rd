@@ -4,23 +4,28 @@
 \alias{oneyear}
 \title{oneyear one year's harvest dynamics for one abpop}
 \usage{
-oneyear(inpopC, inNt, Nclass, inH, yr)
+oneyear(MatWt, SelWt, selyr, Me, G, popq, WtL, inNt, inH)
 }
 \arguments{
-\item{inpopC}{a single population from a zoneC, an abpop}
+\item{MatWt}{maturity x Weight-at-size from zoneCC for the population and year}
+
+\item{SelWt}{selectivity x Weight-at-size from zoneCC for the population and year}
+
+\item{selyr}{selectivity from zoneC for the population and year}
+
+\item{Me}{natural morality from zoneC for the population}
+
+\item{G}{growth transtion matrix from zoneC for the population}
+
+\item{popq}{the catchability from zoneCC for the population}
+
+\item{WtL}{the weight-at-alength from zoneC for the population}
 
 \item{inNt}{the numbers at size for the year previous to the year
 of dynamics. These are projected into the active year.}
 
-\item{Nclass}{the number of size classes used to describe growth.
-used to define vectors}
-
 \item{inH}{a literal annual harvest rate as a proportion to be
 removed as catch during the year, a scalar}
-
-\item{yr}{the year in the dynamics being worked on. The first year
-is generated when the zone is defined or when it is initially
-depleted. All dynamics are applied from year 2 - Nyrs; scalar}
 }
 \value{
 a list containing ExploitB, MatureB, Catch, Harvest, Nt,
