@@ -3,6 +3,10 @@
 
 # LATEST UPDATE
 
+-   2021-08-02 aMSE 0.0.0.700 Revised the ‘ctrlfiletemplate’ and
+    ‘datafiletemplate’ functions to reflect the new usage. It should now
+    be possible to run an example scenario related to M15h75.
+
 -   2021\_07-28 aMSE 0.0.0.800 Added functions (changecolumn,
     getrecdevcolumn, gettasdevssq) to assist in automated operating
     model conditioning on the fishery. Also modified the biology\_plots

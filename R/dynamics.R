@@ -581,7 +581,9 @@ restart <- function(oldzoneD,hyrs,npop,N,zero=TRUE) { # oldzoneD=zoneD; hyrs=hyr
 #'     40 it conducts 3 * 39 years of dynamics (117 years). This is
 #'     not exported. It uses zoneC but always it does this inside
 #'     the environment of another function where zoneC can be found
-#'     Used inside dodepletion and doproduction
+#'     Used inside dodepletion and doproduction. maxiter may need to be
+#'     increased when we introduce a larger movement rate between populations
+#'     for greenlip, or if the number of conditioning years are fewer than 45.
 #'
 #' @param zoneC the constants components of the simulated zone
 #' @param zoneD the dynamics portion of the zone, with matrices and
@@ -592,13 +594,17 @@ restart <- function(oldzoneD,hyrs,npop,N,zero=TRUE) { # oldzoneD=zoneD; hyrs=hyr
 #' @param glob the globals variable from readzonefile
 #' @param maxiter default=3; the number of runs through the equilibrium loop.
 #'
+#' @seealso{
+#'  \link{dodepletion}, \link{doproduction}
+#' }
+#'
 #' @return a list containing a revised dynamics list, zoneD
 #' @export
 #'
 #' @examples
 #' print("wait on built in data sets")
 #' # zoneC=zoneC; zoneD=zoneD; glob=glob; inHarv=rep(initH[aH],numpop); maxiter=2
-runthreeH <- function(zoneC,zoneD,inHarv,glob,maxiter=3) {
+runthreeH <- function(zoneC,zoneD,inHarv,glob,maxiter=2) {
   npop <- glob$numpop
   Nclass <- glob$Nclass
   hyrs <- glob$hyrs

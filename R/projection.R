@@ -522,7 +522,7 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
                              verbose=FALSE,...) {
   # ctrl=ctrl; zoneDP=zoneDP; zoneCP=zoneCP; glb=glb; hcrfun=mcdahcr; hsargs=hsargs
   # sampleCE=tasCPUE; sampleFIS=tasFIS; sampleNaS=tasNaS;  getdata=tasdata
-  # calcpopC=calcexpectpopC
+  # calcpopC=calcexpectpopC; verbose=TRUE
   reps <- ctrl$reps
   sigmar <- ctrl$withsigR
   sigmab <- ctrl$withsigB
@@ -539,9 +539,9 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
   r0 <- getvar(zoneCP,"R0") #R0 by population
   b0 <- getvar(zoneCP,"B0") #sapply(zoneC,"[[","B0")
   exb0 <- getvar(zoneCP,"ExB0")
+ # hsout <- makeouthcr(glb)
   for (iter in 1:reps) {
     if (verbose) {
-     # cat(iter,"   ")
       if ((iter %% 25) == 0) cat(iter," \n")
     }
     for (year in startyr:endyr) { # iter=1; year=startyr

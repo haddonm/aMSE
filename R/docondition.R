@@ -149,6 +149,7 @@ changeline <- function(indir, filename, linenumber, newline,verbose=FALSE) {
 #'     not delete any .csv files so if the rundir is used to store the data for
 #'     the run then 'cleanslate' will not affect the data or any .R files.
 #' @param verbose Should progress comments be printed to console, default=FALSE
+#' @param doproduct should production estimates be made. default=FALSE
 #'
 #' @seealso{
 #'  \link{makeequilzone}, \link{dohistoricC}, \link{prepareprojection},
@@ -162,9 +163,9 @@ changeline <- function(indir, filename, linenumber, newline,verbose=FALSE) {
 #' @examples
 #' print("wait on suitable data sets in data")
 do_condition <- function(rundir,controlfile,datadir,calcpopC,cleanslate=FALSE,
-                         verbose=FALSE) {
+                         verbose=FALSE,doproduct=FALSE) {
   starttime <- Sys.time()
-  zone <- makeequilzone(rundir,controlfile,datadir,doproduct=FALSE,
+  zone <- makeequilzone(rundir,controlfile,datadir,doproduct=doproduct,
                         cleanslate=cleanslate,verbose=verbose)
   equiltime <- (Sys.time()); if (verbose) print(equiltime - starttime)
   # declare main objects
@@ -175,6 +176,8 @@ do_condition <- function(rundir,controlfile,datadir,calcpopC,cleanslate=FALSE,
   condC <- zone$zone1$condC
   zoneC <- zone$zoneC
   zoneD <- zone$zoneD
+  production <- NULL
+  if (doproduct) production <- zone$product
   #Condition on Fishery
   if (verbose) cat("Conditioning on the Fishery data  \n")
   zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,condC,calcpopC=calcpopC,
@@ -193,8 +196,8 @@ do_condition <- function(rundir,controlfile,datadir,calcpopC,cleanslate=FALSE,
   condtime <- Sys.time()
   tottime <- round((condtime - starttime),3)
   times <- list(tottime=tottime,condtime=condtime,starttime=starttime)
-  out <- list(times=times,glb=glb,ctrl=ctrl,zoneC=zoneC,zoneDD=zoneDD,
-              condC=condC,condout=condout)
+  out <- list(times=times,glb=glb,ctrl=ctrl,zoneC=zoneC,zoneD=zoneD,zoneDD=zoneDD,
+              condC=condC,condout=condout,projC=projC,production=production)
   return(out)
 } # end of do_MSE
 

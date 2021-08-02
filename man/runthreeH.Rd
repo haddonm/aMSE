@@ -4,7 +4,7 @@
 \alias{runthreeH}
 \title{runthreeH conducts the dynamics with constant catch 3 times}
 \usage{
-runthreeH(zoneC, zoneD, inHarv, glob, maxiter = 3)
+runthreeH(zoneC, zoneD, inHarv, glob, maxiter = 2)
 }
 \arguments{
 \item{zoneC}{the constants components of the simulated zone}
@@ -30,9 +30,16 @@ runthreeH is used when searching numerically for an
     40 it conducts 3 * 39 years of dynamics (117 years). This is
     not exported. It uses zoneC but always it does this inside
     the environment of another function where zoneC can be found
-    Used inside dodepletion and doproduction
+    Used inside dodepletion and doproduction. maxiter may need to be
+    increased when we introduce a larger movement rate between populations
+    for greenlip, or if the number of conditioning years are fewer than 45.
 }
 \examples{
 print("wait on built in data sets")
 # zoneC=zoneC; zoneD=zoneD; glob=glob; inHarv=rep(initH[aH],numpop); maxiter=2
+}
+\seealso{
+{
+ \link{dodepletion}, \link{doproduction}
+}
 }

@@ -10,7 +10,8 @@ do_condition(
   datadir,
   calcpopC,
   cleanslate = FALSE,
-  verbose = FALSE
+  verbose = FALSE,
+  doproduct = FALSE
 )
 }
 \arguments{
@@ -38,6 +39,8 @@ not delete any .csv files so if the rundir is used to store the data for
 the run then 'cleanslate' will not affect the data or any .R files.}
 
 \item{verbose}{Should progress comments be printed to console, default=FALSE}
+
+\item{doproduct}{should production estimates be made. default=FALSE}
 }
 \value{
 a large list containing tottime, projtime, starttime, glb, ctrl,

@@ -2,17 +2,18 @@
 % Please edit documentation in R/inputfiles.R
 \name{datafiletemplate}
 \alias{datafiletemplate}
-\title{datafiletemplate generates a template input datafile}
+\title{datafiletemplate generates a template input datafile akin to M15h75}
 \usage{
-datafiletemplate(numpop, indir, filename = "tmpdat.csv")
+datafiletemplate(nSAU, indir, filename = "saudata_test.csv")
 }
 \arguments{
-\item{numpop}{the total number of populations in the zone}
+\item{nSAU}{the number of SAU in the zone}
 
-\item{indir}{the directory into which to place the data template}
+\item{indir}{the directory into which to place the generated data file}
 
 \item{filename}{the name for the generated datafile, a character
-string, defaults to tmpdat.csv}
+string, defaults to saudata_test.csv, which is the default within
+the ctrlfiletemplate function}
 }
 \value{
 a standard definition data file, to be read by readdatafile
@@ -23,15 +24,22 @@ datafiletemplate generates a standard input datafile
     to use as a template, go in and edit it appropriately to suit
     your own needs. It contains the probability distributions that
     are sampled to provide the necessary biological constants for
-    each population.
+    each population. It also contains the proportional distribution of
+    recruitment levels determined for Tasmania by examining the GPS
+    data-logger data for the zone and allocating recruitment in
+    proportion to the relative yield by area over the last 8 years.
 }
 \examples{
 \dontrun{
  yourdir <- tempdir()
- datafiletemplate(numpop=6,yourdir,"tmpdat.csv")
- data(zone1)
- glb <- zone1$globals
- constants <- readdatafile(numpop,yourdir,"tmpdat.csv")
+ datafiletemplate(nSAU=8,yourdir,"saudata_test.csv")
+ constants <- readsaudatafile(yourdir,"saudata_test.csv")
  str(constants,max.level=1)
+ print(constants[,1:10])
+}
+}
+\seealso{
+{
+  \link{ctrlfiletemplate}, \link{readsaudatafile}, \link{readctrlfile}
 }
 }
