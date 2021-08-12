@@ -3,24 +3,12 @@
 
 # LATEST UPDATE
 
+-   2021-08-12 aMSE 0.0.0.500 Modified do\_MSE and added plothsstats,
+    streamlined the conditioning. No EWN.
+
 -   2021-08-02 aMSE 0.0.0.700 Revised the ‘ctrlfiletemplate’ and
     ‘datafiletemplate’ functions to reflect the new usage. It should now
     be possible to run an example scenario related to M15h75.
-
--   2021\_07-28 aMSE 0.0.0.800 Added functions (changecolumn,
-    getrecdevcolumn, gettasdevssq) to assist in automated operating
-    model conditioning on the fishery. Also modified the biology\_plots
-    and oneyear and oneyearcat to assist with speeding the processes.
-    Lots of additional minor changes but some important ones to do\_MSE
-    (read the help, ?do\_MSE).
-
--   2021-07-20 aMSE 0.0.0.900 Added do\_condition and compareCPUE. Both
-    used to speed the conditioning of the operating model, though a
-    number of developments are still under development. Currently can
-    automatically search for the AvRec value that will optimize the
-    sum-of-squared residual fit between the observed CPUE in the
-    historical period, and those predicted by the conditioned model. The
-    undeveloped bit related to the ad hoc recruitment deviates.
 
 # aMSE
 
@@ -99,64 +87,50 @@ name of the biological datafile describing each population.
 ``` r
 # a constant TAC example
 starttime <- (Sys.time())
+options("show.signif.stars"=FALSE,
+        "stringsAsFactors"=FALSE,
+        "max.print"=50000,
+        "width"=240)
+# declare libraries ------------------------------------------------------------
 library(aMSE)
 library(rutilsMH)
 library(makehtml)
 library(knitr)
-# OBVIOUSLY you should modify the rundir and datadir to suit your own computer
-if (dir.exists("c:/Users/User/DropBox")) {
-  ddir <- "c:/Users/User/DropBox/A_codeUse/aMSEUse/scenarios/"
-} else {
-  ddir <- "c:/Users/Malcolm/DropBox/A_codeUse/aMSEUse/scenarios/"
-}
-doproject <- TRUE  # change to FALSE if only conditioning is required
+# Obviously you should modify the rundir and datadir to suit your own setup
+prefixdir <- "C:/A_Mal/scenarios/"
 verbose <- TRUE
-postdir <- "testnew"  # also used to label the output HTML file 
-rundir <- paste0(ddir,postdir)
-datadir <- paste0(ddir,"tasdata")
+postfixdir <- "M15h75"
+rundir <- paste0(prefixdir,postfixdir)
+datadir <- rundir
 alldirExists(rundir,datadir,verbose=verbose)
-#> c:/Users/Malcolm/DropBox/A_codeUse/aMSEUse/scenarios/testnew :  does not exist
-#> Warning in alldirExists(rundir, datadir, verbose = verbose):
-#> datadir,  c:/Users/Malcolm/DropBox/A_codeUse/aMSEUse/scenarios/tasdata :  exists
-source(paste0(datadir,"/TasmanianHS.R"))
-controlfile <- "controlsau.csv"
+#> rundir,  C:/A_Mal/scenarios/M15h75 :  exists
+controlfile <- "controlM15h75.csv"
 # equilibrium zone -------------------------------------------------------------
 # You now need to ensure that there is, at least, a control.csv, and a 
 # constantsdata.csv file in the data directory plus some other data .csv files
 # depending on how conditioned you want the model to be. Templates for the
 # correct format can be produced using ctrlfiletemplate(), datafiletemplate().
 # 
-# Of course, usually one would use data files, control.csv and a zone.csv, which
+# Of course, usually one would use data files, control.csv and a saudata.csv, which
 # is listed as the datafile within the control.csv. These must be stored in 
-# rundir. There are example control and data files in the DropBox folder:
-# C:\Users\User\Dropbox\National abalone MSE\aMSE_files. Copy the control2.csv
-# and zonewest.csv into you rundir. Then, assuming yo have the very latest
-# version of aMSE = 5300, the following code should work. Recently both aMSE and
-# makehtml have been altered so that all references to resdir have been changed
-# to rundir, so both packages will need updating. See their respective GitHub
-# readme pages for details.
+# rundir. There are example files in the DropBox folder:
+# .\..\Dropbox\National abalone MSE\aMSE_files\scenarios\examplerun. Read the 
+# 'Using_aMSE' section in the Documentation .docx file in the documentation 
+# directry  Then, assuming you have the very latest version of aMSE = 500, 
+# the code in the documentation file (or in the 'run_aMSE.R' file within the
+# examplerun subdirectory should work. 
 
-# HarvestStrategy.R should be in datadir, if it is to be shared by scenarios
-source(paste0(datadir,"/TasmanianHS.R"))
+# HarvestStrategy.R should also be in rundir
+source(paste0(rundir,"/TasmanianHS.R"))
 # run the scenario --------------------- Obviously unhash this to make it work
+#
 # out <- do_MSE(rundir,controlfile,datadir,hsargs=hsargs,hcrfun=mcdahcr,
-#                  sampleCE=tasCPUE,sampleFIS=tasFIS,sampleNaS=tasNaS,
-#                  getdata=tasdata,calcpopC=calcexpectpopC,varyrs=7,startyr=50,
-#                  cleanslate=TRUE,verbose=TRUE,doproject=doproject,ndiagprojs=4,
-#                  openfile=TRUE,savesauout=FALSE)
-# make results webpage ---------------------------------------------------------
-# replist <- list(starttime=as.character(out$starttime),
-#                 endtime=as.character(out$projtime))
-# glb <- out$glb
-# projy <- ifelse(doproject,glb$pyrs,0)
-# runnotes <- paste0(out$ctrl$runlabel,":  RunTime = ",out$tottime,
-#                    "  replicates = ",glb$reps,",   years projected = ",projy,
-#                    "  Populations = ",glb$numpop," and SAU = ",glb$nSAU,
-#                    "  Randomseed for conditioning = ",out$ctrl$randseed)
+#               sampleCE=tasCPUE,sampleFIS=tasFIS,sampleNaS=tasNaS,
+#               getdata=tasdata,calcpopC=calcexpectpopC,makeouthcr=makeouthcr,
+#               varyrs=7,startyr=48,cleanslate=TRUE,verbose=TRUE,
+#               ndiagprojs=4,savesauout=TRUE)
 # 
-# make_html(replist = replist,  rundir = rundir,  width = 500,  openfile = TRUE,
-#           runnotes = runnotes,   verbose = FALSE,  packagename = "aMSE",
-#           htmlname = postdir)
+# makeoutput(out,rundir,datadir,postfixdir,controlfile,openfile=TRUE,verbose=FALSE)
 ```
 
 After running the whole, even if you do not generate the results

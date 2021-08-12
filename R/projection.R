@@ -502,13 +502,16 @@ prepareprojection <- function(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
 #'     and combines it into an hcrdata object ready for the hcrfun
 #' @param calcpopC a function that takes the output from hcrfun and generates
 #'     the actual catch per population expected in the current year.
+#' @param makehcrout is a function from HS.R that produces an object that is
+#'     updated in each iteration by the hcrfun. If no such object is required
+#'     then have a function that returns NULL.
 #' @param verbose should the iterations be counted on the console?
 #' @param ... the ellipsis used in case any of the functions hcrfun, sampleCE,
 #'     sampleFIS, sampleNas, and getdata require extra arguments not included
 #'     in the default named collection
 #'
 #' @seealso{
-#'  \link{oneyearsauC}, \link[makehtml]{make_html}
+#'  \link{oneyearsauC}, \link[makehtml]{make_html}. \link{do_MSE}
 #' }
 #'
 #' @return a list containing the full dynamics across all years zoneDP, and the
@@ -519,7 +522,7 @@ prepareprojection <- function(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
 #' print("wait on suitable internal data sets")
 doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
                              sampleCE,sampleFIS,sampleNaS,getdata,calcpopC,
-                             verbose=FALSE,...) {
+                             makehcrout,verbose=FALSE,...) {
   # ctrl=ctrl; zoneDP=zoneDP; zoneCP=zoneCP; glb=glb; hcrfun=mcdahcr; hsargs=hsargs
   # sampleCE=tasCPUE; sampleFIS=tasFIS; sampleNaS=tasNaS;  getdata=tasdata
   # calcpopC=calcexpectpopC; verbose=TRUE
@@ -539,7 +542,7 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
   r0 <- getvar(zoneCP,"R0") #R0 by population
   b0 <- getvar(zoneCP,"B0") #sapply(zoneC,"[[","B0")
   exb0 <- getvar(zoneCP,"ExB0")
- # hsout <- makeouthcr(glb)
+  hcrout <- makehcrout(glb)
   for (iter in 1:reps) {
     if (verbose) {
       if ((iter %% 25) == 0) cat(iter," \n")
@@ -548,6 +551,7 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
       hcrdata <- getdata(sampleCE,sampleFIS,sampleNaS,sauCPUE=zoneDP$cesau,
                          sauacatch=zoneDP$acatch,year=year,iter=iter)
       hcrout <- hcrfun(hcrdata,hsargs,saunames=glb$saunames)
+      #hcrout <- hcrfun(hcrdata,hsargs,hcrin=hcrout$grad4val,saunames=glb$saunames)
       popC <- calcpopC(hcrout,exb=zoneDP$exploitB[year-1,,iter],
                        sauindex,sigmab=sigmab)
       outy <- oneyearsauC(zoneCC=zoneCP,inN=zoneDP$Nt[,year-1,,iter],

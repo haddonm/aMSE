@@ -16,6 +16,7 @@ doprojections(
   sampleNaS,
   getdata,
   calcpopC,
+  makehcrout,
   verbose = FALSE,
   ...
 )
@@ -50,6 +51,10 @@ and combines it into an hcrdata object ready for the hcrfun}
 \item{calcpopC}{a function that takes the output from hcrfun and generates
 the actual catch per population expected in the current year.}
 
+\item{makehcrout}{is a function from HS.R that produces an object that is
+updated in each iteration by the hcrfun. If no such object is required
+then have a function that returns NULL.}
+
 \item{verbose}{should the iterations be counted on the console?}
 
 \item{...}{the ellipsis used in case any of the functions hcrfun, sampleCE,
@@ -72,6 +77,6 @@ print("wait on suitable internal data sets")
 }
 \seealso{
 {
- \link{oneyearsauC}, \link[makehtml]{make_html}
+ \link{oneyearsauC}, \link[makehtml]{make_html}. \link{do_MSE}
 }
 }

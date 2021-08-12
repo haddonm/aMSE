@@ -15,11 +15,11 @@ do_MSE(
   sampleNaS,
   getdata,
   calcpopC,
+  makeouthcr,
   varyrs = 7,
   startyr = 42,
   cleanslate = FALSE,
   verbose = FALSE,
-  doproject = TRUE,
   ndiagprojs = 3,
   savesauout = FALSE
 )
@@ -59,6 +59,11 @@ and combines it into an hcrdata object ready for the hcrfun}
 aspirational catch x SAU or TAC x zone) and generates the actual catch
 per population in each SAU expected in the current year.}
 
+\item{makeouthcr}{Another JurisdictionHS.R function that generates (or not)
+an object that is continually updated by the hcrfun. To avoid very
+inefficient code this object (at least for Tasmania) is cycled through
+the iterations.}
+
 \item{varyrs}{how many years at the end of the conditioning on the fishery,
 data into zoneDD, to which to add recruitment variation, default = 7,
 which suits the Tasmanian west coast. Used in prepareprojection}
@@ -75,11 +80,6 @@ not delete any .csv files so if the rundir is used to store the data for
 the run then 'cleanslate' will not affect the data or any .R files.}
 
 \item{verbose}{Should progress comments be printed to console, default=FALSE}
-
-\item{doproject}{should the projections be run. default = TRUE. When
-conditioning the operating model this should be set to FALSE to focus
-the program on the production of the completely conditioned zone and its
-outputs.}
 
 \item{ndiagprojs}{the number of replicate trajectories to plot in the
 diagnostics tab to illustrate ndiagprojs trajectories to ensure that
@@ -112,7 +112,9 @@ do_MSE is a form of meta-function that contains the code and
     results, and the inclusion of error traps on the argument list entries.
     To aid in the conditioning the option of not calculating the productivity
     has been added. By default it will occur and when projecting it will also
-    always occur.
+    always occur. HSstats is a list that is always saved and contains
+    performance statistics for the HS used (currently only contains
+    10yrcatch).
 }
 \examples{
 print("wait on suitable data sets in data")
@@ -120,6 +122,6 @@ print("wait on suitable data sets in data")
 \seealso{
 {
  \link{makeequilzone}, \link{dohistoricC}, \link{prepareprojection},
- \link{doprojections}
+ \link{doprojections}, \link{getprojyrC}
 }
 }

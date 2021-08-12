@@ -522,7 +522,7 @@ datafiletemplate <- function(nSAU,indir,filename="saudata_test.csv") {
 #' ctrl
 #' }
 readctrlfile <- function(rundir,infile="control.csv",datadir=rundir,verbose=TRUE) {
-   # rundir=rundir; infile="control81.csv"; datadir=datadir; verbose=verbose
+   # rundir=rundir; infile="controlM1h75.csv"; datadir=datadir; verbose=verbose
    filenames <- dir(rundir)
    if (length(grep(infile,filenames)) != 1)
       stop(cat(infile," not found in ",rundir," \n"))
@@ -628,8 +628,8 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir,verbose=TRUE
    recdevs <- matrix(-1,nrow=hyrs,ncol=nSAU,dimnames=list(hyrnames,SAUnames))
    rdevs <- getsingleNum("RECDEV",indat)
    if (rdevs > 0) {
-      if (rdevs != hyrs)
-         stop("rows of recdevs not equal to conditioning years \n")
+      if (rdevs != hyrs) rdevs <- hyrs-4
+      #   stop("rows of recdevs not equal to conditioning years \n")
       begin <- grep("RECDEV",indat) + 1
       for (i in 1:rdevs) {
          begin <- begin + 1

@@ -11,12 +11,20 @@ if (dir.exists("c:/Users/User/DropBox")) {
 }
 
 indir <- paste0(ddir,"aMSE/R/")
-files <- c("aMSE_utils.R","defineZone.R","dynamics.R","generate_results.R",
-           "getfunctions.R","HS-HCR.R","inputfiles.R","plotfuns.R",
+files <- c("aMSE_utils.R","defineZone.R","docondition.R","domse.R","dynamics.R",
+           "generate_results.R","getfunctions.R","inputfiles.R","plotfuns.R",
            "projection.R")
-outfile <- "" # paste0(ddir,"aMSE/data-raw/allfile.csv")
+outfile <- paste0(ddir,"aMSE/data-raw/allfile.csv")
 
-x <- describefunctions(indir,files,outfile="")
+x <- describefunctions(indir,files,outfile=outfile)
+
+
+
+
+
+
+
+
 
 
 infun <- "makeequilzone"

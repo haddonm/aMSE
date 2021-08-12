@@ -1,4 +1,39 @@
 
+#' @title getprojyrC returns cumulative catch from selected projection years
+#'
+#' @description getprojyrC is used to calculate the cumulative catch taken
+#'     in each SAU and across the zone for selected years of each replicate.
+#'     Thus, the output would be a replicates x nSAU matrix of total catches
+#'     across the first 'period' years of the projection under the given
+#'     harvest strategy.
+#'
+#' @param catsau the time series of catches summed across populations within
+#'     each SAU. This array (reps x SAU x Allyears), is found within the 'out'
+#'     object from the do_MSE function (as in out$catsau).
+#' @param glb the globals object. Again found in 'out', as in out$glb
+#' @param period how many years to cumulate; default = 10
+#'
+#' @return a reps x SAU matrix of summed catches
+#' @export
+#'
+#' @examples
+#' print("wait on suitable internal data sets")
+getprojyrC <- function(catsau,glb,period=10) {
+  hyrs <- glb$hyrs
+  totyrs <- hyrs + glb$pyrs
+  nsau <- glb$nSAU
+  reps <- glb$reps
+  columns <- c(glb$saunames,"zone")
+  result <- matrix(0,nrow=reps,ncol=(nsau+1),dimnames=list(1:reps,columns))
+  pmcat <- catsau[(hyrs+1):(hyrs+period),,]
+  for (i in 1:nsau) { # i = 1
+    saucat <- pmcat[,i,]
+    result[,i] <- colSums(saucat)
+  }
+  result[,(nsau+1)] <- rowSums(result)
+  return(result)
+} # end of getprojyrC
+
 #' @title getaav calculates annual absolute variation in catch
 #'
 #' @description getaav calculates the annual absolute change in catch

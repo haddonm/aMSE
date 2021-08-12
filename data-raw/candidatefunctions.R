@@ -530,7 +530,49 @@ y <- c(3,3,3,3,3)
 x * y
 
 
-# new ctrlfiletemplate ---------------------------------------------------------
+# HS performance ---------------------------------------------------------
+
+zoneDP <- out$zoneDP
+catch <- zoneDP$catsau
+glb <- out$glb
+nsau <- glb$nSAU
+sum10 <- getprojyrC(catsau=catch,glb=glb)
+
+
+
+
+
+labelnames <- colnames(sum10)
+plotprep(width=8, height=7)
+parset(plots=c(3,3))
+for (i in 1:(nsau+1)) {
+  label <- paste0("Tonnes     ",labelnames[i])
+  hist(sum5[,i],breaks=15,main="",xlab=label)
+}
+
+
+# Compare HS --------------------------------------------------------------
+
+sum10 <- out$HSstats$sum10
+sum5 <- out$HSstats$sum5
+
+pd <- density(sum10[,(nsau+1)])
+plotprep(width=8,height=4,newdev=FALSE)
+parset(plots=c(1,8),margin=c(0.1,0.2,0.1,0.01),outmargin=c(3.5,1.75,0,0.5))
+xmax <- getmax(pd$y)
+plot(pd$y,pd$x,type="l",xlim=c(0,xmax),xaxs="i",ylab="")
+mtext("M1h75_10",side=1,outer=FALSE,line=1.3,cex=0.9)
+mtext("Relative Density",side=1,outer=TRUE,line=2.4)
+mtext("10 Year Summmed Catch (t) by Zone",side=2,outer=TRUE,line=0.5)
+pd2 <- density(sum5[,(nsau+1)])
+xmax <- getmax(pd2$y)
+plot(pd2$y,pd2$x,type="l",xlim=c(0,xmax),xaxs="i",ylab="")
+mtext("M1h75_5",side=1,outer=FALSE,line=1.3,cex=0.9)
+
+
+
+str(HSstats)
+
 
 
 

@@ -1,9 +1,9 @@
 #
 # outcond=outcond
-# rundir <- paste0(ddir,postdir)
-# datadir <- paste0(ddir,"tasdata")
-# postdir <- "M125h5"
-# controlfile="controlM125h5.csv"
+# rundir <- paste0(prefixdir,postfixdir)
+# datadir <- rundir
+# postdir <- "M1h75"
+# controlfile="controlM1h75.csv"
 # hsargs=hsargs
 # hcrfun=mcdahcr
 # sampleCE=tasCPUE
@@ -15,8 +15,8 @@
 # startyr=48
 # cleanslate=FALSE
 # verbose=TRUE
-# doproject=TRUE
 # ndiagprojs=4
+# savesauout=TRUE
 
 #' @title do_MSE an encapsulating function to hold the details of a single run
 #'
@@ -38,7 +38,9 @@
 #'     results, and the inclusion of error traps on the argument list entries.
 #'     To aid in the conditioning the option of not calculating the productivity
 #'     has been added. By default it will occur and when projecting it will also
-#'     always occur.
+#'     always occur. HSstats is a list that is always saved and contains
+#'     performance statistics for the HS used (currently only contains
+#'     10yrcatch).
 #'
 #' @param rundir the full path to the directory in which all files relating to a
 #'     particular run are to be held. If datadir != rundir then the main data
@@ -64,6 +66,10 @@
 #' @param calcpopC a function that takes the output from hcrfun (either the
 #'     aspirational catch x SAU or TAC x zone) and generates the actual catch
 #'     per population in each SAU expected in the current year.
+#' @param makeouthcr Another JurisdictionHS.R function that generates (or not)
+#'     an object that is continually updated by the hcrfun. To avoid very
+#'     inefficient code this object (at least for Tasmania) is cycled through
+#'     the iterations.
 #' @param varyrs how many years at the end of the conditioning on the fishery,
 #'     data into zoneDD, to which to add recruitment variation, default = 7,
 #'     which suits the Tasmanian west coast. Used in prepareprojection
@@ -77,10 +83,6 @@
 #'     not delete any .csv files so if the rundir is used to store the data for
 #'     the run then 'cleanslate' will not affect the data or any .R files.
 #' @param verbose Should progress comments be printed to console, default=FALSE
-#' @param doproject should the projections be run. default = TRUE. When
-#'     conditioning the operating model this should be set to FALSE to focus
-#'     the program on the production of the completely conditioned zone and its
-#'     outputs.
 #' @param ndiagprojs the number of replicate trajectories to plot in the
 #'     diagnostics tab to illustrate ndiagprojs trajectories to ensure that
 #'     such projections appear realistic; default=3
@@ -90,7 +92,7 @@
 #'
 #' @seealso{
 #'  \link{makeequilzone}, \link{dohistoricC}, \link{prepareprojection},
-#'  \link{doprojections}
+#'  \link{doprojections}, \link{getprojyrC}
 #' }
 #'
 #' @return a large list containing tottime, projtime, starttime, glb, ctrl,
@@ -100,9 +102,8 @@
 #' @examples
 #' print("wait on suitable data sets in data")
 do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
-                   sampleNaS,getdata,calcpopC,varyrs=7,startyr=42,
-                   cleanslate=FALSE,verbose=FALSE,doproject=TRUE,ndiagprojs=3,
-                   savesauout=FALSE) {
+                   sampleNaS,getdata,calcpopC,makeouthcr,varyrs=7,startyr=42,
+                   cleanslate=FALSE,verbose=FALSE,ndiagprojs=3,savesauout=FALSE) {
   # generate equilibrium zone ----------------------------------------------------
   starttime <- (Sys.time())
   zone <- makeequilzone(rundir,controlfile,datadir,cleanslate=cleanslate,
@@ -137,61 +138,58 @@ do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
            caption="Population vs Operating model parameter definitions")
   condout <- plotconditioning(zoneDD,glb,zoneC,condC$histCE,rundir)
   # do projections ------------------------------------------------------------
-  if (doproject) {
-    if (verbose) cat("Doing the projections \n")
-    outpp <- prepareprojection(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
-                               calcpopC=calcpopC,zoneDD=zoneDD,
-                               ctrl=ctrl,varyrs=varyrs,lastsigR = ctrl$withsigR)
-    zoneDP <- outpp$zoneDP
-    projC <- outpp$projC
-    zoneCP <- outpp$zoneCP
-   # Rprof()
-    outproj <- doprojections(ctrl=ctrl,zoneDP=zoneDP,zoneCP=zoneCP,glb=glb,
-                             hcrfun=hcrfun,hsargs=hsargs,sampleCE=sampleCE,
-                             sampleFIS=sampleFIS,sampleNaS=sampleNaS,
-                             getdata=getdata,calcpopC=calcpopC,verbose=TRUE)
-  #  Rprof(NULL)
-    if (verbose) cat("Now generating final plots and tables \n")
-    zoneDP=outproj$zoneDP
-    hcrout <- outproj$hcrout; #str(hcrout)
-    NAS <- list(Nt=zoneDP$Nt,NumNe=zoneDP$NumNe,catchN=zoneDP$catchN)
-    zoneDP <- zoneDP[-c(17,16,15)]
-   # zoneDP <- zoneDP[-16]
-   #  zoneDP <- zoneDP[-15]
-    histCE <- condC$histCE
-    B0 <- getvar(zoneC,"B0")
-    ExB0 <- getvar(zoneC,"ExB0")
-    sauout <- sauplots(zoneDP,NAS,glb,rundir,B0,ExB0,
-                       startyr=startyr,addCI=TRUE,histCE=histCE)
-    diagnosticsproj(sauout$zonePsau,glb,rundir,nrep=ndiagprojs)
-    outzone <- poptozone(zoneDP,NAS,glb,
-                         B0=sum(getvar(zoneC,"B0")),
-                         ExB0=sum(getvar(zoneC,"ExB0")))
-    plotZone(outzone,rundir,glb,startyr=startyr,CIprobs=c(0.05,0.5,0.95),
-             addfile=TRUE)
-    fishery_plots(rundir=rundir,glb=glb,select=zoneCP[[1]]$Select,
-                  histyr=condC$histyr,projLML=projC$projLML)
-  } else { # in case doproject = FALSE
-    zoneDP <- NULL
-    zoneCP <- NULL
-    NAS <- NULL
-    sauout <- NULL
-    outzone <- NULL
-    outpp=NULL
-    hcrout=NULL
-  }
+  if (verbose) cat("Doing the projections \n")
+  outpp <- prepareprojection(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
+                             calcpopC=calcpopC,zoneDD=zoneDD,
+                             ctrl=ctrl,varyrs=varyrs,lastsigR = ctrl$withsigR)
+  zoneDP <- outpp$zoneDP
+  projC <- outpp$projC
+  zoneCP <- outpp$zoneCP
+ # Rprof()
+  outproj <- doprojections(ctrl=ctrl,zoneDP=zoneDP,zoneCP=zoneCP,glb=glb,
+                           hcrfun=hcrfun,hsargs=hsargs,sampleCE=sampleCE,
+                           sampleFIS=sampleFIS,sampleNaS=sampleNaS,
+                           getdata=getdata,calcpopC=calcpopC,
+                           makehcrout=makeouthcr,verbose=TRUE)
+#  Rprof(NULL)
+  if (verbose) cat("Now generating final plots and tables \n")
+  zoneDP=outproj$zoneDP
+  hcrout <- outproj$hcrout; #str(hcrout)
+  NAS <- list(Nt=zoneDP$Nt,NumNe=zoneDP$NumNe,catchN=zoneDP$catchN)
+  zoneDP <- zoneDP[-c(17,16,15)]
+ # zoneDP <- zoneDP[-16]
+ #  zoneDP <- zoneDP[-15]
+  histCE <- condC$histCE
+  B0 <- getvar(zoneC,"B0")
+  ExB0 <- getvar(zoneC,"ExB0")
+  sauout <- sauplots(zoneDP,NAS,glb,rundir,B0,ExB0,
+                     startyr=startyr,addCI=TRUE,histCE=histCE)
+  diagnosticsproj(sauout$zonePsau,glb,rundir,nrep=ndiagprojs)
+  outzone <- poptozone(zoneDP,NAS,glb,
+                       B0=sum(getvar(zoneC,"B0")),
+                       ExB0=sum(getvar(zoneC,"ExB0")))
+  plotZone(outzone,rundir,glb,startyr=startyr,CIprobs=c(0.05,0.5,0.95),
+           addfile=TRUE)
+  fishery_plots(rundir=rundir,glb=glb,select=zoneCP[[1]]$Select,
+                histyr=condC$histyr,projLML=projC$projLML)
   projtime <- Sys.time()
   tottime <- round((projtime - starttime),3)
-
   if (savesauout) {
     sauoutD <- sauout$zonePsau
     sauoutD <- sauoutD[-c(12,11,10)]
     save(sauoutD,file=paste0(rundir,"/sauoutD.RData"))
   }
+  # calculate HS performance statistics
+  sum5 <- getprojyrC(catsau=zoneDP$catsau,glb=glb,period=5)
+  sum10 <- getprojyrC(catsau=zoneDP$catsau,glb=glb)
+  HSstats <- list(sum10=sum10,sum5=sum5)
+  save(HSstats,file=paste0(rundir,"/HSstats.RData"))
+  plothsstats(rundir,HSstats,glb)
   out <- list(tottime=tottime,projtime=projtime,starttime=starttime,glb=glb,
               ctrl=ctrl,zoneCP=zoneCP,zoneDD=zoneDD,zoneDP=zoneDP,NAS=NAS,
               projC=projC,condC=condC,sauout=sauout,outzone=outzone,
-              hcrout=hcrout,production=production,condout=condout)
+              hcrout=hcrout,production=production,condout=condout,
+              HSstats=HSstats)
   return(out)
 } # end of do_MSE
 

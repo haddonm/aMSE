@@ -445,6 +445,54 @@ plotconditioning <- function(zoneDD,glb,zoneC,histCE,rundir) {
   return(invisible(list(sauZone=sauZone,ssq=ssq)))
 } # end plotconditioning
 
+#' @title plothsstats plots some HS performance statistics
+#'
+#' @description plothstats generates plots for the sum of catches for the
+#'     first 5 and 10 years of the projections. This is really only
+#'     interesting when compared with the same statistics from a different
+#'     operating model definition or different harvest strategy. The input
+#'     data is generated during the running of do_MSE.
+#'
+#' @param rundir the scenario's results directory
+#' @param hsstats the statistics about the harvest strategies performance
+#' @param glb the global constants object
+#'
+#' @return nothing but it does generate two plots into rundir
+#' @export
+#'
+#' @examples
+#' print("wait on suitable in ternal data sets")
+plothsstats <- function(rundir,hsstats,glb) {
+  # hsstats=out$HSstats; rundir=rundir; glb=out$glb
+  sum5 <- hsstats$sum5
+  sum10 <- hsstats$sum10
+  labelnames <- colnames(sum10)
+  nsau <- glb$nSAU
+  filen <- filenametopath(rundir,"sum_5yr_proj_catches.png")
+ # filen=""
+  plotprep(width=8,height=7,filename=filen,cex=1.0,verbose=FALSE)
+  parset(plots=getparplots(ncol(sum5)))
+  for (i in 1:(nsau+1)) {
+    label <- paste0("Tonnes     ",labelnames[i])
+    hist(sum5[,i],breaks=20,main="",xlab=label)
+  }
+  caption <- paste0("The sum of the first 5 years of he projections for each ",
+                    "SAU and the complete zone")
+  addplot(filen,rundir=rundir,category="HSperf",caption)
+  #now 10 years
+  filen <- filenametopath(rundir,"sum_10yr_proj_catches.png")
+  #filen=""
+  plotprep(width=8,height=7,filename=filen,cex=1.0,verbose=FALSE)
+  parset(plots=getparplots(ncol(sum10)))
+  for (i in 1:(nsau+1)) {
+    label <- paste0("Tonnes     ",labelnames[i])
+    hist(sum10[,i],breaks=20,main="",xlab=label)
+  }
+  caption <- paste0("The sum of the first 10 years of he projections for ",
+                    "each SAU and the complete zone")
+  addplot(filen,rundir=rundir,category="HSperf",caption)
+} # end of plothsstats
+
 #' @title plotNt plots the size-composition for each SAU
 #'
 #' @description plotNt accepts size-composition data (either the population Nt,
