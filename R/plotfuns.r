@@ -28,7 +28,7 @@ compareCPUE <- function(histCE,saucpue,glb,rundir,filen="") {
   nsau <- glb$nSAU
   cpue <- saucpue[pick,1:nsau]
   rownames(cpue) <- years
-  label <- paste0("sau",glb$saunames)
+  label <- paste0("sau_",glb$saunames)
   colnames(cpue) <- label
   ssq <- numeric(nsau)
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,verbose=FALSE)
@@ -152,8 +152,9 @@ diagnosticsproj <- function(zonePsau,glb,rundir,nrep=3) {
 dosau <- function(inzone,glb,picksau,histCE,yrnames,extra=FALSE) {
   # inzone=sauZone;glb=glb;picksau=sau;histCE=histCE;yrnames=glb$hyrnames; extra=FALSE
   histceyr <- as.numeric(rownames(histCE))
-  saunames <- as.numeric(glb$saunames)
-  indexsau <- which(saunames == picksau)
+  saunames <- glb$saunames #as.numeric(glb$saunames)
+  saunum <- 1:glb$nSAU
+  indexsau <- which(saunum == picksau)
   label=c("deplsB","cpue","matB","catch","harvestR","recruit")
   if (extra) {
     label=c("deplsB","cpue","matB","catch","harvestR","recruit","expB","depleB")
@@ -177,7 +178,7 @@ dosau <- function(inzone,glb,picksau,histCE,yrnames,extra=FALSE) {
     }
     if (label[invar] == "harvestR") abline(h=c(0.4,0.75),col=2,lwd=1,lty=2)
   }
-  mtext(paste0("Years  SAU ",picksau),side=1,outer=TRUE,cex=1.1,line=-0.1)
+  mtext(paste0("Years  SAU ",glb$saunames[picksau]),side=1,outer=TRUE,cex=1.1,line=-0.1)
 } # end of dosau
 
 #' @title dosauplot generates the plot of the chosen variable for each sau
@@ -425,18 +426,19 @@ plotCNt <- function(Nt,glb,vline=NULL,start=3) {
 #' @examples
 #' print("wait on suitable data sets")
 plotconditioning <- function(zoneDD,glb,zoneC,histCE,rundir) {
-  # zoneDD=out$zoneDD;glb=out$glb;zoneC=out$zoneC;histCE=out$condC$histCE;rundir=rundir
+  # zoneDD=zoneDD;glb=glb;zoneC=zoneC;histCE=condC$histCE;rundir=rundir
   sauindex <- glb$sauindex
   popB0 <- getlistvar(zoneC,"B0")
   B0 <- tapply(popB0,sauindex,sum)
   popExB0 <- getlistvar(zoneC,"ExB0")
   ExB0 <- tapply(popExB0,sauindex,sum)
   sauZone <- getsauzone(zoneDD,glb,B0=B0,ExB0=ExB0)
-  allsau <- glb$saunames
+  allsau <- 1:glb$nSAU #
+  snames <- glb$saunames
   yrnames <- glb$hyrnames
   ssq <- compareCPUE(histCE,sauZone$cpue,glb,rundir,filen="compareCPUE.png")
   for (sau in allsau) {  #  sau=allsau[1]; filen=""
-    filen <- filenametopath(rundir,paste0("SAU",sau,"_conditioned.png"))
+    filen <- filenametopath(rundir,paste0("SAU_",snames[sau],"_conditioned.png"))
     plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
     dosau(sauZone,glb,picksau=sau,histCE=histCE,yrnames=glb$hyrnames)
     caption <- "Dynamics during conditioning on the fishery."

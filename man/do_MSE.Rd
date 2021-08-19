@@ -21,7 +21,8 @@ do_MSE(
   cleanslate = FALSE,
   verbose = FALSE,
   ndiagprojs = 3,
-  savesauout = FALSE
+  savesauout = FALSE,
+  cutcatchN = 56
 )
 }
 \arguments{
@@ -88,6 +89,11 @@ such projections appear realistic; default=3}
 \item{savesauout}{should the sau dynamics object be saved as an sauoutD.RData
 file? 100 replicates of 56 populations for 58 years of conditioning and
 30 years of projection = about 5.7 Mb. default=FALSE.}
+
+\item{cutcatchN}{to reduce the size of the final array of numbers-at-size
+in the catch one can remove all the empty cells below a given size
+class. In the default there are 105 2mm size classes and setting
+cutcatchN = 56 removes size classes 1:55 2 - 110 mm; only from catchN}
 }
 \value{
 a large list containing tottime, projtime, starttime, glb, ctrl,
@@ -113,8 +119,8 @@ do_MSE is a form of meta-function that contains the code and
     To aid in the conditioning the option of not calculating the productivity
     has been added. By default it will occur and when projecting it will also
     always occur. HSstats is a list that is always saved and contains
-    performance statistics for the HS used (currently only contains
-    10yrcatch).
+    performance statistics for the HS used (currently contains sum5 and sum10
+    the cumulative catches to 5 and 10 years into the projections).
 }
 \examples{
 print("wait on suitable data sets in data")

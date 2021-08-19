@@ -3,12 +3,15 @@
 
 # LATEST UPDATE
 
--   2021-08-12 aMSE 0.0.0.500 Modified do\_MSE and added plothsstats,
-    streamlined the conditioning. No EWN.
+-   2021-08-19 aMSE 0.0.0.400 Can now have text as SAU names in the
+    Control file, this will use those names to label all plots (still
+    working on tbles and extra polishing),
 
--   2021-08-02 aMSE 0.0.0.700 Revised the ‘ctrlfiletemplate’ and
-    ‘datafiletemplate’ functions to reflect the new usage. It should now
-    be possible to run an example scenario related to M15h75.
+-   2021-08-13 aMSE 0.0.0.500 removed NumNe (midyear numbers-at-size)
+    and introduced cutcatchN as an argument to do\_MSE, which removes
+    all size class data from teh catchN array with size-classes less
+    than cutcatchN, whose default = 56 (2 - 110mm removed). This saves a
+    good deal of space.
 
 # aMSE
 
@@ -97,13 +100,13 @@ library(rutilsMH)
 library(makehtml)
 library(knitr)
 # Obviously you should modify the rundir and datadir to suit your own setup
-prefixdir <- "C:/A_Mal/scenarios/"
+prefixdir <- "C:/A_Mal/aa_scenarios/"
 verbose <- TRUE
 postfixdir <- "M15h75"
 rundir <- paste0(prefixdir,postfixdir)
 datadir <- rundir
 alldirExists(rundir,datadir,verbose=verbose)
-#> rundir,  C:/A_Mal/scenarios/M15h75 :  exists
+#> rundir,  C:/A_Mal/aa_scenarios/M15h75 :  exists
 controlfile <- "controlM15h75.csv"
 # equilibrium zone -------------------------------------------------------------
 # You now need to ensure that there is, at least, a control.csv, and a 

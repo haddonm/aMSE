@@ -732,7 +732,7 @@ makezoneC <- function(zone,const) { # zone=zone1; const=constants
   move <- makemove(numpop,recs,larvdisp)
   glb$move <- as.matrix(move)
   glb$SAUpop <- as.vector(const["SAU",])
-  glb$saunames <- sort(unique(glb$SAUpop))
+ # glb$saunames <- sort(unique(glb$SAUpop))
   class(zoneC) <- "zoneC"
   ans <- list(zoneC=zoneC,glb=glb,popdefs=popdefs)
   return(ans)

@@ -2,6 +2,10 @@
 
 See the ReadMe for the latest two events
 
+* 2021-08-12 aMSE 0.0.0.500 Modified do_MSE and added plothsstats, streamlined the conditioning. No EWN.
+
+* 2021-08-02 aMSE 0.0.0.700 Revised the 'ctrlfiletemplate' and 'datafiletemplate' functions to reflect the new usage. It should now be possible to run an example scenario related to M15h75.
+
 * 2021_07-28 aMSE 0.0.0.800 Added functions (changecolumn, getrecdevcolumn, gettasdevssq) to assist in automated operating model conditioning on the fishery. Also modified the biology_plots and oneyear and oneyearcat to assist with speeding the processes. Lots of additional minor changes but some important ones to do_MSE (read the help, ?do_MSE).
 
 * 2021-07-20 aMSE 0.0.0.900 Added do_condition and compareCPUE. Both used to speed the conditioning of the operating model, though a number of developments are still under development. Currently can automatically search for the AvRec value that will optimize the sum-of-squared residual fit between the

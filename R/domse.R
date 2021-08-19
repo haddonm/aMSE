@@ -39,8 +39,8 @@
 #'     To aid in the conditioning the option of not calculating the productivity
 #'     has been added. By default it will occur and when projecting it will also
 #'     always occur. HSstats is a list that is always saved and contains
-#'     performance statistics for the HS used (currently only contains
-#'     10yrcatch).
+#'     performance statistics for the HS used (currently contains sum5 and sum10
+#'     the cumulative catches to 5 and 10 years into the projections).
 #'
 #' @param rundir the full path to the directory in which all files relating to a
 #'     particular run are to be held. If datadir != rundir then the main data
@@ -89,6 +89,10 @@
 #' @param savesauout should the sau dynamics object be saved as an sauoutD.RData
 #'     file? 100 replicates of 56 populations for 58 years of conditioning and
 #'     30 years of projection = about 5.7 Mb. default=FALSE.
+#' @param cutcatchN to reduce the size of the final array of numbers-at-size
+#'     in the catch one can remove all the empty cells below a given size
+#'     class. In the default there are 105 2mm size classes and setting
+#'     cutcatchN = 56 removes size classes 1:55 2 - 110 mm; only from catchN
 #'
 #' @seealso{
 #'  \link{makeequilzone}, \link{dohistoricC}, \link{prepareprojection},
@@ -103,7 +107,8 @@
 #' print("wait on suitable data sets in data")
 do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
                    sampleNaS,getdata,calcpopC,makeouthcr,varyrs=7,startyr=42,
-                   cleanslate=FALSE,verbose=FALSE,ndiagprojs=3,savesauout=FALSE) {
+                   cleanslate=FALSE,verbose=FALSE,ndiagprojs=3,savesauout=FALSE,
+                   cutcatchN=56) {
   # generate equilibrium zone ----------------------------------------------------
   starttime <- (Sys.time())
   zone <- makeequilzone(rundir,controlfile,datadir,cleanslate=cleanslate,
@@ -155,7 +160,8 @@ do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
   if (verbose) cat("Now generating final plots and tables \n")
   zoneDP=outproj$zoneDP
   hcrout <- outproj$hcrout; #str(hcrout)
-  NAS <- list(Nt=zoneDP$Nt,NumNe=zoneDP$NumNe,catchN=zoneDP$catchN)
+  NAS <- list(Nt=zoneDP$Nt,catchN=zoneDP$catchN)
+  # NumNe=zoneDP$NumNe, mid-year numbers-at-size removed to save space
   zoneDP <- zoneDP[-c(17,16,15)]
  # zoneDP <- zoneDP[-16]
  #  zoneDP <- zoneDP[-15]
@@ -172,11 +178,12 @@ do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
            addfile=TRUE)
   fishery_plots(rundir=rundir,glb=glb,select=zoneCP[[1]]$Select,
                 histyr=condC$histyr,projLML=projC$projLML)
+  NAS$catchN <- NAS$catchN[(cutcatchN:glb$Nclass),,,]
   projtime <- Sys.time()
   tottime <- round((projtime - starttime),3)
   if (savesauout) {
     sauoutD <- sauout$zonePsau
-    sauoutD <- sauoutD[-c(12,11,10)]
+    sauoutD <- sauoutD[-c(11,10)]
     save(sauoutD,file=paste0(rundir,"/sauoutD.RData"))
   }
   # calculate HS performance statistics
@@ -184,6 +191,7 @@ do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
   sum10 <- getprojyrC(catsau=zoneDP$catsau,glb=glb)
   HSstats <- list(sum10=sum10,sum5=sum5)
   save(HSstats,file=paste0(rundir,"/HSstats.RData"))
+  save(glb,file=paste0(rundir,"/glb.RData"))
   plothsstats(rundir,HSstats,glb)
   out <- list(tottime=tottime,projtime=projtime,starttime=starttime,glb=glb,
               ctrl=ctrl,zoneCP=zoneCP,zoneDD=zoneDD,zoneDP=zoneDP,NAS=NAS,

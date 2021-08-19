@@ -653,8 +653,8 @@ zonetosau <- function(inzone,NAS=NULL,glb, B0, ExB0) { # inzone=zoneDP; NAS=NAS;
                   dimnames=list(glb$midpts,1:nyrs,saunames,1:reps))
   Nt <- array(data=0,dim=c(N,nyrs,nsau,reps),
               dimnames=list(glb$midpts,1:nyrs,saunames,1:reps))
-  NumNe <- array(data=0,dim=c(N,nyrs,nsau,reps),
-                 dimnames=list(glb$midpts,1:nyrs,saunames,1:reps))
+  # NumNe <- array(data=0,dim=c(N,nyrs,nsau,reps),
+  #                dimnames=list(glb$midpts,1:nyrs,saunames,1:reps))
   catch <- inzone$acatch
   cpue <- catch
   harvestR <- catch
@@ -676,21 +676,21 @@ zonetosau <- function(inzone,NAS=NULL,glb, B0, ExB0) { # inzone=zoneDP; NAS=NAS;
           if (is.null(NAS)) {
             catchN[,yr,sau,iter] <- rowSums(inzone$catchN[,yr,pick,iter])
             Nt[,yr,sau,iter] <- rowSums(inzone$Nt[,yr,pick,iter])
-            NumNe[,yr,sau,iter] <- rowSums(inzone$NumNe[,yr,pick,iter])
+            #NumNe[,yr,sau,iter] <- rowSums(inzone$NumNe[,yr,pick,iter])
           } else {
             catchN[,yr,sau,iter] <- rowSums(NAS$catchN[,yr,pick,iter])
             Nt[,yr,sau,iter] <- rowSums(NAS$Nt[,yr,pick,iter])
-            NumNe[,yr,sau,iter] <- rowSums(NAS$NumNe[,yr,pick,iter])
+           # NumNe[,yr,sau,iter] <- rowSums(NAS$NumNe[,yr,pick,iter])
           }
         } else {
           if (is.null(NAS)) {
             catchN[,yr,sau,iter] <- inzone$catchN[,yr,pick,iter]
             Nt[,yr,sau,iter] <- inzone$Nt[,yr,pick,iter]
-            NumNe[,yr,sau,iter] <- inzone$NumNe[,yr,pick,iter]
+           # NumNe[,yr,sau,iter] <- inzone$NumNe[,yr,pick,iter]
           } else {
             catchN[,yr,sau,iter] <- NAS$catchN[,yr,pick,iter]
             Nt[,yr,sau,iter] <- NAS$Nt[,yr,pick,iter]
-            NumNe[,yr,sau,iter] <- NAS$NumNe[,yr,pick,iter]
+           # NumNe[,yr,sau,iter] <- NAS$NumNe[,yr,pick,iter]
           }
         }
       } # end of dealing with numbers-at-size
@@ -700,7 +700,7 @@ zonetosau <- function(inzone,NAS=NULL,glb, B0, ExB0) { # inzone=zoneDP; NAS=NAS;
   outsau <- list(matureB=matureB,exploitB=exploitB,catch=catch,
                  acatch=inzone$acatch,harvestR=harvestR,cpue=cpue,
                  recruit=recruit,deplsB=deplsB,depleB=depleB,
-                 catchN=catchN,Nt=Nt,NumNe=NumNe)
+                 catchN=catchN,Nt=Nt) #,NumNe=NumNe
   return(outsau)
 } # end of zonetosau
 

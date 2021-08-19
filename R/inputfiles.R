@@ -650,7 +650,7 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir,verbose=TRUE
                        "catches","projection","bysau")
    globals <- list(numpop=numpop, nSAU=nSAU, midpts=midpts,Nclass=Nclass,
                    reps=reps,hyrs=hyrs,pyrs=projyrs,hyrnames=hyrnames,
-                   pyrnames=pyrnames,
+                   pyrnames=pyrnames,saunames=SAUnames,
                    larvdisp=larvdisp)
    totans <- list(SAUnames,SAUpop,minc,cw,larvdisp,randomseed,
                   initLML,condC,projC,globals,outctrl,catches,projyrs)
@@ -733,7 +733,9 @@ readsaudatafile <- function(datadir,infile) {  # rundir=rundir; infile=ctrl$data
    nsau <- getsingleNum("nsau",indat)
    saupop <- getConst(indat[grep("saupop",indat)],nsau)
    numpop <- sum(saupop)
-   saunames <- getConst(indat[grep("saunames",indat)],nsau)
+   txt <- indat[grep("SAUnames",indat)]
+   saunames <- unlist(strsplit(txt,","))[2:(nsau+1)]
+#   saunames <- getConst(indat[grep("saunames",indat)],nsau)
    initdepl <- getConst(indat[grep("initdepl",indat)],nsau)
    begin <- grep("PDFs",indat)
    npar <- getConst(indat[begin],1)

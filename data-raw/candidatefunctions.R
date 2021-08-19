@@ -552,31 +552,153 @@ for (i in 1:(nsau+1)) {
 
 
 # Compare HS --------------------------------------------------------------
+options("show.signif.stars"=FALSE,
+        "stringsAsFactors"=FALSE,
+        "max.print"=50000,
+        "width"=240)
+# declare libraries ------------------------------------------------------------
+library(aMSE)
+library(rutilsMH)
+library(makehtml)
+library(knitr)
+# Obviously you should modify the rundir and datadir to suit your own setup
+prefixdir <- "C:/A_Mal/scenarios/"
+
+verbose <- TRUE
+postfixdir <- "M15h75"
+rundir <- paste0(prefixdir,postfixdir)
+datadir <- rundir
+alldirExists(rundir,datadir,verbose=verbose)
+source(paste0(rundir,"/TasmanianHS.R"))
+
+controlfile <- "controlM15h75.csv"
+
+
+zoneDP <- out$zoneDP
+catch <- zoneDP$catsau
+glb <- out$glb
+nsau <- glb$nSAU
+
 
 sum10 <- out$HSstats$sum10
 sum5 <- out$HSstats$sum5
 
-pd <- density(sum10[,(nsau+1)])
+pd <- density(sum5[,(nsau+1)])
 plotprep(width=8,height=4,newdev=FALSE)
 parset(plots=c(1,8),margin=c(0.1,0.2,0.1,0.01),outmargin=c(3.5,1.75,0,0.5))
 xmax <- getmax(pd$y)
 plot(pd$y,pd$x,type="l",xlim=c(0,xmax),xaxs="i",ylab="")
-mtext("M1h75_10",side=1,outer=FALSE,line=1.3,cex=0.9)
+mtext("M1h75_5",side=1,outer=FALSE,line=1.3,cex=0.9)
 mtext("Relative Density",side=1,outer=TRUE,line=2.4)
 mtext("10 Year Summmed Catch (t) by Zone",side=2,outer=TRUE,line=0.5)
-pd2 <- density(sum5[,(nsau+1)])
+pd2 <- density(sum10[,(nsau+1)])
 xmax <- getmax(pd2$y)
 plot(pd2$y,pd2$x,type="l",xlim=c(0,xmax),xaxs="i",ylab="")
-mtext("M1h75_5",side=1,outer=FALSE,line=1.3,cex=0.9)
+mtext("M1h75_10",side=1,outer=FALSE,line=1.3,cex=0.9)
 
 
+
+sauout <- out$sauout$zonePsau
+object.size(sauout)
+sauout <- sauout[-c(11,10)]
+object.size(sauout)
 
 str(HSstats)
 
+catchN <- out$sauout$zonePsau$catchN
+catchN <- catchN[56:105,,,]
+nn <- object.size(catchN)
+nn/118298272
+
+
+load(paste0(rundir,"/sauoutD.RData"))
+sauout <- sauoutD
+
+ceCI <- out$sauout$outCI$cpue
+glb <- out$glb
+targCE <- hsargs$maxtarg
+
+getmaxCE(ceCI=ceCI,glb=glb,targetCE=targCE)
+
+
+projce <- out$sauout$zonePsau$cpue
+glb <- out$glb
+targetCE <- hsargs$maxtarg
+
+
+reachtargCE <- function(projce,glb,targetCE) {
+  pyrs <- glb$pyrs
+  hyrs <- glb$hyrs
+  totyrs <- hyrs + pyrs
+  projcek <- projce[(hyrs+1):totyrs,,]
+  nsau <- glb$nSAU
+  label <- glb$saunames
+  yrs <- glb$pyrnames
+  reps <- glb$reps
+  result <- matrix(0,nrow=reps,ncol=nsau,dimnames=list(1:reps,label))
+  for (sau in 1:nsau) {
+    for (i in 1:reps) {
+      pick <- which(projcek[,sau,i] > targetCE[sau])
+      result[i,sau] <- yrs[pick[1]]
+    }
+  }
+}
 
 
 
+sizecatchN <- function(catchN,glb,year,cutcatchN) {
+  # cutcatchN=70; year=15; catchN <- out$sauout$zonePsau$catchN
+  nsau <- glb$nSAU
+  label <- glb$saunames
+  reps <- glb$reps
+  pyrs <- glb$pyrs
+  hyrs <- glb$hyrs
+  totyrs <- hyrs + pyrs
+  yrs <- glb$pyrnames
+  scl <- glb$midpts[cutcatchN:glb$Nclass]
+  catchN <- catchN[(cutcatchN:glb$Nclass),(hyrs+1):totyrs,,]
+  plotprep(width=7,height=6,newdev=FALSE,filen="")
+  parset(plots=c(4,2),margin=c(0.3,0.45,0.05,0.05),outmargin=c(1,1,0,0))
+  for (sau in 1:nsau) { # iter = 1
+    catdat <- catchN[,year,sau,]
+    ymax <- getmax(catdat,mult=1.02)
+    plot(scl,catdat[,1],type="l",col="grey",ylim=c(0,ymax),panel.first=grid(),
+         ylab=label[sau],xlab="")
+    for (iter in 2:reps)
+      lines(scl,catdat[,iter],col="grey")
+    med <- apply(catdat,1,median)
+    lines(scl,med,lwd=2,col=2)
+  }
 
+}
+
+
+sausizecatchN <- function(catchN,glb,sau,years,cutcatchN) {
+# cutcatchN=70;years=c(1,5,10,15,20,25,30);sau=6; catchN <- out$sauout$zonePsau$catchN
+  nsau <- glb$nSAU
+  label <- glb$saunames
+  reps <- glb$reps
+  pyrs <- glb$pyrs
+  hyrs <- glb$hyrs
+  totyrs <- hyrs + pyrs
+  yrs <- glb$pyrnames
+  scl <- glb$midpts[cutcatchN:glb$Nclass]
+  catchN <- catchN[(cutcatchN:glb$Nclass),(hyrs+1):totyrs,,]
+  plotprep(width=7,height=6,newdev=FALSE,filen="")
+  parset(plots=c(4,2),margin=c(0.3,0.45,0.1,0.05),outmargin=c(1,1,0,0),
+         byrow=FALSE)
+  for (yr in years) { # iter = 1
+    catdat <- catchN[,yr,sau,]
+    ymax <- getmax(catdat,mult=1.02)
+    plot(scl,catdat[,1],type="l",col="grey",ylim=c(0,ymax),panel.first=grid(),
+         ylab=yrs[yr],xlab="")
+    for (iter in 2:reps)
+      lines(scl,catdat[,iter],col="grey")
+    med <- apply(catdat,1,median)
+    lines(scl,med,lwd=2,col=2)
+  }
+
+}
 
 
 
