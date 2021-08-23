@@ -3,15 +3,19 @@
 
 # LATEST UPDATE
 
+-   2021-08-23 aMSE 0.0.0.300 Using text as SAU names in the control
+    file now labels all plots and those labels are not included in the
+    tables. glb$saunames now contains the text labels. Other changes
+    include generalizing the number of plots to match number of SAU in
+    all cases (I hope), There is also, now, a ConstantCatchHS.R file in
+    the data-raw sub-directory that allows for a constant catch to be
+    applied to each SAU. This demonstrates that the issue when using the
+    TasmanianHS.R file is not the aMSE package but how the Tasmanian HS
+    functions work with the available data.
+
 -   2021-08-19 aMSE 0.0.0.400 Can now have text as SAU names in the
     Control file, this will use those names to label all plots (still
     working on tbles and extra polishing),
-
--   2021-08-13 aMSE 0.0.0.500 removed NumNe (midyear numbers-at-size)
-    and introduced cutcatchN as an argument to do\_MSE, which removes
-    all size class data from teh catchN array with size-classes less
-    than cutcatchN, whose default = 56 (2 - 110mm removed). This saves a
-    good deal of space.
 
 # aMSE
 

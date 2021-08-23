@@ -22,7 +22,9 @@ do_MSE(
   verbose = FALSE,
   ndiagprojs = 3,
   savesauout = FALSE,
-  cutcatchN = 56
+  cutcatchN = 56,
+  matureL = c(70, 200),
+  wtatL = c(80, 200)
 )
 }
 \arguments{
@@ -94,6 +96,12 @@ file? 100 replicates of 56 populations for 58 years of conditioning and
 in the catch one can remove all the empty cells below a given size
 class. In the default there are 105 2mm size classes and setting
 cutcatchN = 56 removes size classes 1:55 2 - 110 mm; only from catchN}
+
+\item{matureL}{is a vector of 2, default = c(70,200), that define the x-axis
+bounds on the biology maturity-at-Length plots}
+
+\item{wtatL}{is a vector of 2, default = c(80,200), that define the x-axis
+bounds on the biology weight-at-Length plots}
 }
 \value{
 a large list containing tottime, projtime, starttime, glb, ctrl,

@@ -2,6 +2,8 @@
 
 See the ReadMe for the latest two events
 
+* 2021-08-13   aMSE 0.0.0.500 removed NumNe (midyear numbers-at-size) and introduced cutcatchN as an argument to do_MSE, which removes all size class data from teh catchN array with size-classes less than cutcatchN, whose default = 56 (2 - 110mm removed). This saves a good deal of space.
+
 * 2021-08-12 aMSE 0.0.0.500 Modified do_MSE and added plothsstats, streamlined the conditioning. No EWN.
 
 * 2021-08-02 aMSE 0.0.0.700 Revised the 'ctrlfiletemplate' and 'datafiletemplate' functions to reflect the new usage. It should now be possible to run an example scenario related to M15h75.

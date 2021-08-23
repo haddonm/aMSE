@@ -101,7 +101,7 @@ changeline <- function(indir, filename, linenumber, newline,verbose=FALSE) {
 
 #
 # rundir=rundir
-# controlfile="controltest_SA.csv"
+# controlfile="controltest_SA_trim.csv"
 # datadir=datadir
 # hsargs=hsargs
 # hcrfun=mcdahcr
@@ -116,6 +116,7 @@ changeline <- function(indir, filename, linenumber, newline,verbose=FALSE) {
 # verbose=TRUE
 # doproduct=FALSE
 # ndiagprojs=4
+# makehcrout=makeouthcr
 
 #' @title do_condition is a function to assist with conditioning the model
 #'

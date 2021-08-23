@@ -702,3 +702,22 @@ sausizecatchN <- function(catchN,glb,sau,years,cutcatchN) {
 
 
 
+postfixdir <- "SAfirst"
+rundir <- paste0(prefixdir,postfixdir)
+datadir <- rundir
+controlfile="controltest_SA.csv"
+hsargs=c(0,0,0,0,0,0)
+hcrfun=consthcr
+sampleCE=constCPUE
+sampleFIS=constFIS
+sampleNaS=constNaS
+getdata=constdata
+calcpopC=calcexpectpopC
+varyrs=7
+startyr=48
+cleanslate=FALSE
+verbose=TRUE
+ndiagprojs=4
+savesauout=TRUE
+makehcrout=makeouthcr
+cutcatchN=56

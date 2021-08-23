@@ -102,6 +102,7 @@ depleteSAU <- function(zoneC,zoneD,glob,initdepl,product,len=15) {
 #'
 #' @examples
 #' print("wait on some data sets")
+#' #  zoneD,zoneC,glob=glb,condC,calcpopC=calcpopC,sigR=1e-08,sigB=1e-08
 dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,sigR=1e-08,sigB=1e-08) {
   # zoneC=zoneC; zoneDD=zoneD;glob=glb;condC=condC;calcpopC=calcpopC; sigR=1e-08; sigB=1e-08;
   histC <- condC$histCatch
@@ -112,7 +113,7 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,sigR=1e-08,sigB=1e-08) 
   r0 <- getvar(zoneC,"R0") #sapply(zoneC,"[[","R0")
   b0 <- getvar(zoneC,"B0") #sapply(zoneC,"[[","B0")
   exb0 <- getvar(zoneC,"ExB0")
-  for (year in 2:nyrs) {  # year=19 # ignores the initial unfished year
+  for (year in 2:nyrs) {  # year=1  # ignores the initial unfished year
     catchsau <- histC[year,]
     rdev <- recdevs[year,]
     hcrout <- list(acatch=catchsau)
@@ -340,12 +341,12 @@ oneyearcat <- function(MatWt,SelWt,selyr,Me,G,popq,WtL,inNt,incat) {
 #' print("Wait on new data")
 oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,
                         movem,sigmar=1e-08,r0,b0,exb0,rdev=-1) {
- # zoneCC=zoneC;inN=inN;popC=popC;year=year;Ncl=glob$Nclass;sauindex=sauindex;
-#  movem=glob$movem; sigmar=sigR;r0=r0;b0=b0;exb0=exb0; rdev=rdev
+ # zoneCC=zoneCP;inN=zoneDP$Nt[,year-1,,iter];popC=popC;year=year;Ncl=glob$Nclass;
+#  sauindex=sauindex; movem=glob$move; sigmar=sigR;r0=r0;b0=b0;exb0=exb0; rdev=-1;
   npop <- length(popC)
   matb <- numeric(npop)
   ans <- vector("list",npop)
-  for (popn in 1:npop) {  # popn=14
+  for (popn in 1:npop) {  # popn=1
     pop <- zoneCC[[popn]]
     ans[[popn]] <- oneyearcat(MatWt=pop$MatWt,SelWt=pop$SelWt[,year],
                               selyr=pop$Select[,year],Me=pop$Me,G=pop$G,

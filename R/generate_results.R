@@ -20,7 +20,7 @@
 #' @examples
 #' print("this will be quite long when I get to it")
 biology_plots <- function(rundir, glb, zoneC, matL=c(30,210), Lwt=c(80,210)) {
-  # rundir=rundir; glb=out$glb;zoneC=out$zoneCP;matL=c(70,200);Lwt=c(100,210)
+  # rundir=rundir; glb=glb;zoneC=zoneCP;matL=c(70,200);Lwt=c(100,210)
   mids <- glb$midpts
   numpop <- glb$numpop
   popdef <- getlistvar(zoneC,"popdef")
@@ -46,7 +46,7 @@ biology_plots <- function(rundir, glb, zoneC, matL=c(30,210), Lwt=c(80,210)) {
       for (pop in 2:popsau) lines(mids,matur[,pickP[pop]],lwd=1,col=pop)
     legend("topright",paste0("P",pickP),lwd=3,col=c(1:popsau),bty="n",
            cex=0.85)
-    text(68,0.9,paste0("SAU ",saunames[sau]),cex=1.5,pos=4)
+    text(68,0.9,saunames[sau],cex=1.5,pos=4)
   }
   mtext("Shell Length (mm)",side=1,outer=TRUE,line = -0.1,cex=1.1)
   mtext("Proportion Mature",side=2,outer=TRUE,line = -0.1,cex=1.1)
@@ -71,7 +71,7 @@ biology_plots <- function(rundir, glb, zoneC, matL=c(30,210), Lwt=c(80,210)) {
     legend("topleft",paste0("P",pickP),lwd=3,col=c(1:popsau),bty="n",
            cex=0.85)
     labpos <- round(Lwt[1] + (Lwt[2]-Lwt[1])/2)
-    text(labpos,0.85*ymax,paste0("SAU ",saunames[sau]),cex=1.5,pos=3)
+    text(labpos,0.85*ymax,saunames[sau],cex=1.5,pos=3)
   }
   mtext("Shell Length (mm)",side=1,outer=TRUE,line = -0.1,cex=1.1)
   mtext("Weight (g)",side=2,outer=TRUE,line = -0.1,cex=1.1)
@@ -95,7 +95,7 @@ biology_plots <- function(rundir, glb, zoneC, matL=c(30,210), Lwt=c(80,210)) {
       for (pop in 2:popsau) lines(mids,emerg[,pickP[pop]],lwd=1,col=pop)
     legend("topright",paste0("P",pickP),lwd=3,col=c(1:popsau),bty="n",
            cex=0.85)
-    text(68,0.9,paste0("SAU ",saunames[sau]),cex=1.5,pos=4)
+    text(68,0.9,saunames[sau],cex=1.5,pos=4)
   }
   mtext("Shell Length (mm)",side=1,outer=TRUE,line = -0.1,cex=1.1)
   mtext("Proportion Emergent",side=2,outer=TRUE,line = -0.1,cex=1.1)
@@ -103,7 +103,7 @@ biology_plots <- function(rundir, glb, zoneC, matL=c(30,210), Lwt=c(80,210)) {
                     "The x-axis is constrained to emphasize differences.")
   addplot(filen,rundir=rundir,category="Biology",caption)
   # Tabulate biological properties uses zoneC
-  rows <- c("SAU","M","R0","B0","ExB0","MSY","MSYDepl","bLML",
+  rows <- c("M","R0","B0","ExB0","MSY","MSYDepl","bLML",
             "MaxDL","L50","L95","AvRec","steep")
   sau <- getlistvar(zoneC,"SAU")
   nSAU <- length(unique(sau))
@@ -111,23 +111,24 @@ biology_plots <- function(rundir, glb, zoneC, matL=c(30,210), Lwt=c(80,210)) {
   numrow <- length(rows)
   numcol <- length(columns)
   resultpop <- matrix(0,nrow=numrow,ncol=numpop,
-                                  dimnames=list(rows,columns))
-  resultpop["SAU",] <- getlistvar(zoneC,"SAU") # no total
+                      dimnames=list(rows,columns))
+ # resultpop["SAU",] <- getlistvar(zoneC,"SAU") # no total
   resultpop["B0",] <- as.numeric(getlistvar(zoneC,"B0"))
  # wtr <- (results["B0",1:numpop]/results["B0",(numpop+nSAU+1)])
-  resultpop["M",] <- getlistvar(zoneC,"Me")
-  resultpop["R0",] <- getlistvar(zoneC,"R0")
-  resultpop["ExB0",] <- getlistvar(zoneC,"ExB0")
-  resultpop["MSY",] <- getlistvar(zoneC,"MSY")
-  resultpop["MSYDepl",] <- getlistvar(zoneC,"MSYDepl")
-  resultpop["bLML",] <- getlistvar(zoneC,"bLML")
+  resultpop["M",] <- as.numeric(getlistvar(zoneC,"Me"))
+  resultpop["R0",] <- as.numeric(getlistvar(zoneC,"R0"))
+  resultpop["ExB0",] <- as.numeric(getlistvar(zoneC,"ExB0"))
+  resultpop["MSY",] <- as.numeric(getlistvar(zoneC,"MSY"))
+  resultpop["MSYDepl",] <- as.numeric(getlistvar(zoneC,"MSYDepl"))
+  resultpop["bLML",] <- as.numeric(getlistvar(zoneC,"bLML"))
   popdefs <- getlistvar(zoneC,"popdef")
   resultpop["MaxDL",] <- popdefs["DLMax",]
   resultpop["L50",] <- popdefs["L50",]
   resultpop["L95",] <- popdefs["L95",]
   resultpop["AvRec",] <- round(popdefs["AvRec",])
   resultpop["steep",] <- popdefs["steeph",]
-  res <- round(t(resultpop),3)
+  res <- as.data.frame(t(round(resultpop,3)))
+  res[,"SAU"] <- getlistvar(zoneC,"SAU")
   filen <- paste0("zonebiology.csv")
   caption <- "Population Biological Properties."
   addtable(res,filen,rundir=rundir,category="Tables",caption)

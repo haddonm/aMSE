@@ -28,11 +28,12 @@ compareCPUE <- function(histCE,saucpue,glb,rundir,filen="") {
   nsau <- glb$nSAU
   cpue <- saucpue[pick,1:nsau]
   rownames(cpue) <- years
-  label <- paste0("sau_",glb$saunames)
+  label <- glb$saunames
   colnames(cpue) <- label
   ssq <- numeric(nsau)
+  doplots=getparplots(nsau)
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,verbose=FALSE)
-  parset(plots=c(4,2),margin=c(0.3,0.3,0.05,0.05),outmargin=c(0,1,0,0))
+  parset(plots=doplots,margin=c(0.3,0.3,0.05,0.05),outmargin=c(0,1,0,0))
   for (sau in 1:nsau) {
     ssq[sau] <- sum((histCE[,sau] - cpue[,sau])^2,na.rm=TRUE)
     ymax <- getmax(c(cpue[,sau],histCE[,sau]))
@@ -84,7 +85,7 @@ diagnosticsproj <- function(zonePsau,glb,rundir,nrep=3) {
     for (sau in 1:nsau) { # sau =1
       pickrep <- sample(1:reps,nrep,replace=FALSE)
       ymax <- getmax(var1[pickyr,sau,pickrep])
-      ylabel <- paste0(paste0("SAU_",saunames[sau],label))
+      ylabel <- paste0(saunames[sau],label)
       plot(yrnames,var1[pickyr,sau,pickrep[1]],type="l",lwd=2,ylim=c(0,ymax),
            ylab=ylabel,xlab="Years",panel.first=grid())
       for (i in 2:nrep) lines(yrnames,var1[pickyr,sau,pickrep[i]],lwd=2,col=i)
@@ -106,11 +107,9 @@ diagnosticsproj <- function(zonePsau,glb,rundir,nrep=3) {
   resid <- catch[pickyr,,] - acatch[pickyr,,]
   parset(plots=getparplots(nsau),margin=c(0.3,0.35,0.05,0.05),
          outmargin = c(1,1,0,0))
-  for (sau in 1:nsau) {
-    label <- paste0("SAU ",saunames[sau])
-    hist(resid[,sau,],breaks=25,main="",ylab=label,xlab="",
+  for (sau in 1:nsau)
+    hist(resid[,sau,],breaks=25,main="",ylab=saunames[sau],xlab="",
          panel.first=grid())
-  }
   mtext("Difference between Observed and Expected SAU Catches",
         side=1,outer=TRUE,cex=1.1,line=-0.1)
   mtext("Frequency",side=2,outer=TRUE,cex=1.1,line=-0.1)
@@ -178,7 +177,7 @@ dosau <- function(inzone,glb,picksau,histCE,yrnames,extra=FALSE) {
     }
     if (label[invar] == "harvestR") abline(h=c(0.4,0.75),col=2,lwd=1,lty=2)
   }
-  mtext(paste0("Years  SAU ",glb$saunames[picksau]),side=1,outer=TRUE,cex=1.1,line=-0.1)
+  mtext(paste0("Years ",glb$saunames[picksau]),side=1,outer=TRUE,cex=1.1,line=-0.1)
 } # end of dosau
 
 #' @title dosauplot generates the plot of the chosen variable for each sau
@@ -758,8 +757,8 @@ plotzonesau <- function(zonetot,saudat,saunames,label,labelsau,side=3,
 #' print("wait on suitable internal data-sets")
 sauplots <- function(zoneDP,NAS,glb,rundir,B0,ExB0,startyr,addCI=TRUE,
                      histCE=NULL,tabcat="projSAU") {
-  # zoneDP=zoneDP;zoneDDR=zoneDDR;NAS=NAS;glb=glb;rundir=rundir;B0=B0;ExB0=ExB0;
-  # startyr=32; addCI=TRUE;histCE=histCE; tabcat="projSAU"
+  # zoneDP=zoneDP;NAS=NAS;glb=glb;rundir=rundir;B0=B0;ExB0=ExB0;
+  # startyr=48; addCI=TRUE;histCE=histCE; tabcat="projSAU"
   zonePsau <- zonetosau(zoneDP,NAS,glb,B0,ExB0)
   label <-  c("cpue","catch","acatch","matureB","exploitB","recruit","harvestR")
   out <- vector("list",length(label))

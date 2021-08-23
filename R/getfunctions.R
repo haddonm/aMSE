@@ -620,6 +620,7 @@ getzoneprod <- function(product) {
 #' @examples
 #' data(zone)
 #' round(getzoneprops(zone$zoneC,zone$zoneD,zone$glb),4)
+#' # zoneC=zoneC; zoneD=zoneDD;glb=glb;year=hyrs
 getzoneprops <- function(zoneC,zoneD,glb,year=1) { #zoneC=zoneC; zoneD=zoneDD;glb=zone$glb; year=1
   numpop <- glb$numpop
   Nclass <- glb$Nclass
@@ -645,10 +646,10 @@ getzoneprops <- function(zoneC,zoneD,glb,year=1) { #zoneC=zoneC; zoneD=zoneDD;gl
   depletEx <- ExB/ExB0
   legaldepl <- legalmatB/B0
   propprot <- (matB - legalmatB)/matB
-  label <- c("SAU","B0","matureB","legalmatB","propprot","MSY",
+  label <- c("B0","matureB","legalmatB","propprot","MSY",
              "exB0","exploitB","SpBDepl","ExBDepl",
              "legalDepl","MSYDepl","LML","bLML","harvestR","catch")
-  ans <- rbind(sau,B0,matB,legalmatB,propprot,msy,ExB0,ExB,deplet,
+  ans <- rbind(B0,matB,legalmatB,propprot,msy,ExB0,ExB,deplet,
                depletEx,legaldepl,msydepl,lml,blml,harvestR,catch)
   rownames(ans) <- label
   tot <- numeric(length(rownames(ans))); names(tot) <- label
@@ -663,7 +664,7 @@ getzoneprops <- function(zoneC,zoneD,glb,year=1) { #zoneC=zoneC; zoneD=zoneDD;gl
   tot["bLML"] <- sum(wgts * ans["bLML",])
   tot["harvestR"] <- mean(ans["harvestR",])
   tot["catch"] <- sum(ans["catch",])
-  ans <- cbind(ans,tot)
+  ans <- as.data.frame(round(cbind(ans,tot),4))
   colnames(ans) <- c(paste0("p",1:numpop),"zone")
   return(ans)
 }  # end of getzoneprops

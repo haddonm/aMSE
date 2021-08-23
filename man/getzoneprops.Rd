@@ -29,4 +29,5 @@ getzoneprops extracts a set of properties for each
 \examples{
 data(zone)
 round(getzoneprops(zone$zoneC,zone$zoneD,zone$glb),4)
+# zoneC=zoneC; zoneD=zoneDD;glb=glb;year=hyrs
 }

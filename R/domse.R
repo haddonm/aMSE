@@ -1,15 +1,15 @@
 #
 # outcond=outcond
+# postfixdir <- "SAfirst"
 # rundir <- paste0(prefixdir,postfixdir)
 # datadir <- rundir
-# postdir <- "M1h75"
-# controlfile="controlM1h75.csv"
-# hsargs=hsargs
-# hcrfun=mcdahcr
-# sampleCE=tasCPUE
-# sampleFIS=tasFIS
-# sampleNaS=tasNaS
-# getdata=tasdata
+# controlfile="controltest_SA.csv"
+# hsargs=c(0,0,0,0,0,0)
+# hcrfun=consthcr
+# sampleCE=constCPUE
+# sampleFIS=constFIS
+# sampleNaS=constNaS
+# getdata=constdata
 # calcpopC=calcexpectpopC
 # varyrs=7
 # startyr=48
@@ -17,6 +17,8 @@
 # verbose=TRUE
 # ndiagprojs=4
 # savesauout=TRUE
+# makehcrout=makeouthcr
+# cutcatchN=56
 
 #' @title do_MSE an encapsulating function to hold the details of a single run
 #'
@@ -93,6 +95,10 @@
 #'     in the catch one can remove all the empty cells below a given size
 #'     class. In the default there are 105 2mm size classes and setting
 #'     cutcatchN = 56 removes size classes 1:55 2 - 110 mm; only from catchN
+#' @param matureL is a vector of 2, default = c(70,200), that define the x-axis
+#'     bounds on the biology maturity-at-Length plots
+#' @param wtatL is a vector of 2, default = c(80,200), that define the x-axis
+#'     bounds on the biology weight-at-Length plots
 #'
 #' @seealso{
 #'  \link{makeequilzone}, \link{dohistoricC}, \link{prepareprojection},
@@ -108,7 +114,7 @@
 do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
                    sampleNaS,getdata,calcpopC,makeouthcr,varyrs=7,startyr=42,
                    cleanslate=FALSE,verbose=FALSE,ndiagprojs=3,savesauout=FALSE,
-                   cutcatchN=56) {
+                   cutcatchN=56,matureL=c(70,200),wtatL=c(80,200)) {
   # generate equilibrium zone ----------------------------------------------------
   starttime <- (Sys.time())
   zone <- makeequilzone(rundir,controlfile,datadir,cleanslate=cleanslate,
@@ -124,7 +130,7 @@ do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
   zoneD <- zone$zoneD
   production <- zone$product
   # save some equil results ----------------------------------------------------
-  biology_plots(rundir, glb, zoneC, matL=c(70,200))
+  biology_plots(rundir, glb, zoneC, matL=matureL,Lwt=wtatL)
   plotproductivity(rundir,production,glb)
   numbersatsize(rundir, glb, zoneD)
   #Condition on Fishery --------------------------------------------------------
@@ -132,14 +138,17 @@ do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
   zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,condC,calcpopC=calcpopC,
                         sigR=1e-08,sigB=1e-08)
   hyrs <- glb$hyrs
-  propD <- t(getzoneprops(zoneC,zoneDD,glb,year=hyrs))
-  addtable(round(propD,4),"propertyDD.csv",rundir,category="zoneDD",caption=
+  propD <- as.data.frame(t(getzoneprops(zoneC,zoneDD,glb,year=hyrs)))
+  propD[,"SAU"] <- c(glb$sauname[glb$sauindex],NA)
+  addtable(propD,"propertyDD.csv",rundir,category="zoneDD",caption=
              "Properties of zoneD after conditioning on historical catches.")
   addtable(round(t(zoneDD$harvestR[(hyrs-9):hyrs,]),4),"final_harvestR.csv",
            rundir,category="zoneDD",
            caption="Last ten years of population vs harvest rate.")
-  popdefs <- getlistvar(zoneC,"popdef")
-  addtable(round(t(popdefs),3),"popdefs.csv",rundir,category="zoneDD",
+  popdefs <- as.data.frame(t(getlistvar(zoneC,"popdef")))
+  popdefs[,c(1:6,8:18)] <- round(popdefs[,c(1:6,8:18)],3) #so SAU can be txt
+  popdefs[,"SAU"] <- glb$sauname[glb$sauindex]  #so SAU can be txt
+  addtable(popdefs,"popdefs.csv",rundir,category="zoneDD",
            caption="Population vs Operating model parameter definitions")
   condout <- plotconditioning(zoneDD,glb,zoneC,condC$histCE,rundir)
   # do projections ------------------------------------------------------------
