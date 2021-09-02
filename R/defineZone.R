@@ -682,7 +682,7 @@ makemove <- function(npop,recs,ld,sigmove=0.0) {
 #'     to produce zoneD, the dynamic part of the new zone
 #'
 #' @param zone the object derived from the readzonefile function
-#' @param const the object derived from teh readdatafile function
+#' @param const the object derived from the readdatafile function
 #'
 #' @return a list containing the constant part of the simulated zone
 #' @export

@@ -16,7 +16,7 @@ a vector of length numpop with each population having the property
     of the respective SAU
 }
 \description{
-sautopop uses teh sauindex object to distribute a set of SAU
+sautopop uses the sauindex object to distribute a set of SAU
     properties (for example recruitment deviates) into a set of population
     properties.
 }

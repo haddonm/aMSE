@@ -4,7 +4,7 @@
 \alias{numbersatsize}
 \title{numbersatsize plots details of the numbers-at-size}
 \usage{
-numbersatsize(rundir, glb, zoneD)
+numbersatsize(rundir, glb, zoneD, ssc = 5)
 }
 \arguments{
 \item{rundir}{the results directory, if set to "" then plot is sent to
@@ -13,6 +13,9 @@ the console instead}
 \item{glb}{the globals list}
 
 \item{zoneD}{the dynamic part of the zone, zoneD}
+
+\item{ssc}{index for starting size class. thus 1 = 2, 2 = 4, 5 = 10, etc.
+default = 5 for it plots size classes from 10mm up}
 }
 \value{
 nothing but it does add one plot to the results directory

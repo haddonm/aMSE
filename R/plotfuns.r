@@ -529,11 +529,11 @@ plotNt <- function(Nt,year,glb,start=3,medcol=0) {
     sdat <- Nt[,year,sau,]
     saumedians[,sau] <- apply(sdat,1,median)
     ymax <- getmax(sdat[start:Nclass,])/1000.0
-    label <- paste0("N '000s  sau",saunames[sau])
+    label <- paste0("N '000s  ",saunames[sau])
     plot(midpts,sdat[,1]/1000.0,type="l",lwd=1,col="grey",panel.first=grid(),
          ylim=c(0,ymax),ylab=label)
     for (i in 1:reps) lines(midpts,sdat[,i]/1000.0,col="grey")
-    lines(midpts,sdat[,1]/1000.0,lwd=2,col=2)
+   # lines(midpts,sdat[,1]/1000.0,lwd=2,col=2)
     lines(midpts,saumedians[,sau]/1000.0,lwd=2,col=medcol)
   }
   return(invisible(saumedians))

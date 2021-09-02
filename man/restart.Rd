@@ -14,7 +14,7 @@ Nyrs.}
 
 \item{npop}{The number of populations, the global numpop}
 
-\item{N}{the number of size classes, teh global Nclass}
+\item{N}{the number of size classes, the global Nclass}
 
 \item{zero}{should the arrays be otherwise filled with zeros? The
 default = TRUE}

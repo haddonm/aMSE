@@ -2,15 +2,23 @@
 
 # prepare size-composition data ------------------------------------------------
 
-B0 <- getvar(zoneC,"B0")
-ExB0 <- getvar(zoneC,"ExB0")
+zoneCP <- out$zoneCP
+zoneDP <- out$zoneDP
+NAS <- out$NAS
+glb <- out$glb
+B0 <- getvar(zoneCP,"B0")
+ExB0 <- getvar(zoneCP,"ExB0")
 zoneDsau <- zonetosau(zoneDDR,NAS,glb,B0,ExB0)
 zonePsau <- zonetosau(zoneDP,NAS,glb,B0,ExB0)
 
 
 plotprep(width=8,height=8,newdev=FALSE)
-x <- plotNt(zonePsau$Nt,year=30,glb=glb,start=3,medcol=1)
+x <- plotNt(zonePsau$Nt,year=58,glb=glb,start=3,medcol=1)
 str(x)
+
+numbersatsizeSAU(rundir="",out$glb,zoneC=out$zoneCP,zoneD=zoneDP, sau=4, ssc=5, yr=58,
+                 defpar=TRUE, exploit=TRUE, mature=TRUE,filename="")
+
 
 
 lcomp <- prepareDDNt(zoneDD$Nt,zoneDD$catchN,glb)
@@ -699,6 +707,77 @@ sausizecatchN <- function(catchN,glb,sau,years,cutcatchN) {
   }
 
 }
+
+
+#' @title numbersatsizeSAU plots the numbers-at-size for a given SAU
+#'
+#' @description numbersatsizeSAU plots the initial unfished numbers-
+#'     at-size distribution for a given SAU, omitting the first four size
+#'     classes to avoid the recruitment numbers dominating the plot.
+#'
+#' @param rundir the results directory, if set to "" then plot is sent to
+#'     the console instead
+#' @param glb the globals list
+#' @param zoneC the constant part of the zone structure
+#' @param Nt the numbers-at-size for all SAU, all years, and all reps
+#' @param sau the SAU name to select for plotting. If multiple populations are
+#'     contained in an SAU their numbers-at-size will be combined.
+#' @param ssc index for starting size class. thus 1 = 2, 2 = 4, 5 = 10, etc.
+#'     default = 5 for it plots size classes from 10mm up
+#' @param yr which year of numbers-at-size should be plotted?
+#' @param defpar should the plot parameters be defined. Set to FALSE if
+#'     numbersatsizeSAU is to be used to add a plot to a multiple plot.
+#' @param exploit should exploitable numbers be plotted as well? default=TRUE
+#' @param mature should mature numbers be plotted as well? default=TRUE
+#' @param filename default='Numbers-at-Size_Year1.png', but can be changed
+#'     to suit whichever year is used
+#'
+#' @return nothing but it adds a plot to the results directory or console
+#' @export
+#'
+#' @examples
+#' print("this will be quite long when I get to it")
+numbersatsizeSAU <- function(rundir, glb, zoneC, Nt, sau, ssc=5, yr=1,
+                             defpar=TRUE, exploit=TRUE, mature=TRUE,
+                             filename="Numbers-at-Size_Year1.png") {
+  # rundir=""; glb=out$glb; Nt=out$NAS$Nt; sau=8; defpar=TRUE
+  # ssc=5; yr=58; exploit=TRUE; mature=TRUE; filename=""
+  mids <- glb$midpts
+  nc <- glb$Nclass
+  saunames <- glb$saunames
+  picksau <- which(saunames=sau)
+  Nt <- as.matrix(Nt[,yr,picksau,]/1000.0)
+  if (length(picksau) > 1) {
+    Ntt <- as.matrix(rowSums(Nt,na.rm=TRUE))  # totals
+  } else {
+    Ntt <- Nt
+  }
+  if (nchar(rundir) > 0) {
+    filen <- file.path(rundir,filename)
+  } else {
+    filen <- ""
+  }
+  if ((exploit) | (mature)) pickzC <- which(sapply(zoneC,"[[","SAU") == sau)
+  maxy <- getmax(Ntt[ssc:nc,])
+  if (defpar)
+    plotprep(width=7,height=4,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
+  plot(mids[ssc:nc],Ntt[ssc:nc],type="l",lwd=2,xlab="Shell Length mm (5 - 210mm)",
+       ylab="Numbers-at_size '000s",panel.first=grid(),ylim=c(0,maxy))
+  if (exploit)
+    lines(mids[ssc:nc],zoneC[[pickzC]]$Select[ssc:nc,yr] * Ntt[ssc:nc],col=4,lwd=2)
+  if (mature)
+    lines(mids[ssc:nc],zoneC[[pickzC]]$Maturity[ssc:nc] * Ntt[ssc:nc],col=2,lwd=2)
+  legend("topright",legend=as.character(sau),lwd=0,col=0,bty="n",cex=1.2)
+  if (nchar(rundir) > 0) {
+    addm <- ""; adde <- ""
+    if (mature) addm <- " The red line is mature numbers-at-size. "
+    if (exploit) adde <- " The blue line is exploitable numbers-at-size."
+    caption <- paste0("The numbers-at-size for the SAU ",sau," the recruitment ",
+                      "numbers are omitted for clarity.",addm,adde)
+    addplot(filen,rundir=rundir,category="NumSize",caption)
+  }
+} # end of numbersatsizeSAU
+
 
 
 

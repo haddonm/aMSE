@@ -67,8 +67,8 @@ ctrlfiletemplate <- function(indir,filename="controlsau.csv",devrec=-1) { # indi
    cat("bysau, 1, 1=TRUE and 0=FALSE  \n",file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
    cat("zoneCOAST \n",file=filename,append=TRUE)
-   cat("batch,  0, deprecated as batch jobs are run differently \n",
-       file=filename, append=TRUE)
+ #  cat("batch,  0, deprecated as batch jobs are run differently \n",
+ #      file=filename, append=TRUE)
    cat("replicates,  100, number of replicates, usually 500 or more  \n",
        file=filename, append=TRUE)
    cat("withsigR,  0.3, recruitment variability eg 0.3 \n",
@@ -94,7 +94,7 @@ ctrlfiletemplate <- function(indir,filename="controlsau.csv",devrec=-1) { # indi
    cat("Nclass, 105, number of size classes \n",file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
    cat("RECRUIT \n",file=filename,append=TRUE)
-   cat("larvdisp, 0.005, rate of larval dispersal eg 0.005 = 0.5 percent \n",
+   cat("larvdisp, 0.01, rate of larval dispersal eg 0.01 = 0.5 percent in either direction\n",
        file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
    cat("RANDOM \n",file=filename,append=TRUE)
@@ -103,7 +103,7 @@ ctrlfiletemplate <- function(indir,filename="controlsau.csv",devrec=-1) { # indi
    cat("randomseedP, 0, for repeatability of projections set to 0 otherwise \n",
        file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
-   cat("initLML, 140, the initial LML for generating the unfished zone \n",
+   cat("initLML, 140, the initial LML for generating the unfished zone if no historical catches present \n",
        file=filename,append=TRUE)  # deprecated
    cat("\n",file=filename,append=TRUE)
    cat("PROJECT, 30, number of projection years for each simulation \n",
@@ -643,9 +643,9 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir,verbose=TRUE
                  compdat=compdat,recdevs=recdevs,Sel=NULL,SelWt=NULL)
    projC <- list(projLML=projLML,projyrs=projyrs,
                  Sel=NULL,SelWt=NULL,histCE=histCE)
-   outctrl <- list(runlabel,datafile,batch,reps,randomseed,randomseedP,
+   outctrl <- list(runlabel,datafile,reps,randomseed,randomseedP,
                    withsigR,withsigB,withsigCE,catches,projyrs,bysau)
-   names(outctrl) <- c("runlabel","datafile","batch","reps","randseed",
+   names(outctrl) <- c("runlabel","datafile","reps","randseed",
                        "randseedP","withsigR","withsigB","withsigCE",
                        "catches","projection","bysau")
    globals <- list(numpop=numpop, nSAU=nSAU, midpts=midpts,Nclass=Nclass,

@@ -13,6 +13,7 @@ oneyearsauC(
   sauindex,
   movem,
   sigmar = 1e-08,
+  sigce = 1e-08,
   r0,
   b0,
   exb0,
@@ -39,6 +40,9 @@ oneyearsauC(
 
 \item{sigmar}{the variation in recruitment dynamics, set to 1e-08
 when searching for an equilibrium.}
+
+\item{sigce}{the process error on the relationship between cpue and
+exploitable biomass, set to 1e-08 when searching for an equilibrium.}
 
 \item{r0}{the unfished R0 level used by oneyearrec}
 

@@ -23,7 +23,7 @@ summarizeprod generates a summary of the productivity properties
     catch level (which approximates the MSY). It summarizes the total zone
     by summing all the productivity matrices and search for the largest
     catch again. It generates estimates of the annualH, depletion and RelCE
-    by using a weighted average of those values from teh separate SAU or
+    by using a weighted average of those values from the separate SAU or
     populations, where the weighting is the proportion of the sum of the
     MSYs taken in each sau or population. This latter is only an
     approximation but provides at least an indication.

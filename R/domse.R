@@ -4,12 +4,12 @@
 # rundir <- paste0(prefixdir,postfixdir)
 # datadir <- rundir
 # controlfile="controltest_SA.csv"
-# hsargs=c(0,0,0,0,0,0)
-# hcrfun=consthcr
-# sampleCE=constCPUE
-# sampleFIS=constFIS
-# sampleNaS=constNaS
-# getdata=constdata
+# hsargs=hsargs
+# hcrfun=mcdahcr
+# sampleCE=tasCPUE
+# sampleFIS=tasFIS
+# sampleNaS=tasNaS
+# getdata=tasdata
 # calcpopC=calcexpectpopC
 # varyrs=7
 # startyr=48
@@ -19,6 +19,8 @@
 # savesauout=TRUE
 # makehcrout=makeouthcr
 # cutcatchN=56
+# matureL = c(50,180)
+# wtatL = c(80,210)
 
 #' @title do_MSE an encapsulating function to hold the details of a single run
 #'

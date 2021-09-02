@@ -19,7 +19,7 @@ a 2D matrix of yrs x reps
 \description{
 addpops adds the populations from a single replicate together
     to form zone totals. It can only be used on matureB, exploitB, catch,
-    acatch, and recruits. teh sum of acatch is already available as TAC in
+    acatch, and recruits. the sum of acatch is already available as TAC in
     the projection dynamics object 'zoneDP'
 }
 \examples{

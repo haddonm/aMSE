@@ -4,7 +4,7 @@
 \alias{oneyearcat}
 \title{oneyearcat one year's catch dynamics for one abpop}
 \usage{
-oneyearcat(MatWt, SelWt, selyr, Me, G, popq, WtL, inNt, incat)
+oneyearcat(MatWt, SelWt, selyr, Me, G, popq, WtL, inNt, incat, sigce)
 }
 \arguments{
 \item{MatWt}{maturity x Weight-at-size from zoneCC for the population and year}
@@ -28,6 +28,11 @@ of dynamics. These are projected into the active year.}
 from the harvest control rule for each SAU, then allocated to
 each population with respect to its relative catching
 performance.}
+
+\item{sigce}{the process error variation associated with the
+estimates of cpue from the model. Found in the ctrl object
+as withsigCE. It is implemented as Log-Normal error on the
+exploitable biomass value from the model}
 }
 \value{
 a list containing a vector of ExploitB, MatureB, Catch, and ce, and

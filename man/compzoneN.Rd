@@ -4,7 +4,7 @@
 \alias{compzoneN}
 \title{compzoneN compares numbers-at-size before/after depletion}
 \usage{
-compzoneN(unfN, curN, glb, yr, depl, LML = 0, rundir = "")
+compzoneN(unfN, curN, glb, yr, depl, ssc = 5, LML = 0, rundir = "")
 }
 \arguments{
 \item{unfN}{the unfished numbers-at-size from getzoneprops}
@@ -17,7 +17,10 @@ compzoneN(unfN, curN, glb, yr, depl, LML = 0, rundir = "")
 
 \item{depl}{the depletion level of the current n-a-s}
 
-\item{LML}{the legal minimum length in teh comparison year}
+\item{ssc}{index for starting size class. thus 1 = 2, 2 = 4, 5 = 10, etc.
+default = 5 for it plots size classes from 10mm up}
+
+\item{LML}{the legal minimum length in the comparison year}
 
 \item{rundir}{the results directory, default = "" leading to no
 .png file, just a plot to the screen.}

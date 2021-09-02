@@ -9,7 +9,7 @@ makezoneC(zone, const)
 \arguments{
 \item{zone}{the object derived from the readzonefile function}
 
-\item{const}{the object derived from teh readdatafile function}
+\item{const}{the object derived from the readdatafile function}
 }
 \value{
 a list containing the constant part of the simulated zone

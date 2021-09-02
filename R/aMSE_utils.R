@@ -30,7 +30,7 @@ putNA <- function(x,pre,post) { # x=med14; pre=0; post=5
 #'
 #' @description addpops adds the populations from a single replicate together
 #'     to form zone totals. It can only be used on matureB, exploitB, catch,
-#'     acatch, and recruits. teh sum of acatch is already available as TAC in
+#'     acatch, and recruits. the sum of acatch is already available as TAC in
 #'     the projection dynamics object 'zoneDP'
 #'
 #' @param invar the summable variable eg catch, recruits, matureB
@@ -483,7 +483,7 @@ prepareDDNt <- function(inNt,incatchN,glb) { # Nt=zoneDD$Nt; catchN=zoneDD$catch
 
 #' @title sautopop translates a vector of SAU properties into population properties
 #'
-#' @description sautopop uses teh sauindex object to distribute a set of SAU
+#' @description sautopop uses the sauindex object to distribute a set of SAU
 #'     properties (for example recruitment deviates) into a set of population
 #'     properties.
 #'
@@ -548,7 +548,7 @@ saveobject <- function(obname,object,postfix="",rundir) {
 #'     catch level (which approximates the MSY). It summarizes the total zone
 #'     by summing all the productivity matrices and search for the largest
 #'     catch again. It generates estimates of the annualH, depletion and RelCE
-#'     by using a weighted average of those values from teh separate SAU or
+#'     by using a weighted average of those values from the separate SAU or
 #'     populations, where the weighting is the proportion of the sum of the
 #'     MSYs taken in each sau or population. This latter is only an
 #'     approximation but provides at least an indication.
@@ -641,6 +641,7 @@ zonetosau <- function(inzone,NAS=NULL,glb, B0, ExB0) { # inzone=zoneDP; NAS=NAS;
   sauindex <- glb$sauindex
   saunames <- glb$saunames
   N <- glb$Nclass
+  catN <- dim(NAS$catchN)[1]
   invar <- inzone$matureB
   nyrs <- dim(invar)[1]
   reps <- glb$reps
@@ -649,8 +650,9 @@ zonetosau <- function(inzone,NAS=NULL,glb, B0, ExB0) { # inzone=zoneDP; NAS=NAS;
   matureB <- poptosau(invar,glb)
   exploitB <- poptosau(inzone$exploitB,glb)
   recruit <- poptosau(inzone$recruit,glb)
-  catchN <- array(data=0,dim=c(N,nyrs,nsau,reps), # define some arrays
-                  dimnames=list(glb$midpts,1:nyrs,saunames,1:reps))
+  catlab <- glb$midpts[(N-catN+1):N]
+  catchN <- array(data=0,dim=c(catN,nyrs,nsau,reps), # define some arrays
+                  dimnames=list(catlab,1:nyrs,saunames,1:reps))
   Nt <- array(data=0,dim=c(N,nyrs,nsau,reps),
               dimnames=list(glb$midpts,1:nyrs,saunames,1:reps))
   # NumNe <- array(data=0,dim=c(N,nyrs,nsau,reps),

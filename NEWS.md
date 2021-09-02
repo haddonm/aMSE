@@ -2,6 +2,8 @@
 
 See the ReadMe for the latest two events
 
+* 2021-08-19 aMSE 0.0.0.400 Can now have text as SAU names in the Control file, this will use those names to label all plots (still working on tbles and extra polishing).
+
 * 2021-08-13   aMSE 0.0.0.500 removed NumNe (midyear numbers-at-size) and introduced cutcatchN as an argument to do_MSE, which removes all size class data from teh catchN array with size-classes less than cutcatchN, whose default = 56 (2 - 110mm removed). This saves a good deal of space.
 
 * 2021-08-12 aMSE 0.0.0.500 Modified do_MSE and added plothsstats, streamlined the conditioning. No EWN.

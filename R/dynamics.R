@@ -266,6 +266,10 @@ oneyear <- function(MatWt,SelWt,selyr,Me,G,popq,WtL,inNt,inH) {  #
 #'     from the harvest control rule for each SAU, then allocated to
 #'     each population with respect to its relative catching
 #'     performance.
+#' @param sigce the process error variation associated with the
+#'     estimates of cpue from the model. Found in the ctrl object
+#'     as withsigCE. It is implemented as Log-Normal error on the
+#'     exploitable biomass value from the model
 #'
 #' @seealso{
 #'  \link{dohistoricC}, \link{oneyearcat}, \link{oneyearrec}
@@ -277,7 +281,7 @@ oneyear <- function(MatWt,SelWt,selyr,Me,G,popq,WtL,inNt,inH) {  #
 #'
 #' @examples
 #' print("need to wait on built in data sets")
-oneyearcat <- function(MatWt,SelWt,selyr,Me,G,popq,WtL,inNt,incat) {
+oneyearcat <- function(MatWt,SelWt,selyr,Me,G,popq,WtL,inNt,incat,sigce) {
   # yr=2; pop=2; inpopC=zoneC[[pop]]; inNt=zoneD$Nt[,yr-1,pop];
   # Nclass=glb$Nclass; inH=0.05;
   MatWt <- MatWt/1e06
@@ -296,7 +300,7 @@ oneyearcat <- function(MatWt,SelWt,selyr,Me,G,popq,WtL,inNt,incat) {
   avExpB <- (midyexpB + ExploitB)/2.0 #av start and end exploitB
   MatureB <- sum(MatWt*newNt)
   Catch <- sum(WtL*Cat)/1e06
-  ce <- popq * avExpB * 1000.0  #ExploitB
+  ce <- (popq * (avExpB * rlnorm(1,0,sigce)) * 1000.0)   #ExploitB
   vect <- c(exploitb=ExploitB,midyexpB=midyexpB,matureb=MatureB,
             catch=Catch,cpue=ce)
   ans <- list(vect=vect,NaL=newNt,catchN=Cat,NumNe=NumNe)
@@ -325,6 +329,8 @@ oneyearcat <- function(MatWt,SelWt,selyr,Me,G,popq,WtL,inNt,incat) {
 #' @param movem the larval dispersal movement matrix, global move
 #' @param sigmar the variation in recruitment dynamics, set to 1e-08
 #'     when searching for an equilibrium.
+#' @param sigce the process error on the relationship between cpue and
+#'     exploitable biomass, set to 1e-08 when searching for an equilibrium.
 #' @param r0 the unfished R0 level used by oneyearrec
 #' @param b0 the unfished mature biomass B0, used in recruitment and depletion
 #' @param exb0 the unfished exploitable biomass used in depletion
@@ -340,7 +346,7 @@ oneyearcat <- function(MatWt,SelWt,selyr,Me,G,popq,WtL,inNt,incat) {
 #' @examples
 #' print("Wait on new data")
 oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,
-                        movem,sigmar=1e-08,r0,b0,exb0,rdev=-1) {
+                        movem,sigmar=1e-08,sigce=1e-08,r0,b0,exb0,rdev=-1) {
  # zoneCC=zoneCP;inN=zoneDP$Nt[,year-1,,iter];popC=popC;year=year;Ncl=glob$Nclass;
 #  sauindex=sauindex; movem=glob$move; sigmar=sigR;r0=r0;b0=b0;exb0=exb0; rdev=-1;
   npop <- length(popC)
@@ -351,7 +357,7 @@ oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,
     ans[[popn]] <- oneyearcat(MatWt=pop$MatWt,SelWt=pop$SelWt[,year],
                               selyr=pop$Select[,year],Me=pop$Me,G=pop$G,
                               popq=pop$popq,WtL=pop$WtL,inNt=inN[,popn],
-                              incat=popC[popn])
+                              incat=popC[popn],sigce=sigce)
     # ans[[popn]] <- oneyearcat(inpopC=zoneCC[[popn]],inNt=inN[,popn],
     #                           Nclass=Ncl,incat=popC[popn],yr=year)
   }
@@ -533,7 +539,7 @@ oneyrgrowth <- function(inpop,startsize=2) {
 #'     Nyrs.
 #' @param hyrs The number of years of dynamics, the hyrs from glb
 #' @param npop The number of populations, the global numpop
-#' @param N the number of size classes, teh global Nclass
+#' @param N the number of size classes, the global Nclass
 #' @param zero should the arrays be otherwise filled with zeros? The
 #'     default = TRUE
 #'

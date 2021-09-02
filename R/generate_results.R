@@ -160,7 +160,9 @@ biology_plots <- function(rundir, glb, zoneC, matL=c(30,210), Lwt=c(80,210)) {
 #' @param glb the global object
 #' @param yr the year of the dynamics
 #' @param depl the depletion level of the current n-a-s
-#' @param LML the legal minimum length in teh comparison year
+#' @param ssc index for starting size class. thus 1 = 2, 2 = 4, 5 = 10, etc.
+#'     default = 5 for it plots size classes from 10mm up
+#' @param LML the legal minimum length in the comparison year
 #' @param rundir the results directory, default = "" leading to no
 #'     .png file, just a plot to the screen.
 #'
@@ -170,8 +172,8 @@ biology_plots <- function(rundir, glb, zoneC, matL=c(30,210), Lwt=c(80,210)) {
 #' @examples
 #' print("still to be developed")
 #' # unfN=unfN; curN=depN;glb=glb; yr=1; depl=0.3993; LML=132; rundir=rundir
-compzoneN <- function(unfN,curN,glb,yr,depl,LML=0,rundir="") {
-  usecl=5:glb$Nclass
+compzoneN <- function(unfN,curN,glb,yr,depl,ssc=5,LML=0,rundir="") {
+  usecl=ssc:glb$Nclass
   mids <- glb$midpts
   filen <- paste0("zone_n-at-size_yr",yr,".png")
   filen <- filenametopath(rundir,filen)
@@ -185,7 +187,6 @@ compzoneN <- function(unfN,curN,glb,yr,depl,LML=0,rundir="") {
   if (nchar(filen) > 0) dev.off()
   return(invisible(filen))
 } # end of compzoneN
-
 
 
 #' @title fishery_plots generates a set of plots relating to the fishery properties
@@ -290,16 +291,19 @@ makeoutput <- function(out,rundir,datadir,postdir,controlfile,doproject=TRUE,
 #'     the console instead
 #' @param glb the globals list
 #' @param zoneD the dynamic part of the zone, zoneD
+#' @param ssc index for starting size class. thus 1 = 2, 2 = 4, 5 = 10, etc.
+#'     default = 5 for it plots size classes from 10mm up
 #'
 #' @return nothing but it does add one plot to the results directory
 #' @export
 #'
 #' @examples
 #' print("this will be quite long when I get to it")
-numbersatsize <- function(rundir, glb, zoneD) {
+numbersatsize <- function(rundir, glb, zoneD, ssc=5) {
   # some globals
   mids <- glb$midpts
   numpop <- glb$numpop
+  nc <- glb$Nclass
   # initial numbers-at-size uses zoneD--
   Nt <- zoneD$Nt[,1,]/1000.0
   Ntt <- rowSums(zoneD$Nt[,1,])/1000.0  # totals
@@ -310,12 +314,12 @@ numbersatsize <- function(rundir, glb, zoneD) {
   }
   plotprep(width=7,height=6,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
   parset(plots=c(2,1))
-  plot(mids[5:105],Ntt[5:105],type="l",lwd=2,xlab="Shell Length mm (5 - 210mm)",
+  plot(mids[ssc:nc],Ntt[ssc:nc],type="l",lwd=2,xlab="Shell Length mm (5 - 210mm)",
        ylab="Numbers-at_size '000s",panel.first=grid())
-  maxy <- getmax(Nt[5:105,])
-  plot(mids[5:105],Nt[5:105,1],type="l",lwd=2,xlab="Shell Length mm (5 - 210mm)",
+  maxy <- getmax(Nt[ssc:nc,])
+  plot(mids[ssc:nc],Nt[ssc:nc,1],type="l",lwd=2,xlab="Shell Length mm (5 - 210mm)",
        ylab="Numbers-at_size '000s",panel.first=grid(),ylim=c(0,maxy))
-  for (pop in 2:numpop) lines(mids[5:105],Nt[5:105,pop],lwd=2,col=pop)
+  for (pop in 2:numpop) lines(mids[ssc:nc],Nt[ssc:nc,pop],lwd=2,col=pop)
   abline(h=0.0,col="darkgrey")
   legend("topright",paste0("P",1:numpop),lwd=3,col=c(1:numpop),bty="n",
          cex=1.2)
@@ -326,70 +330,6 @@ numbersatsize <- function(rundir, glb, zoneD) {
     addplot(filen,rundir=rundir,category="NumSize",caption)
   }
 } # end of numbersatsize
-
-#' @title numbersatsizeSAU plots the numbers-at-size for a given SAU
-#'
-#' @description numbersatsizeSAU plots the initial unfished numbers-
-#'     at-size distribution for a given SAU, omitting the first four size
-#'     classes to avoid the recruitment numbers dominating the plot.
-#'
-#' @param rundir the results directory, if set to "" then plot is sent to
-#'     the console instead
-#' @param glb the globals list
-#' @param zoneC the constant part of the zpne structure
-#' @param zoneD the dynamic part of the zone, zoneD
-#' @param sau the SAU name to select for plotting. If multiple populations are
-#'     contained in an SAU their numbers-at-size will be combined.
-#' @param yr which year of numbers-at-size should be plotted?
-#' @param defpar should the plot parameters be defined. Set to FALSE if
-#'     numbersatsizeSAU is to be used to add a plot to a multiple plot.
-#' @param exploit should exploitable numbers be plotted as well? default=TRUE
-#' @param mature should mature numbers be plotted as well? default=TRUE
-#' @param filename default='Numbers-at-Size_Year1.png', but can be changed
-#'     to suit whichever year is used
-#'
-#' @return nothing but it adda a plot to the results directory or console
-#' @export
-#'
-#' @examples
-#' print("this will be quite long when I get to it")
-numbersatsizeSAU <- function(rundir, glb, zoneC, zoneD, sau, yr=1,
-                             defpar=TRUE, exploit=TRUE, mature=TRUE,
-                             filename="Numbers-at-Size_Year1.png") {
-  # some globals rundir=""; glb=glb; zoneD=zoneD; sau=8; defpar=TRUE
-  mids <- glb$midpts
-  picksau <- which(zoneD$SAU == as.character(sau))
-  Nt <- as.matrix(zoneD$Nt[,yr,picksau]/1000.0)
-  if (length(picksau) > 1) {
-    Ntt <- as.matrix(rowSums(Nt,na.rm=TRUE))  # totals
-  } else {
-    Ntt <- Nt
-  }
-  if (nchar(rundir) > 0) {
-    filen <- file.path(rundir,filename)
-  } else {
-    filen <- ""
-  }
-  if ((exploit) | (mature)) pickzC <- which(sapply(zoneC,"[[","SAU") == sau)
-  maxy <- getmax(Ntt[5:105,])
-  if (defpar)
-    plotprep(width=7,height=4,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
-  plot(mids[5:105],Ntt[5:105],type="l",lwd=2,xlab="Shell Length mm (5 - 210mm)",
-       ylab="Numbers-at_size '000s",panel.first=grid(),ylim=c(0,maxy))
-  if (exploit)
-    lines(mids[5:105],zoneC[[pickzC]]$Select[5:105,yr] * Ntt[5:105],col=4,lwd=2)
-  if (mature)
-    lines(mids[5:105],zoneC[[pickzC]]$Maturity[5:105] * Ntt[5:105],col=2,lwd=2)
-  legend("topright",legend=as.character(sau),lwd=0,col=0,bty="n",cex=1.2)
-  if (nchar(rundir) > 0) {
-    addm <- ""; adde <- ""
-    if (mature) addm <- " The red line is mature numbers-at-size. "
-    if (exploit) adde <- " The blue line is exploitable numbers-at-size."
-    caption <- paste0("The numbers-at-size for the SAU ",sau," the recruitment ",
-                      "numbers are omitted for clarity.",addm,adde)
-    addplot(filen,rundir=rundir,category="NumSize",caption)
-  }
-} # end of numbersatsizeSAU
 
 
 #' @title plotproductivity characterizes each population's yield curve
@@ -468,7 +408,7 @@ plotproductivity <- function(rundir,product,glb) {
     wts[i,] <- product[i,"Catch",]/sauyield[i,sauindex]
     saucpue[i,] <- tapply((product[i,"RelCE",] * wts[i,]),sauindex,sum,na.rm=TRUE)
   }
-  label <- paste0("sau ",glb$saunames)
+  label <- glb$saunames
   plotprep(width=8,height=7,newdev=FALSE,filename=filen,verbose=FALSE)
   parset(plots=pickbound(nsau),margin=c(0.3,0.3,0.05,0.05),outmargin=c(1,1,0,0))
   for (i in 1:nsau) { # i=1
