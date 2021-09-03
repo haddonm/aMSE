@@ -300,7 +300,8 @@ oneyearcat <- function(MatWt,SelWt,selyr,Me,G,popq,WtL,inNt,incat,sigce) {
   avExpB <- (midyexpB + ExploitB)/2.0 #av start and end exploitB
   MatureB <- sum(MatWt*newNt)
   Catch <- sum(WtL*Cat)/1e06
-  ce <- (popq * (avExpB * rlnorm(1,0,sigce)) * 1000.0)   #ExploitB
+  error <-  exp(rnorm(1,mean=0,sd=sigce) - (sigce^2.0)/2.0)
+  ce <- (popq * (avExpB * error) * 1000.0)   #ExploitB
   vect <- c(exploitb=ExploitB,midyexpB=midyexpB,matureb=MatureB,
             catch=Catch,cpue=ce)
   ans <- list(vect=vect,NaL=newNt,catchN=Cat,NumNe=NumNe)

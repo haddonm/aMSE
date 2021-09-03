@@ -244,7 +244,12 @@ getlmcoef <- function(y,x) {
 #'     performance measures. It does this by re-scaling the range of
 #'     the PM values and then fitting separate linear regressions to
 #'     the values above and below zero. These enable it to calculate
-#'     the predicted scores.
+#'     the predicted scores. This function now contain a filter that
+#'     allows for gaps within the catch and cpue data. These generated
+#'     NAs, NaNs, Infs, and -1 values, all of which lead to aberrant
+#'     behaviour. This means that the HS being used is applied to all
+#'     data series, even those with large gaps, which may not be what
+#'     is most desirable (but at least now this does'nt fail).
 #'
 #' @param pm the raw performance measure values derived from the functions
 #'     getgradone,  getgradwid, or targscore

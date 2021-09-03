@@ -556,7 +556,7 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
                        sauindex,sigmab=sigmab)
       outy <- oneyearsauC(zoneCC=zoneCP,inN=zoneDP$Nt[,year-1,,iter],
                           popC=popC,year=year,Ncl=Nclass,sauindex=sauindex,
-                          movem=movem,sigmar=sigmar,
+                          movem=movem,sigmar=sigmar,sigce,
                           r0=r0,b0=b0,exb0=exb0)
       dyn <- outy$dyn
       saudyn <- poptosauCE(dyn["catch",],dyn["cpue",],sauindex)
