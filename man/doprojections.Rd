@@ -46,7 +46,8 @@ estimate the aspirational catches or TAC or the following year}
 \item{sampleNaS}{a function that generates the Numbers-at-size samples}
 
 \item{getdata}{a function that gathers all the data required by the hcrfun
-and combines it into an hcrdata object ready for the hcrfun}
+and combines it into an hcrdata object ready for the hcrfun. It is
+expected to call sampleCE, sampleFIS, and sampleNAS.}
 
 \item{calcpopC}{a function that takes the output from hcrfun and generates
 the actual catch per population expected in the current year.}

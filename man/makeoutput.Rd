@@ -10,6 +10,7 @@ makeoutput(
   datadir,
   postdir,
   controlfile,
+  hsfile = NULL,
   doproject = TRUE,
   openfile = TRUE,
   verbose = FALSE
@@ -27,6 +28,8 @@ name the internal webpage}
 
 \item{controlfile}{the controlfile used to run the MSE}
 
+\item{hsfile}{the name of the harvest control rule source file}
+
 \item{doproject}{have the projections been run? default = TRUE.}
 
 \item{openfile}{should the website be opened automatically? default=TRUE}
@@ -40,7 +43,8 @@ nothing but it does generate a set of HTML files in rundir. If
 }
 \description{
 makeoutput simplifies taking the output from do_MSE and
-    producing the HTML files used to display all the results in rundir.
+    producing the HTML files used to display all the results in rundir. Note
+    that 'runnotes' is now a vector of character strings made up using paste0.
 }
 \examples{
 print("wait on internal data-sets")

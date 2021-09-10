@@ -133,7 +133,13 @@ diagnosticsproj <- function(zonePsau,glb,rundir,nrep=3) {
 #'     recruits for a given SAU during the years of conditioning. This aims to
 #'     assist the conditioning process by illustrating the state of the sau
 #'     during and at the end of conditioning on the fishery. If extra is TRUE
-#'     then it also plots
+#'     then it also plots the exploitable biomass and the depletion of the
+#'     exploitable biomass. A loess fit is also plotted onto the recruitments
+#'     plot to give some insight into the recruitment deviates. Unfortunately,
+#'     the 'true' predicted recruitment levels (without variation) cannot be
+#'     easily estimated because the implementation of larval movement disturbs
+#'     how many recruits are present each year in each population and hence
+#'     each SAU.
 #'
 #' @param inzone the conditioned zone (zoneDD) after it has been converted to
 #'     sau scale by using getsauzone
@@ -176,6 +182,10 @@ dosau <- function(inzone,glb,picksau,histCE,yrnames,extra=FALSE) {
       text(x=yrnames[pickyr],y=0.9*ymax,round(tail(dvar,1),4),cex=1.1,pos=4)
     }
     if (label[invar] == "harvestR") abline(h=c(0.4,0.75),col=2,lwd=1,lty=2)
+    if (label[invar] == "recruit") {
+      loessfit <- loess(dvar ~ glb$hyrnames,span=0.625)
+      lines(loessfit$x,loessfit$fitted,lwd=2,col=2)
+    }
   }
   mtext(paste0("Years ",glb$saunames[picksau]),side=1,outer=TRUE,cex=1.1,line=-0.1)
 } # end of dosau
@@ -393,7 +403,7 @@ plotCNt <- function(Nt,glb,vline=NULL,start=3) {
   parset(plots=getparplots(nsau),margin = c(0.25, 0.45, 0.05, 0.05),byrow=FALSE,
          outmargin = c(1.1, 0, 0, 0))
   for (sau in 1:nsau) { #  sau=1
-    label <- paste0("N '000s  sau",saunames[sau])
+    label <- paste0("N '000s ",saunames[sau])
     ymax <- getmax(Nt[start:Nclass,,sau])/1000.0
     plot(midpts,Nt[,1,sau]/1000.0,type="l",lwd=1,panel.first=grid(),
          ylim=c(0,ymax),ylab=label,xlab="")
@@ -437,7 +447,7 @@ plotconditioning <- function(zoneDD,glb,zoneC,histCE,rundir) {
   yrnames <- glb$hyrnames
   ssq <- compareCPUE(histCE,sauZone$cpue,glb,rundir,filen="compareCPUE.png")
   for (sau in allsau) {  #  sau=allsau[1]; filen=""
-    filen <- filenametopath(rundir,paste0("SAU_",snames[sau],"_conditioned.png"))
+    filen <- filenametopath(rundir,paste0(snames[sau],"_conditioned.png"))
     plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
     dosau(sauZone,glb,picksau=sau,histCE=histCE,yrnames=glb$hyrnames)
     caption <- "Dynamics during conditioning on the fishery."
@@ -595,42 +605,6 @@ plotprod <- function(product,xname="MatB",yname="Catch",xlimit=NA,
   if ((nchar(filename) > 0) & (devoff)) dev.off()
   return(invisible(list(xname=x,yname=y)))
 } # end of plotprod
-
-
-
-#' @title plotTAC plots the projected TAC across all replicates
-#'
-#' @description plotTAC plots out the projected TAC for all replicates. The
-#'     first value is the sum of the final catches in the conditioning period.
-#'
-#' @param zoneDP the dynamic zone projection object
-#' @param rundir the rundir for the scenario
-#' @param CIprobs the quantiles used to generate the confidence intervals. The
-#'     default = c(0.05,0.5,0.95)
-#'
-#' @return nothing but it adds a plot to the zonescale tab in the rundir
-#' @export
-#'
-#' @examples
-#' print("wait on suitable datasets")
-plotTAC <- function(zoneDP,rundir,CIprobs=c(0.05,0.5,0.95)) {
-  tac <- zoneDP$TAC
-  nyrs <- nrow(tac)
-  reps <- ncol(tac)
-  filen <- filenametopath(rundir,paste0("Projected_TAC.png"))
-  plotprep(width=7,height=4,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
-  parset()
-  ymax <- getmax(tac)
-  CI <- apply(tac,1,quantile,probs=CIprobs)
-  plot(1:nyrs,tac[,1],lwd=1,col="grey",ylab="Projected TAC (t)",xlab="Years",
-       panel.first=grid(),ylim=c(0,ymax),yaxs="i")
-  for (i in 1:reps) lines(1:nyrs,tac[,i],col="grey",lwd=1)
-  lines(1:nyrs,CI[1,],lwd=1,col=2)
-  lines(1:nyrs,CI[3,],lwd=1,col=2)
-  lines(1:nyrs,CI[2,],lwd=2,col=4)
-  caption <- "Projected TAC across all replicates."
-  addplot(filen,rundir=rundir,category="zonescale",caption)
-} # end of plotTAC
 
 
 #' @title plotZone plots the projected TAC across all replicates
@@ -822,5 +796,45 @@ sauplots <- function(zoneDP,NAS,glb,rundir,B0,ExB0,startyr,addCI=TRUE,
   return(invisible(list(outCI=out,zonePsau=zonePsau)))
 }# end of sauplots
 
+#' @title saurecdevs plots the recruitment deviates for each SAU
+#'
+#' @description saurecdevs enables a visual comparison of the 'fitted'
+#'     recruitment deviates for each SAU.
+#'
+#' @param recdevs the matrix of recdevs (out$condC$recdevs)
+#' @param glb the globals object
+#' @param rundir the scenario directory for results storage
+#' @param filen the filename (no path needed) to be used in the rundir
+#'
+#' @return nothing, but it does generate a plot and save a png file if filen
+#'     is populated
+#' @export
+#'
+#' @examples
+#' print("wait on suitable data sets")
+saurecdevs <- function(recdevs,glb,rundir,filen="") {
+  if (nchar(filen) > 0) filen <- filenametopath(rundir,filen)
+  years <- as.numeric(rownames(recdevs))
+  arecdevs <- abs(recdevs)
+  nsau <- glb$nSAU
+  label <- glb$saunames
+  doplots=getparplots(nsau)
+  plotprep(width=8,height=8,newdev=FALSE,filename=filen,verbose=FALSE)
+  parset(plots=doplots,margin=c(0.3,0.3,0.05,0.05),outmargin=c(0,1,0,0),
+         byrow=FALSE)
+  for (sau in 1:nsau) {
+    ymax <- getmax(arecdevs[,sau])
+    plot(years,arecdevs[,sau],type="l",lwd=2,col=1,xlab="",ylab="",
+         panel.first=grid(),ylim=c(0,ymax),yaxs="i")
+    #   lines(years,histCE[,sau],lwd=2,col=3)
+    mtext(label[sau],side=1,line=-1.3,cex=1.25)
+    abline(h=1.0,lwd=1,col=2)
+  }
+  mtext("Recruitment",side=2,line=-0.3,outer=TRUE,cex=1.25)
+  if (nchar(filen) > 0) {
+    caption <- "Historical Recruitment Deviations."
+    addplot(filen,rundir=rundir,category="condition",caption)
+  }
+} # end of compareCPUE
 
 

@@ -509,6 +509,35 @@ sautopop <- function(x,sauindex) {
   return(ans)
 } # end of sautopop
 
+#' @title save_hsargs sends a copy of the hs arguments to rundir
+#'
+#' @description save_hsargs saves a copy of the HS arguments (held in hsargs)
+#'     to the rundir directory ready to be printed as text into the HSperf
+#'     tab of the output webpage. They are stored in a file called hsargs.txt.
+#'     The function expects hsargs to be a list, which it prints component
+#'     by component to a txt file.
+#'
+#' @param rundir the data and results direcotry for the scenario
+#' @param hsargs the harvest strategy arguments object.
+#'
+#' @return it saves a text file into the rundir sub-directory and modifies
+#'     the resultTable.csv file for the web-page summary of scenario results
+#' @export
+#'
+#' @examples
+#' print("wait on suitable internal data sets")
+save_hsargs <- function(rundir,hsargs) {
+  filen <- filenametopath(rundir,"hsargs.txt")
+  cat(names(hsargs)[1],hsargs[[1]],"\n",file=filen,append=FALSE)
+  for (i in 2:length(hsargs))
+    cat(names(hsargs)[i],hsargs[[i]],"\n",file=filen,append=TRUE)
+  cat("\n\n",file=filen,append=TRUE)
+  resfile <- filenametopath(rundir,"resultTable.csv")
+  cat(c(filen,"HSperf",type="txtobj",as.character(Sys.time()),
+        caption="HS argument Settings "," \n"),
+      file=resfile,sep=",",append=TRUE)
+} # end of save_hsargs
+
 #' @title saveobject is used to save RData files of particular objects
 #'
 #' @description saveobject is used to save RData files of particular objects.
@@ -538,7 +567,6 @@ saveobject <- function(obname,object,postfix="",rundir) {
   x <- object[[obname]]
   save(x,file=outfile)
 } # end of save object
-
 
 #' @title summarizeprod generates a summary of the productivity properties
 #'

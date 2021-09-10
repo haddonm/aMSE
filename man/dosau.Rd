@@ -28,7 +28,13 @@ dosau plots the deplsB, cpue, matureB, catch, harvestR, and
     recruits for a given SAU during the years of conditioning. This aims to
     assist the conditioning process by illustrating the state of the sau
     during and at the end of conditioning on the fishery. If extra is TRUE
-    then it also plots
+    then it also plots the exploitable biomass and the depletion of the
+    exploitable biomass. A loess fit is also plotted onto the recruitments
+    plot to give some insight into the recruitment deviates. Unfortunately,
+    the 'true' predicted recruitment levels (without variation) cannot be
+    easily estimated because the implementation of larval movement disturbs
+    how many recruits are present each year in each population and hence
+    each SAU.
 }
 \examples{
 print("wait on suitable data-sets")

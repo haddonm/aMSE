@@ -800,3 +800,35 @@ ndiagprojs=4
 savesauout=TRUE
 makehcrout=makeouthcr
 cutcatchN=56
+
+
+dat <- out$condout$sauZone$recruit[,1]
+glb <- out$glb
+loessfit <- loess(dat ~ as.numeric(glb$hyrnames),span=0.625)
+
+plotprep(newdev=FALSE)
+parset()
+ymax <- getmax(dat)
+plot(glb$hyrnames,dat,type="l",ylim=c(0,ymax),panel.first=grid())
+lines(x$x,x$fitted,lwd=2,col=2)
+
+
+
+
+# Plot RecDevs -------------------------------------------------------------
+
+
+
+
+recdevs <- out$condC$recdevs
+glb <- out$glb
+
+saurecdevs(recdevs,glb,rundir)
+
+
+
+
+
+
+
+

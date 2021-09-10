@@ -499,7 +499,8 @@ prepareprojection <- function(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
 #' @param sampleFIS a function that generates the FIS statistics
 #' @param sampleNaS a function that generates the Numbers-at-size samples
 #' @param getdata a function that gathers all the data required by the hcrfun
-#'     and combines it into an hcrdata object ready for the hcrfun
+#'     and combines it into an hcrdata object ready for the hcrfun. It is
+#'     expected to call sampleCE, sampleFIS, and sampleNAS.
 #' @param calcpopC a function that takes the output from hcrfun and generates
 #'     the actual catch per population expected in the current year.
 #' @param makehcrout is a function from HS.R that produces an object that is
@@ -549,7 +550,8 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
     }
     for (year in startyr:endyr) { # iter=1; year=startyr
       hcrdata <- getdata(sampleCE,sampleFIS,sampleNaS,sauCPUE=zoneDP$cesau,
-                         sauacatch=zoneDP$acatch,year=year,iter=iter)
+                         sauacatch=zoneDP$acatch,sauNAS=zoneDP$NAS,
+                         year=year,iter=iter)
       hcrout <- hcrfun(hcrdata,hsargs,saunames=glb$saunames)
       #hcrout <- hcrfun(hcrdata,hsargs,hcrin=hcrout$grad4val,saunames=glb$saunames)
       popC <- calcpopC(hcrout,exb=zoneDP$exploitB[year-1,,iter],

@@ -2,7 +2,7 @@
 % Please edit documentation in R/getfunctions.R
 \name{getsauzone}
 \alias{getsauzone}
-\title{getsauzone summarizes zoneD into MSU and zone}
+\title{getsauzone summarizes zoneD into SAU and zone}
 \usage{
 getsauzone(zoneD, glb, B0, ExB0)
 }

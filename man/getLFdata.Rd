@@ -13,7 +13,8 @@ getLFdata(datadir, filename)
 }
 \value{
 a list containing the lfs array (lengths x years x sau) and palfs
-    matrix of the count of observations in each year for each sau
+    matrix of the count of observations in each year for each sau. This is
+    then contained in the condC object.
 }
 \description{
 getLFdata reads the observed LF-composition data, which needs

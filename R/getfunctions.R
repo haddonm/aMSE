@@ -145,7 +145,8 @@ getConst <- function(inline,nb,index=2) { # parses lines containing numbers
 #' }
 #'
 #' @return a list containing the lfs array (lengths x years x sau) and palfs
-#'     matrix of the count of observations in each year for each sau
+#'     matrix of the count of observations in each year for each sau. This is
+#'     then contained in the condC object.
 #' @export
 #'
 #' @examples
@@ -310,7 +311,7 @@ getsingleNum <- function(varname,intxt) {
   }
 }
 
-#' @title getsauzone summarizes zoneD into MSU and zone
+#' @title getsauzone summarizes zoneD into SAU and zone
 #'
 #' @description getsauzone rowsums the matrices of matureB, exploitB,
 #'     catch, and recruit from the input zoneD into the separate SAUs

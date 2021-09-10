@@ -3,6 +3,7 @@
 #' @importFrom graphics grid hist lines mtext par plot points title
 #' @importFrom graphics legend abline text layout
 #' @importFrom stats dnorm pnorm rlnorm rnorm quantile sd lm coef median
+#' @importFrom stats loess
 #' @importFrom utils object.size browseURL packageDescription read.csv
 #' @importFrom utils write.table head tail winDialog
 #' @importFrom rutilsMH getmax getmin setpalette plotprep removeEmpty
