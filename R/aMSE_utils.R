@@ -652,7 +652,7 @@ sumpop2sau <- function(invect,sauindex) {
 #'     depleB are the end of year matureB and exploitB divided by their
 #'     respective unfished estimated by SAU obtained using getvar(zoneC,"B0").
 #'
-#' @param inzone one of the zone dynamics objects made up of populations
+#' @param inzone the projected zone dynamics objects made up of populations
 #' @param NAS the numbers-at-size 4D arrays from doprojection; default=NULL so
 #'     it can be ignored during conditioning
 #' @param glb the object containing the global constants

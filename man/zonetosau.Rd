@@ -7,7 +7,7 @@
 zonetosau(inzone, NAS = NULL, glb, B0, ExB0)
 }
 \arguments{
-\item{inzone}{one of the zone dynamics objects made up of populations}
+\item{inzone}{the projected zone dynamics objects made up of populations}
 
 \item{NAS}{the numbers-at-size 4D arrays from doprojection; default=NULL so
 it can be ignored during conditioning}

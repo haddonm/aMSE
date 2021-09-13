@@ -124,12 +124,19 @@ changeline <- function(indir, filename, linenumber, newline,verbose=FALSE) {
 #'     conditioning of the operating model on available fishery data. During the
 #'     generation of the simulated zone the operation that takes the longest is
 #'     the estimation of the productivity of each population. The productivity
-#'     is estimated at equilibrium and getting there is what tales the time.
+#'     is estimated at equilibrium and getting there is what takes the time.
 #'     When conditioning the model the objective is to match the predicted
 #'     fishery response to the historical catches to the observed responses.
-#'     'do_condition' generates the simulated zone much more rapidly, which
-#'     simplifies any searches for optimal values of AvRec (average unfished
-#'     recruitment), and especially for suitable values of recruitment deviates.
+#'     'do_condition' generates the simulated zone without running the
+#'     projections, which simplifies any searches for optimal values of AvRec
+#'     (average unfished recruitment), and especially for suitable values of
+#'     recruitment deviates. If any of the initdepl (initial depletion) values,
+#'     as listed in the control file are less than 1.0 then before applying
+#'     the historical catches it first depletes each population within each
+#'     SAU to the initdepl value for each SAU. For this to work doproduct
+#'     must be TRUE. This will slow down any searches for an optimum set of
+#'     AvRec and recdevs, so a different strategy for doing that will be
+#'     needed.
 #'
 #' @param rundir the full path to the directory in which all files relating to a
 #'     particular run are to be held. If datadir != rundir then the main data
@@ -180,6 +187,11 @@ do_condition <- function(rundir,controlfile,datadir,calcpopC,cleanslate=FALSE,
   production <- NULL
   if (doproduct) production <- zone$product
   #Condition on Fishery
+  if (any(condC$initdepl < 1)) {
+    initdepl <- condC$initdepl
+    if (verbose) cat("Conducting initial depletions  ",initdepl,"\n")
+    zoneD <- depleteSAU(zoneC,zoneD,glb,initdepl=initdepl,production)
+  }
   if (verbose) cat("Conditioning on the Fishery data  \n")
   zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,condC,calcpopC=calcpopC,
                         sigR=1e-08,sigB=1e-08)

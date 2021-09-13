@@ -3,6 +3,9 @@
 
 # LATEST UPDATE
 
+-   2021-09-13 aMSE 0.0.0.075 Implemented the option of having an
+    initial depletion as well as application of historical catches.
+
 -   2021-09-10 aMSE 0.0.0.100 Many small, but significant, changes.
     Modified getdata which interacts with the \#\#\#HS.R file and added
     the zoneDP$NAS data input. Added a summary recdev plot to condition
@@ -95,16 +98,17 @@ options("show.signif.stars"=FALSE,
         "width"=240)
 # declare libraries ------------------------------------------------------------
 library(aMSE)
+library(TasHS)
 library(rutilsMH)
 library(makehtml)
 library(knitr)
 # Obviously you should modify the rundir and datadir to suit your own setup
-prefixdir <- "C:/Users/Malcolm/Dropbox/A_CodeUse/aMSEUse/scenarios/"
+prefixdir <- "C:/Users/user/Dropbox/A_CodeUse/aMSEUse/scenarios/"
 postfixdir <- "M15h75"
 rundir <- paste0(prefixdir,postfixdir)
 datadir <- rundir
 alldirExists(rundir,datadir,verbose=TRUE)
-#> rundir,  C:/Users/Malcolm/Dropbox/A_CodeUse/aMSEUse/scenarios/M15h75 :  exists
+#> rundir,  C:/Users/user/Dropbox/A_CodeUse/aMSEUse/scenarios/M15h75 :  exists
 controlfile <- "controlM15h75.csv"
 # equilibrium zone -------------------------------------------------------------
 # You now need to ensure that there is, at least, a control.csv, and a 

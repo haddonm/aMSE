@@ -53,11 +53,13 @@ depleteSAU <- function(zoneC,zoneD,glob,initdepl,product,len=15) {
                      "depletion level")
       stop(mssg)
     }
-    if (pick == 1)
-      stop("Do not use depleteSAU with a depletion level of 1.0 \n")
-    lowl <- initH[pick-1]
-    upl <- initH[pick+1]
-    harvests[,pop] <- seq(lowl,upl,length=len)
+    if (depl[pop] < 1.0) {
+      lowl <- initH[pick-1]
+      upl <- initH[pick+1]
+      harvests[,pop] <- seq(lowl,upl,length=len)
+    } else {
+      harvests[,pop] <- 0.0
+    }
   }
   for (harv in 1:len) { # harv=1
     zoneDD <- runthreeH(zoneC=zoneC,zoneD,inHarv=harvests[harv,],glob)

@@ -180,7 +180,7 @@ oneyearrec <- function(steep,R0,B0,Bsp,sigR,devR=-1,rho=0.0) {
 
 
 
-# pot Catch vs Productivity function -------------------------------------------------------
+# plot Catch vs Productivity function -------------------------------------------------------
 
 popdefs <- getlistvar(out$zoneC,"popdef")
 propD <- getzoneprops(out$zoneC,out$zoneDD,out$glb,year=glb$hyrs)
@@ -709,75 +709,6 @@ sausizecatchN <- function(catchN,glb,sau,years,cutcatchN) {
 }
 
 
-#' @title numbersatsizeSAU plots the numbers-at-size for a given SAU
-#'
-#' @description numbersatsizeSAU plots the initial unfished numbers-
-#'     at-size distribution for a given SAU, omitting the first four size
-#'     classes to avoid the recruitment numbers dominating the plot.
-#'
-#' @param rundir the results directory, if set to "" then plot is sent to
-#'     the console instead
-#' @param glb the globals list
-#' @param zoneC the constant part of the zone structure
-#' @param Nt the numbers-at-size for all SAU, all years, and all reps
-#' @param sau the SAU name to select for plotting. If multiple populations are
-#'     contained in an SAU their numbers-at-size will be combined.
-#' @param ssc index for starting size class. thus 1 = 2, 2 = 4, 5 = 10, etc.
-#'     default = 5 for it plots size classes from 10mm up
-#' @param yr which year of numbers-at-size should be plotted?
-#' @param defpar should the plot parameters be defined. Set to FALSE if
-#'     numbersatsizeSAU is to be used to add a plot to a multiple plot.
-#' @param exploit should exploitable numbers be plotted as well? default=TRUE
-#' @param mature should mature numbers be plotted as well? default=TRUE
-#' @param filename default='Numbers-at-Size_Year1.png', but can be changed
-#'     to suit whichever year is used
-#'
-#' @return nothing but it adds a plot to the results directory or console
-#' @export
-#'
-#' @examples
-#' print("this will be quite long when I get to it")
-numbersatsizeSAU <- function(rundir, glb, zoneC, Nt, sau, ssc=5, yr=1,
-                             defpar=TRUE, exploit=TRUE, mature=TRUE,
-                             filename="Numbers-at-Size_Year1.png") {
-  # rundir=""; glb=out$glb; Nt=out$NAS$Nt; sau=8; defpar=TRUE
-  # ssc=5; yr=58; exploit=TRUE; mature=TRUE; filename=""
-  mids <- glb$midpts
-  nc <- glb$Nclass
-  saunames <- glb$saunames
-  picksau <- which(saunames=sau)
-  Nt <- as.matrix(Nt[,yr,picksau,]/1000.0)
-  if (length(picksau) > 1) {
-    Ntt <- as.matrix(rowSums(Nt,na.rm=TRUE))  # totals
-  } else {
-    Ntt <- Nt
-  }
-  if (nchar(rundir) > 0) {
-    filen <- file.path(rundir,filename)
-  } else {
-    filen <- ""
-  }
-  if ((exploit) | (mature)) pickzC <- which(sapply(zoneC,"[[","SAU") == sau)
-  maxy <- getmax(Ntt[ssc:nc,])
-  if (defpar)
-    plotprep(width=7,height=4,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
-  plot(mids[ssc:nc],Ntt[ssc:nc],type="l",lwd=2,xlab="Shell Length mm (5 - 210mm)",
-       ylab="Numbers-at_size '000s",panel.first=grid(),ylim=c(0,maxy))
-  if (exploit)
-    lines(mids[ssc:nc],zoneC[[pickzC]]$Select[ssc:nc,yr] * Ntt[ssc:nc],col=4,lwd=2)
-  if (mature)
-    lines(mids[ssc:nc],zoneC[[pickzC]]$Maturity[ssc:nc] * Ntt[ssc:nc],col=2,lwd=2)
-  legend("topright",legend=as.character(sau),lwd=0,col=0,bty="n",cex=1.2)
-  if (nchar(rundir) > 0) {
-    addm <- ""; adde <- ""
-    if (mature) addm <- " The red line is mature numbers-at-size. "
-    if (exploit) adde <- " The blue line is exploitable numbers-at-size."
-    caption <- paste0("The numbers-at-size for the SAU ",sau," the recruitment ",
-                      "numbers are omitted for clarity.",addm,adde)
-    addplot(filen,rundir=rundir,category="NumSize",caption)
-  }
-} # end of numbersatsizeSAU
-
 
 
 
@@ -815,20 +746,185 @@ lines(x$x,x$fitted,lwd=2,col=2)
 
 
 
-# Plot RecDevs -------------------------------------------------------------
+# Get SizeComp Data -------------------------------------------------------------
+
+#' @title numbersatsizeSAU plots the numbers-at-size for a given SAU
+#'
+#' @description numbersatsizeSAU plots the initial unfished numbers-
+#'     at-size distribution for a given SAU, omitting the first four size
+#'     classes to avoid the recruitment numbers dominating the plot.
+#'
+#' @param rundir the results directory, if set to "" then plot is sent to
+#'     the console instead
+#' @param glb the globals list
+#' @param zoneC the constant part of the zone structure
+#' @param Nt the numbers-at-size for all SAU, all years, and all reps
+#' @param sau the SAU name to select for plotting. If multiple populations are
+#'     contained in an SAU their numbers-at-size will be combined.
+#' @param ssc index for starting size class. thus 1 = 2, 2 = 4, 5 = 10, etc.
+#'     default = 5 for it plots size classes from 10mm up
+#' @param yr which year of numbers-at-size should be plotted?
+#' @param defpar should the plot parameters be defined. Set to FALSE if
+#'     numbersatsizeSAU is to be used to add a plot to a multiple plot.
+#' @param exploit should exploitable numbers be plotted as well? default=TRUE
+#' @param mature should mature numbers be plotted as well? default=TRUE
+#' @param filename default='Numbers-at-Size_Year1.png', but can be changed
+#'     to suit whichever year is used
+#'
+#' @return nothing but it adds a plot to the results directory or console
+#' @export
+#'
+#' @examples
+#' print("this will be quite long when I get to it")
+numbersatsizeSAU <- function(rundir, glb, zoneC, Nt, sau, ssc=5, yr=1,
+                             defpar=TRUE, exploit=TRUE, mature=TRUE,
+                             filename="Numbers-at-Size_Year1.png") {
+  # rundir=""; glb=glb; Nt=Nt; sau="sau8"; defpar=TRUE; zoneC=zoneCP
+  # `ssc=5; yr=1; exploit=TRUE; mature=TRUE; filename=""
+  mids <- glb$midpts
+  nc <- glb$Nclass
+  saunames <- glb$saunames
+  picksau <- which(saunames == sau)
+  Nt <- as.matrix(Nt[,yr,picksau,]/1000.0)
+  if (length(picksau) > 1) {
+    Ntt <- as.matrix(rowSums(Nt,na.rm=TRUE))  # totals
+  } else {
+    Ntt <- Nt
+  }
+  if (nchar(rundir) > 0) {
+    filen <- file.path(rundir,filename)
+  } else {
+    filen <- ""
+  }
+  if ((exploit) | (mature)) pickzC <- which(sapply(zoneC,"[[","SAU") == sau)
+  maxy <- getmax(Ntt[ssc:nc,])
+  if (defpar)
+    plotprep(width=7,height=4,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
+  plot(mids[ssc:nc],Ntt[ssc:nc],type="l",lwd=2,xlab="Shell Length mm (5 - 210mm)",
+       ylab="Numbers-at_size '000s",panel.first=grid(),ylim=c(0,maxy))
+  if (exploit)
+    lines(mids[ssc:nc],zoneC[[pickzC]]$Select[ssc:nc,yr] * Ntt[ssc:nc],col=4,lwd=2)
+  if (mature)
+    lines(mids[ssc:nc],zoneC[[pickzC]]$Maturity[ssc:nc] * Ntt[ssc:nc],col=2,lwd=2)
+  legend("topright",legend=as.character(sau),lwd=0,col=0,bty="n",cex=1.2)
+  if (nchar(rundir) > 0) {
+    addm <- ""; adde <- ""
+    if (mature) addm <- " The red line is mature numbers-at-size. "
+    if (exploit) adde <- " The blue line is exploitable numbers-at-size."
+    caption <- paste0("The numbers-at-size for the SAU ",sau," the recruitment ",
+                      "numbers are omitted for clarity.",addm,adde)
+    addplot(filen,rundir=rundir,category="NumSize",caption)
+  }
+} # end of numbersatsizeSAU
 
 
 
 
-recdevs <- out$condC$recdevs
+
+options("show.signif.stars"=FALSE,
+        "stringsAsFactors"=FALSE,
+        "max.print"=50000,
+        "width"=240)
+# declare libraries ------------------------------------------------------------
+library(aMSE)
+library(TasHS)
+library(rutilsMH)
+library(makehtml)
+library(knitr)
+# Obviously you should modify the rundir and datadir to suit your own setup
+if (dir.exists("c:/Users/User/DropBox")) {
+  prefixdir <- "c:/Users/User/DropBox/A_codeUse/aMSEUse/scenarios/"
+} else {
+  prefixdir <- "c:/Users/Malcolm/DropBox/A_codeUse/aMSEUse/scenarios/"
+}
+doproject <- TRUE  # change to FALSE if only conditioning is required
+verbose <- TRUE
+postfixdir <- "M15h75"
+rundir <- paste0(prefixdir,postfixdir)
+datadir <- rundir
+alldirExists(rundir,datadir,verbose=verbose)
+controlfile <- "controlM15h75.csv"
+hsfile <- "TasHS1_Tas.R"
+source(paste0(datadir,"/",hsfile))
+
+load(file=paste0("C:/aMSE_scenarios/",postfixdir,".RData"))
+
+compdat <- out$condC$compdat
+
+lfs <- compdat$lfs
+palfs <- compdat$palfs
 glb <- out$glb
-
-saurecdevs(recdevs,glb,rundir)
-
-
-
+zoneCP <- out$zoneCP
+Nt <- out$NAS$Nt
+sau <- "sau8"
 
 
 
+# sum predicted Nt for each sau for the historic period to cpmpare with data
 
 
+plotcondsizes <- function(Nt,first,last,glb,ssc=5,filen="",legloc="top",
+                          doplot=TRUE,prop=FALSE) {
+  nsau <- glb$nSAU
+  sauindex <- glb$sauindex
+  years <- glb$hyrnames
+  hyrs <- glb$hyrs
+  mids <- glb$midpts
+  saunames <- glb$saunames
+  pltrge <- ssc:glb$Nclass
+  sauNt <- array(0,dim=c(glb$Nclass,hyrs,nsau),
+                 dimnames=list(mids,years,saunames))
+  for (sau in 1:nsau) { # convert pops to SAU
+    for (yr in 1:hyrs) {
+      pick <- which(sauindex == sau)
+      sauNt[,yr,sau] <- rowSums(Nt[,yr,pick])
+    }
+  }
+  plotN <- sauNt/1000.0
+  ylabel <- "Initial and Final Size Composition '000s"
+  if (prop) {
+    psauNt <- sauNt
+    for (sau in 1:nsau) {
+      psauNt[,,sau] <- prop.table(sauNt[,,sau],2)
+    }
+    plotN <- psauNt
+    "Initial and Final Proportional Size Composition"
+  }
+  if (doplot) {
+    plotprep(width=7, height=6, newdev=FALSE,filename=filen,verbose=FALSE)
+    parset(plots=c(4,2),outmargin=c(1,1,0,0),margin=c(0.25,0.4,0.05,0.05),
+           byrow=FALSE)
+    for (sau in 1:nsau) {
+      firstyr <- dimnames(plotN)[[2]][first]
+      lastyr <- dimnames(plotN)[[2]][last]
+      ymax <- getmax(plotN[pltrge,c(first,last),sau])
+      plot(mids[pltrge],plotN[pltrge,first,sau],type="l",lwd=2,
+           panel.first=grid(),ylab=saunames[sau],xlab="",ylim=c(0,ymax))
+      lines(mids[pltrge],plotN[pltrge,last,sau],lwd=2,col=2)
+    }
+    legend(legloc,c(firstyr,lastyr),col=c(1,2),lwd=3,bty="n",cex=1.2)
+    mtext("Shell Length mm",side=1,line=-0.1,outer=TRUE,cex=1.2)
+    mtext(ylabel,side=2,line=-0.2,outer=TRUE,cex=1.1)
+  }
+  return(invisible(sauNt))
+}
+
+
+hyrs=glb$hyrs
+ssc <- 5
+first=1
+last=hyrs
+Nt <- out$zoneDD$Nt
+
+sauNt <- plotcondsizes(Nt,first,last,glb,ssc=5,filen="")
+
+catchN <- out$zoneDD$catchN
+ssc <- 65
+first=30
+last=hyrs-5
+
+sauCN <- plotcondsizes(Nt=catchN,first,last,glb,ssc=ssc,filen="",
+                       legloc="topright",prop=TRUE)
+
+B0 <-
+sautot <- zonetosau(out$zoneDD,glb=glb,B0)

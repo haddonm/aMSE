@@ -136,6 +136,11 @@ do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
   plotproductivity(rundir,production,glb)
   numbersatsize(rundir, glb, zoneD)
   #Condition on Fishery --------------------------------------------------------
+  if (any(condC$initdepl < 1)) {
+    initdepl <- condC$initdepl
+    if (verbose) cat("Conducting initial depletions  ",initdepl,"\n")
+    zoneD <- depleteSAU(zoneC,zoneD,glb,initdepl=initdepl,production)
+  }
   if (verbose) cat("Conditioning on the Fishery data  \n")
   zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,condC,calcpopC=calcpopC,
                         sigR=1e-08,sigB=1e-08)
@@ -207,8 +212,8 @@ do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
   save_hsargs(rundir,hsargs)
   plothsstats(rundir,HSstats,glb)
   out <- list(tottime=tottime,projtime=projtime,starttime=starttime,glb=glb,
-              ctrl=ctrl,zoneCP=zoneCP,zoneDD=zoneDD,zoneDP=zoneDP,NAS=NAS,
-              projC=projC,condC=condC,sauout=sauout,outzone=outzone,
+              ctrl=ctrl,zoneCP=zoneCP,zoneD=zoneD,zoneDD=zoneDD,zoneDP=zoneDP,
+              NAS=NAS,projC=projC,condC=condC,sauout=sauout,outzone=outzone,
               hcrout=hcrout,production=production,condout=condout,
               HSstats=HSstats)
   return(out)

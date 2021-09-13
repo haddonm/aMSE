@@ -51,12 +51,19 @@ do_condition is a utility function that can be used to speed the
     conditioning of the operating model on available fishery data. During the
     generation of the simulated zone the operation that takes the longest is
     the estimation of the productivity of each population. The productivity
-    is estimated at equilibrium and getting there is what tales the time.
+    is estimated at equilibrium and getting there is what takes the time.
     When conditioning the model the objective is to match the predicted
     fishery response to the historical catches to the observed responses.
-    'do_condition' generates the simulated zone much more rapidly, which
-    simplifies any searches for optimal values of AvRec (average unfished
-    recruitment), and especially for suitable values of recruitment deviates.
+    'do_condition' generates the simulated zone without running the
+    projections, which simplifies any searches for optimal values of AvRec
+    (average unfished recruitment), and especially for suitable values of
+    recruitment deviates. If any of the initdepl (initial depletion) values,
+    as listed in the control file are less than 1.0 then before applying
+    the historical catches it first depletes each population within each
+    SAU to the initdepl value for each SAU. For this to work doproduct
+    must be TRUE. This will slow down any searches for an optimum set of
+    AvRec and recdevs, so a different strategy for doing that will be
+    needed.
 }
 \examples{
 print("wait on suitable data sets in data")
