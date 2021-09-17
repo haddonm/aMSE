@@ -1,9 +1,9 @@
 #
 # outcond=outcond
-# postfixdir <- "SAfirst"
+# postfixdir <- "M15h75"
 # rundir <- paste0(prefixdir,postfixdir)
 # datadir <- rundir
-# controlfile="controltest_SA.csv"
+# controlfile="controlM15h75.csv"
 # hsargs=hsargs
 # hcrfun=mcdahcr
 # sampleCE=tasCPUE

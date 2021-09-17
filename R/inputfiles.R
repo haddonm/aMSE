@@ -522,7 +522,7 @@ datafiletemplate <- function(nSAU,indir,filename="saudata_test.csv") {
 #' ctrl
 #' }
 readctrlfile <- function(rundir,infile="control.csv",datadir=rundir,verbose=TRUE) {
-   # rundir=rundir; infile="controlM1h75.csv"; datadir=datadir; verbose=verbose
+   # rundir=rundir; infile="controlM15h75.csv"; datadir=datadir; verbose=verbose
    filenames <- dir(rundir)
    if (length(grep(infile,filenames)) != 1)
       stop(cat(infile," not found in ",rundir," \n"))

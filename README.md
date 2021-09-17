@@ -3,17 +3,12 @@
 
 # LATEST UPDATE
 
+-   2021-09-17 aMSE 0.0.0.050 Finalized details of the optional initial
+    depletion. Amended the logistic function so it now works when using
+    the knifeedge option!
+
 -   2021-09-13 aMSE 0.0.0.075 Implemented the option of having an
     initial depletion as well as application of historical catches.
-
--   2021-09-10 aMSE 0.0.0.100 Many small, but significant, changes.
-    Modified getdata which interacts with the \#\#\#HS.R file and added
-    the zoneDP$NAS data input. Added a summary recdev plot to condition
-    tab.
-
--   2021-09-03 aMSE 0.0.0.200 Lots of tidying of help pages, added
-    numbersatsizeSAU. Added a fixed TasmanianHS.R file to the data-raw
-    directory.
 
 # aMSE
 

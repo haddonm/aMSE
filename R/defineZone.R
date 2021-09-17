@@ -494,7 +494,7 @@ logistic <- function(inL50,delta,lens,knifeedge=0) {
    ans <- 1/(1+exp(-log(19.0)*(lens-inL50)/(delta)))
    if (knifeedge > 0) {
       pick <- which(lens < knifeedge)
-      if (length(pick) > 0) ans[1:pick[1]] <- 0.0
+      if (length(pick) > 0) ans[pick] <- 0.0
    }
    return(ans)
 } # end of logistic

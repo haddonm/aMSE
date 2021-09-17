@@ -89,33 +89,6 @@ for (sau in 1:nsau) { #  sau=1
 }
 
 
-# Read the Obs LF-comp data-----------------------------------------------
-
-options("show.signif.stars"=FALSE,
-        "stringsAsFactors"=FALSE,
-        "max.print"=50000,
-        "width"=240)
-# declare libraries ------------------------------------------------------------
-library(aMSE)
-library(rutilsMH)
-# Obviously you should modify the rundir and datadir to suit your own setup
-if (dir.exists("c:/Users/User/DropBox")) {
-  ddir <- "c:/Users/User/DropBox/A_codeUse/aMSEUse/scenarios/"
-} else {
-  ddir <- "c:/Users/Malcolm/DropBox/A_codeUse/aMSEUse/scenarios/"
-}
-doproject <- FALSE  # change to FALSE if only conditioning is required
-verbose <- TRUE
-rundir <- paste0(ddir,"HS652510")
-datadir <- paste0(ddir,"tasdata")
-
-zone1 <- readctrlfile(rundir,infile="controlsau.csv",datadir=datadir,verbose=verbose)
-
-compdat <- zone1$condC$compdat
-
-
-palfs=compdat$palfs
-palfs
 
 
 # copyto -------------------------------------------------------------
@@ -130,32 +103,6 @@ copyto(rundir,todir=destdir,filename="controlsau.csv")
   #     zoned=zoneDsau;zonep=zonePsau;glb=glb;startyr=30;
   #     picksau=9; histCE=histCE;CIprobs=c(0.05,0.5,0.95); addCI=TRUE
 
-
-
-# sort out LF data-------------------------------------------------
-
-datafile <- paste0(ddir,"aMSEUse/condition/productivity/sau10LF.csv")
-
-lf <- read.csv(file=datafile,header=TRUE)
-str1(lf)
-
-
-yrcount <- tapply(lf[,"counts"],lf[,"year"],sum,na.rm=TRUE)
-lfprops <- cbind(years,yrcount)
-lfprops
-
-range(lf[,"length"])
-mids <- seq(136,210,2)
-nc <- length(mids)
-nc
-
-
-
-
-answer <- makewidedat(lf,mids)
-str(answer)
-
-answer <- makewidedat(lf10,mids)
 
 
 
@@ -380,17 +327,6 @@ for (i in 1:nsau) {
 
 hcr$refpts
 
-
-
-# BATCH Job -------------------------------------------------------------------
-
-wkdir <- "C:/Users/user/Dropbox/A_CodeUse/aMSEUse/scenarios/"
-setwd(wkdir)
-
-ctxt <- paste0("R.exe --vanilla < ",wkdir,"/conditionOMdevel.R")
-
-command <- ctxt
-shell(command,wait=FALSE)
 
 
 # Compare CatchN through time ----------------------------------------------------------------
@@ -858,56 +794,12 @@ zoneCP <- out$zoneCP
 Nt <- out$NAS$Nt
 sau <- "sau8"
 
-
-
+dim(lfs)
+label <- dimnames(lfs)
 # sum predicted Nt for each sau for the historic period to cpmpare with data
 
 
-plotcondsizes <- function(Nt,first,last,glb,ssc=5,filen="",legloc="top",
-                          doplot=TRUE,prop=FALSE) {
-  nsau <- glb$nSAU
-  sauindex <- glb$sauindex
-  years <- glb$hyrnames
-  hyrs <- glb$hyrs
-  mids <- glb$midpts
-  saunames <- glb$saunames
-  pltrge <- ssc:glb$Nclass
-  sauNt <- array(0,dim=c(glb$Nclass,hyrs,nsau),
-                 dimnames=list(mids,years,saunames))
-  for (sau in 1:nsau) { # convert pops to SAU
-    for (yr in 1:hyrs) {
-      pick <- which(sauindex == sau)
-      sauNt[,yr,sau] <- rowSums(Nt[,yr,pick])
-    }
-  }
-  plotN <- sauNt/1000.0
-  ylabel <- "Initial and Final Size Composition '000s"
-  if (prop) {
-    psauNt <- sauNt
-    for (sau in 1:nsau) {
-      psauNt[,,sau] <- prop.table(sauNt[,,sau],2)
-    }
-    plotN <- psauNt
-    "Initial and Final Proportional Size Composition"
-  }
-  if (doplot) {
-    plotprep(width=7, height=6, newdev=FALSE,filename=filen,verbose=FALSE)
-    parset(plots=c(4,2),outmargin=c(1,1,0,0),margin=c(0.25,0.4,0.05,0.05),
-           byrow=FALSE)
-    for (sau in 1:nsau) {
-      firstyr <- dimnames(plotN)[[2]][first]
-      lastyr <- dimnames(plotN)[[2]][last]
-      ymax <- getmax(plotN[pltrge,c(first,last),sau])
-      plot(mids[pltrge],plotN[pltrge,first,sau],type="l",lwd=2,
-           panel.first=grid(),ylab=saunames[sau],xlab="",ylim=c(0,ymax))
-      lines(mids[pltrge],plotN[pltrge,last,sau],lwd=2,col=2)
-    }
-    legend(legloc,c(firstyr,lastyr),col=c(1,2),lwd=3,bty="n",cex=1.2)
-    mtext("Shell Length mm",side=1,line=-0.1,outer=TRUE,cex=1.2)
-    mtext(ylabel,side=2,line=-0.2,outer=TRUE,cex=1.1)
-  }
-  return(invisible(sauNt))
-}
+
 
 
 hyrs=glb$hyrs
@@ -926,5 +818,91 @@ last=hyrs-5
 sauCN <- plotcondsizes(Nt=catchN,first,last,glb,ssc=ssc,filen="",
                        legloc="topright",prop=TRUE)
 
-B0 <-
-sautot <- zonetosau(out$zoneDD,glb=glb,B0)
+
+# compare conditoned predict CatchN ----------------------------------------
+
+
+source("C:/Users/Malcolm/Dropbox/A_Code/aMSE/data-raw/almostaccepted.R")
+
+glb <- out$glb
+lfs <- out$condC$compdat$lfs
+palfs <- out$condC$compdat$palfs
+nsau <- glb$nSAU
+saunames <- glb$saunames
+dim(lfs)
+lab <- dimnames(lfs)
+nyrs <- dim(lfs)[2]
+# calculate nmbers x years x sau
+counts <- matrix(0,nrow=nyrs,ncol=nsau,dimnames=list(lab[[2]],saunames))
+for (sau in 1:nsau) counts[,sau] <- colSums(lfs[,,sau])
+counts
+cNt <- out$zoneDD$catchN
+
+source("C:/Users/Malcolm/Dropbox/A_Code/aMSE/data-raw/almostaccepted.R")
+
+sauN <- combinepopN(inN=cNt,glb=glb)
+
+SAU <- 2
+cs <- lfs[,,SAU]
+sauP <- sauN[,,SAU]
+
+label=glb$saunames[SAU]
+saucompcatchN(obs=cs,pred=sauP,glb=glb,years=1991:2020,ssc=68,sau=label,
+              filen="",wide=12,tall=8)
+
+# saucompcatchN(obs=cs,pred=sauP,glb=glb,years=2000:2020,ssc=68,sau=label,
+#               filen="",wide=9)
+
+
+# examine sau12 2016 in detail - only 101 observations
+SAU <- 7
+cs <- lfs[,,SAU]
+picky <- which(colnames(cs) == "2016")
+sau12 <- cs[,picky]
+
+
+library(freqdata)
+
+
+filen <- "c:/Users/Malcolm/DropBox/A_code/freqdata/data-raw/compiledMM.df.final.RDS"
+comp <- readRDS(filen)
+columns <- colnames(comp)
+columns
+newnames <- c("docket","msrdate","proc","procname","procnum","proclist","zone",
+              "ndays","daylist","day_max","msrdate_diff","nblocks","blocks",
+              "nsubblocks","subblocks","catch","length","n","meanSL","minSL",
+              "species","weightg","datasource","blockno","subblockno","sampleid",
+              "year","block1","block2","block3","block4","block5","id","region1",
+              "region2","region3","region4","region5","same.region")
+colnames(comp) <- newnames
+props <- properties(comp)
+
+blks <- c("6","7","8","9","10","11","12","13")
+nblk <- length(blks)
+pickb <- which((comp$blocks %in% blks) & (comp$year > 1989) &
+                 (comp$year < 2021) & (comp$zone == "W") &
+                 (comp$length >= 135) & (comp$length < 211))
+cols <- c(7,12,13,16,17,18,21,22,26,27)
+
+wz1 <- comp[pickb,cols]
+nbby <- as.matrix(table(wz1$year,wz1$blocks))
+nbby1 <- expandmatrix(nbby)
+nbby2 <- cbind(nbby1[,5:8],nbby1[,1:4])
+
+nbby2 - palfs[7:37,]
+
+pick <- which((wz1$year == 2014) & (wz1$blocks == 12))
+dat <- wz1[pick,]
+
+plotprep(width=7,height=4,newdev=FALSE)
+parset()
+inthist(dat$length,width=0.8,border=2)
+
+head(dat,20)
+
+dat$len2 <- trunc((dat$length+1)/2)*2
+inthist(dat$len2,width=0.8,border=2)
+
+
+
+

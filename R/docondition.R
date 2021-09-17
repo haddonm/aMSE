@@ -188,6 +188,7 @@ do_condition <- function(rundir,controlfile,datadir,calcpopC,cleanslate=FALSE,
   if (doproduct) production <- zone$product
   #Condition on Fishery
   if (any(condC$initdepl < 1)) {
+    if (!doproduct) stop("doproduct must be TRUE for Initial Depletion to work \n")
     initdepl <- condC$initdepl
     if (verbose) cat("Conducting initial depletions  ",initdepl,"\n")
     zoneD <- depleteSAU(zoneC,zoneD,glb,initdepl=initdepl,production)
