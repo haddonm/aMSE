@@ -522,7 +522,7 @@ datafiletemplate <- function(nSAU,indir,filename="saudata_test.csv") {
 #' ctrl
 #' }
 readctrlfile <- function(rundir,infile="control.csv",datadir=rundir,verbose=TRUE) {
-   # rundir=rundir; infile="controlM15h75.csv"; datadir=datadir; verbose=verbose
+   # rundir=rundir; infile="controlM1h5.csv"; datadir=datadir; verbose=verbose
    filenames <- dir(rundir)
    if (length(grep(infile,filenames)) != 1)
       stop(cat(infile," not found in ",rundir," \n"))
@@ -559,9 +559,11 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir,verbose=TRUE
    initLML <- getsingleNum("initLML",indat)
    projyrs <- getsingleNum("PROJECT",indat)
    projLML <- NULL
+   pyrnames <- NULL
    HS <- NULL
    histCatch <- NULL
    histyr <- NULL
+   hyrnames <- NULL
    histCE <- NULL
    yearCE <- NULL
    compdat=NULL
@@ -591,10 +593,8 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir,verbose=TRUE
       rownames(histyr) <- histyr[,1]
    } # end of catches loop
    startce <- getsingleNum("CEYRS",indat)
-   yrce <- hyrs - startce + 1
-   if (yrce == 0) {
-      warning("CPUE calibration has no data")
-   } else {
+   if (startce > 0) {
+      yrce <- hyrs - startce + 1
       begin <- grep("CEYRS",indat)
       histCE <- matrix(NA,nrow=yrce,ncol=nSAU)
       yearCE <- numeric(yrce) # of same length as nSAU
@@ -606,10 +606,10 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir,verbose=TRUE
          histCE[i,] <- cenum[2:(nSAU+1)]
       }
       rownames(histCE) <- yearCE
+      hyrnames <- as.numeric(histyr[,1])
+      firstyear <- tail(hyrnames,1) + 1
+      if (projyrs > 0) pyrnames <- firstyear:(firstyear + projyrs - 1)
    } # end of if(yrce == 0)
-   hyrnames <- as.numeric(histyr[,1])
-   firstyear <- tail(hyrnames,1) + 1
-   pyrnames <- firstyear:(firstyear + projyrs - 1) # projection year names
    sizecomp <- getsingleNum("SIZECOMP",indat)
    if (sizecomp > 0) {
       lffiles <- NULL
@@ -625,9 +625,10 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir,verbose=TRUE
          compdat <- getLFdata(datadir,lffilename)
       }
    }  # end of sizecomp loop
-   recdevs <- matrix(-1,nrow=hyrs,ncol=nSAU,dimnames=list(hyrnames,SAUnames))
+   recdevs <- NULL
    rdevs <- getsingleNum("RECDEV",indat)
    if (rdevs > 0) {
+      recdevs <- matrix(-1,nrow=hyrs,ncol=nSAU,dimnames=list(hyrnames,SAUnames))
       if (rdevs != hyrs) rdevs <- hyrs-4
       #   stop("rows of recdevs not equal to conditioning years \n")
       begin <- grep("RECDEV",indat) + 1

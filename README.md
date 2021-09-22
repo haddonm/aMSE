@@ -3,12 +3,13 @@
 
 # LATEST UPDATE
 
+-   2021-09-22 aMSE 0.0.0.025 Modifications to do\_condition and other
+    functions to facilitate the ease of changing values within an array
+    of control files and saudata files.
+
 -   2021-09-17 aMSE 0.0.0.050 Finalized details of the optional initial
     depletion. Amended the logistic function so it now works when using
     the knifeedge option!
-
--   2021-09-13 aMSE 0.0.0.075 Implemented the option of having an
-    initial depletion as well as application of historical catches.
 
 # aMSE
 
@@ -98,12 +99,12 @@ library(rutilsMH)
 library(makehtml)
 library(knitr)
 # Obviously you should modify the rundir and datadir to suit your own setup
-prefixdir <- "C:/Users/user/Dropbox/A_CodeUse/aMSEUse/scenarios/"
+prefixdir <- "C:/Users/Malcolm/Dropbox/A_CodeUse/aMSEUse/scenarios/"
 postfixdir <- "M15h75"
 rundir <- paste0(prefixdir,postfixdir)
 datadir <- rundir
 alldirExists(rundir,datadir,verbose=TRUE)
-#> rundir,  C:/Users/user/Dropbox/A_CodeUse/aMSEUse/scenarios/M15h75 :  exists
+#> rundir,  C:/Users/Malcolm/Dropbox/A_CodeUse/aMSEUse/scenarios/M15h75 :  exists
 controlfile <- "controlM15h75.csv"
 # equilibrium zone -------------------------------------------------------------
 # You now need to ensure that there is, at least, a control.csv, and a 

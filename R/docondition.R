@@ -158,6 +158,7 @@ changeline <- function(indir, filename, linenumber, newline,verbose=FALSE) {
 #'     the run then 'cleanslate' will not affect the data or any .R files.
 #' @param verbose Should progress comments be printed to console, default=FALSE
 #' @param doproduct should production estimates be made. default=FALSE
+#' @param dohistoric should the historical catches be applied. Default=TRUE
 #'
 #' @seealso{
 #'  \link{makeequilzone}, \link{dohistoricC}, \link{prepareprojection},
@@ -170,8 +171,10 @@ changeline <- function(indir, filename, linenumber, newline,verbose=FALSE) {
 #'
 #' @examples
 #' print("wait on suitable data sets in data")
+#' # rundir=rundir; controlfile=controlfile;datadir=datadir;calcpopC=calcexpectpopC
+#' # cleanslate=FALSE; verbose=TRUE; doproduct=TRUE; dohistoric=FALSE
 do_condition <- function(rundir,controlfile,datadir,calcpopC,cleanslate=FALSE,
-                         verbose=FALSE,doproduct=FALSE) {
+                         verbose=FALSE,doproduct=FALSE,dohistoric=TRUE) {
   starttime <- Sys.time()
   zone <- makeequilzone(rundir,controlfile,datadir,doproduct=doproduct,
                         cleanslate=cleanslate,verbose=verbose)
@@ -193,27 +196,35 @@ do_condition <- function(rundir,controlfile,datadir,calcpopC,cleanslate=FALSE,
     if (verbose) cat("Conducting initial depletions  ",initdepl,"\n")
     zoneD <- depleteSAU(zoneC,zoneD,glb,initdepl=initdepl,production)
   }
-  if (verbose) cat("Conditioning on the Fishery data  \n")
-  zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,condC,calcpopC=calcpopC,
-                        sigR=1e-08,sigB=1e-08)
+  if (dohistoric) {
+    if (verbose) cat("Conditioning on the Fishery data  \n")
+    zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,condC,calcpopC=calcpopC,
+                          sigR=1e-08,sigB=1e-08)
+  } else {
+    zoneDD <- zoneD
+  }
   hyrs <- glb$hyrs
   propD <- t(getzoneprops(zoneC,zoneDD,glb,year=hyrs))
   addtable(round(propD,4),"propertyDD.csv",rundir,category="zoneDD",caption=
-             "Properties of zoneD after conditioning on historical catches.")
+           "Properties of zoneD after conditioning on historical catches.")
   addtable(round(t(zoneDD$harvestR[(hyrs-9):hyrs,]),4),"final_harvestR.csv",
            rundir,category="zoneDD",
            caption="Last ten years of population vs harvest rate.")
   popdefs <- getlistvar(zone$zoneC,"popdef")
   addtable(round(t(popdefs),3),"popdefs.csv",rundir,category="zoneDD",
            caption="Population vs Operating model parameter definitions")
-  condout <- plotconditioning(zoneDD,glb,zoneC,condC$histCE,rundir)
+  if (dohistoric) {
+    condout <- plotconditioning(zoneDD,glb,zoneC,condC$histCE,rundir)
+  } else {
+    condout <- NULL
+  }
   condtime <- Sys.time()
   tottime <- round((condtime - starttime),3)
   times <- list(tottime=tottime,condtime=condtime,starttime=starttime)
   out <- list(times=times,glb=glb,ctrl=ctrl,zoneC=zoneC,zoneD=zoneD,zoneDD=zoneDD,
               condC=condC,condout=condout,projC=projC,production=production)
   return(out)
-} # end of do_MSE
+} # end of do_condition
 
 
 
@@ -328,5 +339,5 @@ getrecdevcolumn <- function(rundir, filename, yearrange, sau,verbose=FALSE) {
     recdevs[i-line1+1] <- x
   }
   return(list(recdevs=recdevs,yearrange=yearrange,linerange=line1:line2))
-}
+} # end of getrecdevcolumn
 

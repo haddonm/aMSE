@@ -33,7 +33,8 @@ compareCPUE <- function(histCE,saucpue,glb,rundir,filen="") {
   ssq <- numeric(nsau)
   doplots=getparplots(nsau)
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,verbose=FALSE)
-  parset(plots=doplots,margin=c(0.3,0.3,0.05,0.05),outmargin=c(0,1,0,0))
+  parset(plots=doplots,margin=c(0.3,0.3,0.05,0.05),outmargin=c(0,1,0,0),
+         byrow=FALSE)
   for (sau in 1:nsau) {
     ssq[sau] <- sum((histCE[,sau] - cpue[,sau])^2,na.rm=TRUE)
     ymax <- getmax(c(cpue[,sau],histCE[,sau]))

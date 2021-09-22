@@ -36,6 +36,105 @@ combinepopN <- function(inN,glb) {
 } # end of combinepopN
 
 
+
+#' @title getavrec pulls out just the AvRec values for each sau for a scenario
+#'
+#' @description getavrec extracts the AvRec values for each SAU for a given
+#'     scenario. It does this by reading in the saudata file and using grep
+#'     to search for the correct line and returning the line as is. Care is
+#'     required to only take the first record of 'AvRec' so as not to
+#'     consider the variability in sAvRec.
+#'
+#' @param datadir the directory in which one finds the saudata file for the
+#'     given scenario
+#' @param datafile the exact name of the saudata file
+#' @param nsau the number of SAU to be found
+#'
+#' @return a numeric vector of the average recruitment for each SAU
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'   rundir <- "c:/Users/User/DropBox/A_codeUse/aMSEUse/scenarios/MhLML/M1h5/"
+#'   getavrec(rundir,"saudataM1h5.csv",8)
+#' }
+getavrec <- function(datadir,datafile,nsau) {
+  filen <- filenametopath(datadir,datafile)
+  dat <- readLines(filen)
+  pickA <- grep("AvRec",dat)[1] # ignore sAvRec
+  avrec <- getConst(dat[pickA],nsau)
+  return(avrec)
+} # end of getavrec
+
+
+
+
+#' @title sauavrecssq applies the AvRec and returns the ssq from the cpue
+#'
+#' @description sauavrecssq applies the AvRec vector while adjusting just
+#'     one for the picksau, and then compares the predicted CPUE with the
+#'     observed and returns a sum-of-squared differences. This is used by
+#'     optim while using the Brent option to find an optimum for a single
+#'     parameter.
+#'
+#' @param param is the AvRec for the selected SAU
+#' @param rundir the rundir for the scenario being considered
+#' @param datadir the directory holding the saudata file, usually = rundir
+#' @param controlfile the name of the control file, no path
+#' @param datafile the name of the data file, no path
+#' @param linenum the linenumber containing the AvRec vector
+#' @param calcpopC the HS function that calculates the aspirational catches
+#'     for each SAU
+#' @param extra the vector of SAU AvRecs minus the selected SAU value
+#' @param picksau which SAU is to be worked on as in 1:nsau
+#' @param nsau the toal number of SAU
+#'
+#' @return the SSQ for the selected SAU in a comparison of predicted and
+#'     observed CPUE
+#' @export
+#'
+#' @examples
+#' print("Wait on suitable internal data files")
+sauavrecssq <- function(param,rundir,datadir,controlfile,datafile,linenum,
+                        calcpopC,extra,picksau,nsau) {
+  nsaum1 <- nsau - 1
+  if (picksau == 1)
+    replacetxt <- paste0("AvRec,",as.character(param),",",
+                         paste0(as.character(extra[1:nsaum1]),collapse=","),
+                         collapse=",")
+  if ((picksau > 1) & (picksau < nsau))
+    replacetxt <- paste0("AvRec,",
+                         paste0(as.character(extra[1:(picksau-1)]),collapse=","),
+                         ",",as.character(param),",",
+                         paste0(as.character(extra[picksau:nsaum1]),collapse=","))
+  if (picksau == nsau)
+    replacetxt <- paste0("AvRec,",
+                         paste0(as.character(extra[1:nsaum1]),collapse=","),
+                         ",",as.character(param),collapse=",")
+  changeline(datadir,datafile,linenum,replacetxt)
+  zone <- makeequilzone(rundir,controlfile,datadir,doproduct=FALSE,
+                        cleanslate=FALSE,verbose=FALSE)
+  # declare main objects
+  glb <- zone$glb
+  condC <- zone$zone1$condC
+  zoneC <- zone$zoneC
+  zoneD <- zone$zoneD
+  #Condition on Fishery
+  zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,condC,calcpopC=calcpopC,
+                        sigR=1e-08,sigB=1e-08)
+  hyrs <- glb$hyrs
+  sauindex <- glb$sauindex
+  popB0 <- getlistvar(zoneC,"B0")
+  B0 <- tapply(popB0,sauindex,sum)
+  popExB0 <- getlistvar(zoneC,"ExB0")
+  ExB0 <- tapply(popExB0,sauindex,sum)
+  sauZone <- getsauzone(zoneDD,glb,B0=B0,ExB0=ExB0)
+  ssq <- compareCPUE(condC$histCE,sauZone$cpue,glb,rundir,filen="SAU_compareCPUE.png")
+  return(ssq[picksau])
+} # end of sauavrecssq
+
+
+
 #' @title saucompcatchN compares the predicted vs observed size composition data
 #'
 #' @description saucompcatchN provides a comparison of the proportional
@@ -94,3 +193,9 @@ saucompcatchN <- function(obs,pred,glb,years,ssc,sau="SAU",filen="",
   label <- paste0("Proportional Size Composition in ",sau)
   mtext(label,side=2,line=-0.25,outer=TRUE,cex=1.0)
 }
+
+
+
+
+
+

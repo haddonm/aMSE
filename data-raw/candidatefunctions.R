@@ -91,21 +91,6 @@ for (sau in 1:nsau) { #  sau=1
 
 
 
-# copyto -------------------------------------------------------------
-
-
-rundir <- "c:/Users/User/DropBox/A_codeUse/aMSEUse/scenarios/HS652510"
-
-destdir <- "c:/Users/User/DropBox/A_codeUse/aMSEUse/scenarios/HS81"
-
-copyto(rundir,todir=destdir,filename="controlsau.csv")
-
-  #     zoned=zoneDsau;zonep=zonePsau;glb=glb;startyr=30;
-  #     picksau=9; histCE=histCE;CIprobs=c(0.05,0.5,0.95); addCI=TRUE
-
-
-
-
 # Auto-regressive recruitment ------------------------------------------------
 
 
@@ -902,6 +887,111 @@ head(dat,20)
 
 dat$len2 <- trunc((dat$length+1)/2)*2
 inthist(dat$len2,width=0.8,border=2)
+
+
+# reexamine AvRec fitting ------------------------------------------------
+
+options("show.signif.stars"=FALSE,
+        "stringsAsFactors"=FALSE,
+        "max.print"=50000,
+        "width"=240)
+
+library(aMSE)
+library(TasHS)
+library(rutilsMH)
+library(makehtml)
+library(knitr)
+# Obviously you should modify the rundir and datadir to suit your own setup
+if (dir.exists("c:/Users/User/DropBox")) {
+  prefixdir <- "c:/Users/User/DropBox/A_codeUse/aMSEUse/scenarios/MhLML/"
+} else {
+  prefixdir <- "c:/Users/Malcolm/DropBox/A_codeUse/aMSEUse/scenarios/MhLML/"
+}
+hsfile <- "TasHS1_Tas.R"
+
+source("C:/Users/User/Dropbox/A_Code/aMSE/data-raw/almostaccepted.R")
+# create sub-directories and files ------------------------------------------
+
+alldirs <- c("M1h5","M1h6","M1h7","M125h5","M125h6","M125h7","M15h5","M15h6","M15h7")
+ndir <- length(alldirs)
+
+
+
+source("C:/Users/User/Dropbox/A_Code/aMSE/data-raw/almostaccepted.R")
+
+postfixdir <- alldirs[2]
+rundir <- paste0(prefixdir,postfixdir)
+controlfile <- paste0("control",postfixdir,".csv")
+datafile <- paste0("saudata",postfixdir,".csv")
+source(paste0(datadir,"/",hsfile))
+verbose=TRUE
+
+out <- do_condition(rundir,controlfile,datadir,
+                    calcpopC=calcexpectpopC,
+                    cleanslate = FALSE,
+                    verbose = verbose,
+                    doproduct = TRUE)
+
+makeoutput(out,rundir,datadir,postfixdir,controlfile,openfile=TRUE,verbose=FALSE)
+
+
+findlinenumber(rundir,"saudataM1h5.csv")
+
+
+rec <- getavrec(rundir,datafile,8)
+rec
+newrec <- rec * c(1.0,1.03,1.1,1.1,1.03,1.1,1.1,1.1)
+newtext <- paste0(c("AvRec",newrec),collapse=",")
+changeline(datadir,datafile,"AvRec",newtext)
+
+nsau=8
+final <- numeric(nsau)
+startime <- Sys.time()
+for (sau in 1:nsau) { #  sau=1
+  initial <- getavrec(datadir,datafile,nsau=nsau)
+  param <- initial[sau]
+  low <- param * 0.8
+  high <- param * 1.2
+  extra <- initial[-sau]
+  origssq <- sauavrecssq(param,rundir,datadir,controlfile,
+                         datafile=datafile,linenum=29,
+                         calcpopC=calcexpectpopC,extra=extra,picksau=sau,nsau=8)
+  ans <- optim(param,sauavrecssq,method="Brent",lower=low,upper=high,
+               rundir=rundir,datadir=datadir,
+               controlfile=controlfile,datafile=datafile,linenum=29,
+               calcpopC=calcexpectpopC,extra=extra,picksau=sau,nsau=nsau,
+               control=list(maxit=50))
+  cat("ssq = ",ans$value,"  par value = ",ans$par)
+  if (((ans$par - low) < 1) | ((high - ans$par) < 0))
+    warning(cat("Boundary reached for param ",sau,low,high,ans$par,"\n"))
+  final[sau] <- trunc(ans$par)
+
+  cat("\n",sau,"   ",low,"   ",trunc(ans$par),"   ",high,"    ",param,"\n")
+  if ((ans$par <= low) | ans$par >= high) warning("bounds met or broken  \n")
+  propchge <- 100 * abs(1 - ans$par/param)
+  cat("Percent change = ",round(propchge,6),"\n\n")
+}
+endtime <- Sys.time()
+print(round(initial)); print(final)
+print(endtime - startime)
+
+
+
+
+out <- do_condition(rundir,controlfile,datadir,
+                    calcpopC=calcexpectpopC,
+                    cleanslate = FALSE,
+                    verbose = verbose,
+                    doproduct = TRUE)
+
+makeoutput(out,rundir,datadir,postfixdir,controlfile,openfile=TRUE,verbose=FALSE)
+
+
+
+
+
+
+
 
 
 

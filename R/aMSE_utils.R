@@ -170,7 +170,7 @@ changevar <- function(filename,rundir,varname,newvalue,prompt=FALSE,verbose=TRUE
   filen <- paste0(rundir,"/",filename)
   dat <- readLines(filen)
   goodnames <- c("larvdisp","PROJECT","CATCHES","replicates",
-                 "withsigR","withsigB","withsigCE")
+                 "withsigR","withsigB","withsigCE","datafile")
   ngood <- length(goodnames)
   if (prompt) {
     cat("\n Allowable names and current values \n")
@@ -203,46 +203,72 @@ changevar <- function(filename,rundir,varname,newvalue,prompt=FALSE,verbose=TRUE
   return(cat(label," \n"))
 } # end of changevar
 
-#' @title copyto copies the control.csv file from a scenario to a new directory
+#' @title copyto copies a vector of files from one scenario directory to annother
 #'
-#' @description copyto copies the control.csv file from one scenario's
-#'     directory to another. 'copyto' includes the option of copying to a
-#'     completely different path and will create the 'todir' if it
-#'     does not already exist.
+#' @description copyto copies a vector of files (see examples) from one
+#'     scenario's directory to another. If a filename includes the
+#'     name of the scenario, eg controlM15h75.csv, is found in the scenario
+#'     M15h75, and it is to be copied to, say, M15h5, then the filename will
+#'     be changed automatically. Care should be taken when using this
+#'     function as it writes files and potentially new directories to your
+#'     storage drives.
 #'
-#' @param fromdir the full path of the current rundir
-#' @param todir the name of the new destination rundir
-#' @param filename the filename of the file to be copied
+#' @param prefixdir the directory containing the different scenarios
+#' @param fromdir just the name of the directory from which to source the
+#'     files listed in filelist (no path)
+#' @param todir just the name of the new destination directory (no path)
+#' @param filelist a vector of filenames to be copied, as character.
 #' @param makenew if the 'todir' does not exist should it be created using
 #'     dir.create? default = TRUE
 #' @param verbose should details be printed to the console, default=TRUE
 #'
-#' @return a vector of 1 or -1 denoting which files are transferred
+#' @return Nothing but it will transfer files and change their names. This
+#'     information will be printed to the console if verbose = TRUE
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' # When constructing a new scenario, one can copy a control.csv file from
-#' # a different scenario's rundir into a new one prior to editing it to match
-#' # any new requirements.
-#' copyto(fromdir=rundir,todir=destdir,filename="control.csv")
+#'  prefixdir <- "c:/Users/User/DropBox/A_codeUse/aMSEUse/scenarios/"
+#'  fromdir <- "M15h75"
+#'  todir <- "M15h5"
+#'  vectfiles <- c("controlM15h75.csv","saudataM15h75.csv",
+#'                   "lf_WZ90-20.csv","run_aMSE_M15h75.R","TasHS1_Tas.R")
+#'  copyto(prefixdir=prefixdir,fromdir=fromdir,todir=todir,filelist=vectfiles)
 #' }
-copyto <- function (fromdir, todir, filename="control.csv",makenew = TRUE,
-                    verbose=TRUE) {
-  if (!dir.exists(fromdir)) stop(cat(fromdir, " does not exist!   \n\n"))
-  filen <- filenametopath(fromdir,filename)
-  if (!file.exists(filen)) stop(cat(filename, " does not exist \n"))
-  if (!dir.exists(todir)) {
-    if (verbose) cat(todir," did not exist  \n")
+copyto <- function(prefixdir,fromdir, todir, filelist,
+                   makenew = TRUE,verbose=TRUE) {
+  fdir <- filenametopath(prefixdir,fromdir)
+  if (!dir.exists(fdir)) stop(cat(fdir," does not exist!   \n\n"))
+  nfile <- length(filelist)
+  for (i in 1:nfile) {  # check if all files in list exist
+    filen <- filenametopath(fdir,filelist[i])
+    if (!file.exists(filen)) stop(cat(filen," does not exist \n"))
+  }
+  tdir <- filenametopath(prefixdir,todir)
+  if (!dir.exists(tdir)) {
+    if (verbose) cat(tdir," did not exist  \n")
     if (makenew) {
-      dir.create(todir, recursive = TRUE)
-      if (verbose) cat(todir," has been created  \n")
+      dir.create(tdir, recursive = TRUE)
+      if (verbose) cat(tdir," has been created  \n")
     }
   }
-  fileout <- filenametopath(todir, filename)
-  file.copy(filen, fileout, overwrite = TRUE, copy.date = TRUE)
-  if (verbose) cat(filename, " has been copied to ",todir,"\n")
+  for (i in 1:nfile) { # i = 1
+    filen <- filenametopath(fdir,filelist[i])
+    present <- grep(fromdir,filelist[i])
+    fileout <- filenametopath(tdir, filelist[i])
+    if (length(present) > 0) {
+      newfile <- sub(fromdir,todir,filelist[i])
+      fileout <- filenametopath(tdir, newfile)
+    }
+    file.copy(filen, fileout, overwrite = TRUE, copy.date = TRUE)
+  }
+  if (verbose)
+    for (i in 1:nfile) cat(filelist[i], " has been copied to ",todir,"\n")
+  if (verbose)
+    cat("Be sure to change the control, data, and run files appropriately. \n")
+  return(tdir)
 } # end of copyto
+
 
 #' @title findlinenumber prints out the contents of a text file with line numbers
 #'

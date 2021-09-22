@@ -11,7 +11,8 @@ do_condition(
   calcpopC,
   cleanslate = FALSE,
   verbose = FALSE,
-  doproduct = FALSE
+  doproduct = FALSE,
+  dohistoric = TRUE
 )
 }
 \arguments{
@@ -41,6 +42,8 @@ the run then 'cleanslate' will not affect the data or any .R files.}
 \item{verbose}{Should progress comments be printed to console, default=FALSE}
 
 \item{doproduct}{should production estimates be made. default=FALSE}
+
+\item{dohistoric}{should the historical catches be applied. Default=TRUE}
 }
 \value{
 a large list containing tottime, projtime, starttime, glb, ctrl,
@@ -67,6 +70,8 @@ do_condition is a utility function that can be used to speed the
 }
 \examples{
 print("wait on suitable data sets in data")
+# rundir=rundir; controlfile=controlfile;datadir=datadir;calcpopC=calcexpectpopC
+# cleanslate=FALSE; verbose=TRUE; doproduct=TRUE; dohistoric=FALSE
 }
 \seealso{
 {
