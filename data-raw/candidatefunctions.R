@@ -935,7 +935,7 @@ out <- do_condition(rundir,controlfile,datadir,
 makeoutput(out,rundir,datadir,postfixdir,controlfile,openfile=TRUE,verbose=FALSE)
 
 
-findlinenumber(rundir,"saudataM1h5.csv")
+findlinenumber(rundir,"saudataM125h6.csv")
 
 
 rec <- getavrec(rundir,datafile,8)
@@ -977,14 +977,173 @@ print(endtime - startime)
 
 
 
+# Both AvRec and MaxCEpars ------------------------------------------
+
+options("show.signif.stars"=FALSE,
+        "stringsAsFactors"=FALSE,
+        "max.print"=50000,
+        "width"=240)
+
+library(aMSE)
+library(TasHS)
+library(rutilsMH)
+library(makehtml)
+library(knitr)
+# Obviously you should modify the rundir and datadir to suit your own setup
+if (dir.exists("c:/Users/User/DropBox")) {
+  prefixdir <- "c:/Users/User/DropBox/A_codeUse/aMSEUse/scenarios/MhLML/"
+} else {
+  prefixdir <- "c:/Users/Malcolm/DropBox/A_codeUse/aMSEUse/scenarios/MhLML/"
+}
+hsfile <- "TasHS1_Tas.R"
+
+source("C:/Users/User/Dropbox/A_Code/aMSE/data-raw/almostaccepted.R")
+# create sub-directories and files ------------------------------------------
+
+alldirs <- c("M1h5","M1h6","M1h7","M125h5","M125h6","M125h7","M15h5","M15h6","M15h7")
+ndir <- length(alldirs)
+
+
+
+source("C:/Users/User/Dropbox/A_Code/aMSE/data-raw/almostaccepted.R")
+
+dur <- 5
+postfixdir <- alldirs[dur]
+rundir <- filenametopath(prefixdir,postfixdir)
+
+
+rundir=rundir
+controlfile="controlM125h6.csv"
+datadir=rundir
+datafile="saudataM125h6.csv"
+nsau=8
+linenum=c(29,37)
+
+calcpopC=calcexpectpopC
+verbose=FALSE
+
+final <- numeric(nsau)
+sau=2
+rec <- getline(rundir,datafile,"AvRec",nsau)
+param <- rec[sau]
+extrarec <- rec[-sau]
+maxce <- getline(rundir,datafile,"MaxCEpars",nsau)
+param <- c(rec[sau],maxce[sau])
+extrace <- maxce[-sau]
+origssq <- saureccpuessq(param,rundir,datadir,controlfile,
+                       datafile=datafile,linenum=c(29,37),
+                       calcpopC=calcexpectpopC,
+                       extrarec=extrarec,extrace=extrace,picksau=sau,nsau=8)
+ans <- optim(param,saureccpuessq,method="Nelder-Mead",rundir=rundir,datadir=datadir,
+             controlfile=controlfile,datafile=datafile,linenum=c(29,37),
+             calcpopC=calcexpectpopC,extrarec=extrarec,extrace=extrace,picksau=sau,nsau=nsau,
+             control=list(maxit=200))
+MQMF::outfit(ans)
+
 
 out <- do_condition(rundir,controlfile,datadir,
                     calcpopC=calcexpectpopC,
                     cleanslate = FALSE,
-                    verbose = verbose,
+                    verbose = TRUE,
                     doproduct = TRUE)
 
 makeoutput(out,rundir,datadir,postfixdir,controlfile,openfile=TRUE,verbose=FALSE)
+
+
+
+
+
+
+
+nsau=8
+final <- numeric(nsau)
+startime <- Sys.time()
+for (sau in 1:nsau) { #  sau=2
+  rec <- getline(rundir,datafile,"AvRec",nsau)
+  param <- rec[sau]
+  extrarec <- rec[-sau]
+  maxce <- getline(rundir,datafile,"MaxCEpars",nsau)
+  param <- c(rec[sau],maxce[sau])
+  extrace <- maxce[-sau]
+  origssq <- saureccpuessq(param,rundir,datadir,controlfile,
+                           datafile=datafile,linenum=c(29,37),
+                           calcpopC=calcexpectpopC,
+                           extrarec=extrarec,extrace=extrace,picksau=sau,nsau=8)
+  ans <- optim(param,saureccpuessq,method="Nelder-Mead",rundir=rundir,datadir=datadir,
+               controlfile=controlfile,datafile=datafile,linenum=c(29,37),
+               calcpopC=calcexpectpopC,extrarec=extrarec,extrace=extrace,picksau=sau,nsau=nsau,
+               control=list(maxit=200))
+  cat("ssq = ",ans$value,"  par value = ",ans$par)
+  if (((ans$par - low) < 1) | ((high - ans$par) < 0))
+    warning(cat("Boundary reached for param ",sau,low,high,ans$par,"\n"))
+  final[sau] <- trunc(ans$par)
+
+  cat("\n",sau,"    ",ans$par,"   ",param,"    ",origssq,"    ","\n\n")
+}
+endtime <- Sys.time()
+print(round(initial)); print(final)
+print(endtime - startime)
+
+
+
+
+out <- do_condition(rundir,controlfile,datadir,
+                    calcpopC=calcexpectpopC,
+                    cleanslate = FALSE,
+                    verbose = TRUE,
+                    doproduct = TRUE)
+
+makeoutput(out,rundir,datadir,postfixdir,controlfile,openfile=TRUE,verbose=FALSE)
+
+
+
+
+# ccf plots by SAU-------------------------------------
+
+plotprep(width=7,height=8,newdev=FALSE,filename="",cex=0.9,verbose=FALSE)
+parset(plots=getparplots(nsau),margin=c(0.3,0.35,0.05,0.05),
+       outmargin=c(1,0,0,0),byrow=FALSE)
+ccf(histC[,1],histCE[9:29,1],ylab=saunames[1],xlab="")
+for (sau in 2:7) ccf(histC[,sau],histCE[,sau],ylab=saunames[sau],xlab="")
+ccf(histC[,8],histCE[9:29,8],ylab=saunames[8],xlab="")
+mtext("Lag",side=1,line=-0.1,outer=TRUE,cex=1.1)
+
+
+
+
+plotprep(width=7,height=8,newdev=FALSE,filename="",cex=0.9,verbose=FALSE)
+parset(plots=getparplots(nsau),margin=c(0.3,0.35,0.05,0.05),
+       outmargin=c(1,0,0,0),byrow=FALSE)
+
+
+plot(histC[33:53,1],histCE[9:29,1],type="p",cex=1.0,pch=16,
+     ylab=saunames[1],xlab="",panel.first=grid())
+lines(histC[33:53,1],histCE[9:29,1],lwd=1,col="grey")
+model <- lm(histCE[9:29,1] ~ histC[33:53,1])
+abline(model,lwd=2,col=2)
+cat(saunames[1],summary(model)$coefficients[2,4],"\n")
+for (sau in 2:7) {
+  plot(histC[25:53,sau],histCE[,sau],type="p",cex=1.0,pch=16,
+                      ylab=saunames[sau],xlab="",panel.first=grid())
+  lines(histC[25:53,sau],histCE[,sau],lwd=1,col="grey")
+  model <- lm(histCE[,sau] ~ histC[25:53,sau])
+  abline(model,lwd=2,col=2)
+  cat(saunames[sau],summary(model)$coefficients[2,4],"\n")
+}
+plot(histC[33:53,8],histCE[9:29,8],type="p",cex=1.0,pch=16,
+     ylab=saunames[8],xlab="",panel.first=grid())
+lines(histC[33:53,8],histCE[9:29,8],lwd=1,col="grey")
+model <- lm(histCE[9:29,8] ~ histC[33:53,8])
+abline(model,lwd=2,col=2)
+cat(saunames[8],summary(model)$coefficients[2,4],"\n")
+mtext("Lag",side=1,line=-0.1,outer=TRUE,cex=1.1)
+
+
+
+
+
+
+
 
 
 

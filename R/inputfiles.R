@@ -592,19 +592,19 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir,verbose=TRUE
       rownames(histCatch) <- histyr[,1]
       rownames(histyr) <- histyr[,1]
    } # end of catches loop
-   startce <- getsingleNum("CEYRS",indat)
-   if (startce > 0) {
-      yrce <- hyrs - startce + 1
+   yrce <- getsingleNum("CEYRS",indat)
+   if (yrce > 0) {
+      # yrce <- hyrs - startce + 1
       begin <- grep("CEYRS",indat)
       histCE <- matrix(NA,nrow=yrce,ncol=nSAU)
-      yearCE <- numeric(yrce) # of same length as nSAU
+      yearCE <- numeric(yrce)
       colnames(histCE) <- SAUnames
       for (i in 1:yrce) {
-         begin <- begin + 1
-         cenum <- as.numeric(unlist(strsplit(indat[begin],",")))
-         yearCE[i] <- cenum[1]
-         histCE[i,] <- cenum[2:(nSAU+1)]
-      }
+          begin <- begin + 1
+          cenum <- as.numeric(unlist(strsplit(indat[begin],",")))
+          yearCE[i] <- cenum[1]
+          histCE[i,] <- cenum[2:(nSAU+1)]
+       }
       rownames(histCE) <- yearCE
       hyrnames <- as.numeric(histyr[,1])
       firstyear <- tail(hyrnames,1) + 1
@@ -645,10 +645,10 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir,verbose=TRUE
    projC <- list(projLML=projLML,projyrs=projyrs,
                  Sel=NULL,SelWt=NULL,histCE=histCE)
    outctrl <- list(runlabel,datafile,reps,randomseed,randomseedP,
-                   withsigR,withsigB,withsigCE,catches,projyrs,bysau)
+                   withsigR,withsigB,withsigCE,catches,projyrs,bysau,rundir)
    names(outctrl) <- c("runlabel","datafile","reps","randseed",
                        "randseedP","withsigR","withsigB","withsigCE",
-                       "catches","projection","bysau")
+                       "catches","projection","bysau","rundir")
    globals <- list(numpop=numpop, nSAU=nSAU, midpts=midpts,Nclass=Nclass,
                    reps=reps,hyrs=hyrs,pyrs=projyrs,hyrnames=hyrnames,
                    pyrnames=pyrnames,saunames=SAUnames,

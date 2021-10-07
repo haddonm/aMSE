@@ -596,7 +596,7 @@ makeabpop <- function(popparam,midpts,projLML) {
 #' print("wait on datafiles")
 makeequilzone <- function(rundir,ctrlfile="control.csv",datadir=rundir,
                           doproduct=TRUE,cleanslate=FALSE,verbose=TRUE) {
- #  rundir=rundir;ctrlfile="controlM1h5.csv";cleanslate = TRUE;datadir=datadir;verbose=verbose
+ #  rundir=rundir;ctrlfile=controlfile;cleanslate = FALSE;datadir=datadir;verbose=verbose;doproduct=TRUE
   zone1 <- readctrlfile(rundir,infile=ctrlfile,datadir=datadir,verbose=verbose)
   ctrl <- zone1$ctrl
   glb <- zone1$globals     # glb without the movement matrix

@@ -37,34 +37,43 @@ combinepopN <- function(inN,glb) {
 
 
 
-#' @title getavrec pulls out just the AvRec values for each sau for a scenario
-#'
-#' @description getavrec extracts the AvRec values for each SAU for a given
-#'     scenario. It does this by reading in the saudata file and using grep
-#'     to search for the correct line and returning the line as is. Care is
-#'     required to only take the first record of 'AvRec' so as not to
-#'     consider the variability in sAvRec.
-#'
-#' @param datadir the directory in which one finds the saudata file for the
-#'     given scenario
-#' @param datafile the exact name of the saudata file
-#' @param nsau the number of SAU to be found
-#'
-#' @return a numeric vector of the average recruitment for each SAU
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#'   rundir <- "c:/Users/User/DropBox/A_codeUse/aMSEUse/scenarios/MhLML/M1h5/"
-#'   getavrec(rundir,"saudataM1h5.csv",8)
-#' }
-getavrec <- function(datadir,datafile,nsau) {
-  filen <- filenametopath(datadir,datafile)
-  dat <- readLines(filen)
-  pickA <- grep("AvRec",dat)[1] # ignore sAvRec
-  avrec <- getConst(dat[pickA],nsau)
-  return(avrec)
-} # end of getavrec
+
+
+histcatchcpue <- function(rundir,condC,glb,filen="",startyr=2000) {
+  # rundir <- out$ctrl$rundir; condC=out$condC; glb=out$glb; filen=""; startyr=2000
+  yearCE <- condC$yearCE
+  histyr <- condC$histyr
+  pickce <- which(yearCE >= startyr) #match(yearCE,histyr)
+  histCE <- condC$histCE[pickce,]
+  pickc <- which(histyr >= startyr)
+  histC <- condC$histCatch[pickc,]
+  nsau <- glb$nSAU
+  saunames <- glb$saunames
+  nCE <- nrow(histCE)
+  for (sau in 1:nsau) {
+    maxy <- max(histC[,sau],na.rm=TRUE)
+    histC[,sau] <- histC[,sau]/maxy
+    maxye <- max(histCE[,sau],na.rm=TRUE)
+    histCE[,sau] <- histCE[,sau]/maxye
+  }
+  plotprep(width=7,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
+  parset(plots=getparplots(nsau),margin=c(0.3,0.35,0.05,0.05),
+         outmargin=c(1,1.2,0,0),byrow=FALSE)
+  for (sau in 1:nsau) {
+    maxc <- getmax(histC[,sau])
+    minc <- getmin(histC[,sau],mult=1.2)
+    maxce <- getmax(histCE[,sau])
+    plot(histC[,sau],histCE[,sau],type="p",pch=16,cex=1.0,xlim=c(minc,maxc),
+         ylim=c(0,maxce),xaxs="i",yaxs="i",xlab="",ylab=saunames[sau],
+         panel.first=grid())
+    lines(histC[,sau],histCE[,sau],lwd=1,lty=2,col="grey")
+    points(c(histC[1,sau],histC[nCE,sau]),c(histCE[1,sau],histCE[nCE,sau]),
+           cex=2,pch=16,col=c(2,3))
+    lines(c(0,1),c(0,1),lwd=1,col=3)
+  }
+  mtext("Proportion of Maximum Catch",side=1,line=-0.2,outer=TRUE,cex=1.1)
+  mtext("Proportion of Maximum CPUE",side=2,line=0.1,outer=TRUE,cex=1.1)
+}
 
 
 
@@ -87,7 +96,7 @@ getavrec <- function(datadir,datafile,nsau) {
 #'     for each SAU
 #' @param extra the vector of SAU AvRecs minus the selected SAU value
 #' @param picksau which SAU is to be worked on as in 1:nsau
-#' @param nsau the toal number of SAU
+#' @param nsau the total number of SAU
 #'
 #' @return the SSQ for the selected SAU in a comparison of predicted and
 #'     observed CPUE
@@ -133,6 +142,88 @@ sauavrecssq <- function(param,rundir,datadir,controlfile,datafile,linenum,
   return(ssq[picksau])
 } # end of sauavrecssq
 
+#' @title saureccpuessq applies the AvRec and returns the ssq from the cpue
+#'
+#' @description saureccpuessq applies the AvRec vector while adjusting just
+#'     one for the picksau, and then compares the predicted CPUE with the
+#'     observed and returns a sum-of-squared differences. This is used by
+#'     optim while using the Brent option to find an optimum for a single
+#'     parameter.
+#'
+#' @param param is the AvRec for the selected SAU
+#' @param rundir the rundir for the scenario being considered
+#' @param datadir the directory holding the saudata file, usually = rundir
+#' @param controlfile the name of the control file, no path
+#' @param datafile the name of the data file, no path
+#' @param linenum a vector of two linenumbers, the first for the AvRec vector,
+#'     the second for the MaxCEpars vector
+#' @param calcpopC the HS function that calculates the aspirational catches
+#'     for each SAU
+#' @param extrarec the vector of SAU AvRecs minus the selected SAU value
+#' @param extrace the vector of SAU MaxCEpars minus the selected SAU value
+#' @param picksau which SAU is to be worked on as in 1:nsau
+#' @param nsau the total number of SAU
+#'
+#' @return the SSQ for the selected SAU in a comparison of predicted and
+#'     observed CPUE
+#' @export
+#'
+#' @examples
+#' print("Wait on suitable internal data files")
+saureccpuessq <- function(param,rundir,datadir,controlfile,datafile,linenum,
+                        calcpopC,extrarec,extrace,picksau,nsau) {
+#  param=param;rundir=rundir;datadir=rundir;controlfile=controlfile; datafile=datafile
+#  linenum=linenum;calcpopC=calcpopC;extrarec=extrarec;extrace=extrace;picksau=sau;nsau=8
+
+  nsaum1 <- nsau - 1
+  if (picksau == 1) {
+    replaceRec <- paste0("AvRec,",as.character(param[1]),",",
+                         paste0(as.character(extrarec[1:nsaum1]),collapse=","),
+                         collapse=",")
+    replaceCE <- paste0("MaxCEpars,",as.character(param[2]),",",
+                         paste0(as.character(extrace[1:nsaum1]),collapse=","),
+                         collapse=",")
+  }
+  if ((picksau > 1) & (picksau < nsau)) {
+    replaceRec <- paste0("AvRec,",
+                         paste0(as.character(extrarec[1:(picksau-1)]),collapse=","),
+                         ",",as.character(param[1]),",",
+                         paste0(as.character(extrarec[picksau:nsaum1]),collapse=","))
+    replaceCE <- paste0("MaxCEpars,",
+                         paste0(as.character(extrace[1:(picksau-1)]),collapse=","),
+                         ",",as.character(param[2]),",",
+                         paste0(as.character(extrace[picksau:nsaum1]),collapse=","))
+  }
+  if (picksau == nsau) {
+    replaceRec <- paste0("AvRec,",
+                         paste0(as.character(extrarec[1:nsaum1]),collapse=","),
+                         ",",as.character(param[1]),collapse=",")
+    replaceCE <- paste0("MaxCEpars,",
+                         paste0(as.character(extrace[1:nsaum1]),collapse=","),
+                         ",",as.character(param[2]),collapse=",")
+  }
+  changeline(datadir,datafile,linenum[1],replaceRec)
+  changeline(datadir,datafile,linenum[2],replaceCE)
+  zone <- makeequilzone(rundir,controlfile,datadir,doproduct=FALSE,
+                        cleanslate=FALSE,verbose=FALSE)
+  # declare main objects
+  glb <- zone$glb
+  condC <- zone$zone1$condC
+  zoneC <- zone$zoneC
+  zoneD <- zone$zoneD
+  #Condition on Fishery
+  zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,condC,calcpopC=calcpopC,
+                        sigR=1e-08,sigB=1e-08)
+  hyrs <- glb$hyrs
+  sauindex <- glb$sauindex
+  popB0 <- getlistvar(zoneC,"B0")
+  B0 <- tapply(popB0,sauindex,sum)
+  popExB0 <- getlistvar(zoneC,"ExB0")
+  ExB0 <- tapply(popExB0,sauindex,sum)
+  sauZone <- getsauzone(zoneDD,glb,B0=B0,ExB0=ExB0)
+  ssq <- compareCPUE(condC$histCE,sauZone$cpue,glb,rundir,filen="SAU_compareCPUE.png")
+  return(ssq[picksau])
+} # end of saureccpuessq
 
 
 #' @title saucompcatchN compares the predicted vs observed size composition data

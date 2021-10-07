@@ -1,9 +1,9 @@
 #
 # outcond=outcond
-# postfixdir <- "M15h75"
+# postfixdir <- "M125h6"
 # rundir <- paste0(prefixdir,postfixdir)
 # datadir <- rundir
-# controlfile="controlM15h75.csv"
+# controlfile=paste0("control",postfixdir,".csv")
 # hsargs=hsargs
 # hcrfun=mcdahcr
 # sampleCE=tasCPUE
@@ -12,15 +12,15 @@
 # getdata=tasdata
 # calcpopC=calcexpectpopC
 # varyrs=7
-# startyr=48
+# startyr=38
 # cleanslate=FALSE
 # verbose=TRUE
 # ndiagprojs=4
 # savesauout=TRUE
 # makehcrout=makeouthcr
 # cutcatchN=56
-# matureL = c(50,180)
-# wtatL = c(80,210)
+# matureL = c(70,200)
+# wtatL = c(80,200)
 
 #' @title do_MSE an encapsulating function to hold the details of a single run
 #'
@@ -117,12 +117,12 @@ do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
                    sampleNaS,getdata,calcpopC,makeouthcr,varyrs=7,startyr=42,
                    cleanslate=FALSE,verbose=FALSE,ndiagprojs=3,savesauout=FALSE,
                    cutcatchN=56,matureL=c(70,200),wtatL=c(80,200)) {
-  # generate equilibrium zone ----------------------------------------------------
+  # generate equilibrium zone -----------------------------------------------
   starttime <- (Sys.time())
   zone <- makeequilzone(rundir,controlfile,datadir,cleanslate=cleanslate,
                         verbose=verbose)
   equiltime <- (Sys.time()); if (verbose) print(equiltime - starttime)
-  # declare main objects -------------------------------------------------------
+  # declare main objects ----------------------------------------------------
   glb <- zone$glb
   ctrl <- zone$ctrl
   zone1 <- zone$zone1
@@ -131,11 +131,11 @@ do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
   zoneC <- zone$zoneC
   zoneD <- zone$zoneD
   production <- zone$product
-  # save some equil results ----------------------------------------------------
+  # save some equil results -------------------------------------------------
   biology_plots(rundir, glb, zoneC, matL=matureL,Lwt=wtatL)
   plotproductivity(rundir,production,glb)
   numbersatsize(rundir, glb, zoneD)
-  #Condition on Fishery --------------------------------------------------------
+  #Condition on Fishery -----------------------------------------------------
   if (any(condC$initdepl < 1)) {
     initdepl <- condC$initdepl
     if (verbose) cat("Conducting initial depletions  ",initdepl,"\n")
@@ -195,6 +195,7 @@ do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
            addfile=TRUE)
   fishery_plots(rundir=rundir,glb=glb,select=zoneCP[[1]]$Select,
                 histyr=condC$histyr,projLML=projC$projLML)
+  historicalplots(rundir=rundir,condC=condC,glb=glb)
   NAS$catchN <- NAS$catchN[(cutcatchN:glb$Nclass),,,]
   projtime <- Sys.time()
   tottime <- round((projtime - starttime),3)

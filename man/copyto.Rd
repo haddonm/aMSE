@@ -7,7 +7,7 @@
 copyto(prefixdir, fromdir, todir, filelist, makenew = TRUE, verbose = TRUE)
 }
 \arguments{
-\item{prefixdir}{the directory containing the different scenarios}
+\item{prefixdir}{the directory (path) containing the different scenarios}
 
 \item{fromdir}{just the name of the directory from which to source the
 files listed in filelist (no path)}

@@ -263,6 +263,44 @@ dosauplot <- function(ylabel,postrep,glb,startyr,addCI=FALSE,
   return(invisible(sauCI))
 } # end of dosauplot
 
+#' @title historicalplots a wrapper function to call plots of fishery plots
+#'
+#' @description historicalplots is a wrapper used by do_MSE and do_condition,
+#'     to plot out details of the historical fishery data used in the
+#'     conditioning. It currently plots out the historical catches and CPUE.
+#'
+#' @param rundir the directory where all results are stored
+#' @param condC the R object contaiining the historical fishery data generated
+#'     by the readctrlfile function
+#' @param glb the global variables object
+#' @param commonscale should the SAU plots share a common y-axis scale,
+#'     default =  FALSE
+#' @param proportion should the plot be of proportion relative to the maximum
+#'     catch through each time-series or as raw tonnes x year, default=FALSE
+#'
+#' @return nothing but it does add plot files to the rundir
+#' @export
+#'
+#' @examples
+#' print("wait on suitable data sets")
+historicalplots <- function(rundir,condC,glb,commonscale=FALSE,proportion=FALSE) {
+  # condC=out$condC; glb=out$glb; commonscale=FALSE; proportion=TRUE
+  hyrnames <- glb$hyrnames
+  hyrs <- glb$hyrs
+  nsau <- glb$nSAU
+  saunames <- glb$sauname
+  histC <- condC$histCatch
+  filen <- filenametopath(rundir,"Historical_Catches.png")  #
+  plothistcatch(yrs=hyrnames,histC,nsau,saunames,commonscale=commonscale,
+                proportion=proportion,filen=filen)
+  caption <- "Historical catches for each SAU, and across the zone."
+  addplot(filen,rundir=rundir,category="Fishery",caption)
+  filen <- filenametopath(rundir,"Historical_CPUE.png")
+  plothistce(rundir,condC,glb,filen=filen)
+  caption <- "Historical CPUE for each SAU."
+  addplot(filen,rundir=rundir,category="Fishery",caption)
+} # end of historical plots
+
 
 #' @title onesau plots the dynamics for a single SAU
 #'
@@ -455,7 +493,102 @@ plotconditioning <- function(zoneDD,glb,zoneC,histCE,rundir) {
     addplot(filen,rundir=rundir,category="condition",caption)
   }
   return(invisible(list(sauZone=sauZone,ssq=ssq)))
-} # end plotconditioning
+} # end plotconditioning.
+
+#' @title plothistcatch generates a plot of the historical catches by SAU
+#'
+#' @description plothistcatch generates a plot of histircal catches by SAU
+#'     and by Zone. It can plot can tonnes x year or proportion. All SAU
+#'     plots can have independent or common y-axis scales.
+#'
+#' @param yrs a vector of the years of catch history
+#' @param histC the matrix of catches by years
+#' @param nsau the number of SAU
+#' @param saunames the SAU names as a vector
+#' @param commonscale should the SAU plots share a common y-axis scale,
+#'     default =  FALSE
+#' @param proportion should the plot be of proportion relative to the maximum
+#'     catch through each time-series or as raw tonnes x year, default=FALSE
+#' @param filen the name of the file used to save the plot, default="", which
+#'     sends the plot to a separate window
+#'
+#' @return nothing but it does generate a plot either to a window or a file
+#' @export
+#'
+#' @examples
+#' print("wait on suitable data sets")
+plothistcatch <- function(yrs,histC,nsau,saunames,commonscale=FALSE,
+                          proportion=FALSE,filen="") {
+  totC <- rowSums(histC,na.rm=TRUE)
+  if (proportion) {
+    for (i in 1:nsau) {
+      maxy <- max(histC[,i])
+      histC[,i] <- histC[,i]/maxy
+    }
+    commonscale=TRUE
+    totC <- totC/max(totC)
+  }
+  plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
+  parset(plots=getparplots(nsau+1),margin=c(0.3,0.35,0.05,0.05),
+         outmargin=c(1,1,0,0),byrow=FALSE)
+  if (commonscale) ymax <- getmax(histC)
+  for (i in 1:nsau) {
+    if (!commonscale) ymax <- getmax(histC[,i])
+    plot(yrs,histC[,i],type="l",lwd=2,xlab="",ylab=saunames[i],yaxs="i",
+         ylim=c(0,ymax),panel.first=grid())
+  }
+  ymax <- getmax(totC)
+  plot(yrs,totC,type="l",lwd=2,xlab="",ylab="Zone",yaxs="i",
+       ylim=c(0,ymax),panel.first=grid())
+  mtext("Years",side=1,line=-0.1,outer=TRUE,cex=1.1)
+  label <- "Annual Catch (t)"
+  if (!commonscale) label <- paste0(label," (note different y-axis scales)")
+  mtext(label,side=2,line=-0.1,outer=TRUE,cex=1.1)
+} # end of plothistcatch
+
+#' @title plothistce generates a plot of the historical cpue by SAU
+#'
+#' @description plothistce generates a plot of historical cpue by SAU. It can
+#'     plot as cpue or proportion of maximum cpue.
+#'
+#' @param rundir the direcotry where all results are stored
+#' @param condC the R object contiaining the historical fishery data generated
+#'     by the readctrlfile function
+#' @param glb the globol variables object
+#' @param proportion should the plot be of proportion relative to the maximum
+#'     catch through each time-series or as raw tonnes x year, default=FALSE
+#' @param filen the name of the file used to save the plot, default="", which
+#'     sends the plot to a separate window
+#'
+#' @return nothing but it does generate a plot either to a window or a file
+#' @export
+#'
+#' @examples
+#' print("wait on suitable data sets")
+plothistce <- function(rundir,condC,glb,proportion=FALSE,filen="") {
+  nsau <- glb$nSAU
+  saunames <- glb$saunames
+  yrs <- condC$yearCE
+  histCE <- condC$histCE
+  if (proportion) {
+    for (sau in 1:nsau) {
+      maxy <- max(histCE[,sau],na.rm=TRUE)
+      histCE[,sau] <- histCE[,sau]/maxy
+    }
+  }
+  plotprep(width=7,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
+  parset(plots=getparplots(nsau),margin=c(0.3,0.35,0.05,0.05),
+         outmargin=c(1,1,0,0),byrow=FALSE)
+  for (sau in 1:nsau) {
+    ymax <- getmax(histCE[,sau])
+    plot(yrs,histCE[,sau],type="l",lwd=2,ylim=c(0,ymax),yaxs="i",xlab="",
+         ylab=saunames[sau],panel.first=grid())
+  }
+  mtext("Years",side=1,line=-0.1,outer=TRUE,cex=1.1)
+  label <- "Annual CPUE"
+  if (proportion) label <- paste0(label," as proportion of maximum")
+  mtext(label,side=2,line=-0.1,outer=TRUE,cex=1.1)
+} # end of plothistce
 
 #' @title plothsstats plots some HS performance statistics
 #'

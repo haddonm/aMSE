@@ -213,7 +213,7 @@ changevar <- function(filename,rundir,varname,newvalue,prompt=FALSE,verbose=TRUE
 #'     function as it writes files and potentially new directories to your
 #'     storage drives.
 #'
-#' @param prefixdir the directory containing the different scenarios
+#' @param prefixdir the directory (path) containing the different scenarios
 #' @param fromdir just the name of the directory from which to source the
 #'     files listed in filelist (no path)
 #' @param todir just the name of the new destination directory (no path)

@@ -1,4 +1,34 @@
 
+#' @title getavrec pulls out just the AvRec values for each sau for a scenario
+#'
+#' @description getavrec extracts the AvRec values for each SAU for a given
+#'     scenario. It does this by reading in the saudata file and using grep
+#'     to search for the correct line and returning the line as is. Care is
+#'     required to only take the first record of 'AvRec' so as not to
+#'     consider the variability in sAvRec.
+#'
+#' @param datadir the directory in which one finds the saudata file for the
+#'     given scenario
+#' @param datafile the exact name of the saudata file
+#' @param nsau the number of SAU to be found
+#'
+#' @return a numeric vector of the average recruitment for each SAU
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'   rundir <- "c:/Users/User/DropBox/A_codeUse/aMSEUse/scenarios/MhLML/M1h5/"
+#'   getavrec(rundir,"saudataM1h5.csv",8)
+#' }
+getavrec <- function(datadir,datafile,nsau) {
+  filen <- filenametopath(datadir,datafile)
+  dat <- readLines(filen)
+  pickA <- grep("AvRec",dat)[1] # ignore sAvRec
+  avrec <- getConst(dat[pickA],nsau)
+  return(avrec)
+} # end of getavrec
+
+
 #' @title getmaxCE identifies peak CPUE during projections for each SAU
 #'
 #' @description getmaxCE is one of the HS performance statistics. Because it
@@ -172,6 +202,45 @@ getLFdata <- function(datadir,filename) {
   }
   return(list(lfs=lfs,palfs=palfs))
 } # end of getLFdata
+
+#' @title getline extracts a vector of numbers from a txt or csv files
+#'
+#' @description getline can be used to extract the AvRec and MaxCEpars values
+#'     for each SAU for a given scenario. It does this by reading in the
+#'     saudata file and using grep to search for the varname, which gives the
+#'     first linenumber with that name. One can extract from the saudata file
+#'     as well as from the control file. The idea is to use values from that
+#'     line when conditioning the operating model.
+#'
+#' @param rundir the directory in which one finds the saudata or control file
+#'     for the given scenario
+#' @param filen the exact name of the file being examined
+#' @param varname what variable name is required? Take care with spelling
+#' @param nobs how many numbers to return, usually nSAU
+#'
+#' @return a numeric vector for each SAU or of length nobs
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'   rundir <- "c:/Users/User/DropBox/A_codeUse/aMSEUse/scenarios/MhLML/M1h5/"
+#'   getline(rundir,"saudataM1h5.csv","AvRec",8)
+#' }
+getline <- function(rundir,filen,varname,nobs) {
+  # rundir=rundir;filen="saudataM125h6.csv";varname="AvRec"; nobs=nsau
+  filename <- filenametopath(rundir,filen)
+  dat <- readLines(filename)
+  pickA <- grep(varname,dat)[1] # ignore repeats
+  if (length(pickA) > 0) {
+    tmp <- dat[pickA]
+    tmp <- removeEmpty(unlist(strsplit(tmp,",")))
+    outval <- as.numeric(tmp[2:(nobs+1)])
+  } else {
+    warning(cat(varname," not found in ",filen," \n"))
+    outval <- ""
+  }
+  return(outval)
+} # end of getline
 
 #' @title getlistvar extracts a vector or matrix from zoneC
 #'
