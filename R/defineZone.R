@@ -585,8 +585,6 @@ makeabpop <- function(popparam,midpts,projLML) {
 #'     equal the rundir, but can be different if desired. default=rundir
 #' @param doproduct boolean, should the productivity calculations be made
 #'     during the conditioning. Set to FALSE conditionOM
-#' @param cleanslate a boolean determining whether any old results are deleted
-#'     from rundir before starting. Default=FALSE
 #' @param verbose Should progress comments be printed to console, default=TRUE
 #'
 #' @return a list of zoneC, zoneD, glb, constants, product, ctrl, and zone1
@@ -595,8 +593,8 @@ makeabpop <- function(popparam,midpts,projLML) {
 #' @examples
 #' print("wait on datafiles")
 makeequilzone <- function(rundir,ctrlfile="control.csv",datadir=rundir,
-                          doproduct=TRUE,cleanslate=FALSE,verbose=TRUE) {
- #  rundir=rundir;ctrlfile=controlfile;cleanslate = FALSE;datadir=datadir;verbose=verbose;doproduct=TRUE
+                          doproduct=TRUE,verbose=TRUE) {
+ #  rundir=rundir;ctrlfile=controlfile;datadir=datadir;verbose=verbose;doproduct=TRUE
   zone1 <- readctrlfile(rundir,infile=ctrlfile,datadir=datadir,verbose=verbose)
   ctrl <- zone1$ctrl
   glb <- zone1$globals     # glb without the movement matrix
@@ -617,7 +615,7 @@ makeequilzone <- function(rundir,ctrlfile="control.csv",datadir=rundir,
   # did the larval dispersal level disturb the equilibrium?
   zoneD <- testequil(zoneC,zoneD,glb,verbose=verbose)
   zoneC <- resetexB0(zoneC,zoneD) # rescale exploitB to avexplB after dynamics
-  setuphtml(rundir,cleanslate=cleanslate)
+  setuphtml(rundir)
   equilzone <- list(zoneC=zoneC,zoneD=zoneD,glb=glb,constants=constants,
                     product=product,ctrl=ctrl,zone1=zone1)
   return(equilzone)
@@ -797,7 +795,7 @@ makezone <- function(glob,zoneC) { #glob=glb; zoneC=zoneC;
     UnitM <- matrix(0,nrow=N,ncol=N)
     diag(UnitM) <- 1.0
     G <- zoneC[[pop]]$G
-    Minv <- solve(UnitM - (SurvE * G ))
+    Minv <- solve(UnitM - (SurvE * G))
     Nt[,1,pop] <- Minv %*% recr # initial unfished numbers-at-size
     MatB[1,pop] <- sum(zoneC[[pop]]$MatWt*Nt[,1,pop])/1e06
     zoneC[[pop]]$B0 <- MatB[1,pop] # mature biomass at start of year
@@ -810,7 +808,7 @@ makezone <- function(glob,zoneC) { #glob=glb; zoneC=zoneC;
     qcalc <- as.numeric(zoneC[[pop]]$popdef["MaxCE"])
     zoneC[[pop]]$popq <- qcalc/ExplB[1,pop]   # Need to implement non-linearity
     # can use the standard lambda model, but also an asymmetric logistic
-    # to capture the tbalance between search and handling time.
+    # to capture the balance between search and handling time.
     cpue[1,pop] <- 1000.0 * zoneC[[pop]]$popq * ExplB[1,pop]
   }
   ans <- list(SAU=SAU,matureB=MatB,exploitB=ExplB,midyexpB=midyexpB,
@@ -822,7 +820,7 @@ makezone <- function(glob,zoneC) { #glob=glb; zoneC=zoneC;
 #' @title maturity Logistic maturity curve
 #'
 #' @description maturity this uses the logistic function:
-#'   exp(a+b*L)/(1+exp(a+b*L)), which has the property that the SM50 = -a/b
+#'   exp(a+bL)/(1+exp(a+bL)), which has the property that the SM50 = -a/b
 #'   and the interquartile distance is 2.Ln(3)/b.
 #' @param ina is the intercept of the exponential function
 #' @param inb is the gradient of the exponential function

@@ -18,7 +18,6 @@ do_MSE(
   makeouthcr,
   varyrs = 7,
   startyr = 42,
-  cleanslate = FALSE,
   verbose = FALSE,
   ndiagprojs = 3,
   savesauout = FALSE,
@@ -74,13 +73,6 @@ which suits the Tasmanian west coast. Used in prepareprojection}
 \item{startyr}{the index for the first year of the conditioning dynamics to
 include in the plotted cpue trajectories, to give startyr:indexoflastyear.
 used in sauplots.}
-
-\item{cleanslate}{should the directory be emptied of all files first? All
-html, png, RData, and css files in the directory will be deleted.
-default = FALSE. This is obviously a very powerful and potentially
-dangerous argument, hence it needs to be set =TRUE explicitly. It does
-not delete any .csv files so if the rundir is used to store the data for
-the run then 'cleanslate' will not affect the data or any .R files.}
 
 \item{verbose}{Should progress comments be printed to console, default=FALSE}
 

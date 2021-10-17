@@ -3,6 +3,11 @@
 
 # LATEST UPDATE
 
+-   2021-10-17 aMSE 0.0.0.010 As cleanslate, within setuphtml() has been
+    deprecated in the package makehtml, I have removed reference to it
+    throughout aMSE. Now, to clean a directory of aMSE files use
+    cleanrundir.
+
 -   2021-09-22 aMSE 0.0.0.025 Modifications to do\_condition and other
     functions to facilitate the ease of changing values within an array
     of control files and saudata files.
@@ -98,13 +103,14 @@ library(TasHS)
 library(rutilsMH)
 library(makehtml)
 library(knitr)
+#> Warning: package 'knitr' was built under R version 4.1.1
 # Obviously you should modify the rundir and datadir to suit your own setup
-prefixdir <- "C:/Users/Malcolm/Dropbox/A_CodeUse/aMSEUse/scenarios/"
+prefixdir <- "C:/Users/User/Dropbox/A_CodeUse/aMSEUse/scenarios/"
 postfixdir <- "M15h75"
 rundir <- paste0(prefixdir,postfixdir)
 datadir <- rundir
 alldirExists(rundir,datadir,verbose=TRUE)
-#> rundir,  C:/Users/Malcolm/Dropbox/A_CodeUse/aMSEUse/scenarios/M15h75 :  exists
+#> rundir,  C:/Users/User/Dropbox/A_CodeUse/aMSEUse/scenarios/M15h75 :  exists
 controlfile <- "controlM15h75.csv"
 # equilibrium zone -------------------------------------------------------------
 # You now need to ensure that there is, at least, a control.csv, and a 
@@ -128,7 +134,7 @@ source(paste0(rundir,"/TasHS1_Tas.R"))
 # out <- do_MSE(rundir,controlfile,datadir,hsargs=hsargs,hcrfun=mcdahcr,
 #               sampleCE=tasCPUE,sampleFIS=tasFIS,sampleNaS=tasNaS,
 #               getdata=tasdata,calcpopC=calcexpectpopC,makeouthcr=makeouthcr,
-#               varyrs=7,startyr=48,cleanslate=TRUE,verbose=TRUE,
+#               varyrs=7,startyr=48,verbose=TRUE,
 #               ndiagprojs=4,savesauout=TRUE)
 # 
 # makeoutput(out,rundir,datadir,postfixdir,controlfile,openfile=TRUE,verbose=FALSE)

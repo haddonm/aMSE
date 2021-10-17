@@ -141,7 +141,7 @@ saureccpuessq <- function(param,rundir,datadir,controlfile,datafile,linenum,
   changeline(datadir,datafile,linenum[1],replaceRec)
   changeline(datadir,datafile,linenum[2],replaceCE)
   zone <- makeequilzone(rundir,controlfile,datadir,doproduct=FALSE,
-                        cleanslate=FALSE,verbose=FALSE)
+                        verbose=FALSE)
   # declare main objects
   glb <- zone$glb
   condC <- zone$zone1$condC

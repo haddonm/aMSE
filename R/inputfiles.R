@@ -578,7 +578,7 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir,verbose=TRUE
    catches <- getsingleNum("CATCHES",indat)
    if (catches > 0) {
       if (catches > hyrs) hyrs <- catches # fix historical years duration
-      begin <- grep("CondYears",indat)
+      begin <- grep("CondYears",indat)[1]
       histCatch <- matrix(0,nrow=catches,ncol=nSAU)
       colnames(histCatch) <- SAUnames
       histyr <- matrix(0,nrow=hyrs,ncol=2)
@@ -641,7 +641,7 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir,verbose=TRUE
    # make output objects
    condC <- list(histCatch=histCatch,histyr=histyr,
                  histCE=histCE,yearCE=yearCE,initdepl=initdepl,
-                 compdat=compdat,recdevs=recdevs,Sel=NULL,SelWt=NULL)
+                 compdat=compdat,recdevs=recdevs)#,Sel=NULL,SelWt=NULL)
    projC <- list(projLML=projLML,projyrs=projyrs,
                  Sel=NULL,SelWt=NULL,histCE=histCE)
    outctrl <- list(runlabel,datafile,reps,randomseed,randomseedP,

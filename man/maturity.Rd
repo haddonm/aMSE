@@ -20,7 +20,7 @@ A vector of length(lens) containing the predicted maturity at
 }
 \description{
 maturity this uses the logistic function:
-  exp(a+b*L)/(1+exp(a+b*L)), which has the property that the SM50 = -a/b
+  exp(a+bL)/(1+exp(a+bL)), which has the property that the SM50 = -a/b
   and the interquartile distance is 2.Ln(3)/b.
 }
 \examples{

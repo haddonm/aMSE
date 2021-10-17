@@ -9,7 +9,6 @@ makeequilzone(
   ctrlfile = "control.csv",
   datadir = rundir,
   doproduct = TRUE,
-  cleanslate = FALSE,
   verbose = TRUE
 )
 }
@@ -27,9 +26,6 @@ equal the rundir, but can be different if desired. default=rundir}
 
 \item{doproduct}{boolean, should the productivity calculations be made
 during the conditioning. Set to FALSE conditionOM}
-
-\item{cleanslate}{a boolean determining whether any old results are deleted
-from rundir before starting. Default=FALSE}
 
 \item{verbose}{Should progress comments be printed to console, default=TRUE}
 }

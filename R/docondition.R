@@ -112,7 +112,6 @@ changeline <- function(indir, filename, linenumber, newline,verbose=FALSE) {
 # calcpopC=calcexpectpopC
 # varyrs=7
 # startyr=42
-# cleanslate=FALSE
 # verbose=TRUE
 # doproduct=FALSE
 # ndiagprojs=4
@@ -150,12 +149,6 @@ changeline <- function(indir, filename, linenumber, newline,verbose=FALSE) {
 #' @param calcpopC a function that takes the output from hcrfun (either the
 #'     aspirational catch x SAU or TAC x zone) and generates the actual catch
 #'     per population in each SAU expected in the current year.
-#' @param cleanslate should the directory be emptied of all files first? All
-#'     html, png, RData, and css files in the directory will be deleted.
-#'     default = FALSE. This is obviously a very powerful and potentially
-#'     dangerous argument, hence it needs to be set =TRUE explicitly. It does
-#'     not delete any .csv files so if the rundir is used to store the data for
-#'     the run then 'cleanslate' will not affect the data or any .R files.
 #' @param verbose Should progress comments be printed to console, default=FALSE
 #' @param doproduct should production estimates be made. default=FALSE
 #' @param dohistoric should the historical catches be applied. Default=TRUE
@@ -172,12 +165,12 @@ changeline <- function(indir, filename, linenumber, newline,verbose=FALSE) {
 #' @examples
 #' print("wait on suitable data sets in data")
 #' # rundir=rundir; controlfile=controlfile;datadir=datadir;calcpopC=calcexpectpopC
-#' # cleanslate=FALSE; verbose=TRUE; doproduct=TRUE; dohistoric=FALSE
-do_condition <- function(rundir,controlfile,datadir,calcpopC,cleanslate=FALSE,
+#' #verbose=TRUE; doproduct=TRUE; dohistoric=FALSE
+do_condition <- function(rundir,controlfile,datadir,calcpopC,
                          verbose=FALSE,doproduct=FALSE,dohistoric=TRUE) {
   starttime <- Sys.time()
   zone <- makeequilzone(rundir,controlfile,datadir,doproduct=doproduct,
-                        cleanslate=cleanslate,verbose=verbose)
+                        verbose=verbose)
   equiltime <- (Sys.time()); if (verbose) print(equiltime - starttime)
   # declare main objects
   glb <- zone$glb
@@ -272,7 +265,7 @@ gettasdevssq <- function(param,rundir,datadir,ctrlfile,calcpopC,locyrs,sau,
   # did the larval dispersal level disturb the equilibrium?
   zoneD <- testequil(zoneC,zoneD,glb,verbose=verbose)
   zoneC <- resetexB0(zoneC,zoneD) # rescale exploitB to avexplB after dynamics
-  setuphtml(rundir,cleanslate=FALSE)
+  setuphtml(rundir)
   zone <- list(zoneC=zoneC,zoneD=zoneD,glb=glb,constants=constants,
                product=NULL,ctrl=ctrl,zone1=zone1)
   projC <- zone1$projC
@@ -386,7 +379,7 @@ sauavrecssq <- function(param,rundir,datadir,controlfile,datafile,linenum,
                          ",",as.character(param),collapse=",")
   changeline(datadir,datafile,linenum,replacetxt)
   zone <- makeequilzone(rundir,controlfile,datadir,doproduct=FALSE,
-                        cleanslate=FALSE,verbose=FALSE)
+                        verbose=FALSE)
   # declare main objects
   glb <- zone$glb
   condC <- zone$zone1$condC

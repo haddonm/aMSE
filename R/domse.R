@@ -13,7 +13,6 @@
 # calcpopC=calcexpectpopC
 # varyrs=7
 # startyr=38
-# cleanslate=FALSE
 # verbose=TRUE
 # ndiagprojs=4
 # savesauout=TRUE
@@ -80,12 +79,6 @@
 #' @param startyr the index for the first year of the conditioning dynamics to
 #'     include in the plotted cpue trajectories, to give startyr:indexoflastyear.
 #'     used in sauplots.
-#' @param cleanslate should the directory be emptied of all files first? All
-#'     html, png, RData, and css files in the directory will be deleted.
-#'     default = FALSE. This is obviously a very powerful and potentially
-#'     dangerous argument, hence it needs to be set =TRUE explicitly. It does
-#'     not delete any .csv files so if the rundir is used to store the data for
-#'     the run then 'cleanslate' will not affect the data or any .R files.
 #' @param verbose Should progress comments be printed to console, default=FALSE
 #' @param ndiagprojs the number of replicate trajectories to plot in the
 #'     diagnostics tab to illustrate ndiagprojs trajectories to ensure that
@@ -115,12 +108,11 @@
 #' print("wait on suitable data sets in data")
 do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
                    sampleNaS,getdata,calcpopC,makeouthcr,varyrs=7,startyr=42,
-                   cleanslate=FALSE,verbose=FALSE,ndiagprojs=3,savesauout=FALSE,
+                   verbose=FALSE,ndiagprojs=3,savesauout=FALSE,
                    cutcatchN=56,matureL=c(70,200),wtatL=c(80,200)) {
   # generate equilibrium zone -----------------------------------------------
   starttime <- (Sys.time())
-  zone <- makeequilzone(rundir,controlfile,datadir,cleanslate=cleanslate,
-                        verbose=verbose)
+  zone <- makeequilzone(rundir,controlfile,datadir,verbose=verbose)
   equiltime <- (Sys.time()); if (verbose) print(equiltime - starttime)
   # declare main objects ----------------------------------------------------
   glb <- zone$glb

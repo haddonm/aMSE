@@ -9,7 +9,6 @@ do_condition(
   controlfile,
   datadir,
   calcpopC,
-  cleanslate = FALSE,
   verbose = FALSE,
   doproduct = FALSE,
   dohistoric = TRUE
@@ -31,13 +30,6 @@ a separate datadir}
 \item{calcpopC}{a function that takes the output from hcrfun (either the
 aspirational catch x SAU or TAC x zone) and generates the actual catch
 per population in each SAU expected in the current year.}
-
-\item{cleanslate}{should the directory be emptied of all files first? All
-html, png, RData, and css files in the directory will be deleted.
-default = FALSE. This is obviously a very powerful and potentially
-dangerous argument, hence it needs to be set =TRUE explicitly. It does
-not delete any .csv files so if the rundir is used to store the data for
-the run then 'cleanslate' will not affect the data or any .R files.}
 
 \item{verbose}{Should progress comments be printed to console, default=FALSE}
 
@@ -71,7 +63,7 @@ do_condition is a utility function that can be used to speed the
 \examples{
 print("wait on suitable data sets in data")
 # rundir=rundir; controlfile=controlfile;datadir=datadir;calcpopC=calcexpectpopC
-# cleanslate=FALSE; verbose=TRUE; doproduct=TRUE; dohistoric=FALSE
+#verbose=TRUE; doproduct=TRUE; dohistoric=FALSE
 }
 \seealso{
 {
