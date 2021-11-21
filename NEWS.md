@@ -2,7 +2,10 @@
 
 See the ReadMe for the latest two events
 
+* 2021-09-22 aMSE 0.0.0.025 Modifications to do_condition and other functions to facilitate the ease of changing values within an array of control files and saudata files.
 
+* 2021-09-17 aMSE 0.0.0.050 Finalized details of the optional initial depletion. Amended the logistic function so it now works when using the knifeedge option!
+ 
 * 2021-09-13 aMSE 0.0.0.075 Implemented the option of having an initial depletion as well as application of historical catches.
 
 * 2021-09-10 aMSE 0.0.0.100 Many small, but significant, changes. Modified getdata which interacts with the ###HS.R file and added the

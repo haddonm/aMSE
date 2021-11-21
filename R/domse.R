@@ -1,6 +1,6 @@
 #
 # outcond=outcond
-# postfixdir <- "M125h6"
+# postfixdir <- "M125h6B11"
 # rundir <- paste0(prefixdir,postfixdir)
 # datadir <- rundir
 # controlfile=paste0("control",postfixdir,".csv")
@@ -151,6 +151,20 @@ do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
            caption="Population vs Operating model parameter definitions")
   condout <- plotconditioning(zoneDD,glb,zoneC,condC$histCE,rundir)
   saurecdevs(condC$recdevs,glb,rundir,filen="saurecdevs.png")
+  # plot predicted size-comp of catch vs observed size-comps
+  catchN <- zoneDD$catchN
+  sauCt <- popNAStosau(catchN,glb)
+  compdat <- condC$compdat$lfs
+  for (plotsau in 1:glb$nSAU) {
+    lfs <- preparesizecomp(compdat[,,plotsau],mincount=100)
+    yrsize <- as.numeric(colnames(lfs))
+    histyr <- out$condC$histyr
+    pickyr <- match(yrsize,histyr[,"year"])
+    LML <- histyr[pickyr,"histLML"]
+    plotsizecomp(rundir=rundir,incomp=lfs,SAU=glb$saunames[plotsau],lml=LML,
+                 catchN=sauCt[,,plotsau],start=NA,proportion=TRUE,
+                 console=FALSE)
+  }
   # do projections ------------------------------------------------------------
   if (verbose) cat("Doing the projections \n")
   outpp <- prepareprojection(projC=projC,condC=condC,zoneC=zoneC,glb=glb,

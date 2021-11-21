@@ -3,18 +3,26 @@
 
 # LATEST UPDATE
 
+-   2021-11-21 aMSE 0.0.0.020 So as to use any observed size-composition
+    data in the conditioning, a number of functions have been added to
+    convert the predicted numbers-at-size in the catch by population
+    into NAS x SAU. These can now be plotted against the observed NAS
+    for each SAU and this can be either to the console or to a new tab
+    in the webpage called ‘predictedcatchN’. This work derived from the
+    progress made with the sizemod package used to fit size-based
+    assessment models to individual SAU. Because the MSE sub-divides
+    each SAU into a number of populations each with somewhat different
+    MaxDL, L95, etc, even after fitting the models, when using that data
+    it is then necessary to refit the AvRec values, which, because of
+    the sub-division into populations each having different biology can
+    lead to the MSE AvRec being either smaller or larger than the
+    estimated R0 for a SAU. Similar arguments apply to teh recruitment
+    residuals but generally the pattern provides a reasonable fit.
+
 -   2021-10-17 aMSE 0.0.0.010 As cleanslate, within setuphtml() has been
     deprecated in the package makehtml, I have removed reference to it
     throughout aMSE. Now, to clean a directory of aMSE files use
     cleanrundir.
-
--   2021-09-22 aMSE 0.0.0.025 Modifications to do\_condition and other
-    functions to facilitate the ease of changing values within an array
-    of control files and saudata files.
-
--   2021-09-17 aMSE 0.0.0.050 Finalized details of the optional initial
-    depletion. Amended the logistic function so it now works when using
-    the knifeedge option!
 
 # aMSE
 

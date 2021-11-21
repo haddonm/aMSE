@@ -347,6 +347,46 @@ makewidedat <- function(inlong,mids,counts=FALSE) { # inlong=lf; mids=mids
   return(answer)
 } # end of makewidedat
 
+#' @title popNAStosau converts NAS data by population to NAS x sau
+#'
+#' @description popNAStosau converts numbers-at-size data x population into
+#'     the same by SAU. This is designed to compare ny observed NAS data from
+#'     a zone with those predicted by the conditioned model, it could also be
+#'     used to improve the conditioning code to avoid fitting only to CPUE
+#'
+#' @param popNAS either the catchN or the Nt from zoneDD, that is the zone
+#'     after the equilibrium zone (zoneD) has had the historical catches
+#'     applied.
+#' @param glb the globals object. Needed for the sauindex and various array
+#'     dimnesion labels.
+#'
+#' @return An Nclass x nyrs x nsau array of numbers-at-size data
+#' @export
+#'
+#' @examples
+#'  #e.g.  popNAStosau(out$zoneDD$catchN,out$glb)
+popNAStosau <- function(popNAS,glb) { # popNAS <- catchN; glb <- out$glb
+  nsau <- glb$nSAU
+  sauindex <- glb$sauindex
+  saunames <- glb$saunames
+  yrnames <- glb$hyrnames
+  N <- glb$Nclass
+  nyrs <- glb$hyrs
+  dims <- dim(popNAS)
+  if (length(dims) == 3) {
+    sauNt <- array(data=0,dim=c(N,nyrs,nsau),
+                   dimnames=list(glb$midpts,yrnames,saunames))
+    for (sau in 1:nsau) { # sau=1; yr=2
+      pick <- which(sauindex == sau)
+      for (yr in 1:nyrs) sauNt[,yr,sau] <- rowSums(popNAS[,yr,pick])
+    }
+    return(sauNt)
+  } else {
+    stop("popNttosau currently designed only for zoneDD  \n")
+  }
+} # end of popNAStosau
+
+
 #' @title poptosau converts projected population dynamics to SAU scale results
 #'
 #' @description poptosau the MSE dynamics are run at the population level but

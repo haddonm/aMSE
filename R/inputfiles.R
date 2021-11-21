@@ -744,7 +744,7 @@ readsaudatafile <- function(datadir,infile) {  # rundir=rundir; infile=ctrl$data
              "sSigMax","LML","Wtb","sWtb","Wtbtoa","sWtbtoa","Me","sMe",
              "AvRec","sAvRec","defsteep","sdefsteep","L50C","sL50C",
              "deltaC","sdeltaC","MaxCEpars","sMaxCEpars","selL50p",
-             "selL95p","SaMa","L50Mat","sL50Mat")
+             "selL95p","SaMa","L50Mat","sL50Mat","lambda","qest","multH")
    numrow <- length(rows)
    ans <- matrix(0,nrow=numrow,ncol=nsau)
    begin <- begin + 1

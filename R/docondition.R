@@ -363,6 +363,17 @@ getrecdevcolumn <- function(rundir, filename, yearrange, sau,verbose=FALSE) {
 #' print("Wait on suitable internal data files")
 sauavrecssq <- function(param,rundir,datadir,controlfile,datafile,linenum,
                         calcpopC,extra,picksau,nsau) {
+  # param=param
+  # rundir=rundir
+  # datadir=rundir
+  # controlfile=controlfile
+  # datafile=datafile
+  # linenum=29
+  # calcpopC=calcexpectpopC
+  # extra=extra
+  # picksau=sau
+  # nsau=nsau
+
   nsaum1 <- nsau - 1
   if (picksau == 1)
     replacetxt <- paste0("AvRec,",as.character(param),",",

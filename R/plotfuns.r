@@ -740,6 +740,86 @@ plotprod <- function(product,xname="MatB",yname="Catch",xlimit=NA,
   return(invisible(list(xname=x,yname=y)))
 } # end of plotprod
 
+#' @title plotsizecomp generates a plot of available size composition data
+#'
+#' @description plotsizecomp generates a plot of available size composition
+#'     data with the option of plotting the predicted size-composition of
+#'     catch on top of it; this latter option is only possible when plotting
+#'     the distributions as proportions.
+#'
+#' @param rundir the directory for all ctrl, data, and output files.
+#' @param incomp filtered size-composition data from the fishery
+#' @param SAU the name of the SAU used to label the y-axis
+#' @param lml a vector of the lml in each year represented by incomp
+#' @param catchN the predicted size-composition of the catch
+#' @param start which size-class to start from, default=NA, which means all
+#'     size-classes in the samples will be used.
+#' @param proportion should the plots be as proportions or counts,default=TRUE
+#' @param console should the plot be sent ot the console or saved to rundir.
+#'     default=TRUE
+#' @param width the width of the plot, default = 10
+#' @param height the height of the plot, default = 9
+#' @param fnt what font to use, default font = 7, bold times
+#' @param tabcategory what name to give to the webage tab when the plots are
+#'     saved. Default="predictedcatchN"
+#'
+#' @return nothing but it does generate a plot
+#' @export
+#'
+#' @examples
+#' print("wait on data sets")
+plotsizecomp <- function(rundir,incomp,SAU="",lml=NULL,catchN=NULL,start=NA,
+                         proportion=TRUE,console=TRUE,width=10,height=9,
+                         fnt=7,tabcategory="predictedcatchN") {
+  # incomp=sizecomp; Nt=out$Nt; proportion=TRUE
+  if (console) { filen <- "" } else {
+    filen <- filenametopath(rundir,paste0(SAU,"sizecomp_nas_by_year.png"))
+  }
+  mids <- as.numeric(rownames(incomp))
+  nmids <- length(mids)
+  if (is.numeric(start)) {
+    mids <- mids[start:nmids]
+    nmids <- length(mids)
+  }
+  yrsize <- as.numeric(colnames(incomp))
+  nyrs <- length(yrsize)
+  nobs <- colSums(incomp,na.rm=TRUE)
+  if (proportion) {
+    incomp <- prop.table(incomp,margin=2)
+    if (!is.null(catchN)) {
+      years <- as.numeric(colnames(catchN))
+      midpts <- as.numeric(rownames(catchN))
+      picky <- match(yrsize,years)
+      picks <- match(mids,midpts)
+      pNt <- prop.table(catchN[picks,picky],margin=2)
+    }
+  }
+  plotprep(width=width,height=height,newdev=FALSE,filename=filen,
+           verbose=FALSE,usefont=fnt)
+  parset(plots=pickbound(nyrs),margin=c(0.225,0.225,0.05,0.05),
+         outmargin=c(1,1,0,0),byrow=FALSE)
+  for (yr in 1:nyrs) {
+    y <- incomp[,yr]
+    ymax <- getmax(y)
+    if ((proportion) & (!is.null(catchN))) ymax <- getmax(c(y,pNt[,yr]))
+    plot(mids,y,type="l",lwd=2,ylab="",ylim=c(0,ymax),yaxs="i",
+         panel.first = grid(),xlab="")
+    mtext(text=yrsize[yr],side=4,line=-1.1,cex=1.0,font=7)
+    text(mids[trunc(nmids*0.65)],0.9*ymax,nobs[yr],cex=1.25,pos=4)
+    if ((proportion) & (!is.null(catchN))) {
+      lines(mids,pNt[,yr],lwd=2,col=2)
+    }
+    if (!is.null(lml)) abline(v=lml[yr],lwd=1,col="blue")
+  }
+  mtext("Shell Length (mm)",side=1,line=-0.2,outer=TRUE,cex=1.2)
+  mtext(paste0("Proportion for ",SAU),side=2,line=-0.2,outer=TRUE,cex=1.2)
+  if (!console) {
+    caption <- "Catch size-composition data to which the SBM is being fitted."
+    addplot(filen,rundir,category=tabcategory,caption=caption)
+  }
+} # end of plotsizecomp
+
+
 
 #' @title plotZone plots the projected TAC across all replicates
 #'
@@ -837,6 +917,33 @@ plotzonesau <- function(zonetot,saudat,saunames,label,labelsau,side=3,
   }
 } # end of plotzonesau
 
+#' @title preparesizecomp strips out empty columns and identifies samples
+#'
+#' @description preparesizecomp takes in the size composition of catch data
+#'     and removes empty columns and those with totals of less than the
+#'     defined mincount. The minimum used depends on sampling routines. In
+#'     Tasmania, a sample of 100 is the usual minimum taken from individual
+#'     landings. Single landings may not be representative of much.
+#'
+#' @param sizecomp the size-composition of catch data from the dat object
+#'     made by readLBMdata.
+#' @param mincount the minimum number of observations within a year for
+#'     inclusion in the analysis, default = 100.
+#'
+#' @return a cleaned version of the sizecomp matrix
+#' @export
+#'
+#' @examples
+#' print("wait on data sets")
+preparesizecomp <- function(sizecomp,mincount=100) { # sizecomp=compdat[,,sau]; mincount=100
+  mids <- as.numeric(rownames(sizecomp))   #sizecomp[,"length"]
+  totals <- colSums(sizecomp,na.rm=TRUE)
+  pick <- which(totals > mincount)
+  sizecomp <- sizecomp[,pick]
+  numcol <- ncol(sizecomp)
+  sizecomp <- sizecomp[,2:numcol] # ignore the length column
+  return(sizecomp)
+} # end of preparesizecomp
 
 #' @title sauplots generates the dosauplots for the dynamic variables
 #'
