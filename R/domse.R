@@ -114,7 +114,7 @@
 do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
                    sampleNaS,getdata,calcpopC,makeouthcr,varyrs=7,startyr=42,
                    verbose=FALSE,ndiagprojs=3,savesauout=FALSE,cutcatchN=56,
-                   matureL=c(70,200),wtatL=c(80,200)) {
+                   matureL=c(70,200),wtatL=c(80,200),mincount=100) {
   # generate equilibrium zone -----------------------------------------------
   starttime <- (Sys.time())
   zone <- makeequilzone(rundir,controlfile,datadir,verbose=verbose)
