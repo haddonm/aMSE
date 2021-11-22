@@ -96,9 +96,6 @@
 #'     bounds on the biology maturity-at-Length plots
 #' @param wtatL is a vector of 2, default = c(80,200), that define the x-axis
 #'     bounds on the biology weight-at-Length plots
-#' @param mincount given size-composition data what minimum sample size will
-#'     be deemed acceptable for inclusion in the plots and conditioning.
-#'     default=100
 #'
 #' @seealso{
 #'  \link{makeequilzone}, \link{dohistoricC}, \link{prepareprojection},
@@ -114,7 +111,7 @@
 do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
                    sampleNaS,getdata,calcpopC,makeouthcr,varyrs=7,startyr=42,
                    verbose=FALSE,ndiagprojs=3,savesauout=FALSE,cutcatchN=56,
-                   matureL=c(70,200),wtatL=c(80,200),mincount=100) {
+                   matureL=c(70,200),wtatL=c(80,200)) {
   # generate equilibrium zone -----------------------------------------------
   starttime <- (Sys.time())
   zone <- makeequilzone(rundir,controlfile,datadir,verbose=verbose)
@@ -161,7 +158,7 @@ do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
   sauCt <- popNAStosau(catchN,glb)
   compdat <- condC$compdat$lfs
   for (plotsau in 1:glb$nSAU) {
-    lfs <- preparesizecomp(compdat[,,plotsau],mincount=mincount)
+    lfs <- preparesizecomp(compdat[,,plotsau],mincount=20)
     yrsize <- as.numeric(colnames(lfs))
     histyr <- condC$histyr
     pickyr <- match(yrsize,histyr[,"year"])
