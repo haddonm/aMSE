@@ -98,7 +98,7 @@
 #'     bounds on the biology weight-at-Length plots
 #' @param mincount given size-composition data what minimum sample size will
 #'     be deemed acceptable for inclusion in the plots and conditioning.
-#'     default=100
+#'     default=100.
 #'
 #' @seealso{
 #'  \link{makeequilzone}, \link{dohistoricC}, \link{prepareprojection},
