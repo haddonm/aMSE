@@ -1,9 +1,9 @@
 #
 # outcond=outcond
 # postfixdir <- "M125h6B11"
-# rundir <- paste0(prefixdir,postfixdir)
+# rundir <- rundir
 # datadir <- rundir
-# controlfile=paste0("control",postfixdir,".csv")
+# controlfile=controlfile
 # hsargs=hsargs
 # hcrfun=mcdahcr
 # sampleCE=tasCPUE
@@ -20,6 +20,8 @@
 # cutcatchN=56
 # matureL = c(70,200)
 # wtatL = c(80,200)
+
+
 
 #' @title do_MSE an encapsulating function to hold the details of a single run
 #'
@@ -156,9 +158,9 @@ do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
   sauCt <- popNAStosau(catchN,glb)
   compdat <- condC$compdat$lfs
   for (plotsau in 1:glb$nSAU) {
-    lfs <- preparesizecomp(compdat[,,plotsau],mincount=100)
+    lfs <- preparesizecomp(compdat[,,plotsau],mincount=10)
     yrsize <- as.numeric(colnames(lfs))
-    histyr <- out$condC$histyr
+    histyr <- condC$histyr
     pickyr <- match(yrsize,histyr[,"year"])
     LML <- histyr[pickyr,"histLML"]
     plotsizecomp(rundir=rundir,incomp=lfs,SAU=glb$saunames[plotsau],lml=LML,
