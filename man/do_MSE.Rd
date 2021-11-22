@@ -23,7 +23,8 @@ do_MSE(
   savesauout = FALSE,
   cutcatchN = 56,
   matureL = c(70, 200),
-  wtatL = c(80, 200)
+  wtatL = c(80, 200),
+  mincount = 100
 )
 }
 \arguments{
@@ -94,6 +95,10 @@ bounds on the biology maturity-at-Length plots}
 
 \item{wtatL}{is a vector of 2, default = c(80,200), that define the x-axis
 bounds on the biology weight-at-Length plots}
+
+\item{mincount}{given size-composition data what minimum sample size will
+be deemed acceptable for inclusion in the plots and conditioning.
+default=100}
 }
 \value{
 a large list containing tottime, projtime, starttime, glb, ctrl,
