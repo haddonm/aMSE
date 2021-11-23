@@ -53,5 +53,7 @@ plotsonesau enables the zone catch or catch weighted zone cpue
 print("wait on suitable internal dats sets")
 }
 \seealso{
-catchweightCE
+{
+  \link{catchweightCE}
+}
 }

@@ -76,7 +76,7 @@ changecolumn <- function(rundir, filename, linerange, column,newvect,
 #' @examples
 #' print("wait on an example")
 changeline <- function(indir, filename, linenumber, newline,verbose=FALSE) {
-  # indir=datadir; filename="saudataM15h5.csv"; linenumber="AvRec"; newline=chgevals
+  # indir=rundir; filename="saudataM15h5.csv"; linenumber="AvRec"; newline=chgevals
   filen <- filenametopath(indir,filename)
   dat <- readLines(filen)
   if (class(linenumber) == "numeric") {
@@ -98,6 +98,34 @@ changeline <- function(indir, filename, linenumber, newline,verbose=FALSE) {
   }
 } # end of changeline
 
+#' @title getCPUEssq calculates ssq between historical and conditioned cpue
+#'
+#' @description getCPUEssq takes in teh historical CPUE and the conditioned
+#'     zone's cpue and calculates the sum-of squared differences between them
+#'     to assist with the conditioning.
+#'
+#' @param histCE the matrix of historical cpue by SAU
+#' @param saucpue the predicted cpue from the conditioning on historical data
+#' @param glb the globals object
+#'
+#' @return a vector of length nsau containing the ssq for each SAU
+#' @export
+#'
+#' @examples
+#' print("wait on suitable internal data sets")
+getCPUEssq <- function(histCE,saucpue,glb) {
+  years <- as.numeric(rownames(histCE))
+  hyrs <- glb$hyrnames
+  pick <- match(years,hyrs)
+  nsau <- glb$nSAU
+  cpue <- saucpue[pick,1:nsau]
+  rownames(cpue) <- years
+  label <- glb$saunames
+  colnames(cpue) <- label
+  ssq <- numeric(nsau)
+  for (sau in 1:nsau) ssq[sau] <- sum((histCE[,sau] - cpue[,sau])^2,na.rm=TRUE)
+  return(ssq)
+} # end of getCPUEssq
 
 #
 # rundir=rundir
@@ -152,6 +180,8 @@ changeline <- function(indir, filename, linenumber, newline,verbose=FALSE) {
 #' @param verbose Should progress comments be printed to console, default=FALSE
 #' @param doproduct should production estimates be made. default=FALSE
 #' @param dohistoric should the historical catches be applied. Default=TRUE
+#' @param mincount determines the minimum sample size for a size-composition
+#'     sample to be included in plots and analyses. Default = 100
 #'
 #' @seealso{
 #'  \link{makeequilzone}, \link{dohistoricC}, \link{prepareprojection},
@@ -167,7 +197,8 @@ changeline <- function(indir, filename, linenumber, newline,verbose=FALSE) {
 #' # rundir=rundir; controlfile=controlfile;datadir=datadir;calcpopC=calcexpectpopC
 #' #verbose=TRUE; doproduct=TRUE; dohistoric=FALSE
 do_condition <- function(rundir,controlfile,datadir,calcpopC,
-                         verbose=FALSE,doproduct=FALSE,dohistoric=TRUE) {
+                         verbose=FALSE,doproduct=FALSE,dohistoric=TRUE,
+                         mincount=100) {
   starttime <- Sys.time()
   zone <- makeequilzone(rundir,controlfile,datadir,doproduct=doproduct,
                         verbose=verbose)
@@ -208,6 +239,20 @@ do_condition <- function(rundir,controlfile,datadir,calcpopC,
            caption="Population vs Operating model parameter definitions")
   if (dohistoric) {
     condout <- plotconditioning(zoneDD,glb,zoneC,condC$histCE,rundir)
+    # plot predicted size-comp of catch vs observed size-comps
+    catchN <- zoneDD$catchN
+    sauCt <- popNAStosau(catchN,glb)
+    compdat <- condC$compdat$lfs
+    for (plotsau in 1:glb$nSAU) {
+      lfs <- preparesizecomp(compdat[,,plotsau],mincount=mincount)
+      yrsize <- as.numeric(colnames(lfs))
+      histyr <- condC$histyr
+      pickyr <- match(yrsize,histyr[,"year"])
+      LML <- histyr[pickyr,"histLML"]
+      plotsizecomp(rundir=rundir,incomp=lfs,SAU=glb$saunames[plotsau],lml=LML,
+                   catchN=sauCt[,,plotsau],start=NA,proportion=TRUE,
+                   console=FALSE)
+    }
   } else {
     condout <- NULL
   }
@@ -236,6 +281,8 @@ do_condition <- function(rundir,controlfile,datadir,calcpopC,
 #'     corresponding to the selected years.
 #' @param sau which sau (in TAS 1 - 8) is to be worked on
 #' @param verbose should console reports be made? default = FALSE
+#' @param outplot shoudla plot be generated for output to the webpage.
+#'     default=FALSE
 #'
 #' @return a scalar value which is the SSQ for the selected years of CPUE
 #' @export
@@ -243,7 +290,7 @@ do_condition <- function(rundir,controlfile,datadir,calcpopC,
 #' @examples
 #' print("wait on suitable internal data sets")
 gettasdevssq <- function(param,rundir,datadir,ctrlfile,calcpopC,locyrs,sau,
-                         verbose=FALSE) {
+                         verbose=FALSE,outplot=FALSE) {
   zone1 <- readctrlfile(rundir,infile=ctrlfile,datadir=datadir,verbose=verbose)
   # pickX <- which(param > 1.0)
   # if (length(pickX) > 0) param[pickX] <- 1.0
@@ -280,7 +327,9 @@ gettasdevssq <- function(param,rundir,datadir,ctrlfile,calcpopC,locyrs,sau,
   popExB0 <- getlistvar(zoneC,"ExB0")
   ExB0 <- tapply(popExB0,sauindex,sum)
   sauZone <- getsauzone(zoneDD,glb,B0=B0,ExB0=ExB0)
-  ssq <- compareCPUE(condC$histCE,sauZone$cpue,glb,rundir,filen="SAU_compareCPUE.png")
+  filename=""
+  if (outplot) filename="SAU_compareCPUE.png"
+  ssq <- compareCPUE(condC$histCE,sauZone$cpue,glb,rundir,filen=filename)
   return(ssq[sau])
 } # end of gettasdevssq
 
@@ -332,7 +381,165 @@ getrecdevcolumn <- function(rundir, filename, yearrange, sau,verbose=FALSE) {
   return(list(recdevs=recdevs,yearrange=yearrange,linerange=line1:line2))
 } # end of getrecdevcolumn
 
+#' @title optimizeAvRec improves OM fit to CPUE by adjustnig AvRec
+#'
+#' @description optimizeAvRec is used to improve the fit to the time-series
+#'     of CPUE by adjusting the SAU initial value for AvRec. If one assesses
+#'     an SAU using the sizemod package, that summarizes across a whole SAU.
+#'     After population allocation within aMSE, the productivity of an SAU
+#'     may well have been disturbed away (up or down) from the assessed
+#'     optimum. Hence, it becomes necessary, still, to optimize both the
+#'     AvRec and the recdevs during the conditioning.
+#'
+#' @param rundir the rundir for the scenario
+#' @param controlfile the name of the control file
+#' @param datafile the name of the datafile from the controlfile
+#' @param calcpopC the funciton, from the HS file that allocates catches
+#'     across each of the populations within each SAU
+#' @param lowmult the multiplier to place a lower bound when search for the
+#'     optimum AvRec for each SAU. default = 0.7, ie param AvRec * 0.7
+#' @param highmult the multiplier to place an upper bound when search for the
+#'     optimum AvRec for each SAU. default = 1.3, ie param AvRec * 1.3
+#' @param linenumber the linenumber inside the datafile that is to be changed
+#'     to the optimum AvRec values. Default = 29, whic suits Tasmania.
+#' @param verbose should updates on progress be sent to the console.
+#'     default=TRUE
+#'
+#' @return a vector of the final optimized AvRec values. This also modifies
+#'     the datafile - SO BE CAREFUL.
+#' @export
+#'
+#' @examples
+#' print("wait on suitable data files")
+optimizeAvRec <- function(rundir,controlfile,datafile,calcpopC,lowmult=0.7,
+                          highmult=1.3,linenumber=29,verbose=TRUE) {
+  datadir <- rundir
+  indat <- readLines(filenametopath(rundir,datafile))
+  nsau <- getsingleNum("nsau",indat)
+  final <- numeric(nsau)
+  initial <- getavrec(rundir,datafile,nsau=nsau)
+  for (sau in 1:nsau) { #  sau=8
+    cleaninit <- initial  # to ensure that 'extra' retains integrity
+    param <- cleaninit[sau]
+    low <- param * lowmult
+    high <- param * highmult
+    extra <- initial[-sau]
+    origssq <- sauavrecssq(param,rundir,datadir,controlfile,
+                           datafile=datafile,linenum=linenumber,
+                           calcpopC=calcpopC,extra=extra,picksau=sau,
+                           nsau=nsau)
+    if (verbose) cat("starting AvRec fit for sau",sau,"\n")
+    ans <- optim(param,sauavrecssq,method="Brent",lower=low,upper=high,
+                 rundir=rundir,datadir=datadir,
+                 controlfile=controlfile,datafile=datafile,linenum=linenumber,
+                 calcpopC=calcpopC,extra=extra,picksau=sau,nsau=nsau,
+                 control=list(maxit=30,trace=4))
+    final[sau] <- trunc(ans$par)
+    if (verbose) {
+      cat("orig = ",origssq,"  ssq = ",ans$value,"\n")
+      cat("orig par = ",param,"  par value = ",ans$par,"\n")
+      if (((ans$par - low) < 1) | ((high - ans$par) < 0))
+        warning(cat(" Boundary reached for param ",sau,low,high,ans$par,"\n"))
+      cat(sau,"   ",low,"    ",param,"   ",trunc(ans$par),"   ",high,"\n\n\n")
+    }
+    finalssq <- sauavrecssq(ans$par,rundir,datadir,controlfile,
+                            datafile=datafile,linenum=linenumber,
+                            calcpopC=calcpopC,extra=extra,picksau=sau,
+                            nsau=nsau,outplot=TRUE)
+    valuesbit <- paste0(as.character(final),collapse=",")
+    replacetxt <- paste0("AvRec,",valuesbit)
+    changeline(rundir,datafile,linenumber,replacetxt)
+  }  # end of sau loop
+  return(final)
+} # end of optimizeAvRec
 
+
+
+#' @title plotcondCPUE plots the historical cpue against conditioned cpue
+#'
+#' @description plotcondCPUE generates a plot of the historical cpue and compares
+#'     it with the predicted cpue from the conditioning. The predicted is black
+#'     and the observed is green. This is primarily there are an aid to
+#'     conditioning the operating model. It also calculates the simple sum of
+#'     squared differences between the observed and predicted, again to aid in
+#'     the conditioning.
+#'
+#' @param histCE the matrix of historical cpue by SAU
+#' @param saucpue the predicted cpue from the conditioning on historical data
+#' @param glb the globals object
+#' @param rundir the rundir for the given scenario
+#' @param filen the file name of the plot if it is to be saved
+#'
+#' @return a vector of length nsau containing the ssq for each SAU
+#' @export
+#'
+#' @examples
+#' print("wait on suitable internal data sets")
+plotcondCPUE <- function(histCE,saucpue,glb,rundir,filen="") {
+  if (nchar(filen) > 0) filen <- filenametopath(rundir,filen)
+  years <- as.numeric(rownames(histCE))
+  hyrs <- glb$hyrnames
+  pick <- match(years,hyrs)
+  nsau <- glb$nSAU
+  cpue <- saucpue[pick,1:nsau]
+  rownames(cpue) <- years
+  label <- glb$saunames
+  colnames(cpue) <- label
+  ssq <- numeric(nsau)
+  doplots=getparplots(nsau)
+  plotprep(width=8,height=8,newdev=FALSE,filename=filen,verbose=FALSE)
+  parset(plots=doplots,margin=c(0.3,0.3,0.05,0.05),outmargin=c(0,1,0,0),
+         byrow=FALSE)
+  for (sau in 1:nsau) {
+    ssq[sau] <- sum((histCE[,sau] - cpue[,sau])^2,na.rm=TRUE)
+    ymax <- getmax(c(cpue[,sau],histCE[,sau]))
+    plot(years,cpue[,sau],type="l",lwd=2,col=1,xlab="",ylab="",panel.first=grid(),
+         ylim=c(0,ymax),yaxs="i")
+    lines(years,histCE[,sau],lwd=2,col=3)
+    lab2 <- paste0(label[sau],"  ",round(ssq[sau],1))
+    mtext(lab2,side=1,line=-1.3,cex=1.25)
+  }
+  mtext("CPUE",side=2,line=-0.3,outer=TRUE,cex=1.25)
+  if (nchar(filen) > 0) {
+    caption <- "Comparison of Observed CPUE with that predicted by operating model."
+    addplot(filen,rundir=rundir,category="condition",caption)
+  }
+  invisible(ssq)
+} # end of plotcondCPUE
+
+
+#' @title printline literally prints a selected line from a text file
+#'
+#' @description printline is used to check that one has selected the
+#'     correct line for modification inside a datafile. This is done when
+#'     conditioning the MSE operating model on the parameter AvRec
+#'
+#' @param rundir the scenario directory holding all files for a scenario
+#' @param datafile the name of the datafile for the scenario, from the ctrl
+#'     object
+#' @param linenumber which linenumber to print, default =29
+#'
+#' @return nothing but it does print a line to the console
+#' @export
+#'
+#' @examples
+#' print("wait on suitable example")
+printline <- function(rundir, datafile, linenumber=29) {
+  dat <- readLines(filenametopath(rundir,datafile))
+  print(dat[linenumber])
+} #end of printline
+
+# param=param
+# rundir=rundir
+# datadir=rundir
+# controlfile=controlfile
+# datafile=datafile
+# linenum=29
+# calcpopC=calcexpectpopC
+# extra=extra
+# picksau=sau
+# nsau=nsau
+# outplot=FALSE
 
 
 #' @title sauavrecssq applies the AvRec and returns the ssq from the cpue
@@ -354,6 +561,8 @@ getrecdevcolumn <- function(rundir, filename, yearrange, sau,verbose=FALSE) {
 #' @param extra the vector of SAU AvRecs minus the selected SAU value
 #' @param picksau which SAU is to be worked on as in 1:nsau
 #' @param nsau the total number of SAU
+#' @param outplot shoudla plot be generated for output to the webpage.
+#'     default=FALSE
 #'
 #' @return the SSQ for the selected SAU in a comparison of predicted and
 #'     observed CPUE
@@ -362,18 +571,7 @@ getrecdevcolumn <- function(rundir, filename, yearrange, sau,verbose=FALSE) {
 #' @examples
 #' print("Wait on suitable internal data files")
 sauavrecssq <- function(param,rundir,datadir,controlfile,datafile,linenum,
-                        calcpopC,extra,picksau,nsau) {
-  # param=param
-  # rundir=rundir
-  # datadir=rundir
-  # controlfile=controlfile
-  # datafile=datafile
-  # linenum=29
-  # calcpopC=calcexpectpopC
-  # extra=extra
-  # picksau=sau
-  # nsau=nsau
-
+                        calcpopC,extra,picksau,nsau,outplot=FALSE) {
   nsaum1 <- nsau - 1
   if (picksau == 1)
     replacetxt <- paste0("AvRec,",as.character(param),",",
@@ -406,6 +604,11 @@ sauavrecssq <- function(param,rundir,datadir,controlfile,datafile,linenum,
   popExB0 <- getlistvar(zoneC,"ExB0")
   ExB0 <- tapply(popExB0,sauindex,sum)
   sauZone <- getsauzone(zoneDD,glb,B0=B0,ExB0=ExB0)
-  ssq <- compareCPUE(condC$histCE,sauZone$cpue,glb,rundir,filen="SAU_compareCPUE.png")
+  if (outplot) {
+    filename=paste0("compareCPUE_",picksau,"_AvRec_cond.png")
+    ssq <- plotcondCPUE(condC$histCE,sauZone$cpue,glb,rundir,filen=filename)
+  } else {
+    ssq <- getCPUEssq(condC$histCE,sauZone$cpue,glb)
+  }
   return(ssq[picksau])
 } # end of sauavrecssq

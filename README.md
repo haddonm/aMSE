@@ -3,6 +3,13 @@
 
 # LATEST UPDATE
 
+-   2021-11-23 aMSE 0.0.0.1 Added functions to simplify the optimization
+    of AvRec relative to the CPUE data after initial parameter
+    estimation for each SAU using the sizemod package. Also added a
+    comparison of size-composition data to the do\_condition function.
+    Next step will be to include the optimization of the recdevs using
+    both CPUE and size-comp data.
+
 -   2021-11-21 aMSE 0.0.0.020 So as to use any observed size-composition
     data in the conditioning, a number of functions have been added to
     convert the predicted numbers-at-size in the catch by population

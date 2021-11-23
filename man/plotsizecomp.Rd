@@ -59,3 +59,8 @@ plotsizecomp generates a plot of available size composition
 \examples{
 print("wait on data sets")
 }
+\seealso{
+{
+ \link{preparesizecomp}, \link{popNAStosau}
+}
+}

@@ -12,7 +12,8 @@ gettasdevssq(
   calcpopC,
   locyrs,
   sau,
-  verbose = FALSE
+  verbose = FALSE,
+  outplot = FALSE
 )
 }
 \arguments{
@@ -33,6 +34,9 @@ corresponding to the selected years.}
 \item{sau}{which sau (in TAS 1 - 8) is to be worked on}
 
 \item{verbose}{should console reports be made? default = FALSE}
+
+\item{outplot}{shoudla plot be generated for output to the webpage.
+default=FALSE}
 }
 \value{
 a scalar value which is the SSQ for the selected years of CPUE

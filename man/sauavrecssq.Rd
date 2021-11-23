@@ -14,7 +14,8 @@ sauavrecssq(
   calcpopC,
   extra,
   picksau,
-  nsau
+  nsau,
+  outplot = FALSE
 )
 }
 \arguments{
@@ -38,6 +39,9 @@ for each SAU}
 \item{picksau}{which SAU is to be worked on as in 1:nsau}
 
 \item{nsau}{the total number of SAU}
+
+\item{outplot}{shoudla plot be generated for output to the webpage.
+default=FALSE}
 }
 \value{
 the SSQ for the selected SAU in a comparison of predicted and

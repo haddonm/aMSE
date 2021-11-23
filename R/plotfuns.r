@@ -763,6 +763,10 @@ plotprod <- function(product,xname="MatB",yname="Catch",xlimit=NA,
 #' @param tabcategory what name to give to the webage tab when the plots are
 #'     saved. Default="predictedcatchN"
 #'
+#' @seealso{
+#'  \link{preparesizecomp}, \link{popNAStosau}
+#' }
+#'
 #' @return nothing but it does generate a plot
 #' @export
 #'
@@ -887,7 +891,9 @@ plotZone <- function(inzone,rundir,glb,startyr,CIprobs=c(0.05,0.5,0.95),addfile=
 #' @return nothing but this does generate a plot.
 #' @export
 #'
-#' @seealso catchweightCE
+#' @seealso{
+#'   \link{catchweightCE}
+#' }
 #'
 #' @examples
 #' print("wait on suitable internal dats sets")

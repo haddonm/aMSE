@@ -812,44 +812,6 @@ sauCN <- plotcondsizes(Nt=catchN,first,last,glb,ssc=ssc,filen="",
 # compare conditoned predict CatchN ----------------------------------------
 
 
-source("C:/Users/Malcolm/Dropbox/A_Code/aMSE/data-raw/almostaccepted.R")
-
-glb <- out$glb
-lfs <- out$condC$compdat$lfs
-palfs <- out$condC$compdat$palfs
-nsau <- glb$nSAU
-saunames <- glb$saunames
-dim(lfs)
-lab <- dimnames(lfs)
-nyrs <- dim(lfs)[2]
-# calculate nmbers x years x sau
-counts <- matrix(0,nrow=nyrs,ncol=nsau,dimnames=list(lab[[2]],saunames))
-for (sau in 1:nsau) counts[,sau] <- colSums(lfs[,,sau])
-counts
-cNt <- out$zoneDD$catchN
-
-source("C:/Users/Malcolm/Dropbox/A_Code/aMSE/data-raw/almostaccepted.R")
-
-sauN <- combinepopN(inN=cNt,glb=glb)
-
-SAU <- 2
-cs <- lfs[,,SAU]
-sauP <- sauN[,,SAU]
-
-label=glb$saunames[SAU]
-saucompcatchN(obs=cs,pred=sauP,glb=glb,years=1991:2020,ssc=68,sau=label,
-              filen="",wide=12,tall=8)
-
-# saucompcatchN(obs=cs,pred=sauP,glb=glb,years=2000:2020,ssc=68,sau=label,
-#               filen="",wide=9)
-
-
-# examine sau12 2016 in detail - only 101 observations
-SAU <- 7
-cs <- lfs[,,SAU]
-picky <- which(colnames(cs) == "2016")
-sau12 <- cs[,picky]
-
 
 library(freqdata)
 
@@ -1096,49 +1058,6 @@ out <- do_condition(rundir,controlfile,datadir,
                     doproduct = TRUE)
 
 makeoutput(out,rundir,datadir,postfixdir,controlfile,openfile=TRUE,verbose=FALSE)
-
-
-
-
-# ccf plots by SAU-------------------------------------
-
-plotprep(width=7,height=8,newdev=FALSE,filename="",cex=0.9,verbose=FALSE)
-parset(plots=getparplots(nsau),margin=c(0.3,0.35,0.05,0.05),
-       outmargin=c(1,0,0,0),byrow=FALSE)
-ccf(histC[,1],histCE[9:29,1],ylab=saunames[1],xlab="")
-for (sau in 2:7) ccf(histC[,sau],histCE[,sau],ylab=saunames[sau],xlab="")
-ccf(histC[,8],histCE[9:29,8],ylab=saunames[8],xlab="")
-mtext("Lag",side=1,line=-0.1,outer=TRUE,cex=1.1)
-
-
-
-
-plotprep(width=7,height=8,newdev=FALSE,filename="",cex=0.9,verbose=FALSE)
-parset(plots=getparplots(nsau),margin=c(0.3,0.35,0.05,0.05),
-       outmargin=c(1,0,0,0),byrow=FALSE)
-
-
-plot(histC[33:53,1],histCE[9:29,1],type="p",cex=1.0,pch=16,
-     ylab=saunames[1],xlab="",panel.first=grid())
-lines(histC[33:53,1],histCE[9:29,1],lwd=1,col="grey")
-model <- lm(histCE[9:29,1] ~ histC[33:53,1])
-abline(model,lwd=2,col=2)
-cat(saunames[1],summary(model)$coefficients[2,4],"\n")
-for (sau in 2:7) {
-  plot(histC[25:53,sau],histCE[,sau],type="p",cex=1.0,pch=16,
-                      ylab=saunames[sau],xlab="",panel.first=grid())
-  lines(histC[25:53,sau],histCE[,sau],lwd=1,col="grey")
-  model <- lm(histCE[,sau] ~ histC[25:53,sau])
-  abline(model,lwd=2,col=2)
-  cat(saunames[sau],summary(model)$coefficients[2,4],"\n")
-}
-plot(histC[33:53,8],histCE[9:29,8],type="p",cex=1.0,pch=16,
-     ylab=saunames[8],xlab="",panel.first=grid())
-lines(histC[33:53,8],histCE[9:29,8],lwd=1,col="grey")
-model <- lm(histCE[9:29,8] ~ histC[33:53,8])
-abline(model,lwd=2,col=2)
-cat(saunames[8],summary(model)$coefficients[2,4],"\n")
-mtext("Lag",side=1,line=-0.1,outer=TRUE,cex=1.1)
 
 
 

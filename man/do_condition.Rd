@@ -11,7 +11,8 @@ do_condition(
   calcpopC,
   verbose = FALSE,
   doproduct = FALSE,
-  dohistoric = TRUE
+  dohistoric = TRUE,
+  mincount = 100
 )
 }
 \arguments{
@@ -36,6 +37,9 @@ per population in each SAU expected in the current year.}
 \item{doproduct}{should production estimates be made. default=FALSE}
 
 \item{dohistoric}{should the historical catches be applied. Default=TRUE}
+
+\item{mincount}{determines the minimum sample size for a size-composition
+sample to be included in plots and analyses. Default = 100}
 }
 \value{
 a large list containing tottime, projtime, starttime, glb, ctrl,
