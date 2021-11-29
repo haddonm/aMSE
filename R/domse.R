@@ -1,8 +1,7 @@
 #
 # outcond=outcond
-# postfixdir <- "M125h6B11"
+# postfixdir <- "M125h6b11"
 # rundir <- rundir
-# datadir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
 # hcrfun=mcdahcr
@@ -20,7 +19,7 @@
 # cutcatchN=56
 # matureL = c(70,200)
 # wtatL = c(80,200)
-
+#
 
 
 #' @title do_MSE an encapsulating function to hold the details of a single run
@@ -48,14 +47,9 @@
 #'     the cumulative catches to 5 and 10 years into the projections).
 #'
 #' @param rundir the full path to the directory in which all files relating to a
-#'     particular run are to be held. If datadir != rundir then the main data
-#'     files are kept in datadir. The juridictionHS.R can be held in either.
+#'     particular run are to be held.
 #' @param controlfile the filename of the control file present in rundir
 #'     containing information regarding the particular run.
-#' @param datadir the directory in which the SAU data file is to be found. This
-#'     will usually be the rundir for the scenario run but if the data file is
-#'     to be shared among a set of scenarios it will be more efficient to define
-#'     a separate datadir
 #' @param hsargs the constants used to define the workings of the hcr
 #' @param hcrfun the name of the harvest control rule that is used to
 #'     calculate the aspirational catches by SAU or TAC by zone for the
@@ -111,13 +105,13 @@
 #'
 #' @examples
 #' print("wait on suitable data sets in data")
-do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
+do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                    sampleNaS,getdata,calcpopC,makeouthcr,varyrs=7,startyr=42,
                    verbose=FALSE,ndiagprojs=3,savesauout=FALSE,cutcatchN=56,
                    matureL=c(70,200),wtatL=c(80,200),mincount=100) {
   # generate equilibrium zone -----------------------------------------------
   starttime <- (Sys.time())
-  zone <- makeequilzone(rundir,controlfile,datadir,verbose=verbose)
+  zone <- makeequilzone(rundir,controlfile,verbose=verbose)
   equiltime <- (Sys.time()); if (verbose) print(equiltime - starttime)
   # declare main objects ----------------------------------------------------
   glb <- zone$glb
@@ -128,6 +122,7 @@ do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
   zoneC <- zone$zoneC
   zoneD <- zone$zoneD
   production <- zone$product
+  saudat <- zone$saudat
   # save some equil results -------------------------------------------------
   biology_plots(rundir, glb, zoneC, matL=matureL,Lwt=wtatL)
   plotproductivity(rundir,production,glb)
@@ -154,7 +149,7 @@ do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
   popdefs[,"SAU"] <- glb$sauname[glb$sauindex]  #so SAU can be txt
   addtable(popdefs,"popdefs.csv",rundir,category="zoneDD",
            caption="Population vs Operating model parameter definitions")
-  condout <- plotconditioning(zoneDD,glb,zoneC,condC$histCE,rundir)
+  condout <- plotconditioning(zoneDD,glb,zoneC,condC$histCE,rundir,condC$recdevs)
   saurecdevs(condC$recdevs,glb,rundir,filen="saurecdevs.png")
   # plot predicted size-comp of catch vs observed size-comps
   catchN <- zoneDD$catchN
@@ -227,7 +222,7 @@ do_MSE <- function(rundir,controlfile,datadir,hsargs,hcrfun,sampleCE,sampleFIS,
               ctrl=ctrl,zoneCP=zoneCP,zoneD=zoneD,zoneDD=zoneDD,zoneDP=zoneDP,
               NAS=NAS,projC=projC,condC=condC,sauout=sauout,outzone=outzone,
               hcrout=hcrout,production=production,condout=condout,
-              HSstats=HSstats)
+              HSstats=HSstats,saudat=saudat)
   return(out)
 } # end of do_MSE
 

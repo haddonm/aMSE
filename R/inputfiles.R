@@ -492,21 +492,18 @@ datafiletemplate <- function(nSAU,indir,filename="saudata_test.csv") {
 # Utility functions used within parseFile, not exported
 
 
-#' @title readctrlfile checks datadir contains the required csv files
+#' @title readctrlfile checks rundir contains the required csv files
 #'
-#' @description readctrlfile checks datadir contains the required csv
+#' @description readctrlfile checks rundir contains the required csv
 #'     files including the named control file, which then contains
 #'     the names of the region data file, and the population data
 #'     file. The run stops if any are not present or are misnamed.
 #'
 #' @param rundir the directory in which all files relating to a
-#'     particular run are to be held. If datadir != rundir then the main data
-#'     files are kept in datadir
+#'     particular run are to be held.
 #' @param infile default="control.csv", the filename of the control
-#'     file present in datadir containing information regarding the
+#'     file present in rundir containing information regarding the
 #'     run.
-#' @param datadir default = rundir. If datadir != rundir then the data files
-#'     for a series of scenarios are kept in this directory.
 #' @param verbose Should progress comments be printed to console, default=TRUE
 #'
 #' @return the control list for the run
@@ -521,8 +518,8 @@ datafiletemplate <- function(nSAU,indir,filename="saudata_test.csv") {
 #' ctrl <- readctrlfile(rundir)
 #' ctrl
 #' }
-readctrlfile <- function(rundir,infile="control.csv",datadir=rundir,verbose=TRUE) {
-   # rundir=rundir; infile="controlM1h5.csv"; datadir=datadir; verbose=verbose
+readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE) {
+   # rundir=rundir; infile="controlM1h5.csv"; verbose=verbose
    filenames <- dir(rundir)
    if (length(grep(infile,filenames)) != 1)
       stop(cat(infile," not found in ",rundir," \n"))
@@ -538,7 +535,7 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir,verbose=TRUE
    withsigB <- getsingleNum("withsigB",indat)
    withsigCE <- getsingleNum("withsigCE",indat)
    hyrs=40 # minimum to set up equilibrium; should this be altered?
-   filenames2 <- dir(datadir)
+   filenames2 <- dir(rundir)
    if (length(grep(datafile,filenames2)) != 1)
       stop("population data file not found \n")
    if (verbose) cat("All required files appear to be present \n")
@@ -618,11 +615,11 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir,verbose=TRUE
          compdat <- vector("list",sizecomp)
          for (i in 1:sizecomp) {
             lffilename <- removeEmpty(unlist(strsplit(indat[locsizecomp+i],",")))
-            compdat[[i]] <- getLFdata(datadir,lffilename)
+            compdat[[i]] <- getLFdata(rundir,lffilename)
          }
        } else {
          lffilename <- removeEmpty(unlist(strsplit(indat[locsizecomp+1],",")))
-         compdat <- getLFdata(datadir,lffilename)
+         compdat <- getLFdata(rundir,lffilename)
       }
    }  # end of sizecomp loop
    recdevs <- NULL
@@ -684,12 +681,12 @@ readctrlfile <- function(rundir,infile="control.csv",datadir=rundir,verbose=TRUE
 #' data(constants)
 #' constants
 #' ctrlfile <- "control.csv"
-#' ctrl <- readctrlfile(glb$numpop,datadir,ctrlfile)
-#' reg1 <- readzonefile(datadir,ctrl$zonefile)
-#' popdefs <- readdatafile(reg1$globals,datadir,ctrl$datafile)
+#' ctrl <- readctrlfile(glb$numpop,rundir,ctrlfile)
+#' reg1 <- readzonefile(rundir,ctrl$zonefile)
+#' popdefs <- readdatafile(reg1$globals,rundir,ctrl$datafile)
 #' print(popdefs)
 #' }
-readdatafile <- function(numpop,indir,infile) {  # indir=datadir;infile="zone1sau2pop6.csv";numpop=6
+readdatafile <- function(numpop,indir,infile) {  # indir=rundir;infile="zone1sau2pop6.csv";numpop=6
    filename <- filenametopath(indir,infile)
    indat <- readLines(filename)   # reads the whole file as character strings
    begin <- grep("PDFs",indat)
@@ -719,17 +716,18 @@ readdatafile <- function(numpop,indir,infile) {  # indir=datadir;infile="zone1sa
 #'     each population has been implemented to simplify the conditioning of
 #'     each operating model.
 #'
-#' @param datadir the directory in which the data file is to be found. This will
+#' @param rundir the directory in which the data file is to be found. This will
 #'     usually be the rundir for the scenario run
 #' @param infile the name of the specific datafile used.
 #'
-#' @return the constants matrix with values for each population
+#' @return a list of the constants matrix with values for each population and
+#'     the original matrix of sau values from readsaudatafile
 #' @export
 #'
 #' @examples
 #' print("wait on suitable data sets")
-readsaudatafile <- function(datadir,infile) {  # rundir=rundir; infile=ctrl$datafile
-   filename <- filenametopath(datadir,infile)
+readsaudatafile <- function(rundir,infile) {  # rundir=rundir; infile=ctrl$datafile
+   filename <- filenametopath(rundir,infile)
    indat <- readLines(filename)   # reads the whole file as character strings
    nsau <- getsingleNum("nsau",indat)
    saupop <- getConst(indat[grep("saupop",indat)],nsau)
@@ -783,7 +781,7 @@ readsaudatafile <- function(datadir,infile) {  # rundir=rundir; infile=ctrl$data
          consts[rows[index],] <- vect[sauindex]
       }
    }
-   return(consts)
+   return(list(constants=consts,saudat=ans))
 } # end of readsaudatafile
 
 #' @title replaceVar replaces values of a variable in the input datafile

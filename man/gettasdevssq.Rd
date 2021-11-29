@@ -7,21 +7,21 @@
 gettasdevssq(
   param,
   rundir,
-  datadir,
   ctrlfile,
   calcpopC,
   locyrs,
   sau,
+  obsLFs = obsLFs,
+  wtsc = 0.1,
   verbose = FALSE,
-  outplot = FALSE
+  outplot = FALSE,
+  console = FALSE
 )
 }
 \arguments{
 \item{param}{the log transformed sequence of recdevs for the selected years}
 
 \item{rundir}{the rundir for the scenario}
-
-\item{datadir}{the datadir for the scenario}
 
 \item{ctrlfile}{the character name of the control file}
 
@@ -33,10 +33,21 @@ corresponding to the selected years.}
 
 \item{sau}{which sau (in TAS 1 - 8) is to be worked on}
 
+\item{obsLFs}{the observed length-composition of the catches for the sau,
+usually from condC$compdat$lfs[,,sau]}
+
+\item{wtsc}{what weighting should the total Multi-Nomial ikelihood be
+multiplied by to scale to the range of change in thw CPUE ssq?
+Default=0.1}
+
 \item{verbose}{should console reports be made? default = FALSE}
 
-\item{outplot}{shoudla plot be generated for output to the webpage.
+\item{outplot}{should a plot be generated for output to the webpage.
 default=FALSE}
+
+\item{console}{should the plot go to the console. If FALSE and outplot is
+TRUE then a plot will go to rundir. If TRUE theplot will go to the
+console. DEfault=FALSE}
 }
 \value{
 a scalar value which is the SSQ for the selected years of CPUE
@@ -45,7 +56,8 @@ a scalar value which is the SSQ for the selected years of CPUE
 gettasdevssq is used when conditioning the aMSE operating model
     using ad hoc recruitment deviates after conditioning on AvRec. It focuses
     on a single SAU at a time. log transformed recdevs are used to avoid the
-    possibility of negative recdevs (a no-no).
+    possibility of negative recdevs. NOte this does not test for equilibrium
+    of the initial operating model, it just assumes it reaches equilibrium.
 }
 \examples{
 print("wait on suitable internal data sets")

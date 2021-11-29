@@ -4,7 +4,7 @@
 \alias{plotconditioning}
 \title{plotconditioning illustrate the zones dynamics after conditioning}
 \usage{
-plotconditioning(zoneDD, glb, zoneC, histCE, rundir)
+plotconditioning(zoneDD, glb, zoneC, histCE, rundir, recdevs)
 }
 \arguments{
 \item{zoneDD}{the conditioned dynamic zone object}
@@ -16,6 +16,8 @@ plotconditioning(zoneDD, glb, zoneC, histCE, rundir)
 \item{histCE}{the historical CPUE matrix}
 
 \item{rundir}{the rundir for the given scenario}
+
+\item{recdevs}{the recruitment deviates from the control file, condC}
 }
 \value{
 the sau scale zone dynamics, invisibly

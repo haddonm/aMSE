@@ -4,16 +4,17 @@
 \alias{readsaudatafile}
 \title{readsaudatafile generates the constants matrix from sau data}
 \usage{
-readsaudatafile(datadir, infile)
+readsaudatafile(rundir, infile)
 }
 \arguments{
-\item{datadir}{the directory in which the data file is to be found. This will
+\item{rundir}{the directory in which the data file is to be found. This will
 usually be the rundir for the scenario run}
 
 \item{infile}{the name of the specific datafile used.}
 }
 \value{
-the constants matrix with values for each population
+a list of the constants matrix with values for each population and
+    the original matrix of sau values from readsaudatafile
 }
 \description{
 readsaudatafile uses data described at the SAU level to make

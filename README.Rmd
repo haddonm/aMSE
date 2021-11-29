@@ -15,6 +15,8 @@ knitr::opts_chunk$set(
 
 # LATEST UPDATE
 
+* 2021-11-29 aMSE 0.0.1 Removed datadir. Started implementing hyper-stability while keeping the interface the same, so that the results from sizemod can be used.
+
 * 2021-11-23 aMSE 0.0.0.1 Added functions to simplify the optimization of AvRec relative to the CPUE data after initial parameter estimation for each SAU using the sizemod package. Also added a comparison of size-composition data to the do_condition function. Next step will be to include the optimization of the recdevs using both CPUE and size-comp data. 
 
 * 2021-11-21 aMSE 0.0.0.020 So as to use any observed size-composition data in the conditioning, a number of functions have been added to convert the predicted numbers-at-size in the catch by population into NAS x SAU. These can now be plotted against the observed NAS for each SAU and this can be either to the console or to a new tab in the webpage called 'predictedcatchN'. This work derived from the progress made with the sizemod package used to fit size-based assessment models to individual SAU. Because the MSE sub-divides each SAU into a number of populations each with somewhat different MaxDL, L95, etc, even after fitting the models, when using that data it is then necessary to refit the AvRec values, which, because of the sub-division into populations each having different biology can lead to the MSE AvRec being either smaller or larger than the estimated R0 for a SAU. Similar arguments apply to teh recruitment residuals but generally the pattern provides a reasonable fit.
@@ -75,8 +77,9 @@ library(TasHS)
 library(rutilsMH)
 library(makehtml)
 library(knitr)
+dbdir <- getDBdir()
 # Obviously you should modify the rundir and datadir to suit your own setup
-prefixdir <- "C:/Users/User/Dropbox/A_CodeUse/aMSEUse/scenarios/"
+prefixdir <- paste0(dbdir,"A_CodeUse/aMSEUse/scenarios/")
 postfixdir <- "M15h75"
 rundir <- paste0(prefixdir,postfixdir)
 datadir <- rundir

@@ -31,9 +31,9 @@ glb
 data(constants)
 constants
 ctrlfile <- "control.csv"
-ctrl <- readctrlfile(glb$numpop,datadir,ctrlfile)
-reg1 <- readzonefile(datadir,ctrl$zonefile)
-popdefs <- readdatafile(reg1$globals,datadir,ctrl$datafile)
+ctrl <- readctrlfile(glb$numpop,rundir,ctrlfile)
+reg1 <- readzonefile(rundir,ctrl$zonefile)
+popdefs <- readdatafile(reg1$globals,rundir,ctrl$datafile)
 print(popdefs)
 }
 }

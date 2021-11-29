@@ -17,9 +17,11 @@ getCPUEssq(histCE, saucpue, glb)
 a vector of length nsau containing the ssq for each SAU
 }
 \description{
-getCPUEssq takes in teh historical CPUE and the conditioned
+getCPUEssq takes in the historical CPUE and the conditioned
     zone's cpue and calculates the sum-of squared differences between them
-    to assist with the conditioning.
+    to assist with the conditioning. This is a greatly simplified version
+    of plotcondCPUE, which plots a graph as well as estimating the ssq.
+    For speed it is better to use getCPUEssq.
 }
 \examples{
 print("wait on suitable internal data sets")

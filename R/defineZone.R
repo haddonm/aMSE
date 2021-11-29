@@ -581,29 +581,29 @@ makeabpop <- function(popparam,midpts,projLML) {
 #' @param ctrlfile the main file that controls the particular run. It contains
 #'     the name of the data file that is used to biologically condition the
 #'     numpop populations
-#' @param datadir the directory containing the data csv files. This defaults to
-#'     equal the rundir, but can be different if desired. default=rundir
 #' @param doproduct boolean, should the productivity calculations be made
 #'     during the conditioning. Set to FALSE conditionOM
 #' @param verbose Should progress comments be printed to console, default=TRUE
 #'
-#' @return a list of zoneC, zoneD, glb, constants, product, ctrl, and zone1
+#' @return a list of zoneC, zoneD, glb, constants, saudat,product, ctrl, and zone1
 #' @export
 #'
 #' @examples
 #' print("wait on datafiles")
-makeequilzone <- function(rundir,ctrlfile="control.csv",datadir=rundir,
-                          doproduct=TRUE,verbose=TRUE) {
- #  rundir=rundir;ctrlfile=controlfile;datadir=datadir;verbose=verbose;doproduct=TRUE
-  zone1 <- readctrlfile(rundir,infile=ctrlfile,datadir=datadir,verbose=verbose)
+makeequilzone <- function(rundir,ctrlfile="control.csv",doproduct=TRUE,verbose=TRUE) {
+ #  rundir=rundir;ctrlfile=controlfile;verbose=verbose;doproduct=TRUE; verbose=TRUE
+  zone1 <- readctrlfile(rundir,infile=ctrlfile,verbose=verbose)
   ctrl <- zone1$ctrl
   glb <- zone1$globals     # glb without the movement matrix
   bysau <- ctrl$bysau
   if (is.null(bysau)) bysau <- 0
   if (bysau) {
-     constants <- readsaudatafile(datadir,ctrl$datafile)
+    saudata <- readsaudatafile(rundir,ctrl$datafile)
+    constants <- saudata$constants
+    saudat <- saudata$saudat
   } else {
-    constants <- readdatafile(glb$numpop,datadir,ctrl$datafile)
+    constants <- readdatafile(glb$numpop,rundir,ctrl$datafile)
+    saudat <- constants
   }
   if (verbose) cat("Files read, now making zone \n")
   out <- setupzone(constants,zone1,doproduct,verbose=verbose) # make operating model
@@ -617,7 +617,7 @@ makeequilzone <- function(rundir,ctrlfile="control.csv",datadir=rundir,
   zoneC <- resetexB0(zoneC,zoneD) # rescale exploitB to avexplB after dynamics
   setuphtml(rundir)
   equilzone <- list(zoneC=zoneC,zoneD=zoneD,glb=glb,constants=constants,
-                    product=product,ctrl=ctrl,zone1=zone1)
+                    saudat=saudat,product=product,ctrl=ctrl,zone1=zone1)
   return(equilzone)
 } # end of makeequilzone
 

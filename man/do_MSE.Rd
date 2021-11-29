@@ -7,7 +7,6 @@
 do_MSE(
   rundir,
   controlfile,
-  datadir,
   hsargs,
   hcrfun,
   sampleCE,
@@ -29,16 +28,10 @@ do_MSE(
 }
 \arguments{
 \item{rundir}{the full path to the directory in which all files relating to a
-particular run are to be held. If datadir != rundir then the main data
-files are kept in datadir. The juridictionHS.R can be held in either.}
+particular run are to be held.}
 
 \item{controlfile}{the filename of the control file present in rundir
 containing information regarding the particular run.}
-
-\item{datadir}{the directory in which the SAU data file is to be found. This
-will usually be the rundir for the scenario run but if the data file is
-to be shared among a set of scenarios it will be more efficient to define
-a separate datadir}
 
 \item{hsargs}{the constants used to define the workings of the hcr}
 

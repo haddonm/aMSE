@@ -4,7 +4,7 @@
 \alias{dosau}
 \title{dosau plots the conditioning history for the dynamics}
 \usage{
-dosau(inzone, glb, picksau, histCE, yrnames, extra = FALSE)
+dosau(inzone, glb, picksau, histCE, yrnames, recdev)
 }
 \arguments{
 \item{inzone}{the conditioned zone (zoneDD) after it has been converted to
@@ -18,7 +18,7 @@ sau scale by using getsauzone}
 
 \item{yrnames}{the years of historical catches eg 1973:2019}
 
-\item{extra}{should exploitable B and depleB be plotted? default=FALSE}
+\item{recdev}{the recdevs for a single SAU}
 }
 \value{
 nothing but it does generate a plot

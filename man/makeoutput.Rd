@@ -7,7 +7,6 @@
 makeoutput(
   out,
   rundir,
-  datadir,
   postdir,
   controlfile,
   hsfile = NULL,
@@ -19,9 +18,7 @@ makeoutput(
 \arguments{
 \item{out}{the output from do_MSE}
 
-\item{rundir}{the full path to the directory holding the results}
-
-\item{datadir}{the full path to the directory holding data and jurisdictionHS.R}
+\item{rundir}{the full path to the directory holding the all scenario files}
 
 \item{postdir}{the name of the directory holding the results, also used to
 name the internal webpage}

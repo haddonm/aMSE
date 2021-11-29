@@ -7,7 +7,6 @@
 sauavrecssq(
   param,
   rundir,
-  datadir,
   controlfile,
   datafile,
   linenum,
@@ -22,8 +21,6 @@ sauavrecssq(
 \item{param}{is the AvRec for the selected SAU}
 
 \item{rundir}{the rundir for the scenario being considered}
-
-\item{datadir}{the directory holding the saudata file, usually = rundir}
 
 \item{controlfile}{the name of the control file, no path}
 

@@ -4,10 +4,10 @@
 \alias{getLFdata}
 \title{getLFdata reads the observed LF-composition data}
 \usage{
-getLFdata(datadir, filename)
+getLFdata(rundir, filename)
 }
 \arguments{
-\item{datadir}{the directory containing the LF data files}
+\item{rundir}{the directory containing the LF data files}
 
 \item{filename}{the complete filename for the length-composition data file}
 }

@@ -4,10 +4,10 @@
 \alias{getavrec}
 \title{getavrec pulls out just the AvRec values for each sau for a scenario}
 \usage{
-getavrec(datadir, datafile, nsau)
+getavrec(rundir, datafile, nsau)
 }
 \arguments{
-\item{datadir}{the directory in which one finds the saudata file for the
+\item{rundir}{the directory in which one finds the saudata file for the
 given scenario}
 
 \item{datafile}{the exact name of the saudata file}

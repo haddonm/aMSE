@@ -2,21 +2,17 @@
 % Please edit documentation in R/inputfiles.R
 \name{readctrlfile}
 \alias{readctrlfile}
-\title{readctrlfile checks datadir contains the required csv files}
+\title{readctrlfile checks rundir contains the required csv files}
 \usage{
-readctrlfile(rundir, infile = "control.csv", datadir = rundir, verbose = TRUE)
+readctrlfile(rundir, infile = "control.csv", verbose = TRUE)
 }
 \arguments{
 \item{rundir}{the directory in which all files relating to a
-particular run are to be held. If datadir != rundir then the main data
-files are kept in datadir}
+particular run are to be held.}
 
 \item{infile}{default="control.csv", the filename of the control
-file present in datadir containing information regarding the
+file present in rundir containing information regarding the
 run.}
-
-\item{datadir}{default = rundir. If datadir != rundir then the data files
-for a series of scenarios are kept in this directory.}
 
 \item{verbose}{Should progress comments be printed to console, default=TRUE}
 }
@@ -24,7 +20,7 @@ for a series of scenarios are kept in this directory.}
 the control list for the run
 }
 \description{
-readctrlfile checks datadir contains the required csv
+readctrlfile checks rundir contains the required csv
     files including the named control file, which then contains
     the names of the region data file, and the population data
     file. The run stops if any are not present or are misnamed.

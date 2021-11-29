@@ -7,7 +7,7 @@
 #'     required to only take the first record of 'AvRec' so as not to
 #'     consider the variability in sAvRec.
 #'
-#' @param datadir the directory in which one finds the saudata file for the
+#' @param rundir the directory in which one finds the saudata file for the
 #'     given scenario
 #' @param datafile the exact name of the saudata file
 #' @param nsau the number of SAU to be found
@@ -20,8 +20,8 @@
 #'   rundir <- "c:/Users/User/DropBox/A_codeUse/aMSEUse/scenarios/MhLML/M1h5/"
 #'   getavrec(rundir,"saudataM1h5.csv",8)
 #' }
-getavrec <- function(datadir,datafile,nsau) {
-  filen <- filenametopath(datadir,datafile)
+getavrec <- function(rundir,datafile,nsau) {
+  filen <- filenametopath(rundir,datafile)
   dat <- readLines(filen)
   pickA <- grep("AvRec",dat)[1] # ignore sAvRec
   avrec <- getConst(dat[pickA],nsau)
@@ -167,7 +167,7 @@ getConst <- function(inline,nb,index=2) { # parses lines containing numbers
 #'     the SAU. See the 'data-file-description.docx', and the example data files
 #'     to see examples of the required format.
 #'
-#' @param datadir the directory containing the LF data files
+#' @param rundir the directory containing the LF data files
 #' @param filename the complete filename for the length-composition data file
 #'
 #' @seealso{
@@ -181,8 +181,8 @@ getConst <- function(inline,nb,index=2) { # parses lines containing numbers
 #'
 #' @examples
 #' print("wait on suitable internal data files")
-getLFdata <- function(datadir,filename) {
-  filen <- filenametopath(datadir,filename)
+getLFdata <- function(rundir,filename) {
+  filen <- filenametopath(rundir,filename)
   lfdat <- read.csv(filen,header=TRUE)
   colnames(lfdat) <- tolower(colnames(lfdat))
   sau <- sort(unique(lfdat[,"sau"]))

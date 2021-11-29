@@ -1,8 +1,8 @@
 Package: aMSE
 Type: Package
 Title: A Framework for Abalone Management Strategy Evaluation
-Version: 0.0.0.1
-Date: 2021-11-23
+Version: 0.0.1
+Date: 2021-11-29
 Authors@R: person("Malcolm", "Haddon", email = "malcolm.haddon@gmail.com", role = c("aut", "cre"))
 Maintainer: Malcolm Haddon <malcolm.haddon@gmail.com>
 Description: aMSE provides a formal framework for conducting management strategy 

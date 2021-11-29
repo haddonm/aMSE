@@ -7,7 +7,6 @@
 do_condition(
   rundir,
   controlfile,
-  datadir,
   calcpopC,
   verbose = FALSE,
   doproduct = FALSE,
@@ -17,16 +16,10 @@ do_condition(
 }
 \arguments{
 \item{rundir}{the full path to the directory in which all files relating to a
-particular run are to be held. If datadir != rundir then the main data
-files are kept in datadir. The juridictionHS.R can be held in either.}
+particular run are to be held.}
 
 \item{controlfile}{the filename of the control file present in rundir
 containing information regarding the particular run.}
-
-\item{datadir}{the directory in which the SAU data file is to be found. This
-will usually be the rundir for the scenario run but if the data file is
-to be shared among a set of scenarios it will be more efficient to define
-a separate datadir}
 
 \item{calcpopC}{a function that takes the output from hcrfun (either the
 aspirational catch x SAU or TAC x zone) and generates the actual catch
@@ -66,7 +59,7 @@ do_condition is a utility function that can be used to speed the
 }
 \examples{
 print("wait on suitable data sets in data")
-# rundir=rundir; controlfile=controlfile;datadir=datadir;calcpopC=calcexpectpopC
+# rundir=rundir; controlfile=controlfile;calcpopC=calcexpectpopC
 #verbose=TRUE; doproduct=TRUE; dohistoric=FALSE
 }
 \seealso{

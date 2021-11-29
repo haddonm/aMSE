@@ -249,8 +249,7 @@ fishery_plots <- function(rundir,glb,select,histyr,projLML, rge=50:90) {
 #'     that 'runnotes' is now a vector of character strings made up using paste0.
 #'
 #' @param out the output from do_MSE
-#' @param rundir the full path to the directory holding the results
-#' @param datadir the full path to the directory holding data and jurisdictionHS.R
+#' @param rundir the full path to the directory holding the all scenario files
 #' @param postdir the name of the directory holding the results, also used to
 #'     name the internal webpage
 #' @param controlfile the controlfile used to run the MSE
@@ -266,7 +265,7 @@ fishery_plots <- function(rundir,glb,select,histyr,projLML, rge=50:90) {
 #'
 #' @examples
 #' print("wait on internal data-sets")
-makeoutput <- function(out,rundir,datadir,postdir,controlfile,hsfile=NULL,
+makeoutput <- function(out,rundir,postdir,controlfile,hsfile=NULL,
                        doproject=TRUE,openfile=TRUE,verbose=FALSE) {
   replist <- list(starttime=as.character(out$starttime),
                   endtime=as.character(out$projtime))
@@ -277,7 +276,7 @@ makeoutput <- function(out,rundir,datadir,postdir,controlfile,hsfile=NULL,
                 paste0("Populations = ",glb$numpop),paste0("SAU = ",glb$nSAU),
                 paste0("Randomseed for conditioning = ",out$ctrl$randseed))
 
-  make_html(replist = replist,  rundir = rundir,  datadir=datadir,
+  make_html(replist = replist,  rundir = rundir,
             controlfile=controlfile, datafile=out$ctrl$datafile, hsfile=hsfile,
             width = 500, openfile = TRUE,  runnotes = runnotes,
             verbose = verbose, packagename = "aMSE",  htmlname = postdir)

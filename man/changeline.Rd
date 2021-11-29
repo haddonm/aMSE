@@ -8,7 +8,7 @@ changeline(indir, filename, linenumber, newline, verbose = FALSE)
 }
 \arguments{
 \item{indir}{the directory path in which to find the text file. Usually,
-rundir or datadir}
+rundir}
 
 \item{filename}{the full name of the text file in quotations.}
 

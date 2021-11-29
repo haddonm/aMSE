@@ -7,7 +7,6 @@
 makeequilzone(
   rundir,
   ctrlfile = "control.csv",
-  datadir = rundir,
   doproduct = TRUE,
   verbose = TRUE
 )
@@ -21,16 +20,13 @@ to be displayed using makehtml.}
 the name of the data file that is used to biologically condition the
 numpop populations}
 
-\item{datadir}{the directory containing the data csv files. This defaults to
-equal the rundir, but can be different if desired. default=rundir}
-
 \item{doproduct}{boolean, should the productivity calculations be made
 during the conditioning. Set to FALSE conditionOM}
 
 \item{verbose}{Should progress comments be printed to console, default=TRUE}
 }
 \value{
-a list of zoneC, zoneD, glb, constants, product, ctrl, and zone1
+a list of zoneC, zoneD, glb, constants, saudat,product, ctrl, and zone1
 }
 \description{
 makeequilzone is a high level function that merely hides the

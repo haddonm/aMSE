@@ -58,7 +58,7 @@ changecolumn <- function(rundir, filename, linerange, column,newvect,
 #'     is a fine way to mess up a data file so use with care.
 #'
 #' @param indir the directory path in which to find the text file. Usually,
-#'     rundir or datadir
+#'     rundir
 #' @param filename the full name of the text file in quotations.
 #' @param linenumber either the line number within the text file to be changed,
 #'     or, the character name of the variable to be changed, e.g. 'AvRec'
@@ -100,9 +100,11 @@ changeline <- function(indir, filename, linenumber, newline,verbose=FALSE) {
 
 #' @title getCPUEssq calculates ssq between historical and conditioned cpue
 #'
-#' @description getCPUEssq takes in teh historical CPUE and the conditioned
+#' @description getCPUEssq takes in the historical CPUE and the conditioned
 #'     zone's cpue and calculates the sum-of squared differences between them
-#'     to assist with the conditioning.
+#'     to assist with the conditioning. This is a greatly simplified version
+#'     of plotcondCPUE, which plots a graph as well as estimating the ssq.
+#'     For speed it is better to use getCPUEssq.
 #'
 #' @param histCE the matrix of historical cpue by SAU
 #' @param saucpue the predicted cpue from the conditioning on historical data
@@ -130,7 +132,6 @@ getCPUEssq <- function(histCE,saucpue,glb) {
 #
 # rundir=rundir
 # controlfile="controltest_SA_trim.csv"
-# datadir=datadir
 # hsargs=hsargs
 # hcrfun=mcdahcr
 # sampleCE=tasCPUE
@@ -166,14 +167,9 @@ getCPUEssq <- function(histCE,saucpue,glb) {
 #'     needed.
 #'
 #' @param rundir the full path to the directory in which all files relating to a
-#'     particular run are to be held. If datadir != rundir then the main data
-#'     files are kept in datadir. The juridictionHS.R can be held in either.
+#'     particular run are to be held.
 #' @param controlfile the filename of the control file present in rundir
 #'     containing information regarding the particular run.
-#' @param datadir the directory in which the SAU data file is to be found. This
-#'     will usually be the rundir for the scenario run but if the data file is
-#'     to be shared among a set of scenarios it will be more efficient to define
-#'     a separate datadir
 #' @param calcpopC a function that takes the output from hcrfun (either the
 #'     aspirational catch x SAU or TAC x zone) and generates the actual catch
 #'     per population in each SAU expected in the current year.
@@ -194,13 +190,13 @@ getCPUEssq <- function(histCE,saucpue,glb) {
 #'
 #' @examples
 #' print("wait on suitable data sets in data")
-#' # rundir=rundir; controlfile=controlfile;datadir=datadir;calcpopC=calcexpectpopC
+#' # rundir=rundir; controlfile=controlfile;calcpopC=calcexpectpopC
 #' #verbose=TRUE; doproduct=TRUE; dohistoric=FALSE
-do_condition <- function(rundir,controlfile,datadir,calcpopC,
+do_condition <- function(rundir,controlfile,calcpopC,
                          verbose=FALSE,doproduct=FALSE,dohistoric=TRUE,
                          mincount=100) {
   starttime <- Sys.time()
-  zone <- makeequilzone(rundir,controlfile,datadir,doproduct=doproduct,
+  zone <- makeequilzone(rundir,controlfile,doproduct=doproduct,
                         verbose=verbose)
   equiltime <- (Sys.time()); if (verbose) print(equiltime - starttime)
   # declare main objects
@@ -264,60 +260,100 @@ do_condition <- function(rundir,controlfile,datadir,calcpopC,
   return(out)
 } # end of do_condition
 
+#' @title getLFlogL calculates the multi-nomial log-likelihood for sizecomp data
+#'
+#' @description getLFlogL when comparing the observed size-composition data from
+#'     commercial catches with those rpedicted during the historical fishing
+#'     period one can quantify any differences using the multi-nomial log-
+#'     likelihood. This function calculates this, and the value can then be
+#'     combined with am ssq value from a comparison of the predicted and observed
+#'     CPUE ready to be minimized if conditioning the OM on a fisheries real
+#'     data.  As always, the operatig model is running at a population level
+#'     while data arrives at an SAU level, so this is only an approximate
+#'     approach, but it should improve over using purely the results from the
+#'     sizemod R package.
+#'
+#' @param catchN the predicted numbers-at-size in the catch for all years
+#' @param obsLFs the observed NAS, after cleaning by the preparesizecomp
+#'     function
+#' @param glb the golbals list
+#' @param wtsc the weighting given to the size-composition data
+#' @param sau which sau is the subject of analysis
+#'
+#' @return the weighted ssq for the filtered observed size-composition data
+#' @export
+#'
+#' @examples
+#' print("wait on data sets")
+getLFlogL <- function(catchN,obsLFs,glb,wtsc,sau) {
+  # catchN=zoneDD$catchN; obsLFs=obsLFs; glb=glb;wtsc=0.1;sau=sau
+  sauCN <- popNAStosau(catchN,glb)[,,sau]
+  mids <- as.numeric(rownames(obsLFs))
+  yrsize <- as.numeric(colnames(obsLFs))
+  years <- as.numeric(colnames(sauCN))
+  midpts <- glb$midpts
+  pickyr <- match(yrsize,years)
+  picksize <- match(mids,midpts)
+  nyrs <- length(pickyr)
+  LLsc <- 0
+  for (yr in 1:nyrs) {
+    obs <- obsLFs[,yr]
+    pred <- sauCN[picksize,pickyr[yr]]
+    LLsc <- LLsc + sum((obs - pred)^2,na.rm=TRUE)
+  }
+  return(LLsc*wtsc)
+} # end of getLFlogL
+
+
 #' @title gettasdevssq calculates the SSQ between observed and predicted CPUE
 #'
 #' @description gettasdevssq is used when conditioning the aMSE operating model
 #'     using ad hoc recruitment deviates after conditioning on AvRec. It focuses
 #'     on a single SAU at a time. log transformed recdevs are used to avoid the
-#'     possibility of negative recdevs (a no-no).
+#'     possibility of negative recdevs. NOte this does not test for equilibrium
+#'     of the initial operating model, it just assumes it reaches equilibrium.
 #'
 #' @param param the log transformed sequence of recdevs for the selected years
 #' @param rundir the rundir for the scenario
-#' @param datadir the datadir for the scenario
 #' @param ctrlfile the character name of the control file
 #' @param calcpopC the function used to distribute catches among populations.
 #'     This is from the external JurisdictionHS.R file that is 'sourced' in.
 #' @param locyrs the rows within the matrix of recruitment deviates
 #'     corresponding to the selected years.
 #' @param sau which sau (in TAS 1 - 8) is to be worked on
+#' @param obsLFs the observed length-composition of the catches for the sau,
+#'     usually from condC$compdat$lfs[,,sau]
+#' @param wtsc what weighting should the total Multi-Nomial ikelihood be
+#'     multiplied by to scale to the range of change in thw CPUE ssq?
+#'     Default=0.1
 #' @param verbose should console reports be made? default = FALSE
-#' @param outplot shoudla plot be generated for output to the webpage.
+#' @param outplot should a plot be generated for output to the webpage.
 #'     default=FALSE
+#' @param console should the plot go to the console. If FALSE and outplot is
+#'     TRUE then a plot will go to rundir. If TRUE theplot will go to the
+#'     console. DEfault=FALSE
 #'
 #' @return a scalar value which is the SSQ for the selected years of CPUE
 #' @export
 #'
 #' @examples
 #' print("wait on suitable internal data sets")
-gettasdevssq <- function(param,rundir,datadir,ctrlfile,calcpopC,locyrs,sau,
-                         verbose=FALSE,outplot=FALSE) {
-  zone1 <- readctrlfile(rundir,infile=ctrlfile,datadir=datadir,verbose=verbose)
-  # pickX <- which(param > 1.0)
-  # if (length(pickX) > 0) param[pickX] <- 1.0
+gettasdevssq <- function(param,rundir,ctrlfile,calcpopC,locyrs,sau,
+                         obsLFs=obsLFs,wtsc=0.1,verbose=FALSE,outplot=FALSE,
+                         console=FALSE) {
+  zone1 <- readctrlfile(rundir,infile=ctrlfile,verbose=verbose)
   zone1$condC$recdevs[locyrs,sau] <- exp(param)
   ctrl <- zone1$ctrl
   glb <- zone1$globals     # glb without the movement matrix
-  bysau <- ctrl$bysau
-  if (is.null(bysau)) bysau <- 0
-  if (bysau) {
-    constants <- readsaudatafile(datadir,ctrl$datafile)
-  } else {
-    constants <- readdatafile(glb$numpop,datadir,ctrl$datafile)
-  }
-  out <- setupzone(constants,zone1,doproduct=FALSE,verbose=verbose) # make operating model
+  constants <- readsaudatafile(rundir,ctrl$datafile)    # make operating model
+  out <- setupzone(constants,zone1,doproduct=FALSE,verbose=verbose)
   zoneC <- out$zoneC
   zoneD <- out$zoneD
   glb <- out$glb             # glb now has the movement matrix
   zone1$globals <- glb
-  # did the larval dispersal level disturb the equilibrium?
-  zoneD <- testequil(zoneC,zoneD,glb,verbose=verbose)
   zoneC <- resetexB0(zoneC,zoneD) # rescale exploitB to avexplB after dynamics
-  setuphtml(rundir)
-  zone <- list(zoneC=zoneC,zoneD=zoneD,glb=glb,constants=constants,
-               product=NULL,ctrl=ctrl,zone1=zone1)
   projC <- zone1$projC
   condC <- zone1$condC
-  #Condition on Fishery
   zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,condC,calcpopC=calcpopC,
                         sigR=1e-08,sigB=1e-08)
   hyrs <- glb$hyrs
@@ -327,10 +363,19 @@ gettasdevssq <- function(param,rundir,datadir,ctrlfile,calcpopC,locyrs,sau,
   popExB0 <- getlistvar(zoneC,"ExB0")
   ExB0 <- tapply(popExB0,sauindex,sum)
   sauZone <- getsauzone(zoneDD,glb,B0=B0,ExB0=ExB0)
-  filename=""
-  if (outplot) filename="SAU_compareCPUE.png"
-  ssq <- compareCPUE(condC$histCE,sauZone$cpue,glb,rundir,filen=filename)
-  return(ssq[sau])
+  if (outplot) {
+    if (console) {
+      filename <- ""
+    } else {
+      filename="SAU_compareCPUE.png"
+    }
+    ssq <- compareCPUE(condC$histCE,sauZone$cpue,glb,rundir,filen=filename)
+  } else {
+    ssq <- getCPUEssq(condC$histCE,sauZone$cpue,glb)
+  }
+  LFlog <- getLFlogL(zoneDD$catchN,obsLFs,out$glb,wtsc=wtsc,sau=sau)
+  totssq <- ssq[sau] + LFlog
+  return(totssq)
 } # end of gettasdevssq
 
 
@@ -413,7 +458,6 @@ getrecdevcolumn <- function(rundir, filename, yearrange, sau,verbose=FALSE) {
 #' print("wait on suitable data files")
 optimizeAvRec <- function(rundir,controlfile,datafile,calcpopC,lowmult=0.7,
                           highmult=1.3,linenumber=29,verbose=TRUE) {
-  datadir <- rundir
   indat <- readLines(filenametopath(rundir,datafile))
   nsau <- getsingleNum("nsau",indat)
   final <- numeric(nsau)
@@ -424,16 +468,15 @@ optimizeAvRec <- function(rundir,controlfile,datafile,calcpopC,lowmult=0.7,
     low <- param * lowmult
     high <- param * highmult
     extra <- initial[-sau]
-    origssq <- sauavrecssq(param,rundir,datadir,controlfile,
+    origssq <- sauavrecssq(param,rundir,controlfile,
                            datafile=datafile,linenum=linenumber,
                            calcpopC=calcpopC,extra=extra,picksau=sau,
                            nsau=nsau)
     if (verbose) cat("starting AvRec fit for sau",sau,"\n")
     ans <- optim(param,sauavrecssq,method="Brent",lower=low,upper=high,
-                 rundir=rundir,datadir=datadir,
-                 controlfile=controlfile,datafile=datafile,linenum=linenumber,
-                 calcpopC=calcpopC,extra=extra,picksau=sau,nsau=nsau,
-                 control=list(maxit=30,trace=4))
+                 rundir=rundir,controlfile=controlfile,datafile=datafile,
+                 linenum=linenumber,calcpopC=calcpopC,extra=extra,picksau=sau,
+                 nsau=nsau,control=list(maxit=30,trace=4))
     final[sau] <- trunc(ans$par)
     if (verbose) {
       cat("orig = ",origssq,"  ssq = ",ans$value,"\n")
@@ -442,7 +485,7 @@ optimizeAvRec <- function(rundir,controlfile,datafile,calcpopC,lowmult=0.7,
         warning(cat(" Boundary reached for param ",sau,low,high,ans$par,"\n"))
       cat(sau,"   ",low,"    ",param,"   ",trunc(ans$par),"   ",high,"\n\n\n")
     }
-    finalssq <- sauavrecssq(ans$par,rundir,datadir,controlfile,
+    finalssq <- sauavrecssq(ans$par,rundir,controlfile,
                             datafile=datafile,linenum=linenumber,
                             calcpopC=calcpopC,extra=extra,picksau=sau,
                             nsau=nsau,outplot=TRUE)
@@ -453,6 +496,58 @@ optimizeAvRec <- function(rundir,controlfile,datafile,calcpopC,lowmult=0.7,
   return(final)
 } # end of optimizeAvRec
 
+#' Title
+#'
+#' @param rundir the rundir for the scenario
+#' @param sau which sau to apply this to
+#' @param controlfile the name of the control file
+#' @param calcpopC the funciton, from the HS file that allocates catches
+#'     across each of the populations within each SAU
+#' @param wtsc what weight to give to the size-composition data,default=0.1
+#' @param maxiter The maximum number of iterations to run before stopping.
+#'     Default = 100, one needs at least 400 to see a real difference
+#' @param yearrange which recdev years should be 'conditioned'. Default=
+#'     1980:2016
+#' @param verbose text output to console, default=FALSE
+#' @param mincount the minimum number of iterations in the solver, default=100
+#' @param plottoconsole should the final plot be sent to the console = TRUE
+#'     of the rundir = FALSE. default=FALSE
+#'
+#' @return a scalar value which is the total SSQ for the selected years for
+#'     the CPUE and sizecomps. It also alters the recdevs in the controlfile!
+#' @export
+#'
+#' @examples
+#' print("wait on data sets")
+optimizerecdevs <- function(rundir,sau,controlfile,calcpopC,wtsc=0.1,
+                            maxiter=100,yearrange=1980:2016,verbose=FALSE,
+                            mincount=100,plottoconsole=FALSE) {
+  outdevs <- getrecdevcolumn(rundir=rundir,filename=controlfile,
+                             yearrange=yearrange,sau=sau)
+  pickyr <- outdevs$yearrange
+  param <- log(outdevs$recdevs)
+  linerange <- outdevs$linerange
+  starttime <- Sys.time()
+  zone1 <- readctrlfile(rundir,infile=controlfile,verbose=verbose)
+  obsLFs <- preparesizecomp(zone1$condC$compdat$lfs[,,sau],mincount=mincount)
+  recdevyrs <- as.numeric(rownames(zone1$condC$recdevs))
+  locyrs <- match(pickyr,recdevyrs)
+  gettasdevssq(param,rundir,ctrlfile=controlfile,calcpopC=calcpopC,
+               locyrs,sau,obsLFs=obsLFs,wtsc=wtsc,outplot=TRUE,console=TRUE)
+  starttime <- Sys.time()
+  ans <- optim(param,gettasdevssq,method="Nelder-Mead",rundir=rundir,
+               ctrlfile=controlfile,calcpopC=calcpopC,
+               locyrs=locyrs,sau=sau,obsLFs=obsLFs,wtsc=wtsc,outplot=FALSE,
+               control=list(maxit=maxiter,trace=2,reltol=1e-06))
+  outfit(ans)
+  print(Sys.time() - starttime)
+  changecolumn(rundir=rundir,filename=controlfile,linerange=linerange,
+               column=(sau+1),newvect=round(exp(ans$par),5),verbose=verbose)
+  ssq <- gettasdevssq(ans$par,rundir,ctrlfile=controlfile,
+                      calcpopC=calcpopC,locyrs,sau,obsLFs=obsLFs,
+                      wtsc=wtsc,outplot=TRUE,console=plottoconsole)
+  return(ssq)
+} # end of optimizerecdevs
 
 
 #' @title plotcondCPUE plots the historical cpue against conditioned cpue
@@ -531,7 +626,6 @@ printline <- function(rundir, datafile, linenumber=29) {
 
 # param=param
 # rundir=rundir
-# datadir=rundir
 # controlfile=controlfile
 # datafile=datafile
 # linenum=29
@@ -552,7 +646,6 @@ printline <- function(rundir, datafile, linenumber=29) {
 #'
 #' @param param is the AvRec for the selected SAU
 #' @param rundir the rundir for the scenario being considered
-#' @param datadir the directory holding the saudata file, usually = rundir
 #' @param controlfile the name of the control file, no path
 #' @param datafile the name of the data file, no path
 #' @param linenum the linenumber containing the AvRec vector
@@ -570,7 +663,7 @@ printline <- function(rundir, datafile, linenumber=29) {
 #'
 #' @examples
 #' print("Wait on suitable internal data files")
-sauavrecssq <- function(param,rundir,datadir,controlfile,datafile,linenum,
+sauavrecssq <- function(param,rundir,controlfile,datafile,linenum,
                         calcpopC,extra,picksau,nsau,outplot=FALSE) {
   nsaum1 <- nsau - 1
   if (picksau == 1)
@@ -586,8 +679,8 @@ sauavrecssq <- function(param,rundir,datadir,controlfile,datafile,linenum,
     replacetxt <- paste0("AvRec,",
                          paste0(as.character(extra[1:nsaum1]),collapse=","),
                          ",",as.character(param),collapse=",")
-  changeline(datadir,datafile,linenum,replacetxt)
-  zone <- makeequilzone(rundir,controlfile,datadir,doproduct=FALSE,
+  changeline(rundir,datafile,linenum,replacetxt)
+  zone <- makeequilzone(rundir,controlfile,doproduct=FALSE,
                         verbose=FALSE)
   # declare main objects
   glb <- zone$glb

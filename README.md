@@ -3,6 +3,10 @@
 
 # LATEST UPDATE
 
+-   2021-11-29 aMSE 0.0.1 Removed datadir. Started implementing
+    hyper-stability while keeping the interface the same, so that the
+    results from sizemod can be used.
+
 -   2021-11-23 aMSE 0.0.0.1 Added functions to simplify the optimization
     of AvRec relative to the CPUE data after initial parameter
     estimation for each SAU using the sizemod package. Also added a
@@ -119,13 +123,14 @@ library(rutilsMH)
 library(makehtml)
 library(knitr)
 #> Warning: package 'knitr' was built under R version 4.1.1
+dbdir <- getDBdir()
 # Obviously you should modify the rundir and datadir to suit your own setup
-prefixdir <- "C:/Users/User/Dropbox/A_CodeUse/aMSEUse/scenarios/"
+prefixdir <- paste0(dbdir,"A_CodeUse/aMSEUse/scenarios/")
 postfixdir <- "M15h75"
 rundir <- paste0(prefixdir,postfixdir)
 datadir <- rundir
 alldirExists(rundir,datadir,verbose=TRUE)
-#> rundir,  C:/Users/User/Dropbox/A_CodeUse/aMSEUse/scenarios/M15h75 :  exists
+#> rundir,  C:/Users/Malcolm/Dropbox/A_CodeUse/aMSEUse/scenarios/M15h75 :  exists
 controlfile <- "controlM15h75.csv"
 # equilibrium zone -------------------------------------------------------------
 # You now need to ensure that there is, at least, a control.csv, and a 

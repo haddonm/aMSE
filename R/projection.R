@@ -545,9 +545,7 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
   exb0 <- getvar(zoneCP,"ExB0")
   hcrout <- makehcrout(glb)
   for (iter in 1:reps) {
-    if (verbose) {
-      if ((iter %% 25) == 0) cat(iter," \n")
-    }
+    if (verbose) if ((iter %% 25) == 0) cat(iter,"   ")
     for (year in startyr:endyr) { # iter=1; year=startyr
       hcrdata <- getdata(sampleCE,sampleFIS,sampleNaS,sauCPUE=zoneDP$cesau,
                          sauacatch=zoneDP$acatch,sauNAS=zoneDP$NAS,
@@ -580,6 +578,7 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
       zoneDP$TAC[year,iter] <- hcrout$TAC
     } # year loop
   }   # iter loop
+  cat("\n")
   return(list(zoneDP=zoneDP,hcrout=hcrout))
 } # end of doprojections
 
