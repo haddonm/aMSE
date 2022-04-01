@@ -1,7 +1,10 @@
 
 
 
-
+lambda <- glb$lambda   # if lambda = 1 mult = 1, if Lambda=0.65 mult=15.46
+mult <- 2500.0*exp(-7.824046*lambda) # empirically determined for TAS
+qest <- epin["qest"]   #exp(mean(log(cpue[pickce]/expB[pickce])))
+predce <- qest * mult * (expB ^ lambda)
 
 
 
@@ -125,7 +128,7 @@ propD <- getzoneprops(out$zoneC,out$zoneDD,out$glb,year=glb$hyrs)
 msy <- findmsy(out$zone$product)[,"Catch"]
 nsau <- glb$nSAU
 saunames <- glb$saunames
-plts <- getparplots(length(msy))
+plts <- pickbound(length(msy))
 histcat <- out$condC$histCatch
 yrs <- as.numeric(rownames(histcat))
 nyrs <- length(yrs)
@@ -808,7 +811,38 @@ dat$len2 <- trunc((dat$length+1)/2)*2
 inthist(dat$len2,width=0.8,border=2)
 
 
-# reexamine AvRec fitting ------------------------------------------------
+# Characterize APPs or Populations---------------------------------------------
+# uses out$zoneCP and out$zoneDD
+
+zoneCP <- out$zoneCP
+zoneDD <- out$zoneDD
+glb <- out$glb
+hyrs <- out$glb$hyrs
+propD <- as.data.frame(t(getzoneprops(zoneCP,zoneDD,glb,year=28)))
+
+propD
+
+str1(zoneCP[[1]])
+
+
+
+
+
+columns <- c("B0","MSY","MSYDepl","bLML","propprot","SpBDepl","catch","harvestR")
+
+plotpopprops(propD,rundir="",glb,columns,startyr=hyrs,bins=21)
+
+
+plot1(propD[,"MSY"],propD[,"harvestR"],type="p",pch=16,cex=1.25)
+
+parset()
+pairs(propD[1:glb$numpop,c(1,5,7,9,11,14,15,16)],pch=16,col=2,cex=1)
+
+
+
+
+
+
 
 
 

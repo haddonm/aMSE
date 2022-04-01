@@ -31,7 +31,7 @@ compareCPUE <- function(histCE,saucpue,glb,rundir,filen="") {
   label <- glb$saunames
   colnames(cpue) <- label
   ssq <- numeric(nsau)
-  doplots=getparplots(nsau)
+  doplots=pickbound(nsau)
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,verbose=FALSE)
   parset(plots=doplots,margin=c(0.3,0.3,0.05,0.05),outmargin=c(0,1,0,0),
          byrow=FALSE)
@@ -82,7 +82,7 @@ diagnosticsproj <- function(zonePsau,glb,rundir,nrep=3) {
     # a helper function that plots nrep trajectories from invar
     #var1=catch;nsau=nsau;saunames=saunames;nrep=3;filen="";caption="";label="_Actual_Catch";var2=acatch
     plotprep(width=7,height=7,filename=filen,cex=1.0,verbose=FALSE)
-    parset(plots=getparplots(nsau))
+    parset(plots=pickbound(nsau))
     for (sau in 1:nsau) { # sau =1
       pickrep <- sample(1:reps,nrep,replace=FALSE)
       ymax <- getmax(var1[pickyr,sau,pickrep])
@@ -106,7 +106,7 @@ diagnosticsproj <- function(zonePsau,glb,rundir,nrep=3) {
                     "predicted catches from the HCR.")
   plotprep(width=7,height=7,filename=filen,cex=1.0,verbose=FALSE)
   resid <- catch[pickyr,,] - acatch[pickyr,,]
-  parset(plots=getparplots(nsau),margin=c(0.3,0.35,0.05,0.05),
+  parset(plots=pickbound(nsau),margin=c(0.3,0.35,0.05,0.05),
          outmargin = c(1,1,0,0))
   for (sau in 1:nsau)
     hist(resid[,sau,],breaks=25,main="",ylab=saunames[sau],xlab="",
@@ -163,7 +163,7 @@ dosau <- function(inzone,glb,picksau,histCE,yrnames,recdev) {
   indexsau <- which(saunum == picksau)
   label=c("deplsB","cpue","matB","catch","harvestR","depleB","recruit")
   nvar <- length(label) + 1 # an an extra 1 for the recdevs
-  doplots=getparplots(nvar)
+  doplots=pickbound(nvar)
   matB <- inzone$matB
   nyrs <- dim(matB)[1]
   parset(plots=doplots,margin=c(0.3,0.4,0.05,0.05),outmargin=c(1,0,1,0),
@@ -235,7 +235,7 @@ dosauplot <- function(ylabel,postrep,glb,startyr,addCI=FALSE,
   allyrs <- hyrs + glb$pyrs
   yrnames <- c(glb$hyrnames,glb$pyrnames)
   reps <- glb$reps
-  nplot <- getparplots(nsau)
+  nplot <- pickbound(nsau)
   pyrnames <- glb$pyrnames
   yrnames <- c(glb$hyrnames,pyrnames)
   projyrs <- (hyrs + 1):allyrs
@@ -339,7 +339,7 @@ onesau <- function(prerep,postrep,glb,startyr,picksau,addCI=FALSE,
   varCI <- vector("list",nvar)
   names(varCI) <- label
   if (is.numeric(histCE)) ceyr <- startyr:preyrs
-  parset(plots=getparplots(length(label)),margin=c(0.3,0.4,0.05,0.05),outmargin=c(1,0,1,0),
+  parset(plots=pickbound(length(label)),margin=c(0.3,0.4,0.05,0.05),outmargin=c(1,0,1,0),
          byrow=FALSE)
   for (invar in 1:nvar) {  #  invar=1
     premat <- prerep[[label[invar]]][,sauindex,]
@@ -441,7 +441,7 @@ plotCNt <- function(Nt,glb,vline=NULL,start=3) {
   nsau <- glb$nSAU
   saunames <- glb$saunames
   endyr <- dim(Nt)[2]
-  parset(plots=getparplots(nsau),margin = c(0.25, 0.45, 0.05, 0.05),byrow=FALSE,
+  parset(plots=pickbound(nsau),margin = c(0.25, 0.45, 0.05, 0.05),byrow=FALSE,
          outmargin = c(1.1, 0, 0, 0))
   for (sau in 1:nsau) { #  sau=1
     label <- paste0("N '000s ",saunames[sau])
@@ -532,7 +532,7 @@ plothistcatch <- function(yrs,histC,nsau,saunames,commonscale=FALSE,
     totC <- totC/max(totC)
   }
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
-  parset(plots=getparplots(nsau+1),margin=c(0.3,0.35,0.05,0.05),
+  parset(plots=pickbound(nsau+1),margin=c(0.3,0.35,0.05,0.05),
          outmargin=c(1,1,0,0),byrow=FALSE)
   if (commonscale) ymax <- getmax(histC)
   for (i in 1:nsau) {
@@ -580,7 +580,7 @@ plothistce <- function(rundir,condC,glb,proportion=FALSE,filen="") {
     }
   }
   plotprep(width=7,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
-  parset(plots=getparplots(nsau),margin=c(0.3,0.35,0.05,0.05),
+  parset(plots=pickbound(nsau),margin=c(0.3,0.35,0.05,0.05),
          outmargin=c(1,1,0,0),byrow=FALSE)
   for (sau in 1:nsau) {
     ymax <- getmax(histCE[,sau])
@@ -619,7 +619,7 @@ plothsstats <- function(rundir,hsstats,glb) {
   filen <- filenametopath(rundir,"sum_5yr_proj_catches.png")
  # filen=""
   plotprep(width=8,height=7,filename=filen,cex=1.0,verbose=FALSE)
-  parset(plots=getparplots(ncol(sum5)))
+  parset(plots=pickbound(ncol(sum5)))
   for (i in 1:(nsau+1)) {
     label <- paste0("Tonnes     ",labelnames[i])
     hist(sum5[,i],breaks=20,main="",xlab=label)
@@ -631,7 +631,7 @@ plothsstats <- function(rundir,hsstats,glb) {
   filen <- filenametopath(rundir,"sum_10yr_proj_catches.png")
   #filen=""
   plotprep(width=8,height=7,filename=filen,cex=1.0,verbose=FALSE)
-  parset(plots=getparplots(ncol(sum10)))
+  parset(plots=pickbound(ncol(sum10)))
   for (i in 1:(nsau+1)) {
     label <- paste0("Tonnes     ",labelnames[i])
     hist(sum10[,i],breaks=20,main="",xlab=label)
@@ -671,7 +671,7 @@ plotNt <- function(Nt,year,glb,start=3,medcol=0) {
   nsau <- glb$nSAU
   saunames <- glb$saunames
   saumedians <- matrix(0,nrow=Nclass,ncol=nsau,dimnames=list(midpts,saunames))
-  parset(plots=getparplots(nsau),byrow=FALSE)
+  parset(plots=pickbound(nsau),byrow=FALSE)
   for (sau in 1:nsau) { #  sau=1
     sdat <- Nt[,year,sau,]
     saumedians[,sau] <- apply(sdat,1,median)
@@ -685,6 +685,53 @@ plotNt <- function(Nt,year,glb,start=3,medcol=0) {
   }
   return(invisible(saumedians))
 } # end of plotNt
+
+#' @title plotpopprops plots out some properties of input populations
+#'
+#' @description once the depleted zone (zoneCP and zoneDD) has been generated
+#'     the component populations have their properties summarized in propD. This
+#'     is saved as propertyDD.csv and output to the zoneDD tab. To provide a
+#'     visual consideration of these properties this function generated
+#'     histograms for an array of input array column names.
+#'
+#' @param x the array containing columns to plot
+#' @param rundir the run directory for the results, can be set to "" if plotting
+#'     to the console
+#' @param glb the global constants object
+#' @param varnames the names of each variable to select the columns and to use
+#'     in labels
+#' @param startyr in what year number should the plot refer to?
+#' @param console  should plot go to the console or a png be saved? Default=TRUE
+#' @param bins the number of breaks to plot in each histogram, default=25
+#'
+#' @return it generates a png file of the plot if console = FALSE, otherwise it
+#'     is drawn to the console
+#' @export
+#'
+#' @examples
+#' print("wait on suitable data")
+plotpopprops <- function(x,rundir,glb,varnames,startyr,console=TRUE,bins=25) {
+  npop <- glb$numpop
+  n <- length(varnames)
+  if (console) { filen="" } else {
+    filen <- filenametopath(rundir,"population_properties.png")
+  }
+  plotprep(width=8,height=7,newdev=FALSE,filename=filen,verbose=FALSE)
+  parset(pickbound(n),byrow=FALSE,outmargin=c(0,1,0,0),
+         margin=c(0.4,0.3,0.05,0.05))
+  for (i in 1:n) {
+    xcol <- x[1:npop,columns[i]]
+    hist(xcol,main="",xlab=columns[i],ylab="",breaks=bins)
+  }
+  mtext("Frequency",side=2,outer=TRUE,line=-0.2,cex=1.2)
+  if (!console) {
+    caption <- paste0(" Selected Biological properties of all popualtions",
+                      " some are for year ",startyr,"; from propertyDD.csv.")
+    addplot(filen,rundir=rundir,category="zoneDD",caption)
+  }
+} # end of plotpopprops
+
+
 
 #' @title plotprod graphs a selected productivity variable
 #'
@@ -1068,7 +1115,7 @@ saurecdevs <- function(recdevs,glb,rundir,filen="") {
   arecdevs <- abs(recdevs)
   nsau <- glb$nSAU
   label <- glb$saunames
-  doplots=getparplots(nsau)
+  doplots=pickbound(nsau)
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,verbose=FALSE)
   parset(plots=doplots,margin=c(0.3,0.3,0.05,0.05),outmargin=c(0,1,0,0),
          byrow=FALSE)

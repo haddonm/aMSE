@@ -2,7 +2,7 @@
 % Please edit documentation in R/defineZone.R
 \name{makezone}
 \alias{makezone}
-\title{makezone generates the parts of the simulated zone}
+\title{makezone generates the dynamic parts of the simulated zone}
 \usage{
 makezone(glob, zoneC)
 }

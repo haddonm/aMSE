@@ -115,7 +115,7 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,sigR=1e-08,sigB=1e-08) 
   r0 <- getvar(zoneC,"R0") #sapply(zoneC,"[[","R0")
   b0 <- getvar(zoneC,"B0") #sapply(zoneC,"[[","B0")
   exb0 <- getvar(zoneC,"ExB0")
-  for (year in 2:nyrs) {  # year=1  # ignores the initial unfished year
+  for (year in 2:nyrs) {  # year=2  # ignores the initial unfished year
     catchsau <- histC[year,]
     rdev <- recdevs[year,]
     hcrout <- list(acatch=catchsau)
@@ -272,6 +272,8 @@ oneyear <- function(MatWt,SelWt,selyr,Me,G,popq,WtL,inNt,inH) {  #
 #'     estimates of cpue from the model. Found in the ctrl object
 #'     as withsigCE. It is implemented as Log-Normal error on the
 #'     exploitable biomass value from the model
+#' @param lambda the hyper-stability term from zoneC
+#' @param qest the estimated catchability from sizemod from zoneC
 #'
 #' @seealso{
 #'  \link{dohistoricC}, \link{oneyearcat}, \link{oneyearrec}
@@ -283,7 +285,8 @@ oneyear <- function(MatWt,SelWt,selyr,Me,G,popq,WtL,inNt,inH) {  #
 #'
 #' @examples
 #' print("need to wait on built in data sets")
-oneyearcat <- function(MatWt,SelWt,selyr,Me,G,popq,WtL,inNt,incat,sigce) {
+oneyearcat <- function(MatWt,SelWt,selyr,Me,G,popq,WtL,inNt,incat,sigce,
+                       lambda,qest) {
   # yr=2; pop=2; inpopC=zoneC[[pop]]; inNt=zoneD$Nt[,yr-1,pop];
   # Nclass=glb$Nclass; inH=0.05;
   MatWt <- MatWt/1e06
@@ -304,11 +307,19 @@ oneyearcat <- function(MatWt,SelWt,selyr,Me,G,popq,WtL,inNt,incat,sigce) {
   Catch <- sum(WtL*Cat)/1e06
   error <-  exp(rnorm(1,mean=0,sd=sigce) - (sigce^2.0)/2.0)
   ce <- (popq * (avExpB * error) * 1000.0)   #ExploitB
+  # mult <- 2500.0*exp(-7.824046*lambda) # empirically determined for TAS
+  # ce <- (qest * mult * ((avExpB * error) ^ lambda) * 1000.0)
   vect <- c(exploitb=ExploitB,midyexpB=midyexpB,matureb=MatureB,
             catch=Catch,cpue=ce)
   ans <- list(vect=vect,NaL=newNt,catchN=Cat,NumNe=NumNe)
   return(ans)
 } # End of oneyearcat
+
+# lambda <- glb$lambda   # if lambda = 1 mult = 1, if Lambda=0.65 mult=15.46
+# mult <- 2500.0*exp(-7.824046*lambda) # empirically determined for TAS
+# qest <- epin["qest"]   #exp(mean(log(cpue[pickce]/expB[pickce])))
+# predce <- qest * mult * (expB ^ lambda)
+
 
 
 #' @title oneyearsauC conducts one year's dynamics using catch not harvest
@@ -360,7 +371,8 @@ oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,
     ans[[popn]] <- oneyearcat(MatWt=pop$MatWt,SelWt=pop$SelWt[,year],
                               selyr=pop$Select[,year],Me=pop$Me,G=pop$G,
                               popq=pop$popq,WtL=pop$WtL,inNt=inN[,popn],
-                              incat=popC[popn],sigce=sigce)
+                              incat=popC[popn],sigce=sigce,lambda=pop$lambda,
+                              qest=pop$qest)
     # ans[[popn]] <- oneyearcat(inpopC=zoneCC[[popn]],inNt=inN[,popn],
     #                           Nclass=Ncl,incat=popC[popn],yr=year)
   }
@@ -550,7 +562,7 @@ oneyrgrowth <- function(inpop,startsize=2) {
 #'
 #' @examples
 #'  #e.g.  popNAStosau(out$zoneDD$catchN,out$glb)
-popNAStosau <- function(popNAS,glb) { # popNAS <- catchN; glb <- out$glb
+popNAStosau <- function(popNAS,glb) { # popNAS <- ; glb <- glb
   nsau <- glb$nSAU
   sauindex <- glb$sauindex
   saunames <- glb$saunames

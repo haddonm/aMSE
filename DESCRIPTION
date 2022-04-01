@@ -17,7 +17,8 @@ Description: aMSE provides a formal framework for conducting management strategy
 Depends: R (>= 3.5.0)
 License: MIT + file LICENSE
 Imports: 
-    rutilsMH,
+    hutils,
+    hplot,
     captioner,
     makehtml
 RoxygenNote: 7.1.1

@@ -2,7 +2,7 @@
 % Please edit documentation in R/docondition.R
 \name{optimizerecdevs}
 \alias{optimizerecdevs}
-\title{Title}
+\title{optimizerecdevs improves the fit to the recdevs for a given sau}
 \usage{
 optimizerecdevs(
   rundir,
@@ -14,7 +14,8 @@ optimizerecdevs(
   yearrange = 1980:2016,
   verbose = FALSE,
   mincount = 100,
-  plottoconsole = FALSE
+  plottoconsole = FALSE,
+  optimmethod = "Nelder-Mead"
 )
 }
 \arguments{
@@ -41,13 +42,19 @@ Default = 100, one needs at least 400 to see a real difference}
 
 \item{plottoconsole}{should the final plot be sent to the console = TRUE
 of the rundir = FALSE. default=FALSE}
+
+\item{optimmethod}{which optim method to use? default='Nelder-Mead'}
 }
 \value{
 a scalar value which is the total SSQ for the selected years for
     the CPUE and sizecomps. It also alters the recdevs in the controlfile!
 }
 \description{
-Title
+optimizerecdevs an important part of optimizing the match
+    between the dynamics observed in the fishery and those of the
+    operating model is to adjust the annual recruitment deviates so that
+    they improve the fit to the observed CPUE and observed numbers-at-size.
+    optimizerecdevs attempts to do that.
 }
 \examples{
 print("wait on data sets")

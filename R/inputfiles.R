@@ -519,7 +519,7 @@ datafiletemplate <- function(nSAU,indir,filename="saudata_test.csv") {
 #' ctrl
 #' }
 readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE) {
-   # rundir=rundir; infile="controlM1h5.csv"; verbose=verbose
+   # rundir=rundir; infile=controlfile; verbose=verbose
    filenames <- dir(rundir)
    if (length(grep(infile,filenames)) != 1)
       stop(cat(infile," not found in ",rundir," \n"))
@@ -735,17 +735,18 @@ readsaudatafile <- function(rundir,infile) {  # rundir=rundir; infile=ctrl$dataf
    txt <- indat[grep("SAUnames",indat)]
    saunames <- unlist(strsplit(txt,","))[2:(nsau+1)]
 #   saunames <- getConst(indat[grep("saunames",indat)],nsau)
-   initdepl <- getConst(indat[grep("initdepl",indat)],nsau)
-   begin <- grep("PDFs",indat)
-   npar <- getConst(indat[begin],1)
+#   initdepl <- getConst(indat[grep("initdepl",indat)],nsau)
+   begin <- grep("PDFs",indat) + 1
+#   npar <- getConst(indat[begin],1)
    rows <- c("DLMax","sMaxDL","L50","sL50","L50inc","sL50inc","SigMax",
              "sSigMax","LML","Wtb","sWtb","Wtbtoa","sWtbtoa","Me","sMe",
              "AvRec","sAvRec","defsteep","sdefsteep","L50C","sL50C",
              "deltaC","sdeltaC","MaxCEpars","sMaxCEpars","selL50p",
-             "selL95p","SaMa","L50Mat","sL50Mat","lambda","qest","multH")
-   numrow <- length(rows)
-   ans <- matrix(0,nrow=numrow,ncol=nsau)
-   begin <- begin + 1
+             "selL95p","SaMa","L50Mat","sL50Mat","lambda","qest")
+ #  numrow <- length(rows)
+   npar <- length(rows)
+   ans <- matrix(0,nrow=npar,ncol=nsau)
+ #  begin <- begin + 1
    for (i in 1:npar) {
       ans[i,] <- getConst(indat[begin],nsau)
       begin <- begin + 1

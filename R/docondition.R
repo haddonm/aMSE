@@ -98,36 +98,6 @@ changeline <- function(indir, filename, linenumber, newline,verbose=FALSE) {
   }
 } # end of changeline
 
-#' @title getCPUEssq calculates ssq between historical and conditioned cpue
-#'
-#' @description getCPUEssq takes in the historical CPUE and the conditioned
-#'     zone's cpue and calculates the sum-of squared differences between them
-#'     to assist with the conditioning. This is a greatly simplified version
-#'     of plotcondCPUE, which plots a graph as well as estimating the ssq.
-#'     For speed it is better to use getCPUEssq.
-#'
-#' @param histCE the matrix of historical cpue by SAU
-#' @param saucpue the predicted cpue from the conditioning on historical data
-#' @param glb the globals object
-#'
-#' @return a vector of length nsau containing the ssq for each SAU
-#' @export
-#'
-#' @examples
-#' print("wait on suitable internal data sets")
-getCPUEssq <- function(histCE,saucpue,glb) {
-  years <- as.numeric(rownames(histCE))
-  hyrs <- glb$hyrnames
-  pick <- match(years,hyrs)
-  nsau <- glb$nSAU
-  cpue <- saucpue[pick,1:nsau]
-  rownames(cpue) <- years
-  label <- glb$saunames
-  colnames(cpue) <- label
-  ssq <- numeric(nsau)
-  for (sau in 1:nsau) ssq[sau] <- sum((histCE[,sau] - cpue[,sau])^2,na.rm=TRUE)
-  return(ssq)
-} # end of getCPUEssq
 
 #
 # rundir=rundir
@@ -191,7 +161,7 @@ getCPUEssq <- function(histCE,saucpue,glb) {
 #' @examples
 #' print("wait on suitable data sets in data")
 #' # rundir=rundir; controlfile=controlfile;calcpopC=calcexpectpopC
-#' #verbose=TRUE; doproduct=TRUE; dohistoric=FALSE
+#' # verbose=TRUE; doproduct=FALSE; dohistoric=TRUE; mincount=100
 do_condition <- function(rundir,controlfile,calcpopC,
                          verbose=FALSE,doproduct=FALSE,dohistoric=TRUE,
                          mincount=100) {
@@ -234,7 +204,8 @@ do_condition <- function(rundir,controlfile,calcpopC,
   addtable(round(t(popdefs),3),"popdefs.csv",rundir,category="zoneDD",
            caption="Population vs Operating model parameter definitions")
   if (dohistoric) {
-    condout <- plotconditioning(zoneDD,glb,zoneC,condC$histCE,rundir)
+    condout <- plotconditioning(zoneDD,glb,zoneC,condC$histCE,rundir,
+                                condC$recdevs)
     # plot predicted size-comp of catch vs observed size-comps
     catchN <- zoneDD$catchN
     sauCt <- popNAStosau(catchN,glb)
@@ -259,6 +230,37 @@ do_condition <- function(rundir,controlfile,calcpopC,
               condC=condC,condout=condout,projC=projC,production=production)
   return(out)
 } # end of do_condition
+
+#' @title getCPUEssq calculates ssq between historical and conditioned cpue
+#'
+#' @description getCPUEssq takes in the historical CPUE and the conditioned
+#'     zone's cpue and calculates the sum-of squared differences between them
+#'     to assist with the conditioning. This is a greatly simplified version
+#'     of plotcondCPUE, which plots a graph as well as estimating the ssq.
+#'     For speed it is better to use getCPUEssq.
+#'
+#' @param histCE the matrix of historical cpue by SAU
+#' @param saucpue the predicted cpue from the conditioning on historical data
+#' @param glb the globals object
+#'
+#' @return a vector of length nsau containing the ssq for each SAU
+#' @export
+#'
+#' @examples
+#' print("wait on suitable internal data sets")
+getCPUEssq <- function(histCE,saucpue,glb) {
+  years <- as.numeric(rownames(histCE))
+  hyrs <- glb$hyrnames
+  pick <- match(years,hyrs)
+  nsau <- glb$nSAU
+  cpue <- saucpue[pick,1:nsau]
+  rownames(cpue) <- years
+  label <- glb$saunames
+  colnames(cpue) <- label
+  ssq <- numeric(nsau)
+  for (sau in 1:nsau) ssq[sau] <- sum((histCE[,sau] - cpue[,sau])^2,na.rm=TRUE)
+  return(ssq)
+} # end of getCPUEssq
 
 #' @title getLFlogL calculates the multi-nomial log-likelihood for sizecomp data
 #'
@@ -332,6 +334,8 @@ getLFlogL <- function(catchN,obsLFs,glb,wtsc,sau) {
 #' @param console should the plot go to the console. If FALSE and outplot is
 #'     TRUE then a plot will go to rundir. If TRUE theplot will go to the
 #'     console. DEfault=FALSE
+#' @param full should the ssq components be returned together or separately.
+#'     default=FALSE
 #'
 #' @return a scalar value which is the SSQ for the selected years of CPUE
 #' @export
@@ -340,12 +344,13 @@ getLFlogL <- function(catchN,obsLFs,glb,wtsc,sau) {
 #' print("wait on suitable internal data sets")
 gettasdevssq <- function(param,rundir,ctrlfile,calcpopC,locyrs,sau,
                          obsLFs=obsLFs,wtsc=0.1,verbose=FALSE,outplot=FALSE,
-                         console=FALSE) {
+                         console=FALSE,full=FALSE) {
   zone1 <- readctrlfile(rundir,infile=ctrlfile,verbose=verbose)
   zone1$condC$recdevs[locyrs,sau] <- exp(param)
   ctrl <- zone1$ctrl
   glb <- zone1$globals     # glb without the movement matrix
-  constants <- readsaudatafile(rundir,ctrl$datafile)    # make operating model
+  saudata <- readsaudatafile(rundir,ctrl$datafile)    # make operating model
+  constants <- saudata$constants
   out <- setupzone(constants,zone1,doproduct=FALSE,verbose=verbose)
   zoneC <- out$zoneC
   zoneD <- out$zoneD
@@ -375,7 +380,11 @@ gettasdevssq <- function(param,rundir,ctrlfile,calcpopC,locyrs,sau,
   }
   LFlog <- getLFlogL(zoneDD$catchN,obsLFs,out$glb,wtsc=wtsc,sau=sau)
   totssq <- ssq[sau] + LFlog
-  return(totssq)
+  if (full) {
+    return(c(ssqce=ssq[sau],LFlog=LFlog,totssq=totssq))
+  } else {
+    return(totssq)
+  }
 } # end of gettasdevssq
 
 
@@ -441,6 +450,7 @@ getrecdevcolumn <- function(rundir, filename, yearrange, sau,verbose=FALSE) {
 #' @param datafile the name of the datafile from the controlfile
 #' @param calcpopC the funciton, from the HS file that allocates catches
 #'     across each of the populations within each SAU
+#' @param snames the names given to each SAU
 #' @param lowmult the multiplier to place a lower bound when search for the
 #'     optimum AvRec for each SAU. default = 0.7, ie param AvRec * 0.7
 #' @param highmult the multiplier to place an upper bound when search for the
@@ -456,8 +466,8 @@ getrecdevcolumn <- function(rundir, filename, yearrange, sau,verbose=FALSE) {
 #'
 #' @examples
 #' print("wait on suitable data files")
-optimizeAvRec <- function(rundir,controlfile,datafile,calcpopC,lowmult=0.7,
-                          highmult=1.3,linenumber=29,verbose=TRUE) {
+optimizeAvRec <- function(rundir,controlfile,datafile,calcpopC,snames,
+                          lowmult=0.7,highmult=1.3,linenumber=29,verbose=TRUE) {
   indat <- readLines(filenametopath(rundir,datafile))
   nsau <- getsingleNum("nsau",indat)
   final <- numeric(nsau)
@@ -472,7 +482,7 @@ optimizeAvRec <- function(rundir,controlfile,datafile,calcpopC,lowmult=0.7,
                            datafile=datafile,linenum=linenumber,
                            calcpopC=calcpopC,extra=extra,picksau=sau,
                            nsau=nsau)
-    if (verbose) cat("starting AvRec fit for sau",sau,"\n")
+    if (verbose) cat("starting AvRec fit for ",snames[sau],"\n")
     ans <- optim(param,sauavrecssq,method="Brent",lower=low,upper=high,
                  rundir=rundir,controlfile=controlfile,datafile=datafile,
                  linenum=linenumber,calcpopC=calcpopC,extra=extra,picksau=sau,
@@ -496,7 +506,13 @@ optimizeAvRec <- function(rundir,controlfile,datafile,calcpopC,lowmult=0.7,
   return(final)
 } # end of optimizeAvRec
 
-#' Title
+#' @title optimizerecdevs improves the fit to the recdevs for a given sau
+#'
+#' @description optimizerecdevs an important part of optimizing the match
+#'     between the dynamics observed in the fishery and those of the
+#'     operating model is to adjust the annual recruitment deviates so that
+#'     they improve the fit to the observed CPUE and observed numbers-at-size.
+#'     optimizerecdevs attempts to do that.
 #'
 #' @param rundir the rundir for the scenario
 #' @param sau which sau to apply this to
@@ -512,6 +528,7 @@ optimizeAvRec <- function(rundir,controlfile,datafile,calcpopC,lowmult=0.7,
 #' @param mincount the minimum number of iterations in the solver, default=100
 #' @param plottoconsole should the final plot be sent to the console = TRUE
 #'     of the rundir = FALSE. default=FALSE
+#' @param optimmethod which optim method to use? default='Nelder-Mead'
 #'
 #' @return a scalar value which is the total SSQ for the selected years for
 #'     the CPUE and sizecomps. It also alters the recdevs in the controlfile!
@@ -521,31 +538,34 @@ optimizeAvRec <- function(rundir,controlfile,datafile,calcpopC,lowmult=0.7,
 #' print("wait on data sets")
 optimizerecdevs <- function(rundir,sau,controlfile,calcpopC,wtsc=0.1,
                             maxiter=100,yearrange=1980:2016,verbose=FALSE,
-                            mincount=100,plottoconsole=FALSE) {
+                            mincount=100,plottoconsole=FALSE,
+                            optimmethod="Nelder-Mead") {
+# rundir=rundir;sau=1;controlfile=controlfile;calcpopC=calcexpectpopC;wtsc=0.05
+# maxiter=100;yearrange=1980:2016;verbose=TRUE;mincount=100;plottoconsole=FALSE
   outdevs <- getrecdevcolumn(rundir=rundir,filename=controlfile,
                              yearrange=yearrange,sau=sau)
   pickyr <- outdevs$yearrange
   param <- log(outdevs$recdevs)
   linerange <- outdevs$linerange
   starttime <- Sys.time()
-  zone1 <- readctrlfile(rundir,infile=controlfile,verbose=verbose)
+  zone1 <- readctrlfile(rundir,infile=controlfile,verbose=FALSE)
   obsLFs <- preparesizecomp(zone1$condC$compdat$lfs[,,sau],mincount=mincount)
   recdevyrs <- as.numeric(rownames(zone1$condC$recdevs))
   locyrs <- match(pickyr,recdevyrs)
   gettasdevssq(param,rundir,ctrlfile=controlfile,calcpopC=calcpopC,
                locyrs,sau,obsLFs=obsLFs,wtsc=wtsc,outplot=TRUE,console=TRUE)
   starttime <- Sys.time()
-  ans <- optim(param,gettasdevssq,method="Nelder-Mead",rundir=rundir,
+  ans <- optim(param,gettasdevssq,method=optimmethod,rundir=rundir,
                ctrlfile=controlfile,calcpopC=calcpopC,
                locyrs=locyrs,sau=sau,obsLFs=obsLFs,wtsc=wtsc,outplot=FALSE,
-               control=list(maxit=maxiter,trace=2,reltol=1e-06))
+               control=list(maxit=maxiter,trace=4,reltol=1e-06))
   outfit(ans)
   print(Sys.time() - starttime)
   changecolumn(rundir=rundir,filename=controlfile,linerange=linerange,
                column=(sau+1),newvect=round(exp(ans$par),5),verbose=verbose)
   ssq <- gettasdevssq(ans$par,rundir,ctrlfile=controlfile,
                       calcpopC=calcpopC,locyrs,sau,obsLFs=obsLFs,
-                      wtsc=wtsc,outplot=TRUE,console=plottoconsole)
+                      wtsc=wtsc,outplot=TRUE,console=plottoconsole,full=TRUE)
   return(ssq)
 } # end of optimizerecdevs
 
@@ -581,7 +601,7 @@ plotcondCPUE <- function(histCE,saucpue,glb,rundir,filen="") {
   label <- glb$saunames
   colnames(cpue) <- label
   ssq <- numeric(nsau)
-  doplots=getparplots(nsau)
+  doplots=pickbound(nsau)
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,verbose=FALSE)
   parset(plots=doplots,margin=c(0.3,0.3,0.05,0.05),outmargin=c(0,1,0,0),
          byrow=FALSE)

@@ -9,6 +9,7 @@ optimizeAvRec(
   controlfile,
   datafile,
   calcpopC,
+  snames,
   lowmult = 0.7,
   highmult = 1.3,
   linenumber = 29,
@@ -24,6 +25,8 @@ optimizeAvRec(
 
 \item{calcpopC}{the funciton, from the HS file that allocates catches
 across each of the populations within each SAU}
+
+\item{snames}{the names given to each SAU}
 
 \item{lowmult}{the multiplier to place a lower bound when search for the
 optimum AvRec for each SAU. default = 0.7, ie param AvRec * 0.7}

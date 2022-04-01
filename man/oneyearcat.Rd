@@ -4,7 +4,20 @@
 \alias{oneyearcat}
 \title{oneyearcat one year's catch dynamics for one abpop}
 \usage{
-oneyearcat(MatWt, SelWt, selyr, Me, G, popq, WtL, inNt, incat, sigce)
+oneyearcat(
+  MatWt,
+  SelWt,
+  selyr,
+  Me,
+  G,
+  popq,
+  WtL,
+  inNt,
+  incat,
+  sigce,
+  lambda,
+  qest
+)
 }
 \arguments{
 \item{MatWt}{maturity x Weight-at-size from zoneCC for the population and year}
@@ -33,6 +46,10 @@ performance.}
 estimates of cpue from the model. Found in the ctrl object
 as withsigCE. It is implemented as Log-Normal error on the
 exploitable biomass value from the model}
+
+\item{lambda}{the hyper-stability term from zoneC}
+
+\item{qest}{the estimated catchability from sizemod from zoneC}
 }
 \value{
 a list containing a vector of ExploitB, MatureB, Catch, and ce, and

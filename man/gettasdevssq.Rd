@@ -15,7 +15,8 @@ gettasdevssq(
   wtsc = 0.1,
   verbose = FALSE,
   outplot = FALSE,
-  console = FALSE
+  console = FALSE,
+  full = FALSE
 )
 }
 \arguments{
@@ -48,6 +49,9 @@ default=FALSE}
 \item{console}{should the plot go to the console. If FALSE and outplot is
 TRUE then a plot will go to rundir. If TRUE theplot will go to the
 console. DEfault=FALSE}
+
+\item{full}{should the ssq components be returned together or separately.
+default=FALSE}
 }
 \value{
 a scalar value which is the SSQ for the selected years of CPUE

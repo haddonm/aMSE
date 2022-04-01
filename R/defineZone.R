@@ -77,7 +77,7 @@ definepops <- function(inSAU,inSAUindex,const,glob) {
   hyrs <- glob$hyrs
   columns <- c("DLMax","L50","L95","SigMax","SaMa","SaMb","Wta","Wtb","Me",
                "L50C","deltaC","AvRec","SelP1","SelP2","Nyrs","steeph",
-               "MaxCE","L50mat","SAU")
+               "MaxCE","L50mat","SAU","lambda","qest")
   popdefs <- matrix(0,nrow=numpop,ncol=length(columns),
                     dimnames=list(1:numpop,columns))
   popdefs[,"Nyrs"] <- rep(hyrs,numpop) # Num Years - why is this here?
@@ -113,6 +113,9 @@ definepops <- function(inSAU,inSAUindex,const,glob) {
     popdefs[pop,"MaxCE"] <- rnorm(1,mean=const["MaxCEpars",pop],
                                   const["sMaxCEpars",pop])
     popdefs[pop,"SAU"] <- const["SAU",pop]
+    popdefs[pop,"lambda"] <- const["lambda",pop]
+    meanq <- const["qest",pop]
+    popdefs[pop,"qest"] <- rnorm(1,mean=meanq,sd=meanq/100.0)
   }
   test <- popdefs[,"L95"] - popdefs[,"L50"]
   if (any(test < 0)) stop("L95 < L50 - adjust the input data file  \n")
@@ -551,6 +554,8 @@ makeabpop <- function(popparam,midpts,projLML) {
   zLML <- projLML
   Me <- as.numeric(popparam["Me"])
   AvRec <- as.numeric(popparam["AvRec"])  # R0
+  qest <- as.numeric(popparam["qest"])
+  lambda <- as.numeric(popparam["lambda"])
   catq <- 0.0
   B0 <- 0.0
   ExB0 <- 0.0
@@ -559,10 +564,10 @@ makeabpop <- function(popparam,midpts,projLML) {
   MSYDepl <- 0
   bLML <- 0
   SAU <- 0
-  ans <- list(Me,AvRec,B0,ExB0,MSY,MSYDepl,bLML,catq,SaM,popparam,
+  ans <- list(Me,AvRec,B0,ExB0,MSY,MSYDepl,bLML,catq,qest,lambda,SaM,popparam,
               zLML,G,mature,WtL,emergent,zSelect,zSelWt,MatWt,SAU)
-  names(ans) <- c("Me","R0","B0","ExB0","MSY","MSYDepl","bLML","popq",
-                  "SaM","popdef","LML","G","Maturity","WtL","Emergent",
+  names(ans) <- c("Me","R0","B0","ExB0","MSY","MSYDepl","bLML","popq","qest",
+                  "lambda","SaM","popdef","LML","G","Maturity","WtL","Emergent",
                   "Select","SelWt","MatWt","SAU")
   class(ans) <- "abpop"
   return(ans)
@@ -737,7 +742,7 @@ makezoneC <- function(zone,const) { # zone=zone1; const=constants
   return(ans)
 }  # End of makezoneC
 
-#' @title makezone generates the parts of the simulated zone
+#' @title makezone generates the dynamic parts of the simulated zone
 #'
 #' @description makezone generates the dynamics components of the
 #'     simulated zone and completes the constant components of the
@@ -1035,7 +1040,7 @@ resetexB0 <- function(zoneC,zoneD) {
 #' str(glb)
 #' }
 setupzone <- function(constants,zone1,doproduct,uplim=0.4,inc=0.005,verbose=TRUE) {
-  # constants=constants; zone1=zone1; uplim=0.4; inc=0.01
+  # constants=constants; zone1=zone1; doroduct=FALSE; uplim=0.4; inc=0.01; verbose=TRUE
   ans <- makezoneC(zone1,constants) # classical equilibrium
   zoneC <- ans$zoneC
   glb <- ans$glb
