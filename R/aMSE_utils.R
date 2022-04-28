@@ -203,6 +203,36 @@ changevar <- function(filename,rundir,varname,newvalue,prompt=FALSE,verbose=TRUE
   return(cat(label," \n"))
 } # end of changevar
 
+#' @title confirmdir checks to see if a directory exists and makes it if not
+#'
+#' @description confirmdir enables one to be sure a selected directory exists.
+#'     If it has not bee created then confirmdir will create it if it does not
+#'     already exist. This is useful when defining output directories on the
+#'     hard drive where large objects may be stored.
+#'
+#' @param x the directory to be checked and created if necessary
+#' @param make should the directory be created if it does not already exist?
+#'     default=TRUE
+#' @param verbose should responses be sent to the console? default=TRUE
+#'
+#' @return nothing but it can create a directory
+#' @export
+#'
+#' @examples
+#' x <- tempdir()
+#' confirmdir(x)
+confirmdir <- function(x,make=TRUE,verbose=TRUE) {
+  if (dir.exists(x)) {
+    if (verbose) cat(x," already exists  \n")
+  } else {
+    if (verbose) cat(x," did not exist  \n")
+    if (make) {
+      dir.create(x, recursive = TRUE)
+      if (verbose) cat(x," has been created  \n")
+    }
+  }
+} # end of confirmdir
+
 #' @title copyto copies a vector of files from one scenario directory to annother
 #'
 #' @description copyto copies a vector of files (see examples) from one

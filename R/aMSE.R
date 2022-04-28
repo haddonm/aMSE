@@ -6,9 +6,9 @@
 #' @importFrom stats loess optim
 #' @importFrom utils object.size browseURL packageDescription read.csv
 #' @importFrom utils write.table head tail winDialog
-#' @importFrom rutilsMH getmax getmin setpalette plotprep removeEmpty
-#' @importFrom rutilsMH splitDate which.closest parset getparplots
-#' @importFrom rutilsMH digitsbyrow %ni% pickbound outfit
+#' @importFrom hutils getmax getmin removeEmpty splitDate which.closest
+#' @importFrom hutils digitsbyrow outfit %ni%
+#' @importFrom hplot parset plotprep pickbound
 #' @importFrom makehtml addplot addtable dirExists filenametopath
 #' @importFrom makehtml getextension htmltable logfilename make_html pathend
 #' @importFrom makehtml pathtype setuphtml write_css write_head
@@ -31,7 +31,7 @@ NULL
 #' @references Haddon, M., Mundy, C., and D. Tarbath (2008) Using an
 #'     inverse-logistic model to describe growth increments of blacklip
 #'     abalone (\emph{Haliotis rubra}) in Tasmania. \emph{Fishery Bulletin}
-#'     106: 58-71.
+#'     \bold{106}: 58-71.
 #'
 #'     Haddon, M., Mayfield, S., Helidoniotis, F., Chick, R. and C.
 #'     Mundy (2013) \emph{Identification and Evaluation of Performance

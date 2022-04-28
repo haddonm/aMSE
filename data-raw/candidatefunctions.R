@@ -1,13 +1,59 @@
 
 
 
-lambda <- glb$lambda   # if lambda = 1 mult = 1, if Lambda=0.65 mult=15.46
-mult <- 2500.0*exp(-7.824046*lambda) # empirically determined for TAS
-qest <- epin["qest"]   #exp(mean(log(cpue[pickce]/expB[pickce])))
-predce <- qest * mult * (expB ^ lambda)
+
+
+rundir
+
+pop <- read.csv(paste0(rundir,"/zonebiology.csv"),header=TRUE)
+
+plotprep(width=8, height=8,newdev=FALSE)
+parset()
+pairs(pop[,c("M","MaxDL","L50","L95","AvRec","steep")])
 
 
 
+grow <- read.csv("C:/Users/Malcolm/Dropbox/A_CodeUse/aMSEUse/condition/growth/hel_etal_2011.csv")
+
+
+plotprep(width=8, height=8,newdev=FALSE)
+parset()
+pairs(grow[,c("MaxDL","L50","L95","isd")])
+
+
+plot1(grow[,"L50"],grow[,"MaxDL"],type="p",pch=16,cex=1)
+
+model1 <- lm(grow[,"L50"] ~ grow[,"MaxDL"])
+summary(model1)
+anova(model1)
+
+
+model <- lm(grow[,"L95"] ~ grow[,"L50"] + grow[,"MaxDL"])
+summary(model)
+anova(model)
+
+dat2 <- grow[,c("L50","MaxDL")]
+
+y1 <- predict(model,newdata=dat2)
+y2 <- predict(model,newdata=dat2,se.fit=TRUE)
+
+y2f <- rnorm(length(y2$fit),mean=y2$fit,sd=y2$se.fit)
+
+
+plot1(grow[,"L50"],grow[,"L95"],type="p",pch=16,cex=1)
+points(grow[,"L50"],y2f,pch=16,col=2,cex=1)
+points(grow[,"L50"],y1,pch=16,col=3,cex=1)
+
+
+
+
+library(mvtnorm)
+
+dat <- grow[,c("L50","L95")]
+vcov <- cov(dat)
+summary(dat)
+
+x <- rmvnorm(100,mean=c(113.1,150.8),sigma=vcov)
 
 # prepare size-composition data ------------------------------------------------
 
@@ -22,12 +68,11 @@ zonePsau <- zonetosau(zoneDP,NAS,glb,B0,ExB0)
 
 
 plotprep(width=8,height=8,newdev=FALSE)
-x <- plotNt(zonePsau$Nt,year=58,glb=glb,start=3,medcol=1)
+x <- plotNt(zonePsau$Nt, year=58, glb=glb, start=3, medcol=1)
 str(x)
 
-numbersatsizeSAU(rundir="",out$glb,zoneC=out$zoneCP,zoneD=zoneDP, sau=4, ssc=5, yr=58,
-                 defpar=TRUE, exploit=TRUE, mature=TRUE,filename="")
-
+numbersatsizeSAU(rundir="",out$glb,zoneC=out$zoneCP,zoneD=zoneDP, sau=4, ssc=5,
+                 yr=58, defpar=TRUE, exploit=TRUE, mature=TRUE,filename="")
 
 
 lcomp <- prepareDDNt(zoneDD$Nt,zoneDD$catchN,glb)
@@ -35,7 +80,6 @@ lcomp <- prepareDDNt(zoneDD$Nt,zoneDD$catchN,glb)
 plotCNt(lcomp$Nt,glb,vline=c(140),start=3) # plot the conditioning history
 
 plotCNt(zonePsau$Nt[,,,51],glb,vline=140,start=3) # plot a single replicate from projections
-
 
 zonePsau <- zonetosau(zoneDP,NAS,glb,B0,ExB0)
 
@@ -561,7 +605,6 @@ sizecatchN <- function(catchN,glb,year,cutcatchN) {
     med <- apply(catdat,1,median)
     lines(scl,med,lwd=2,col=2)
   }
-
 }
 
 
@@ -846,3 +889,11 @@ pairs(propD[1:glb$numpop,c(1,5,7,9,11,14,15,16)],pch=16,col=2,cex=1)
 
 
 
+makerect <- function (left, xinc, top, yinc, linecol = "grey",col = NULL)
+{
+  polygon(makevx(left, xinc), makevy(top, yinc), col = col,
+          border = linecol)
+  centerx <- (left * 2 + xinc)/2
+  centery <- (top * 2 - yinc)/2
+  return(invisible(c(centerx, centery)))
+}

@@ -36,4 +36,5 @@ once the depleted zone (zoneCP and zoneDD) has been generated
 }
 \examples{
 print("wait on suitable data")
+# x=propD;rundir=rundir;glb=glb;varnames=columns;startyr=hyrs;bins=21;console=FALSE
 }

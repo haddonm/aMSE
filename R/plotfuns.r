@@ -710,6 +710,7 @@ plotNt <- function(Nt,year,glb,start=3,medcol=0) {
 #'
 #' @examples
 #' print("wait on suitable data")
+#' # x=propD;rundir=rundir;glb=glb;varnames=columns;startyr=hyrs;bins=21;console=FALSE
 plotpopprops <- function(x,rundir,glb,varnames,startyr,console=TRUE,bins=25) {
   npop <- glb$numpop
   n <- length(varnames)
@@ -720,8 +721,8 @@ plotpopprops <- function(x,rundir,glb,varnames,startyr,console=TRUE,bins=25) {
   parset(pickbound(n),byrow=FALSE,outmargin=c(0,1,0,0),
          margin=c(0.4,0.3,0.05,0.05))
   for (i in 1:n) {
-    xcol <- x[1:npop,columns[i]]
-    hist(xcol,main="",xlab=columns[i],ylab="",breaks=bins)
+    xcol <- x[1:npop,varnames[i]]
+    hist(xcol,main="",xlab=varnames[i],ylab="",breaks=bins)
   }
   mtext("Frequency",side=2,outer=TRUE,line=-0.2,cex=1.2)
   if (!console) {

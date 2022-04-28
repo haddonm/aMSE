@@ -732,7 +732,7 @@ readsaudatafile <- function(rundir,infile) {  # rundir=rundir; infile=ctrl$dataf
    nsau <- getsingleNum("nsau",indat)
    saupop <- getConst(indat[grep("saupop",indat)],nsau)
    numpop <- sum(saupop)
-   txt <- indat[grep("SAUnames",indat)]
+   txt <- indat[grep("saunames",indat)]
    saunames <- unlist(strsplit(txt,","))[2:(nsau+1)]
 #   saunames <- getConst(indat[grep("saunames",indat)],nsau)
 #   initdepl <- getConst(indat[grep("initdepl",indat)],nsau)
