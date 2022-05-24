@@ -18,7 +18,7 @@
 #' @export
 #'
 #' @examples
-#' print("this will be quite long when I get to it")
+#' args(biology_plots)
 biology_plots <- function(rundir, glb, zoneC, matL=c(30,210), Lwt=c(80,210)) {
   # rundir=rundir; glb=glb;zoneC=zoneCP;matL=c(70,200);Lwt=c(100,210)
   mids <- glb$midpts
@@ -253,7 +253,7 @@ fishery_plots <- function(rundir,glb,select,histyr,projLML, rge=50:90) {
 #' @param postdir the name of the directory holding the results, also used to
 #'     name the internal webpage
 #' @param controlfile the controlfile used to run the MSE
-#' @param hsfile the name of the harvest control rule source file
+#' @param hsfile the name of the harvest strategy file, default=NULL
 #' @param doproject have the projections been run? default = TRUE.
 #' @param openfile should the website be opened automatically? default=TRUE
 #' @param verbose should details of producing the HTML files be written to the

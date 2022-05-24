@@ -14,13 +14,14 @@
 #' @param glb the globals object
 #' @param rundir the rundir for the given scenario
 #' @param filen the file name of the plot if it is to be saved
+#' @param obscol the colour of the observed CPUE on the plots, default=2=red
 #'
 #' @return a vector of length nsau containing the ssq for each SAU
 #' @export
 #'
 #' @examples
 #' print("wait on suitable internal data sets")
-compareCPUE <- function(histCE,saucpue,glb,rundir,filen="") {
+compareCPUE <- function(histCE,saucpue,glb,rundir,filen="",obscol=2) {
   if (nchar(filen) > 0) filen <- filenametopath(rundir,filen)
   years <- as.numeric(rownames(histCE))
   hyrs <- glb$hyrnames
@@ -40,7 +41,7 @@ compareCPUE <- function(histCE,saucpue,glb,rundir,filen="") {
     ymax <- getmax(c(cpue[,sau],histCE[,sau]))
     plot(years,cpue[,sau],type="l",lwd=2,col=1,xlab="",ylab="",panel.first=grid(),
          ylim=c(0,ymax),yaxs="i")
-    lines(years,histCE[,sau],lwd=2,col=3)
+    lines(years,histCE[,sau],lwd=2,col=2)
     lab2 <- paste0(label[sau],"  ",round(ssq[sau],1))
     mtext(lab2,side=1,line=-1.3,cex=1.25)
   }

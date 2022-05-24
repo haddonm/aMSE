@@ -1,6 +1,6 @@
 #
 # outcond=outcond
-# postfixdir <- "M15h7L75"
+# postfixdir <- "M15h7L1"
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
@@ -187,6 +187,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   if (verbose) cat("Now generating final plots and tables \n")
   zoneDP=outproj$zoneDP
   hcrout <- outproj$hcrout; #str(hcrout)
+
   NAS <- list(Nt=zoneDP$Nt,catchN=zoneDP$catchN)
   # NumNe=zoneDP$NumNe, mid-year numbers-at-size removed to save space
   zoneDP <- zoneDP[-c(17,16,15)]
@@ -222,6 +223,8 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   save(glb,file=paste0(rundir,"/glb.RData"))
   save_hsargs(rundir,hsargs)
   plothsstats(rundir,HSstats,glb)
+  addtable(hcrout$refpts,"hcrout_refpts.csv",rundir,category="HSperf",
+           caption="HCR reference points")
   out <- list(tottime=tottime,projtime=projtime,starttime=starttime,glb=glb,
               ctrl=ctrl,zoneCP=zoneCP,zoneD=zoneD,zoneDD=zoneDD,zoneDP=zoneDP,
               NAS=NAS,projC=projC,condC=condC,sauout=sauout,outzone=outzone,

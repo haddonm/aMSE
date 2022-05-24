@@ -29,5 +29,5 @@ biology_plots generates the yield vs spawning biomass,
     population and SAU and the total zone
 }
 \examples{
-print("this will be quite long when I get to it")
+args(biology_plots)
 }

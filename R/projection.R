@@ -479,10 +479,11 @@ prepareprojection <- function(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
 #' @title doprojections conducts the replicate model runs for Tasmania
 #'
 #' @description doprojections conducts the replicate model runs for
-#'     Tasmania using the mcdahcr and the input hsargs. The model dynamics and
-#'     the numbers-at-size variables have been separated and returned separately
-#'     because the size components are very large and mean saving such objects
-#'     is both slow and space limiting.
+#'     Tasmania using the mcdahcr and the input hsargs. Note the use of a list
+#'     that takes up both the population and catch numbers-at-size and puts that
+#'     into getdata. By referencing the iteration in the arrays being passed to
+#'     getdata the object sizes are being reduced and hence, hopefully, the
+#'     runtime will be reduced accordingly.
 #'
 #' @param ctrl the ctrl object from readctrlfile
 #' @param zoneDP the object used to contain the dynamics from the replicate
@@ -500,7 +501,8 @@ prepareprojection <- function(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
 #' @param sampleNaS a function that generates the Numbers-at-size samples
 #' @param getdata a function that gathers all the data required by the hcrfun
 #'     and combines it into an hcrdata object ready for the hcrfun. It is
-#'     expected to call sampleCE, sampleFIS, and sampleNAS.
+#'     expected to call sampleCE, sampleFIS, and sampleNAS, even if they only
+#'     return NULL.
 #' @param calcpopC a function that takes the output from hcrfun and generates
 #'     the actual catch per population expected in the current year.
 #' @param makehcrout is a function from HS.R that produces an object that is
@@ -512,7 +514,7 @@ prepareprojection <- function(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
 #'     in the default named collection
 #'
 #' @seealso{
-#'  \link{oneyearsauC}, \link[makehtml]{make_html}. \link{do_MSE}
+#'  \link{oneyearsauC}, \link[makehtml]{make_html}, \link{do_MSE}
 #' }
 #'
 #' @return a list containing the full dynamics across all years zoneDP, and the
@@ -543,15 +545,17 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
   r0 <- getvar(zoneCP,"R0") #R0 by population
   b0 <- getvar(zoneCP,"B0") #sapply(zoneC,"[[","B0")
   exb0 <- getvar(zoneCP,"ExB0")
-  hcrout <- makehcrout(glb)
+  hcrout <- makehcrout(glb,hsargs)
   for (iter in 1:reps) {
     if (verbose) if ((iter %% 25) == 0) cat(iter,"   ")
     for (year in startyr:endyr) { # iter=1; year=startyr
-      hcrdata <- getdata(sampleCE,sampleFIS,sampleNaS,sauCPUE=zoneDP$cesau,
-                         sauacatch=zoneDP$acatch,sauNAS=zoneDP$NAS,
-                         year=year,iter=iter)
+      hcrdata <- getdata(sampleCE,sampleFIS,sampleNaS,sauCPUE=zoneDP$cesau[,,iter],
+                         sauacatch=zoneDP$acatch[,,iter],
+                         sauNAS=list(Nt=zoneDP$Nt[,,,iter],
+                                     catchN=zoneDP$catchN[,,,iter],
+                                     NumNe=zoneDP$NumNe[,,,iter]),
+                         year=year)
       hcrout <- hcrfun(hcrdata,hsargs,saunames=glb$saunames)
-      #hcrout <- hcrfun(hcrdata,hsargs,hcrin=hcrout$grad4val,saunames=glb$saunames)
       popC <- calcpopC(hcrout,exb=zoneDP$exploitB[year-1,,iter],
                        sauindex,sigmab=sigmab)
       outy <- oneyearsauC(zoneCC=zoneCP,inN=zoneDP$Nt[,year-1,,iter],

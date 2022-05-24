@@ -25,7 +25,7 @@ name the internal webpage}
 
 \item{controlfile}{the controlfile used to run the MSE}
 
-\item{hsfile}{the name of the harvest control rule source file}
+\item{hsfile}{the name of the harvest strategy file, default=NULL}
 
 \item{doproject}{have the projections been run? default = TRUE.}
 

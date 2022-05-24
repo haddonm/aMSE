@@ -1,4 +1,4 @@
-#  rutilsMH::listFunctions("C:/Users/User/Dropbox/A_Code/aMSE/R/defineZone.R")
+#  hutils::listFunctions("C:/Users/User/Dropbox/A_Code/aMSE/R/defineZone.R")
 
 #' @title defineBlock subdivides defined number of populations into blocks
 #'
@@ -596,7 +596,7 @@ makeabpop <- function(popparam,midpts,projLML) {
 #' @examples
 #' print("wait on datafiles")
 makeequilzone <- function(rundir,ctrlfile="control.csv",doproduct=TRUE,verbose=TRUE) {
- #  rundir=rundir;ctrlfile=controlfile;verbose=verbose;doproduct=TRUE; verbose=TRUE
+ #  rundir=rundir;ctrlfile=controlfile;doproduct=FALSE; verbose=TRUE
   zone1 <- readctrlfile(rundir,infile=ctrlfile,verbose=verbose)
   ctrl <- zone1$ctrl
   glb <- zone1$globals     # glb without the movement matrix

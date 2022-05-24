@@ -4,7 +4,7 @@
 \alias{compareCPUE}
 \title{compareCPUE plots the historical cpue against conditioned cpue}
 \usage{
-compareCPUE(histCE, saucpue, glb, rundir, filen = "")
+compareCPUE(histCE, saucpue, glb, rundir, filen = "", obscol = 2)
 }
 \arguments{
 \item{histCE}{the matrix of historical cpue by SAU}
@@ -16,6 +16,8 @@ compareCPUE(histCE, saucpue, glb, rundir, filen = "")
 \item{rundir}{the rundir for the given scenario}
 
 \item{filen}{the file name of the plot if it is to be saved}
+
+\item{obscol}{the colour of the observed CPUE on the plots, default=2=red}
 }
 \value{
 a vector of length nsau containing the ssq for each SAU

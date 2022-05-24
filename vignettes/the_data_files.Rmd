@@ -27,7 +27,8 @@ options("show.signif.stars"=FALSE,
         "width"=240)
 
 library(aMSE)
-library(rutilsMH)
+library(hutils)
+library(hplot)
 library(knitr)
 library(captioner)
 
@@ -90,7 +91,8 @@ There are a number of requirements when conducting an Management Strategy Evalua
 The R packages required to run a scenario include at least:
 
 * __aMSE__ the main R package containing the operating model and auxillary functions used.
-* __rutilsMH__ an R package containing numerous utility functions that are common to many simulation tasks.
+* __hutils__ an R package containing numerous utility functions that are common to many simulation tasks.
+* __hplot__ am R pacakge containing functions to facilitate plotting in base R.
 * __knitr__ an R package used in vignette preparation and the production of formal tables
 * _jurisdictionHS.R_ a source R file containing functions unique to a particular juridiction's harvest strategy.
 * other packages may be required depending upon what packages are called within _jurisdictionHS.R_.

@@ -117,12 +117,15 @@ options("show.signif.stars"=FALSE,
         "max.print"=50000,
         "width"=240)
 # declare libraries ------------------------------------------------------------
-library(aMSE)
-library(TasHS)
-library(rutilsMH)
-library(makehtml)
-library(knitr)
-#> Warning: package 'knitr' was built under R version 4.1.1
+suppressPackageStartupMessages({
+  library(aMSE)
+  library(TasHS)
+  library(hutils)
+  library(hplot)
+  library(makehtml)
+  library(knitr)
+})
+#> Warning: package 'knitr' was built under R version 4.1.3
 dbdir <- getDBdir()
 # Obviously you should modify the rundir and datadir to suit your own setup
 prefixdir <- paste0(dbdir,"A_CodeUse/aMSEUse/scenarios/")

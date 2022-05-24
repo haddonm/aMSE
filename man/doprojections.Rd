@@ -47,7 +47,8 @@ estimate the aspirational catches or TAC or the following year}
 
 \item{getdata}{a function that gathers all the data required by the hcrfun
 and combines it into an hcrdata object ready for the hcrfun. It is
-expected to call sampleCE, sampleFIS, and sampleNAS.}
+expected to call sampleCE, sampleFIS, and sampleNAS, even if they only
+return NULL.}
 
 \item{calcpopC}{a function that takes the output from hcrfun and generates
 the actual catch per population expected in the current year.}
@@ -68,16 +69,17 @@ a list containing the full dynamics across all years zoneDP, and the
 }
 \description{
 doprojections conducts the replicate model runs for
-    Tasmania using the mcdahcr and the input hsargs. The model dynamics and
-    the numbers-at-size variables have been separated and returned separately
-    because the size components are very large and mean saving such objects
-    is both slow and space limiting.
+    Tasmania using the mcdahcr and the input hsargs. Note the use of a list
+    that takes up both the population and catch numbers-at-size and puts that
+    into getdata. By referencing the iteration in the arrays being passed to
+    getdata the object sizes are being reduced and hence, hopefully, the
+    runtime will be reduced accordingly.
 }
 \examples{
 print("wait on suitable internal data sets")
 }
 \seealso{
 {
- \link{oneyearsauC}, \link[makehtml]{make_html}. \link{do_MSE}
+ \link{oneyearsauC}, \link[makehtml]{make_html}, \link{do_MSE}
 }
 }

@@ -1,5 +1,5 @@
 
-# rutilsMH::listFunctions("C:/Users/User/Dropbox/A_code/aMSE/R/inputfiles.R")
+# hutils::listFunctions("C:/Users/User/Dropbox/A_code/aMSE/R/inputfiles.R")
 
 
 #' @title ctrlfiletemplate generates a template input control file
@@ -71,11 +71,11 @@ ctrlfiletemplate <- function(indir,filename="controlsau.csv",devrec=-1) { # indi
  #      file=filename, append=TRUE)
    cat("replicates,  100, number of replicates, usually 500 or more  \n",
        file=filename, append=TRUE)
-   cat("withsigR,  0.3, recruitment variability eg 0.3 \n",
+   cat("withsigR,  0.5, recruitment variability eg 0.5 \n",
        file=filename, append=TRUE)
    cat("withsigB,  0.1, process error on exploitable biomass \n",
        file=filename, append=TRUE)
-   cat("withsigCE, 0.15, process error on cpue calculations  \n",
+   cat("withsigCE, 0.1, process error on cpue calculations  \n",
        file=filename, append=TRUE)
    cat("\n",file=filename,append=TRUE)
    cat("ZONE \n",file=filename,append=TRUE)
@@ -85,7 +85,7 @@ ctrlfiletemplate <- function(indir,filename="controlsau.csv",devrec=-1) { # indi
        file=filename,append=TRUE)
    cat("SAUnames, sau6, sau7, sau8, sau9, sau10, sau11, sau12, sau13, labels for each SAU \n",
        file=filename,append=TRUE)   # possibly deprecated
-   cat("initdepl, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, initial depletion levels for each SAU \n",
+   cat("initdepl, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, initial depletion levels for each SAU \n",
        file=filename,append=TRUE)  # possibly deprecated
    cat("\n",file=filename,append=TRUE)
    cat("SIZE \n",file=filename,append=TRUE)
@@ -243,8 +243,11 @@ ctrlfiletemplate <- function(indir,filename="controlsau.csv",devrec=-1) { # indi
    cat("2020,92.01,113.01,112.1,99.1,92.1,87.1,93.1,92.1  \n",
        file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
-   cat("SIZECOMP, 0, if 1 then a single filename should follow, if 2 then two filenames, etc. \n",
+   cat("SIZECOMP, 1, if 1 then a single filename should follow, if 2 then two filenames, etc. \n",
        file=filename,append=TRUE)
+   cat("lf_WZ90-20.csv \n",file=filename,append=TRUE)
+   cat("\n",file=filename,append=TRUE)
+   cat("\n",file=filename,append=TRUE)
    cat("RECDEV, 58  \n",file=filename,append=TRUE)
    cat("CondYears,6,7,8,9,10,11,12,13 \n",file=filename,append=TRUE)
    if (devrec < 0) {
@@ -262,46 +265,75 @@ ctrlfiletemplate <- function(indir,filename="controlsau.csv",devrec=-1) { # indi
          cat(as.character((1962+i)),",-1,-1,-1,-1,-1,-1,-1,-1 \n",file=filename,append=TRUE)
    }
    if (devrec == 0){
-      for (i in 1:17)
+      for (i in 1:19)
          cat(as.character((1962+i)),",-1,-1,-1,-1,-1,-1,-1,-1 \n",file=filename,append=TRUE)
-      cat("1980,1.20727,1.09742,0.93953,1.01431,0.6429,0.91117,0.50361,1.19751 \n",file=filename,append=TRUE)
-      cat("1981,1.08316,0.14083,0.50044,1.54715,0.59112,0.50305,0.06646,0.64524 \n",file=filename,append=TRUE)
-      cat("1982,0.922,0.91519,1.13053,0.99442,0.7901,0.9954,0.80744,1.06755 \n",file=filename,append=TRUE)
-      cat("1983,1.01998,0.93356,1.12931,1.11423,0.88758,0.92337,0.78474,1.3606 \n",file=filename,append=TRUE)
-      cat("1984,1.06304,0.91256,0.95035,0.96208,1.01281,0.91243,0.75447,1.12396 \n",file=filename,append=TRUE)
-      cat("1985,1.05086,0.68669,0.94454,1.11627,0.98552,0.87839,0.75148,1.08797 \n",file=filename,append=TRUE)
-      cat("1986,1.00913,0.38365,0.84443,1.02884,0.99212,1.05791,0.71612,1.0487 \n",file=filename,append=TRUE)
-      cat("1987,1.16901,0.92909,0.85184,1.03493,0.97751,0.91665,0.64895,0.97533 \n",file=filename,append=TRUE)
-      cat("1988,0.89468,0.86044,1.24648,1.06569,0.97573,1.15223,0.83098,0.78318 \n",file=filename,append=TRUE)
-      cat("1989,0.8737,1.04136,1.29412,1.08022,0.90066,1.01103,1.02249,0.95434 \n",file=filename,append=TRUE)
-      cat("1990,1.08596,1.34419,1.42049,0.82212,1.02519,1.07576,1.09688,0.93282 \n",file=filename,append=TRUE)
-      cat("1991,1.06348,1.56493,2.22142,1.92953,1.61953,1.49053,1.52866,0.9503 \n",file=filename,append=TRUE)
-      cat("1992,0.91822,1.26505,1.02269,0.9003,1.13051,1.04972,1.24638,0.90663 \n",file=filename,append=TRUE)
-      cat("1993,0.88964,1.52089,0.86533,0.96544,1.09779,1.10389,1.13422,0.91746 \n",file=filename,append=TRUE)
-      cat("1994,0.99061,1.07266,0.81647,1.09396,0.93548,1.13104,1.2707,0.65045 \n",file=filename,append=TRUE)
-      cat("1995,0.88451,0.98911,0.39698,0.99352,1.07403,1.07916,1.03953,0.93436 \n",file=filename,append=TRUE)
-      cat("1996,0.78078,0.93078,0.90728,1.06832,1.08105,1.04196,1.08,1.06868 \n",file=filename,append=TRUE)
-      cat("1997,0.57762,0.99118,0.89432,1.13435,0.96783,1.0463,1.00321,0.83011 \n",file=filename,append=TRUE)
-      cat("1998,0.80189,1.19164,0.06814,0.46693,1.54344,1.50513,0.94818,1.54093 \n",file=filename,append=TRUE)
-      cat("1999,1.04149,1.08524,0.95322,0.91927,0.91088,1.09505,0.94709,1.40757 \n",file=filename,append=TRUE)
-      cat("2000,1.48862,1.50403,1.17549,0.96855,1.15971,1.11267,0.80134,1.30331 \n",file=filename,append=TRUE)
-      cat("2001,1.47781,1.14656,1.05932,1.00169,1.19329,1.09973,1.12002,1.57254 \n",file=filename,append=TRUE)
-      cat("2002,1.46786,1.19021,1.09307,1.01745,1.03101,0.93205,1.11123,1.5447 \n",file=filename,append=TRUE)
-      cat("2003,1.34601,1.33293,0.05729,1.09981,1.67906,1.44746,1.5489,1.29404 \n",file=filename,append=TRUE)
-      cat("2004,0.97519,1.06773,0.94356,1.67039,0.7622,1.00882,1.18776,1.16923 \n",file=filename,append=TRUE)
-      cat("2005,0.91323,1.09527,0.87703,1.05038,1.25863,0.99086,1.2271,1.36836 \n",file=filename,append=TRUE)
-      cat("2006,0.71417,0.84869,0.93993,0.68625,1.13591,0.92534,1.16808,1.39069 \n",file=filename,append=TRUE)
-      cat("2007,0.7424,0.61702,0.93948,0.84653,1.06592,0.98738,0.81591,0.23896 \n",file=filename,append=TRUE)
-      cat("2008,0.57009,0.46971,0.05829,0.37503,0.11891,0.16579,1.17357,0.10712 \n",file=filename,append=TRUE)
-      cat("2009,0.90396,0.96523,0.11664,0.54098,0.84044,0.92302,1.0334,0.6854 \n",file=filename,append=TRUE)
-      cat("2010,0.59246,1.08064,0.25012,0.49833,0.63672,0.53775,0.70679,1.04342 \n",file=filename,append=TRUE)
-      cat("2011,0.9251,1.08402,2.16096,0.4875,0.92798,0.96639,1.05925,1.21706 \n",file=filename,append=TRUE)
-      cat("2012,1.02053,1.05273,0.28883,0.83263,0.90625,1.0863,1.28118,1.48546 \n",file=filename,append=TRUE)
-      cat("2013,0.16033,0.60397,0.05743,0.33133,0.17506,0.16141,1.38297,0.78258 \n",file=filename,append=TRUE)
-      cat("2015,1.00332,1.05593,0.43213,0.55848,0.98658,0.87003,0.99218,0.92184 \n",file=filename,append=TRUE)
-      cat("2015,1.22426,1.63342,0.98686,0.87168,1.03108,0.92531,1.25532,1.3359 \n",file=filename,append=TRUE)
-      cat("2016,1.22574,1.30988,1.17181,1.53304,1.16856,1.04363,1.4575,1.18581 \n",file=filename,append=TRUE)
-      for (i in 55:58)
+      cat("1982,1.019748972,0.891955787,1.192097592,1.131159109,0.971833416,0.944653127,0.827686472,0.903925378 \n",
+          file=filename,append=TRUE)
+      cat("1983,1.018775536,0.919068471,1.023891955,1.017897447,0.971851222,0.915040038,0.863753489,0.897498732 \n",
+          file=filename,append=TRUE)
+      cat("1984,1.018822207,0.907007053,0.869288798,0.852675421,0.952932826,0.888951324,0.888677416,0.895324746 \n",
+          file=filename,append=TRUE)
+      cat("1985,1.021620846,0.8816322,0.828398125,0.835351892,0.919281628,0.910874231,0.901885685,0.896745753 \n",
+          file=filename,append=TRUE)
+      cat("1986,1.027761762,1.027756541,1.248969772,0.871083697,0.894183361,0.929607287,0.993923777,0.906941074 \n",
+          file=filename,append=TRUE)
+      cat("1987,1.035764934,1.029857377,1.378281877,1.243417185,0.918921909,1.131368414,1.059249508,0.93260811 \n",
+          file=filename,append=TRUE)
+      cat("1988,1.043520383,0.856071309,1.615325697,1.461758384,1.257337341,1.168516934,1.476007618,0.977650542 \n",
+          file=filename,append=TRUE)
+      cat("1989,1.046556793,1.119577973,1.822226468,1.089301919,1.337327019,1.313704719,1.871548793,1.051205364 \n",
+          file=filename,append=TRUE)
+      cat("1990,1.037412614,2.454002105,1.090610085,1.298444862,1.394912744,1.450026446,1.478858208,1.140438165 \n",
+          file=filename,append=TRUE)
+      cat("1991,1.000977503,1.632319673,0.913737104,1.127960901,1.414266178,1.321823342,1.308945724,1.13230241 \n",
+          file=filename,append=TRUE)
+      cat("1992,0.929581612,1.3327338,0.864076858,1.178393994,1.276844682,1.259061998,1.387506644,1.037426638 \n",
+          file=filename,append=TRUE)
+      cat("1993,0.866289533,1.450426011,0.907090376,1.382237395,1.126274517,1.396032054,1.374867139,1.035405438 \n",
+          file=filename,append=TRUE)
+      cat("1994,0.839301236,1.338787578,0.873896393,1.29143201,1.350341967,1.296350543,1.044014013,1.177468672 \n",
+          file=filename,append=TRUE)
+      cat("1995,0.867946761,1.273880442,0.609585771,1.012572599,1.152513222,1.142538613,0.983707859,1.169361232 \n",
+          file=filename,append=TRUE)
+      cat("1996,0.98134855,1.06072514,0.488742159,1.030595767,1.352338269,1.308259371,0.946481706,1.326423958 \n",
+          file=filename,append=TRUE)
+      cat("1997,1.224198661,1.101483919,0.691512569,1.02300785,1.062547005,1.238523362,0.960257866,1.606770496 \n",
+          file=filename,append=TRUE)
+      cat("1998,1.565662341,1.458569135,0.895309194,0.906529988,1.407496763,1.399258089,1.281223293,1.414207376 \n",
+          file=filename,append=TRUE)
+      cat("1999,1.519012803,1.543220713,1.03527223,0.86202043,1.252235554,1.181067045,1.246908928,1.2497568 \n",
+          file=filename,append=TRUE)
+      cat("2000,1.259553976,1.337684876,1.002342433,0.849136433,1.345510172,1.286303089,1.261930814,1.445626363 \n",
+          file=filename,append=TRUE)
+      cat("2001,1.183080818,1.278251494,0.844150996,1.301907752,1.22554641,1.219325184,1.433731079,1.263565754 \n",
+          file=filename,append=TRUE)
+      cat("2002,1.018320486,1.742043793,0.862191905,1.071698392,0.872599484,1.034125448,1.589987438,1.080905887 \n",
+          file=filename,append=TRUE)
+      cat("2003,1.101671367,1.068297985,0.992044991,1.141780507,1.199510667,1.130981922,1.313039401,1.03243527 \n",
+          file=filename,append=TRUE)
+      cat("2004,1.111038029,1.243920646,0.922421444,1.116095008,1.381514791,1.059240271,1.591900644,0.943672037 \n",
+          file=filename,append=TRUE)
+      cat("2005,0.708403658,1.445064011,0.604373052,1.114406741,1.137326972,1.065562241,1.205726815,0.682198732 \n",
+          file=filename,append=TRUE)
+      cat("2006,0.566649613,1.077383135,0.445297744,0.877314532,0.935418072,0.928072081,1.123097491,0.566308283 \n",
+          file=filename,append=TRUE)
+      cat("2007,0.667272722,0.758513205,0.349979383,0.848330054,0.710744941,0.883856668,0.619760327,0.6674213 \n",
+          file=filename,append=TRUE)
+      cat("2008,0.938805912,0.544545942,0.463521761,0.657132765,0.616544273,0.813113687,0.625176766,1.051628388 \n",
+          file=filename,append=TRUE)
+      cat("2009,0.829041385,0.702714513,0.703634837,0.432476927,0.599354665,0.566132374,1.376004462,1.429350884 \n",
+          file=filename,append=TRUE)
+      cat("2010,0.747564051,1.271135654,0.577346241,0.547345252,0.799783655,0.760586762,1.758338766,1.212142878 \n",
+          file=filename,append=TRUE)
+      cat("2011,0.870262505,1.55513882,0.472220008,0.66013884,0.85220027,1.041916603,1.171285855,1.082564778 \n",
+          file=filename,append=TRUE)
+      cat("2012,0.974781411,0.798366755,0.493085373,0.673058922,0.831425183,0.816137932,1.050752268,1.131503965 \n",
+          file=filename,append=TRUE)
+      cat("2013,0.993329569,0.733931708,0.756416488,0.509750953,0.778115711,0.787278586,1.022578121,1.043190781 \n",
+          file=filename,append=TRUE)
+      cat("2014,0.99997286,0.951188961,1.00643897,0.748089168,0.895415559,0.797131967,0.997879875,1.001289841 \n",
+          file=filename,append=TRUE)
+      for (i in 53:58)
          cat(as.character((1962+i)),",-1,-1,-1,-1,-1,-1,-1,-1 \n",file=filename,append=TRUE)
    }
    cat("\n",file=filename,append=TRUE)
@@ -370,17 +402,17 @@ datafiletemplate <- function(nSAU,indir,filename="saudata_test.csv") {
        file=filename,append=TRUE)  # possibly deprecated this will be clarified
    cat("\n",file=filename,append=TRUE)
    cat("PDFs,  30   \n",file=filename, append=TRUE)
-   cat("MaxDL ,26,30,30,34,34,34,34,29, maximum growth increment \n",
-       file=filename, append=TRUE)
+   cat("MaxDL ,19.1795,26.6626,24.0843,29.1018,29.3447,28.9379,23.7240,20.8154,",
+        "maximum growth increment \n",file=filename, append=TRUE)
    cat("sMaxDL ,",genconst(rep(2.0,nSAU)),", variation of MaxDL \n",
        file=filename, append=TRUE)
-   cat("L50 ,",genconst(rep(135.276,nSAU)),", Length at 50% MaxDL \n",
+   cat("L50 ,",genconst(rep(130.0,nSAU)),", Length at 50% MaxDL \n",
        file=filename, append=TRUE)
    cat("sL50 ,",genconst(rep(2,nSAU)),", variation of L50 \n",
        file=filename, append=TRUE)
-   cat("L50inc ,",genconst(rep(39,nSAU)),", L95 - L50 = delta =L50inc \n",
-       file=filename, append=TRUE)
-   cat("sL50inc ,",genconst(rep(1.5,nSAU)),", variation of L50inc \n",
+   cat("L50inc ,53.4082,43.0314,52.8879,49.2516,53.3892,51.7271,49.1207,53.1115,",
+       "L95 - L50 = delta =L50inc \n",file=filename, append=TRUE)
+   cat("sL50inc ,1.5,1.5,1.25,1.25,1.25,1.25,1.25,1.25, variation of L50inc \n",
        file=filename, append=TRUE)
    cat("SigMax  ,",genconst(rep(3.3784,nSAU)),", max var around growth \n",
        file=filename, append=TRUE)
@@ -402,10 +434,10 @@ datafiletemplate <- function(nSAU,indir,filename="saudata_test.csv") {
        file=filename, append=TRUE)
    cat("sMe ,",genconst(rep(0.003,nSAU)),", var of Me\n",
        file=filename, append=TRUE)
-   cat("AvRec ,217500,410000,185000,905000,760000,1440000,1350000,355000,  LnR0 \n",
+   cat("AvRec ,343265,486494,285666,1078739,913672,1675831,1746579,591564, LnR0 \n",
        file=filename, append=TRUE)
    cat("sAvRec ,",genconst(rep(0.0001,nSAU)),", \n",file=filename, append=TRUE)
-   cat("defsteep ,",genconst(rep(0.75,nSAU)),", Beverton-Holt steepness \n",
+   cat("defsteep ,",genconst(rep(0.7,nSAU)),", Beverton-Holt steepness \n",
        file=filename, append=TRUE)
    cat("sdefsteep ,",genconst(rep(0.02,nSAU)),", \n",file=filename,
        append=TRUE)
@@ -415,18 +447,21 @@ datafiletemplate <- function(nSAU,indir,filename="saudata_test.csv") {
    cat("deltaC ,",genconst(rep(10.0,nSAU)),", length at 95% emergent \n",
        file=filename, append=TRUE)
    cat("sdeltaC ,",genconst(rep(0.1,nSAU)),", \n",file=filename, append=TRUE)
-   cat("MaxCEpar,0.4,0.425,0.45,0.475,0.45,0.45,0.375,0.3, max cpue t-hr \n",
-       file=filename, append=TRUE)
+   cat("MaxCEpar,0.374212895,0.237660281,0.45,0.475,0.45,0.45,0.375,0.3,",
+       "max cpue t-hr \n",file=filename, append=TRUE)
    cat("sMaxCEvar,",genconst(rep(0.02,nSAU)),", \n",file=filename, append=TRUE)
    cat("selL50p ,",genconst(rep(0.0,nSAU)),", L50 of selectivity \n",
        file=filename, append=TRUE)
-   cat("selL95p ,",genconst(rep(1.5,nSAU)),", L95 of selectivity \n",
-       file=filename, append=TRUE)
+   cat("selL95p ,5.6384,5.4581,3.7195,3.2700,2.8841,4.0910,4.3336,3.9326,",
+       " L95 of selectivity \n",file=filename, append=TRUE)
    cat("SaMa,",genconst(rep(-16,nSAU)),", matuirity logistic a par \n",
        file=filename, append=TRUE)
    cat("L50Mat,104,114,114,123,121,120,117,114, L50 for maturity b = -1/L50\n",
        file=filename, append=TRUE)
    cat("sL50Mat,",genconst(rep(2.5,nSAU)),", \n",file=filename, append=TRUE)
+   cat("lambda,",genconst(rep(0.75,nSAU)),", \n",file=filename, append=TRUE)
+   cat("qest,0.592,0.318,0.705,0.231,0.179,0.110,0.076,0.189, \n",
+       file=filename, append=TRUE)
    cat("\n\n",file=filename, append=TRUE)
    cat("propREC  \n",file=filename, append=TRUE)
    cat("SAU, pop,propR \n",file=filename, append=TRUE)

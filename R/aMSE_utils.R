@@ -24,7 +24,7 @@ putNA <- function(x,pre,post) { # x=med14; pre=0; post=5
   return(x)
 } # end of addNA
 
-# x <- rutilsMH::describefunctions("C:/Users/User/Dropbox/A_code/aMSE/R/","aMSE_utils.R")
+# x <- hutils::describefunctions("C:/Users/User/Dropbox/A_code/aMSE/R/","aMSE_utils.R")
 
 #' @title addpops adds the populations from a single replicate together
 #'
