@@ -3,6 +3,11 @@
 
 # LATEST UPDATE
 
+-   2022-05-31 aMSE 0.0.4 Added functions that assist in conditioning
+    the operating model by optimizing the fit to CPUE and
+    size-composition data after opimizing the AvRec values for each SAU.
+    No EWN.
+
 -   2021-11-29 aMSE 0.0.1 Removed datadir. Started implementing
     hyper-stability while keeping the interface the same, so that the
     results from sizemod can be used.

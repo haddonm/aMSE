@@ -9,7 +9,7 @@ optimizerecdevs(
   sau,
   controlfile,
   calcpopC,
-  wtsc = 0.1,
+  wtsc = 0.02,
   maxiter = 100,
   yearrange = 1980:2016,
   verbose = FALSE,

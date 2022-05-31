@@ -87,7 +87,7 @@ depleteSAU <- function(zoneC,zoneD,glob,initdepl,product,len=15) {
 #' @param zoneC the zone constants object, zoneC
 #' @param glob the globals object
 #' @param condC from the zone1 object, contains historical fisheries data plus
-#' @param calcpopC a function that takes the output from hcrfun and gernerates
+#' @param calcpopC a function that takes the output from hcrfun and generates
 #'     the actual catch per population expected in the current year.
 #' @param sigR the recruitment variation included
 #' @param sigB the variability introduced to the catches by population by

@@ -270,7 +270,7 @@ getCPUEssq <- function(histCE,saucpue,glb) {
 #'     likelihood. This function calculates this, and the value can then be
 #'     combined with am ssq value from a comparison of the predicted and observed
 #'     CPUE ready to be minimized if conditioning the OM on a fisheries real
-#'     data.  As always, the operatig model is running at a population level
+#'     data.  As always, the operating model is running at a population level
 #'     while data arrives at an SAU level, so this is only an approximate
 #'     approach, but it should improve over using purely the results from the
 #'     sizemod R package.
@@ -278,7 +278,7 @@ getCPUEssq <- function(histCE,saucpue,glb) {
 #' @param catchN the predicted numbers-at-size in the catch for all years
 #' @param obsLFs the observed NAS, after cleaning by the preparesizecomp
 #'     function
-#' @param glb the golbals list
+#' @param glb the globals list
 #' @param wtsc the weighting given to the size-composition data
 #' @param sau which sau is the subject of analysis
 #'
@@ -288,7 +288,7 @@ getCPUEssq <- function(histCE,saucpue,glb) {
 #' @examples
 #' print("wait on data sets")
 getLFlogL <- function(catchN,obsLFs,glb,wtsc,sau) {
-  # catchN=zoneDD$catchN; obsLFs=obsLFs; glb=glb;wtsc=0.1;sau=sau
+  # catchN=zoneDD$catchN; obsLFs=obsLFs; glb=out$glb;wtsc=scwt;sau=sau
   sauCN <- popNAStosau(catchN,glb)[,,sau]
   mids <- as.numeric(rownames(obsLFs))
   yrsize <- as.numeric(colnames(obsLFs))
@@ -305,6 +305,73 @@ getLFlogL <- function(catchN,obsLFs,glb,wtsc,sau) {
   }
   return(LLsc*wtsc)
 } # end of getLFlogL
+
+#' @title getssqparts calculates the ssq for the cpue and size-comp data
+#'
+#' @description getssqparts is used during the conditioning of the operating
+#'     model to improve the fit of the model parameters to the observed SAU
+#'     scale data on cpue and size-composition. It only uses sum-of squared
+#'     deviations so an arbitrary weight is given to the size-composition data,
+#'     and that value should be such that changes in the ssq for the cpue are of
+#'     the same order of magnitude for the size-composition data.
+#'
+#' @param rundir the directory in which all the files and outputs are kept
+#' @param controlfile the name of the controlfile for the MSE run
+#' @param calcpopC the function from the harvest strategy that is used to
+#'     calculate the expected catch by population within each say each year. The
+#'     annual catch by sau is known but in the MSE that needs to be distributed,
+#'     in this case without error, across each population.
+#' @param mincount the minimum count used in the size-composition data selection
+#'     default = 100, this can be a vector of length nsau with a value for each
+#'     sau if you want to give a different value to each sau.
+#' @param wtsc the weighting given to the size-composition data ssq,
+#'     default= 0.02. This can be a vector of length nsau if you want to give
+#'     each sau a different weighting.
+#'
+#' @return a vector of the total ssq, the cpue ssq, and the size-comp ssq
+#' @export
+#'
+#' @examples
+#' print("wait on internal data sets")
+getssqparts <- function(rundir,controlfile,calcpopC,mincount=100,wtsc=0.02) {
+  # rundir=rundir; controlfile=controlfile; calcpopC=calcexpectpopC; mincount=100;wtsc=0.02
+  zone1 <- readctrlfile(rundir,infile=controlfile,verbose=TRUE)
+  ctrl <- zone1$ctrl
+  glb <- zone1$globals     # glb without the movement matrix
+  constants <- readsaudatafile(rundir,ctrl$datafile)    # make operating model
+  out <- setupzone(constants$constants,zone1,doproduct=FALSE,verbose=FALSE)
+  zoneC <- out$zoneC
+  zoneD <- out$zoneD
+  glb <- out$glb             # glb now has the movement matrix
+  zone1$globals <- glb
+  zoneC <- resetexB0(zoneC,zoneD) # rescale exploitB to avexplB after dynamics
+  projC <- zone1$projC
+  condC <- zone1$condC
+  zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,condC,calcpopC=calcpopC,
+                        sigR=1e-08,sigB=1e-08)
+  hyrs <- glb$hyrs
+  sauindex <- glb$sauindex
+  popB0 <- getlistvar(zoneC,"B0")
+  B0 <- tapply(popB0,sauindex,sum)
+  popExB0 <- getlistvar(zoneC,"ExB0")
+  ExB0 <- tapply(popExB0,sauindex,sum)
+  sauZone <- getsauzone(zoneDD,glb,B0=B0,ExB0=ExB0)
+  ssq <- getCPUEssq(condC$histCE,sauZone$cpue,glb)
+  names(ssq) <- glb$saunames
+  nsau <- glb$nSAU
+  LFlog <- numeric(nsau); names(LFlog) <- glb$saunames
+  minsccount <- mincount
+  scwt <- wtsc
+  for (sau in 1:glb$nSAU) {
+    if (length(mincount) > 1) minsccount <- mincount[sau]
+    if (length(wtsc) > 1) scwt <- wtsc[sau]
+    obsLFs <- preparesizecomp(condC$compdat$lfs[,,sau],mincount=minsccount)
+    LFlog[sau] <- getLFlogL(zoneDD$catchN,obsLFs,out$glb,wtsc=scwt,sau=sau)
+  }
+  totssq <- ssq + LFlog
+  ans <- rbind(totssq,ssq,LFlog)
+  return(ans)
+} # end of getssqparts
 
 
 #' @title gettasdevssq calculates the SSQ between observed and predicted CPUE
@@ -536,7 +603,7 @@ optimizeAvRec <- function(rundir,controlfile,datafile,calcpopC,snames,
 #'
 #' @examples
 #' print("wait on data sets")
-optimizerecdevs <- function(rundir,sau,controlfile,calcpopC,wtsc=0.1,
+optimizerecdevs <- function(rundir,sau,controlfile,calcpopC,wtsc=0.02,
                             maxiter=100,yearrange=1980:2016,verbose=FALSE,
                             mincount=100,plottoconsole=FALSE,
                             optimmethod="Nelder-Mead") {
@@ -683,6 +750,8 @@ printline <- function(rundir, datafile, linenumber=29) {
 #'
 #' @examples
 #' print("Wait on suitable internal data files")
+#' #  param=param;rundir=rundir;controlfile=controlfile;datafile=datafile;linenum=29,
+#' #  calcpopC=calcexpectpopC;extra=extra;picksau=sau;nsau=nsau
 sauavrecssq <- function(param,rundir,controlfile,datafile,linenum,
                         calcpopC,extra,picksau,nsau,outplot=FALSE) {
   nsaum1 <- nsau - 1

@@ -12,7 +12,7 @@ getLFlogL(catchN, obsLFs, glb, wtsc, sau)
 \item{obsLFs}{the observed NAS, after cleaning by the preparesizecomp
 function}
 
-\item{glb}{the golbals list}
+\item{glb}{the globals list}
 
 \item{wtsc}{the weighting given to the size-composition data}
 
@@ -28,7 +28,7 @@ getLFlogL when comparing the observed size-composition data from
     likelihood. This function calculates this, and the value can then be
     combined with am ssq value from a comparison of the predicted and observed
     CPUE ready to be minimized if conditioning the OM on a fisheries real
-    data.  As always, the operatig model is running at a population level
+    data.  As always, the operating model is running at a population level
     while data arrives at an SAU level, so this is only an approximate
     approach, but it should improve over using purely the results from the
     sizemod R package.

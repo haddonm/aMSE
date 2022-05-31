@@ -15,7 +15,7 @@ dohistoricC(zoneDD, zoneC, glob, condC, calcpopC, sigR = 1e-08, sigB = 1e-08)
 
 \item{condC}{from the zone1 object, contains historical fisheries data plus}
 
-\item{calcpopC}{a function that takes the output from hcrfun and gernerates
+\item{calcpopC}{a function that takes the output from hcrfun and generates
 the actual catch per population expected in the current year.}
 
 \item{sigR}{the recruitment variation included}

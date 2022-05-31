@@ -15,6 +15,8 @@ knitr::opts_chunk$set(
 
 # LATEST UPDATE
 
+* 2022-05-31 aMSE 0.0.4 Added functions that assist in conditioning the operating model by optimizing the fit to CPUE and size-composition data after opimizing the AvRec values for each SAU. No EWN.
+
 * 2021-11-29 aMSE 0.0.1 Removed datadir. Started implementing hyper-stability while keeping the interface the same, so that the results from sizemod can be used.
 
 * 2021-11-23 aMSE 0.0.0.1 Added functions to simplify the optimization of AvRec relative to the CPUE data after initial parameter estimation for each SAU using the sizemod package. Also added a comparison of size-composition data to the do_condition function. Next step will be to include the optimization of the recdevs using both CPUE and size-comp data. 
