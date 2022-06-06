@@ -23,7 +23,7 @@ a list of numpop lists of 19 objects as detailed above.
 \description{
 makeabpop generates the full population structure in an
    unfished state. The structure is pre-determined: Me R0 B0 effB0
-   ExB0, effExB0 MSY MSYDepl bLML popq SaM popdef (vector of constants)
+   ExB0, effExB0 MSY MSYDepl bLML scalece SaM popdef (vector of constants)
    LML G Maturity WtL Emergent Select SelWt MatWt SAUname. See the
    AbMSE documentation to see the full definition of a zone, made
    up of a zoneC and a zoneD. Notice the presence of effB0 and

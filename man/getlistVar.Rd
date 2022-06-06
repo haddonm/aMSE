@@ -20,7 +20,7 @@ either a vector or matrix of values depending on variable
 getlistvar extracts a vector or matrix from zoneC.
    If a vector of scalars, the names relate to populations, if a
    matrix the columns relate to populations. Only Me, R0, B0, effB0,
-   ExB0, effExB0, MSY, MSYDepl, bLML, popq, SaM, SAU, popdef,
+   ExB0, effExB0, MSY, MSYDepl, bLML, scalece, SaM, SAU, popdef,
    LML, Maturity, WtL, Emergent, and MatWt are currently valid
    choices. The indexvar = popdef would generate a listing of all
    the constants. If you only want a single constant from popdefs

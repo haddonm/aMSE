@@ -77,7 +77,7 @@ definepops <- function(inSAU,inSAUindex,const,glob) {
   hyrs <- glob$hyrs
   columns <- c("DLMax","L50","L95","SigMax","SaMa","SaMb","Wta","Wtb","Me",
                "L50C","deltaC","AvRec","SelP1","SelP2","Nyrs","steeph",
-               "MaxCE","L50mat","SAU","lambda","qest")
+               "MaxCE","L50mat","SAU","lambda","qest","scalece")
   popdefs <- matrix(0,nrow=numpop,ncol=length(columns),
                     dimnames=list(1:numpop,columns))
   popdefs[,"Nyrs"] <- rep(hyrs,numpop) # Num Years - why is this here?
@@ -110,12 +110,11 @@ definepops <- function(inSAU,inSAUindex,const,glob) {
                                    const["sdefsteep",pop])
     popdefs[pop,"AvRec"] <- rlnorm(1,meanlog=const["AvRec",pop],
                                    const["sAvRec",pop])
-    popdefs[pop,"MaxCE"] <- rnorm(1,mean=const["MaxCEpars",pop],
-                                  const["sMaxCEpars",pop])
+    popdefs[pop,"MaxCE"] <- 0 # gets value in makezone
     popdefs[pop,"SAU"] <- const["SAU",pop]
     popdefs[pop,"lambda"] <- const["lambda",pop]
-    meanq <- const["qest",pop]
-    popdefs[pop,"qest"] <- rnorm(1,mean=meanq,sd=meanq/100.0)
+    popdefs[pop,"qest"] <-const["qest",pop]
+    popdefs[pop,"scalece"] <- 0 # gets value in makezone
   }
   test <- popdefs[,"L95"] - popdefs[,"L50"]
   if (any(test < 0)) stop("L95 < L50 - adjust the input data file  \n")
@@ -506,7 +505,7 @@ logistic <- function(inL50,delta,lens,knifeedge=0) {
 #'
 #' @description makeabpop generates the full population structure in an
 #'    unfished state. The structure is pre-determined: Me R0 B0 effB0
-#'    ExB0, effExB0 MSY MSYDepl bLML popq SaM popdef (vector of constants)
+#'    ExB0, effExB0 MSY MSYDepl bLML scalece SaM popdef (vector of constants)
 #'    LML G Maturity WtL Emergent Select SelWt MatWt SAUname. See the
 #'    AbMSE documentation to see the full definition of a zone, made
 #'    up of a zoneC and a zoneD. Notice the presence of effB0 and
@@ -556,7 +555,7 @@ makeabpop <- function(popparam,midpts,projLML) {
   AvRec <- as.numeric(popparam["AvRec"])  # R0
   qest <- as.numeric(popparam["qest"])
   lambda <- as.numeric(popparam["lambda"])
-  catq <- 0.0
+  scalece <- 0.0  # instead of popq
   B0 <- 0.0
   ExB0 <- 0.0
   SaM <- as.numeric(-popparam["SaMa"]/popparam["SaMb"]) # -a/b
@@ -564,9 +563,9 @@ makeabpop <- function(popparam,midpts,projLML) {
   MSYDepl <- 0
   bLML <- 0
   SAU <- 0
-  ans <- list(Me,AvRec,B0,ExB0,MSY,MSYDepl,bLML,catq,qest,lambda,SaM,popparam,
-              zLML,G,mature,WtL,emergent,zSelect,zSelWt,MatWt,SAU)
-  names(ans) <- c("Me","R0","B0","ExB0","MSY","MSYDepl","bLML","popq","qest",
+  ans <- list(Me,AvRec,B0,ExB0,MSY,MSYDepl,bLML,scalece,qest,lambda,SaM,
+              popparam,zLML,G,mature,WtL,emergent,zSelect,zSelWt,MatWt,SAU)
+  names(ans) <- c("Me","R0","B0","ExB0","MSY","MSYDepl","bLML","scalece","qest",
                   "lambda","SaM","popdef","LML","G","Maturity","WtL","Emergent",
                   "Select","SelWt","MatWt","SAU")
   class(ans) <- "abpop"
@@ -618,8 +617,10 @@ makeequilzone <- function(rundir,ctrlfile="control.csv",doproduct=TRUE,verbose=T
   product <- out$product     # important bits usually saved in rundir
   zone1$globals <- glb
   # did the larval dispersal level disturb the equilibrium?
-  zoneD <- testequil(zoneC,zoneD,glb,verbose=verbose)
-  zoneC <- resetexB0(zoneC,zoneD) # rescale exploitB to avexplB after dynamics
+  # zoneD <- testequil(zoneC,zoneD,glb,verbose=verbose)
+  # ans <- resetexB0(zoneC,zoneD) # rescale exploitB to avexplB after dynamics
+  # zoneC <- ans$zoneC
+  # zoneD <- ans$zoneD
   setuphtml(rundir)
   equilzone <- list(zoneC=zoneC,zoneD=zoneD,glb=glb,constants=constants,
                     saudat=saudat,product=product,ctrl=ctrl,zone1=zone1)
@@ -681,7 +682,7 @@ makemove <- function(npop,recs,ld,sigmove=0.0) {
 #' @description makezoneC makes the constant part of the simulated
 #'     zone. Once defined this does not change throughout the
 #'     simulation. Once made it still requires makezone to be run
-#'     to fill in the B0, ExBo, MSY, MSYDepl, and the popq values, and
+#'     to fill in the B0, ExBo, MSY, MSYDepl, and the scalece values, and
 #'     to produce zoneD, the dynamic part of the new zone
 #'
 #' @param zone the object derived from the readzonefile function
@@ -772,7 +773,7 @@ makezoneC <- function(zone,const) { # zone=zone1; const=constants
 #'   ans2 <- makezone(glb,zoneC)
 #'   str(ans2,max.level=2)
 #'  }
-makezone <- function(glob,zoneC) { #glob=glb; zoneC=zoneC;
+makezone <- function(glob,zoneC) { # glob=glb; zoneC=zoneC;
   hyrs <- glob$hyrs
   numpop <- glob$numpop
   N <- glob$Nclass
@@ -804,17 +805,39 @@ makezone <- function(glob,zoneC) { #glob=glb; zoneC=zoneC;
     Nt[,1,pop] <- Minv %*% recr # initial unfished numbers-at-size
     MatB[1,pop] <- sum(zoneC[[pop]]$MatWt*Nt[,1,pop])/1e06
     zoneC[[pop]]$B0 <- MatB[1,pop] # mature biomass at start of year
-    newNt <- hSurv * (G %*% Nt[,1,pop])
-    ExplB[1,pop] <- sum(zoneC[[pop]]$SelWt[,1]*newNt)/1e06
+    newNt1 <- (hSurv * (G %*% Nt[,1,pop]))
+    newNt2 <- (hSurv * newNt1)
+    popSel <- zoneC[[pop]]$SelWt[,1]
+    preexB <- sum(popSel*newNt1)/1e06
+    postexB <- sum(popSel*newNt2)/1e06
+    ExplB[1,pop] <- (preexB + postexB)/2 # mean exploitB before/after halfyear
     zoneC[[pop]]$ExB0 <- ExplB[1,pop]
     deplExB[1,pop] <- 1.0  # no depletion when first generating zones
     deplSpB[1,pop] <- 1.0
     Recruit[1,pop] <- recr[1]
-    qcalc <- as.numeric(zoneC[[pop]]$popdef["MaxCE"])
-    zoneC[[pop]]$popq <- qcalc/ExplB[1,pop]   # Need to implement non-linearity
-    # can use the standard lambda model, but also an asymmetric logistic
-    # to capture the balance between search and handling time.
-    cpue[1,pop] <- 1000.0 * zoneC[[pop]]$popq * ExplB[1,pop]
+    #qcalc <- as.numeric(zoneC[[pop]]$popdef["MaxCE"])
+    zoneC[[pop]]$scalece<- 0 # used to scale all pops to maxce
+  }
+  nsau <- glob$nSAU
+  sauindex <- glob$sauindex
+  lambda <- zoneC[[1]]$lambda  # constant across the zone
+  popexb0 <- getlistvar(zoneC,"ExB0")     # pop level expB
+  sauexb0 <- sumpop2sau(popexb0,sauindex) # sau level expB
+  for (sau in 1:nsau) { # sau=1
+    pickpop <- which(sauindex == sau)
+    npop <- length(pickpop)
+    exb0 <- sauexb0[sau]
+    maxcpue <- zoneC[[pickpop[1]]]$qest * (exb0 ^ lambda)
+    for (popi in 1:npop) { # popi = 1 # populations in each sau
+      zoneC[[pickpop[popi]]]$popdef["MaxCE"] <- maxcpue
+      scalece <- exb0/popexb0[pickpop[popi]]
+      zoneC[[pickpop[popi]]]$popdef["scalece"] <- scalece
+      zoneC[[pickpop[popi]]]$scalece <- scalece
+    }
+  }
+  for (pop in 1:numpop) {  # pop=1
+    cpue[1,pop] <- zoneC[[pop]]$qest *
+                   ((zoneC[[pop]]$scalece * ExplB[1,pop]) ^ lambda)
   }
   ans <- list(SAU=SAU,matureB=MatB,exploitB=ExplB,midyexpB=midyexpB,
               catch=Catch,harvestR=Harvest,cpue=cpue,recruit=Recruit,
@@ -999,16 +1022,39 @@ resetLML <- function(inzone,inLML,inyear,glob) {
 #' @param zoneC the constant components of the simulated zone
 #' @param zoneD the dynamic components of the simulated zone
 #'
-#' @return a refreshed zoneC with updated ExB0 values
+#' @return a refreshed zoneC with updated ExB0 values and zoneD$depleB=1
 #' @export
 #'
 #' @examples
 #' print("wait on data")
 resetexB0 <- function(zoneC,zoneD) {
   numpop <- length(zoneC)
-  for (pop in 1:numpop)zoneC[[pop]]$ExB0 <- zoneD$exploitB[1,pop]
-  return(zoneC)
+  for (pop in 1:numpop) {
+    zoneC[[pop]]$ExB0 <- zoneD$exploitB[1,pop]
+    zoneD$depleB[1,pop] <- 1.0
+  }
+  return(list(zoneC=zoneC,zoneD=zoneD))
 } # end of resetexB0
+
+# nsau <- glob$nSAU
+# sauindex <- glob$sauindex
+# lambda <- zoneC[[1]]$lambda  # constant across the zone
+# popexb0 <- getlistvar(zoneC,"ExB0")     # pop level expB
+# sauexb0 <- sumpop2sau(popexb0,sauindex) # sau level expB
+# for (sau in 1:nsau) { # sau=1
+#   pickpop <- which(sauindex == sau)
+#   npop <- length(pickpop)
+#   exb0 <- sauexb0[sau]
+#   maxcpue <- zoneC[[pickpop[1]]]$qest * (exb0 ^ lambda)
+#   for (popi in 1:npop) { # popi = 1 # populations in each sau
+#     zoneC[[pickpop[popi]]]$popdef["MaxCE"] <- maxcpue
+#     zoneC[[pickpop[popi]]]$qest <-
+#       as.numeric(maxcpue/(popexb0[pickpop[popi]] ^ lambda))
+#   }
+# }
+# for (pop in 1:numpop) {  # pop=1
+#   cpue[1,pop] <- zoneC[[pop]]$qest * (ExplB[1,pop] ^ lambda)
+# }
 
 #' @title setupzone makes zone's constant, dynamic, and productivity parts
 #'
@@ -1040,16 +1086,17 @@ resetexB0 <- function(zoneC,zoneD) {
 #' str(glb)
 #' }
 setupzone <- function(constants,zone1,doproduct,uplim=0.4,inc=0.005,verbose=TRUE) {
-  # constants=constants; zone1=zone1; doroduct=FALSE; uplim=0.4; inc=0.01; verbose=TRUE
-  ans <- makezoneC(zone1,constants) # classical equilibrium
+  # constants=constants; zone1=zone1; doroduct=FALSE; uplim=0.4; inc=0.001; verbose=TRUE
+  ans <- makezoneC(zone1,constants) # initiates zoneC
   zoneC <- ans$zoneC
   glb <- ans$glb
-  ans <- makezone(glob=glb,zoneC=zoneC) # now make zoneD
+  ans <- makezone(glob=glb,zoneC=zoneC) # make zoneD, add cpue, qest to zoneC
   zoneC <- ans$zoneC  # zone constants
   zoneD <- ans$zoneD  # zone dynamics
   product <- NULL
   if (doproduct) {
     if (verbose) cat("Now estimating population productivity \n")
+    # adds productivity, and MSY, MSYdepl to zoneC if doproduct=TRUE
     ans <- modzoneC(zoneC=zoneC,zoneD=zoneD,glob=glb,uplim=uplim,inc=inc)
     zoneC <- ans$zoneC  # zone constants
     product <- ans$product  # productivity by population

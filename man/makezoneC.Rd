@@ -18,7 +18,7 @@ a list containing the constant part of the simulated zone
 makezoneC makes the constant part of the simulated
     zone. Once defined this does not change throughout the
     simulation. Once made it still requires makezone to be run
-    to fill in the B0, ExBo, MSY, MSYDepl, and the popq values, and
+    to fill in the B0, ExBo, MSY, MSYDepl, and the scalece values, and
     to produce zoneD, the dynamic part of the new zone
 }
 \examples{

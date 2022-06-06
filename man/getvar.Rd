@@ -17,7 +17,7 @@ a numpop vector of the invar constants from zoneC
 \description{
 getvar is a replacement for sapply to obtain scalar
     constants from zoneC and is significantly faster. It should
-    be used to obtain things like B0, R0, MSY, popq, etc. Still
+    be used to obtain things like B0, R0, MSY, scalece, etc. Still
     need to use sapply to pull out vectors.
 }
 \examples{

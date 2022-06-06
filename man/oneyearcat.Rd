@@ -10,7 +10,7 @@ oneyearcat(
   selyr,
   Me,
   G,
-  popq,
+  scalece,
   WtL,
   inNt,
   incat,
@@ -30,7 +30,8 @@ oneyearcat(
 
 \item{G}{growth transtion matrix from zoneCC for the population}
 
-\item{popq}{the catchability from zoneCC for the population}
+\item{scalece}{the xoneC'pop'$scalece used to scale al cpue to the sau
+nominla scale}
 
 \item{WtL}{the weight-at-alength from zoneCC for the population}
 

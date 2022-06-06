@@ -1,6 +1,6 @@
 #
 # outcond=outcond
-# postfixdir <- "M15h7L1"
+# postfixdir <- "HS21"
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
@@ -139,10 +139,11 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                         sigR=1e-08,sigB=1e-08)
   hyrs <- glb$hyrs
   propD <- as.data.frame(t(getzoneprops(zoneC,zoneDD,glb,year=hyrs)))
-  columns <- c("B0","MSY","MSYDepl","bLML","propprot","SpBDepl","catch","harvestR")
+  columns <- c("B0","MSY","MSYDepl","bLML","propprot","SpBDepl","catch",
+               "harvestR")
   plotpopprops(x=propD,rundir=rundir,glb=glb,varnames=columns,startyr=hyrs,
                bins=21,console=FALSE)
-   propD[,"SAU"] <- c(glb$sauname[glb$sauindex],NA)
+  propD[,"SAU"] <- c(glb$sauname[glb$sauindex],NA)
   addtable(propD,"propertyDD.csv",rundir,category="zoneDD",caption=
              "Properties of zoneD after conditioning on historical catches.")
   addtable(round(t(zoneDD$harvestR[(hyrs-9):hyrs,]),4),"final_harvestR.csv",
@@ -177,7 +178,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   zoneDP <- outpp$zoneDP
   projC <- outpp$projC
   zoneCP <- outpp$zoneCP
- # Rprof()
+ # Rprof()  #  ctrl$reps=25
   outproj <- doprojections(ctrl=ctrl,zoneDP=zoneDP,zoneCP=zoneCP,glb=glb,
                            hcrfun=hcrfun,hsargs=hsargs,sampleCE=sampleCE,
                            sampleFIS=sampleFIS,sampleNaS=sampleNaS,
@@ -191,8 +192,6 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   NAS <- list(Nt=zoneDP$Nt,catchN=zoneDP$catchN)
   # NumNe=zoneDP$NumNe, mid-year numbers-at-size removed to save space
   zoneDP <- zoneDP[-c(17,16,15)]
- # zoneDP <- zoneDP[-16]
- #  zoneDP <- zoneDP[-15]
   histCE <- condC$histCE
   B0 <- getvar(zoneC,"B0")
   ExB0 <- getvar(zoneC,"ExB0")

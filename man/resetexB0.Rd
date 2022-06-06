@@ -12,7 +12,7 @@ resetexB0(zoneC, zoneD)
 \item{zoneD}{the dynamic components of the simulated zone}
 }
 \value{
-a refreshed zoneC with updated ExB0 values
+a refreshed zoneC with updated ExB0 values and zoneD$depleB=1
 }
 \description{
 resetexB0 sets the unfished exploitable biomass at time

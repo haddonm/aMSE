@@ -4,7 +4,7 @@
 \alias{oneyear}
 \title{oneyear one year's harvest dynamics for one abpop}
 \usage{
-oneyear(MatWt, SelWt, selyr, Me, G, popq, WtL, inNt, inH)
+oneyear(MatWt, SelWt, selyr, Me, G, qest, WtL, inNt, inH, lambda, scalece)
 }
 \arguments{
 \item{MatWt}{maturity x Weight-at-size from zoneCC for the population and year}
@@ -17,7 +17,7 @@ oneyear(MatWt, SelWt, selyr, Me, G, popq, WtL, inNt, inH)
 
 \item{G}{growth transtion matrix from zoneC for the population}
 
-\item{popq}{the catchability from zoneCC for the population}
+\item{qest}{the catchability from zoneCC for the population}
 
 \item{WtL}{the weight-at-alength from zoneC for the population}
 
@@ -26,6 +26,12 @@ of dynamics. These are projected into the active year.}
 
 \item{inH}{a literal annual harvest rate as a proportion to be
 removed as catch during the year, a scalar}
+
+\item{lambda}{the non-linearity parameter. if = 1.0 then cpue linearly
+related to expB, if < 1 then hyper-stability of cpue occurs.}
+
+\item{scalece}{the xoneC'pop'$scalece used to scale al cpue to the sau
+nominla scale}
 }
 \value{
 a list containing ExploitB, MatureB, Catch, Harvest, Nt,
@@ -45,4 +51,5 @@ oneyear do one year's dynamics for one input population.
 }
 \examples{
 print("need to wait on built in data sets")
+#oneyear <- function(MatWt,SelWt,selyr,Me,G,qest,WtL,inNt,inH,lambda,scalece)
 }

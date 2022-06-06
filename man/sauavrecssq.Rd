@@ -53,4 +53,6 @@ sauavrecssq applies the AvRec vector while adjusting just
 }
 \examples{
 print("Wait on suitable internal data files")
+#  param=param;rundir=rundir;controlfile=controlfile;datafile=datafile;linenum=29,
+#  calcpopC=calcexpectpopC;extra=extra;picksau=sau;nsau=nsau
 }

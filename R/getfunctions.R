@@ -247,7 +247,7 @@ getline <- function(rundir,filen,varname,nobs) {
 #' @description getlistvar extracts a vector or matrix from zoneC.
 #'    If a vector of scalars, the names relate to populations, if a
 #'    matrix the columns relate to populations. Only Me, R0, B0, effB0,
-#'    ExB0, effExB0, MSY, MSYDepl, bLML, popq, SaM, SAU, popdef,
+#'    ExB0, effExB0, MSY, MSYDepl, bLML, scalece, SaM, SAU, popdef,
 #'    LML, Maturity, WtL, Emergent, and MatWt are currently valid
 #'    choices. The indexvar = popdef would generate a listing of all
 #'    the constants. If you only want a single constant from popdefs
@@ -269,7 +269,7 @@ getline <- function(rundir,filen,varname,nobs) {
 getlistvar <- function(zoneC,indexvar,indexvar2="") {
   if (is.character(indexvar)) {
     fields <- c("Me","R0","B0","effB0","ExB0","effExB0","MSY",
-                "MSYDepl","bLML","popq","SaM","SAU",
+                "MSYDepl","bLML","scalece","SaM","SAU","qest",
                 "popdef","LML","Maturity","WtL","Emergent","MatWt")
     vects<- c("popdef","LML","Maturity","WtL","Emergent","MatWt")
     pick <- match(indexvar,fields)
@@ -414,7 +414,7 @@ getsauzone <- function(zoneD,glb,B0,ExB0) { # zoneD=zoneDD; glb=glb; B0=B0;ExB0=
   catch <- getsum(zoneD$catch,iSAU)
   recruit <- getsum(zoneD$recruit,iSAU)
   harvestR <- catch/expB
-  cpue <- catch # just ot have a labelled matrix ready
+  cpue <- catch # just to have a labelled matrix ready
   wtzone <- zoneD$catch/catch[,(nSAU+1)]
   wtsau <- zoneD$catch
   for (mu in 1:nSAU) { # mu=1
@@ -559,7 +559,7 @@ getunFished <- function(zoneC,zoneD,glb) {  # inzone=zone
 #'
 #' @description getvar is a replacement for sapply to obtain scalar
 #'     constants from zoneC and is significantly faster. It should
-#'     be used to obtain things like B0, R0, MSY, popq, etc. Still
+#'     be used to obtain things like B0, R0, MSY, scalece, etc. Still
 #'     need to use sapply to pull out vectors.
 #'
 #' @param zoneC the constants object for the zone
@@ -689,9 +689,10 @@ getzoneprod <- function(product) {
 #'
 #' @examples
 #' data(zone)
-#' round(getzoneprops(zone$zoneC,zone$zoneD,zone$glb),4)
-#' # zoneC=zoneC; zoneD=zoneDD;glb=glb;year=hyrs
-getzoneprops <- function(zoneC,zoneD,glb,year=1) { #zoneC=zoneC; zoneD=zoneDD;glb=zone$glb; year=1
+#' str(zone,max.level=1)
+#' # round(getzoneprops(zone$zoneC,zone$zoneD,zone$glb),4)
+#' # zoneC=zoneC; zoneD=zoneD;glb=glb;year=1
+getzoneprops <- function(zoneC,zoneD,glb,year=1) {
   numpop <- glb$numpop
   Nclass <- glb$Nclass
   sau <- getvar(zoneC,"SAU")
@@ -716,11 +717,12 @@ getzoneprops <- function(zoneC,zoneD,glb,year=1) { #zoneC=zoneC; zoneD=zoneDD;gl
   depletEx <- ExB/ExB0
   legaldepl <- legalmatB/B0
   propprot <- (matB - legalmatB)/matB
+  pqest <- getlistvar(zoneC,"qest")
   label <- c("B0","matureB","legalmatB","propprot","MSY",
-             "exB0","exploitB","SpBDepl","ExBDepl",
-             "legalDepl","MSYDepl","LML","bLML","harvestR","catch")
-  ans <- rbind(B0,matB,legalmatB,propprot,msy,ExB0,ExB,deplet,
-               depletEx,legaldepl,msydepl,lml,blml,harvestR,catch)
+             "exB0","exploitB","SpBDepl","ExBDepl","legalDepl",
+            "MSYDepl","LML","bLML","harvestR","catch","qest")
+  ans <- rbind(B0,matB,legalmatB,propprot,msy,ExB0,ExB,deplet,depletEx,
+               legaldepl,msydepl,lml,blml,harvestR,catch,pqest)
   rownames(ans) <- label
   tot <- numeric(length(rownames(ans))); names(tot) <- label
   tot[c(1:3,5:7)] <- rowSums(ans)[c(1:3,5:7)]
@@ -734,7 +736,8 @@ getzoneprops <- function(zoneC,zoneD,glb,year=1) { #zoneC=zoneC; zoneD=zoneDD;gl
   tot["bLML"] <- sum(wgts * ans["bLML",])
   tot["harvestR"] <- mean(ans["harvestR",])
   tot["catch"] <- sum(ans["catch",])
-  ans <- as.data.frame(round(cbind(ans,tot),4))
+  tot["qest"] <- NA
+  ans <- as.data.frame(round(cbind(ans,tot),5))
   colnames(ans) <- c(paste0("p",1:numpop),"zone")
   return(ans)
 }  # end of getzoneprops
