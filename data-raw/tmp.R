@@ -274,5 +274,76 @@ makeoutput(out,rundir,postfixdir,controlfile,hsfile="TasHS Package",
 
 
 
+# test SA recdevs----------------------------
+
+options("show.signif.stars"=FALSE,
+        "stringsAsFactors"=FALSE,
+        "max.print"=50000,
+        "width"=240)
+suppressPackageStartupMessages({
+  library(aMSE)
+  library(TasHS)
+  library(hutils)
+  library(hplot)
+  library(makehtml)
+  library(knitr)
+})
+dropdir <- getDBdir()
+prefixdir <- paste0(dropdir,"A_codeUse/aMSEUse/scenarios/")
+
+startime <- Sys.time()
+postfixdir <- "SA"
+verbose <- TRUE
+#hsfile <- "TasHS1_Tas.R"
+rundir <- filenametopath(prefixdir,postfixdir)
+controlfile <- paste0("control",postfixdir,".csv")
+outdir <- "C:/aMSE_scenarios/M15h7L75/"
+confirmdir(outdir)
+
+#ctrlfiletemplate(rundir,filename="testcontrolfile.csv")
+#source(paste0(dropdir,"A_Code/aMSE/data-raw/almostaccepted.R"))
+
+#source(paste0(rundir,"/",hsfile))
+hsargs <- list(mult=0.1,
+               wid = 4,
+               targqnt = 0.55,
+               maxtarg = c(150,150,150,150,150,150,150,150),
+               pmwts = c(0.65,0.25,0.1),
+               hcr = c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2),
+               startCE = 1992)
+doproduct=FALSE
+wtsc=c(7e-07,2e-06,4e-05,7e-07,5e-07,3e-07,1e-07,1e-07)
+
+zone <- makeequilzone(rundir,controlfile,doproduct=FALSE,
+                      verbose=FALSE)
+# declare main objects
+glb <- zone$glb
+condC <- zone$zone1$condC
+zoneC <- zone$zoneC
+zoneD <- zone$zoneD
+condC <- zone$zone1$condC
+zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,condC,calcpopC=calcpopC,
+                      sigR=1e-08,sigB=1e-08)
+hyrs <- glb$hyrs
+sauindex <- glb$sauindex
+popB0 <- getlistvar(zoneC,"B0")
+B0 <- tapply(popB0,sauindex,sum)
+popExB0 <- getlistvar(zoneC,"ExB0")
+ExB0 <- tapply(popExB0,sauindex,sum)
+sauZone <- getsauzone(zoneDD,glb,B0=B0,ExB0=ExB0)
+ssq <- getCPUEssq(condC$histCE,sauZone$cpue,glb)
+names(ssq) <- glb$saunames
+nsau <- glb$nSAU
+LFlog <- numeric(nsau); names(LFlog) <- glb$saunames
+minsccount <- mincount
+scwt <- wtsc
+for (sau in 1:nsau) {
+  if (length(mincount) > 1) minsccount <- mincount[sau]
+  if (length(wtsc) > 1) scwt <- wtsc[sau]
+  obsLFs <- preparesizecomp(condC$compdat$lfs[,,sau],mincount=minsccount)
+  LFlog[sau] <- getLFlogL(zoneDD$catchN,obsLFs,out$glb,wtsc=scwt,sau=sau)
+}
+totssq <- ssq + LFlog
+ans <- rbind(totssq,ssq,LFlog)
 
 

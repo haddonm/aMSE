@@ -3,6 +3,10 @@
 
 # LATEST UPDATE
 
+-   2022-06-08 aMSE 0.0.6 Have revised the ctrltemplate and datatemplate
+    generators so that they reflect a lambda = 0.75 and correctly use
+    the hyperstability. No EWN
+
 -   2022-06-06 aMSE 0.0.5. Have reviewed the dynamics in detail so that
     the outputs from the aMSE for each SAU more closely match the
     outputs from sizemod. The original disjunction was partly due to a

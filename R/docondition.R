@@ -334,17 +334,26 @@ getLFlogL <- function(catchN,obsLFs,glb,wtsc,sau) {
 #' @examples
 #' print("wait on internal data sets")
 getssqparts <- function(rundir,controlfile,calcpopC,mincount=100,wtsc=0.02) {
-  # rundir=rundir; controlfile=controlfile; calcpopC=calcexpectpopC; mincount=100;wtsc=0.02
+  # rundir=rundir; controlfile=controlfile; calcpopC=calcexpectpopC; mincount=100;wtsc=0.00001
   zone1 <- readctrlfile(rundir,infile=controlfile,verbose=TRUE)
   ctrl <- zone1$ctrl
   glb <- zone1$globals     # glb without the movement matrix
-  constants <- readsaudatafile(rundir,ctrl$datafile)    # make operating model
+  constants <- readsaudatafile(rundir,ctrl$datafile)
+  # make operating model
+  # zone <- makeequilzone(rundir,controlfile,doproduct=FALSE,
+  #                       verbose=FALSE)
+  # # declare main objects
+  # glb <- zone$glb
+  # condC <- zone$zone1$condC
+  # zoneC <- zone$zoneC
+  # zoneD <- zone$zoneD
+  #
   out <- setupzone(constants$constants,zone1,doproduct=FALSE,verbose=FALSE)
   zoneC <- out$zoneC
   zoneD <- out$zoneD
   glb <- out$glb             # glb now has the movement matrix
   zone1$globals <- glb
-  zoneC <- resetexB0(zoneC,zoneD) # rescale exploitB to avexplB after dynamics
+#  zoneC <- resetexB0(zoneC,zoneD) # rescale exploitB to avexplB after dynamics
   projC <- zone1$projC
   condC <- zone1$condC
   zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,condC,calcpopC=calcpopC,
@@ -362,7 +371,7 @@ getssqparts <- function(rundir,controlfile,calcpopC,mincount=100,wtsc=0.02) {
   LFlog <- numeric(nsau); names(LFlog) <- glb$saunames
   minsccount <- mincount
   scwt <- wtsc
-  for (sau in 1:glb$nSAU) {
+  for (sau in 1:nsau) {
     if (length(mincount) > 1) minsccount <- mincount[sau]
     if (length(wtsc) > 1) scwt <- wtsc[sau]
     obsLFs <- preparesizecomp(condC$compdat$lfs[,,sau],mincount=minsccount)
@@ -412,6 +421,7 @@ getssqparts <- function(rundir,controlfile,calcpopC,mincount=100,wtsc=0.02) {
 gettasdevssq <- function(param,rundir,ctrlfile,calcpopC,locyrs,sau,
                          obsLFs=obsLFs,wtsc=0.1,verbose=FALSE,outplot=FALSE,
                          console=FALSE,full=FALSE) {
+# ctrlfile=controlfile;
   zone1 <- readctrlfile(rundir,infile=ctrlfile,verbose=verbose)
   zone1$condC$recdevs[locyrs,sau] <- exp(param)
   ctrl <- zone1$ctrl
@@ -423,8 +433,8 @@ gettasdevssq <- function(param,rundir,ctrlfile,calcpopC,locyrs,sau,
   zoneD <- out$zoneD
   glb <- out$glb             # glb now has the movement matrix
   zone1$globals <- glb
-  zoneC <- resetexB0(zoneC,zoneD) # rescale exploitB to avexplB after dynamics
-  projC <- zone1$projC
+#  zoneC <- resetexB0(zoneC,zoneD) # rescale exploitB to avexplB after dynamics
+#  projC <- zone1$projC
   condC <- zone1$condC
   zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,condC,calcpopC=calcpopC,
                         sigR=1e-08,sigB=1e-08)

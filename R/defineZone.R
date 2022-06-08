@@ -1086,7 +1086,7 @@ resetexB0 <- function(zoneC,zoneD) {
 #' str(glb)
 #' }
 setupzone <- function(constants,zone1,doproduct,uplim=0.4,inc=0.005,verbose=TRUE) {
-  # constants=constants; zone1=zone1; doroduct=FALSE; uplim=0.4; inc=0.001; verbose=TRUE
+  # constants=constants; zone1=zone1; doproduct=FALSE; uplim=0.4; inc=0.001; verbose=TRUE
   ans <- makezoneC(zone1,constants) # initiates zoneC
   zoneC <- ans$zoneC
   glb <- ans$glb
