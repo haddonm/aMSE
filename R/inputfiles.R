@@ -65,10 +65,10 @@ ctrlfiletemplate <- function(indir,filename="controlsau.csv",devrec=-1) { # indi
    cat("datafile, saudata_test.csv, name of saudefs file \n",
        file=filename,append=TRUE)
    cat("bysau, 1, 1=TRUE and 0=FALSE  \n",file=filename,append=TRUE)
-   cat("\n",file=filename,append=TRUE)
+   cat("parfile, , name of file containing optimum parameters from sizemod \n",
+       file=filename,append=TRUE)
+   cat("\n\n",file=filename,append=TRUE)
    cat("zoneCOAST \n",file=filename,append=TRUE)
- #  cat("batch,  0, deprecated as batch jobs are run differently \n",
- #      file=filename, append=TRUE)
    cat("replicates,  100, number of replicates, usually 250, 500 or more  \n",
        file=filename, append=TRUE)
    cat("withsigR,  0.5, recruitment variability eg 0.5 \n",
@@ -86,8 +86,8 @@ ctrlfiletemplate <- function(indir,filename="controlsau.csv",devrec=-1) { # indi
    cat("SAUnames, sau6, sau7, sau8, sau9, sau10, sau11, sau12, sau13, labels for each SAU \n",
        file=filename,append=TRUE)   # possibly deprecated
    cat("initdepl, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, initial depletion levels for each SAU \n",
-       file=filename,append=TRUE)  # possibly deprecated
-   cat("\n",file=filename,append=TRUE)
+       file=filename,append=TRUE)  # Only the control file initdepl is used
+   cat("\n\n",file=filename,append=TRUE)
    cat("SIZE \n",file=filename,append=TRUE)
    cat("minc, 2, centre of minimum size class \n",file=filename,append=TRUE)
    cat("cw, 2, class width mm \n",file=filename,append=TRUE)
@@ -563,6 +563,14 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE) {
    runlabel <- getStr(indat[begin],1)
    datafile <- getStr(indat[begin+1],1)
    bysau <- getsingleNum("bysau",indat)
+   parfile <- getStr(indat[begin+3],1)
+   optpars=NULL
+   parsin=FALSE
+   if ((!is.na(parfile)) & (nchar(parfile) > 4)) {
+     paramfile <- filenametopath(rundir,parfile)
+     optpars <- exp(read.csv(paramfile,header=TRUE,row.names=1))
+     parsin <- TRUE
+   }
    batch <- getsingleNum("batch",indat)
    reps <- getsingleNum("replicates",indat)
    withsigR <- getsingleNum("withsigR",indat)
@@ -589,6 +597,19 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE) {
    randomseedP <- getsingleNum("randomseedP",indat)
    initLML <- getsingleNum("initLML",indat)
    projyrs <- getsingleNum("PROJECT",indat)
+   rows <- c("runlabel","datafile","bysau","replicates","withsigR","withsigB",
+             "withsigCE","nSAU","SAUpop","SAUnames","initdepl","minc","cw",
+             "Nclass","larvdisp","randomseed","randomseedP","initLML",
+             "Projections")
+   controldf <- as.data.frame(matrix(0,nrow=length(rows),ncol=nSAU,
+                                     dimnames=list(rows,SAUnames)))
+   controldf[,1] <- c(runlabel,datafile,bysau,reps,withsigR,withsigB,
+                      withsigCE,nSAU,NA,NA,NA,minc,cw,
+                      Nclass,larvdisp,randomseed,randomseedP,initLML,
+                      projyrs)
+   controldf["SAUpop",] <- SAUpop
+   controldf["SAUnames",] <- SAUnames
+   controldf["initdepl",] <- initdepl
    projLML <- NULL
    pyrnames <- NULL
    HS <- NULL
@@ -649,30 +670,41 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE) {
          compdat <- vector("list",sizecomp)
          for (i in 1:sizecomp) {
             lffilename <- removeEmpty(unlist(strsplit(indat[locsizecomp+i],",")))
+            lffiles <- c(lffiles,lffilename)
             compdat[[i]] <- getLFdata(rundir,lffilename)
          }
        } else {
          lffilename <- removeEmpty(unlist(strsplit(indat[locsizecomp+1],",")))
+         lffiles <- c(lffiles,lffilename)
          compdat <- getLFdata(rundir,lffilename)
       }
    }  # end of sizecomp loop
-   recdevs <- NULL
-   rdevs <- getsingleNum("RECDEV",indat)
-   if (rdevs > 0) {
-      recdevs <- matrix(-1,nrow=hyrs,ncol=nSAU,dimnames=list(hyrnames,SAUnames))
-      if (rdevs != hyrs) rdevs <- hyrs-4
-      #   stop("rows of recdevs not equal to conditioning years \n")
-      begin <- grep("RECDEV",indat) + 1
-      for (i in 1:rdevs) {
-         begin <- begin + 1
-         devs <- as.numeric(unlist(strsplit(indat[begin],",")))
-         recdevs[i,] <- devs[2:(nSAU+1)]
-      }
-   } # end of recdev loop
+   recdevs <- matrix(-1,nrow=hyrs,ncol=nSAU,dimnames=list(hyrnames,SAUnames))
+   if (parsin) {
+     firstrec <- 6
+     endrec <- length(optpars[,1])
+     recd <- as.matrix(optpars[(firstrec:endrec),])
+     recyrs <- as.numeric(gsub("d","",rownames(recd)))
+     pickrows <- match(recyrs,hyrnames)
+     recdevs[pickrows,] <- recd
+   } else {
+     rdevs <- getsingleNum("RECDEV",indat)
+     if (rdevs > 0) {
+        if (rdevs != hyrs)  #rdevs <- hyrs-4
+           stop("rows of control file recdevs not equal to conditioning years \n")
+        begin <- grep("RECDEV",indat) + 1
+        for (i in 1:rdevs) {
+           begin <- begin + 1
+           devs <- as.numeric(unlist(strsplit(indat[begin],",")))
+           recdevs[i,] <- devs[2:(nSAU+1)]
+        }
+     }
+   }# end of recdev loop
    # make output objects
    condC <- list(histCatch=histCatch,histyr=histyr,
                  histCE=histCE,yearCE=yearCE,initdepl=initdepl,
-                 compdat=compdat,recdevs=recdevs)#,Sel=NULL,SelWt=NULL)
+                 compdat=compdat,recdevs=recdevs,parsin=parsin,optpars=optpars,
+                 sizecomp=sizecomp,lffiles=lffiles,poprec=NULL)
    projC <- list(projLML=projLML,projyrs=projyrs,
                  Sel=NULL,SelWt=NULL,histCE=histCE)
    outctrl <- list(runlabel,datafile,reps,randomseed,randomseedP,
@@ -682,7 +714,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE) {
                        "catches","projection","bysau","rundir")
    globals <- list(numpop=numpop, nSAU=nSAU, midpts=midpts,Nclass=Nclass,
                    reps=reps,hyrs=hyrs,pyrs=projyrs,hyrnames=hyrnames,
-                   pyrnames=pyrnames,saunames=SAUnames,
+                   pyrnames=pyrnames,saunames=SAUnames,SAUpop=SAUpop,
                    larvdisp=larvdisp)
    totans <- list(SAUnames,SAUpop,minc,cw,larvdisp,randomseed,
                   initLML,condC,projC,globals,outctrl,catches,projyrs)
@@ -753,6 +785,8 @@ readdatafile <- function(numpop,indir,infile) {  # indir=rundir;infile="zone1sau
 #' @param rundir the directory in which the data file is to be found. This will
 #'     usually be the rundir for the scenario run
 #' @param infile the name of the specific datafile used.
+#' @param optpar the optimum parameters from sizemod used to replace inputs for
+#'     the main parameters estimated.
 #'
 #' @return a list of the constants matrix with values for each population and
 #'     the original matrix of sau values from readsaudatafile
@@ -760,7 +794,8 @@ readdatafile <- function(numpop,indir,infile) {  # indir=rundir;infile="zone1sau
 #'
 #' @examples
 #' print("wait on suitable data sets")
-readsaudatafile <- function(rundir,infile) {  # rundir=rundir; infile=ctrl$datafile
+#' # rundir=rundir; infile=ctrl$datafile;optpar=opar
+readsaudatafile <- function(rundir,infile,optpar=NULL) {
    filename <- filenametopath(rundir,infile)
    indat <- readLines(filename)   # reads the whole file as character strings
    nsau <- getsingleNum("nsau",indat)
@@ -770,7 +805,6 @@ readsaudatafile <- function(rundir,infile) {  # rundir=rundir; infile=ctrl$dataf
    saunames <- unlist(strsplit(txt,","))[2:(nsau+1)]
 #   saunames <- getConst(indat[grep("saunames",indat)],nsau)
 #   initdepl <- getConst(indat[grep("initdepl",indat)],nsau)
-   begin <- grep("PDFs",indat) + 1
 #   npar <- getConst(indat[begin],1)
    rows <- c("DLMax","sMaxDL","L50","sL50","L50inc","sL50inc","SigMax",
              "sSigMax","LML","Wtb","sWtb","Wtbtoa","sWtbtoa","Me","sMe",
@@ -780,13 +814,24 @@ readsaudatafile <- function(rundir,infile) {  # rundir=rundir; infile=ctrl$dataf
  #  numrow <- length(rows)
    npar <- length(rows)
    ans <- matrix(0,nrow=npar,ncol=nsau)
- #  begin <- begin + 1
+   begin <- grep("PDFs",indat) + 1
    for (i in 1:npar) {
       ans[i,] <- getConst(indat[begin],nsau)
       begin <- begin + 1
    } # completed filling ans matrix
    rownames(ans) <- rows
    colnames(ans) <- saunames
+   if (!is.null(optpar)) {
+      sourcerows <- c("LnR0","MaxDL","L95","qest","seldelta")
+      targetrow <- c("AvRec","DLMax","L50inc","qest","selL95p")
+      numvar <- length(sourcerows)
+      for (i in 1:numvar) {
+        replace <- optpar[sourcerows[i],]
+        if (sourcerows[i] == "L95")
+            replace <- optpar[sourcerows[i],] - ans["L50",]
+        ans[targetrow[i],] <- replace
+      }
+   }
    poprec <- matrix(0,nrow=numpop,ncol=3,
                     dimnames=list(1:numpop,c("sau","pop","prec")))
    begin <- grep("propREC",indat) + 2
@@ -794,7 +839,7 @@ readsaudatafile <- function(rundir,infile) {  # rundir=rundir; infile=ctrl$dataf
       poprec[i,] <- getConst(indat[begin],nb=3,index=1)
       begin <- begin + 1
    }
-   pop <- 1
+   pop <- 1  # needed for the following counting
    sauindex <- numeric(numpop); names(sauindex) <- poprec[,"sau"]
    for (i in 1:nsau) {
       npop <- saupop[i]
@@ -808,15 +853,15 @@ readsaudatafile <- function(rundir,infile) {  # rundir=rundir; infile=ctrl$dataf
    consts <- matrix(0,nrow=numrow,ncol=numpop,
                     dimnames=list(outrows,poprec[,"pop"]))
    consts["SAU",] <- poprec[,"sau"]
-   for (index in 1:npar) { # index=16
+   for (index in 1:npar) { # index=17
       vect <- ans[rows[index],]
       if (rows[index] == "AvRec") {
-         consts[rows[index],] <- log(vect[sauindex] * poprec[,"prec"])
+         consts[rows[index],] <- (log(vect[sauindex]) * poprec[,"prec"])
       } else {
          consts[rows[index],] <- vect[sauindex]
       }
    }
-   return(list(constants=consts,saudat=ans))
+   return(list(constants=consts,saudat=ans,poprec=poprec))
 } # end of readsaudatafile
 
 #' @title replaceVar replaces values of a variable in the input datafile
@@ -863,4 +908,195 @@ replaceVar <- function(infile,invar,newval) {
   write(indat,file=infile) #,row.names=FALSE)
 }  # end of replaceVar
 
+
+
+
+#' @title rewritecontrolfile generates a revised control file
+#'
+#' @description rewritecontrolfile is used to generate a new control file after
+#'     the option of reading in parameters from sizemod has been used. The
+#'     rewritten file contains the revised parameter values.
+#'
+#' @param indir the directory into which the new file should be written. This
+#'     would usually be the same as rundir, the scenario directory
+#' @param zone1 a large object inside the output object from makeequilzone that
+#'     contains SAUnames, SAUpop, minc, cw, larvdisp, randomseed, initLML,
+#'     condC, projC, globals, ctrl, catches, and projyrs. Obviously there is
+#'     some redundency.
+#'
+#' @return nothing but it does write a file called 'new_controlfile.csv' into
+#'     rundir
+#' @export
+#'
+#' @examples
+#' print("wait on internal data sets")
+rewritecontrolfile <- function(indir,zone1) { # indir=rundir; zone1=zone$zone1
+  ctrl <- zone1$ctrl
+  glb <- zone1$globals
+  condC <- zone1$condC
+  filen <- "new_controlfile.csv"
+  filename <- filenametopath(indir,filen)
+  cat("DESCRIPTION \n",file=filename,append=FALSE)
+  cat("Control file containing details of a particular run. Modify the  \n",
+      file=filename,append=TRUE)
+  cat("contents and this description to suit your own situation.  \n",
+      file=filename,append=TRUE)
+  cat("\n\n",file=filename,append=TRUE)
+  cat("START \n",file=filename,append=TRUE)
+  cat("runlabel,",ctrl$runlabel,", label for particular run \n",
+      file=filename,append=TRUE)
+  cat("datafile,",ctrl$datafile,", name of saudefs file \n",
+      file=filename,append=TRUE)
+  cat("bysau,",ctrl$bysau,", 1=TRUE and 0=FALSE  \n",file=filename,append=TRUE)
+  cat("parfile,NA, name of file containing optimum parameters from sizemod \n",
+      file=filename,append=TRUE)
+  cat("\n\n",file=filename,append=TRUE)
+  cat("zoneCOAST \n",file=filename,append=TRUE)
+  cat("replicates,",glb$reps,", number of replicates, usually 250, 500 or more  \n",
+      file=filename, append=TRUE)
+  cat("withsigR,",ctrl$withsigR,", recruitment variability eg 0.5 \n",
+      file=filename, append=TRUE)
+  cat("withsigB,",ctrl$withsigB,", process error on exploitable biomass \n",
+      file=filename, append=TRUE)
+  cat("withsigCE,",ctrl$withsigCE,", process error on cpue calculations  \n",
+      file=filename, append=TRUE)
+  cat("\n\n",file=filename,append=TRUE)
+  cat("ZONE \n",file=filename,append=TRUE)
+  cat("nSAU,",glb$nSAU,", number of spatial management units eg 2 \n",
+      file=filename,append=TRUE)
+  cat("SAUpop,",paste0(zone1$SAUpop,collapse=','),", number of populations per SAU in sequence \n",
+      file=filename,append=TRUE)
+  cat("SAUnames,",paste0(zone1$SAUnames,collapse=','),", labels for each SAU \n",
+      file=filename,append=TRUE)   # possibly deprecated
+  cat("initdepl,",paste0(condC$initdepl,collapse=','),", initial depletion levels for each SAU \n",
+      file=filename,append=TRUE)  # Only the control file initdepl is used
+  cat("\n\n",file=filename,append=TRUE)
+  cat("SIZE \n",file=filename,append=TRUE)
+  cat("minc,",zone1$minc,", centre of minimum size class \n",file=filename,append=TRUE)
+  cat("cw,",zone1$cw,", class width mm \n",file=filename,append=TRUE)
+  cat("Nclass,",glb$Nclass,", number of size classes \n",file=filename,append=TRUE)
+  cat("\n",file=filename,append=TRUE)
+  cat("RECRUIT \n",file=filename,append=TRUE)
+  cat("larvdisp,",glb$larvdisp,", rate of larval dispersal eg 0.01 = 0.5 percent in either direction\n",
+      file=filename,append=TRUE)
+  cat("\n",file=filename,append=TRUE)
+  cat("RANDOM \n",file=filename,append=TRUE)
+  cat("randomseed,",ctrl$randseed,", for repeatability of population definitions set to 0 otherwise \n",
+      file=filename,append=TRUE)
+  cat("randomseedP,",ctrl$randseedP,", for repeatability of projections set to 0 otherwise \n",
+      file=filename,append=TRUE)
+  cat("\n",file=filename,append=TRUE)
+  cat("initLML,",zone1$initLML,", the initial LML if no historical catches present \n",
+      file=filename,append=TRUE)  # deprecated
+  cat("\n",file=filename,append=TRUE)
+  cat("PROJECT,",glb$pyrs,", number of projection years for each simulation \n",
+      file=filename,append=TRUE)
+  cat("\n\n",file=filename,append=TRUE)
+  cat("PROJLML, need the same number as there are projection years \n",file=filename,
+      append=TRUE) # ensure there are Nyrs lines
+  pyrnames <- glb$pyrnames
+  projLML <- zone1$projC$projLML
+  for (i in 1:glb$pyrs) {
+    cat(pyrnames[i],",",projLML[i],", \n",
+        file=filename,append=TRUE)
+  }
+  cat("\n\n",file=filename,append=TRUE)
+  cat("CATCHES,",glb$hyrs,", if > 1 then how many years in the histLML \n\n",
+      file=filename,append=TRUE)
+  cat("CondYears, LML,",paste0(zone1$SAUnames,collapse=','),", \n",
+      file=filename,append=TRUE)
+  catches <- condC$histCatch
+  histyr <- condC$histyr
+  nyr <- nrow(catches)
+  for (i in 1:nyr) {   #  i=1
+    cat(paste0(histyr[i,],collapse=','),",",paste0(catches[i,],collapse=','),
+        ", \n",file=filename,append=TRUE)
+  }
+  cat("\n\n",file=filename,append=TRUE)
+  cat(" ,",paste0(zone1$SAUnames,collapse=','),", \n",
+      file=filename,append=TRUE)
+  cpue <- condC$histCE
+  cat("CEYRS ,",nrow(cpue),", \n",file=filename,append=TRUE)
+  yrs <- as.numeric(rownames(cpue))
+  nyr <- length(yrs)
+  for (i in 1:nyr) { # i=1
+    txt <- paste0(yrs[i],",",paste0(cpue[i,],collapse=','),",,")
+    txt <- gsub("NA","",txt)
+    cat(txt,", \n",file=filename,append=TRUE)
+  }
+  cat("\n\n",file=filename,append=TRUE)
+  cat("SIZECOMP,", condC$sizecomp ,", 1 = 1 filename, 2 = 2 filenames, etc. \n",
+      file=filename,append=TRUE)
+  for (i in 1:condC$sizecomp)
+    cat(condC$lffiles[i]," \n",file=filename,append=TRUE)
+  cat("\n\n",file=filename,append=TRUE)
+  recdevs <- condC$recdevs
+  yrs <- as.numeric(rownames(recdevs))
+  nyrs <- nrow(recdevs)
+  cat("RECDEV,",nyrs," \n",file=filename,append=TRUE)
+  cat("CondYears,",paste0(zone1$SAUnames,collapse=',')," \n",
+      file=filename,append=TRUE)
+  for (i in 1:nyrs) {
+    cat(yrs[i],",",paste0(recdevs[i,],collapse=','),", \n",
+        file=filename,append=TRUE)
+  }
+  cat("\n",file=filename,append=TRUE)
+} # end of rewritecontrolfile
+
+
+#' @title rewrwitedatafile generates a revised saudatafile
+#'
+#' @description rewritedatafile is used to generate a new saudata file after
+#'     the option of reading in parameters from sizemod has been used. The
+#'     rewritten file contains the revised parameter values.
+#'
+#' @param indir the directory into which the new file should be written. This
+#'     would usually be the same as rundir, the scenario directory
+#' @param glb the globals object
+#' @param zone1 a large object inside the output object from makeequilzone that
+#'     contains SAUnames, SAUpop, minc, cw, larvdisp, randomseed, initLML,
+#'     condC, projC, globals, ctrl, catches, and projyrs. Obviously there is
+#'     some redundency.
+#' @param saudat the main contents of the saudata file
+#'
+#' @return nothing but it does write a file called 'new_saudatafile.csv' into
+#'     the indir
+#' @export
+#'
+#' @examples
+#' print("wait on internal data sets")
+rewritedatafile <- function(indir,glb,zone1,saudat) {
+  filen <- "new_saudatafile.csv"
+  filename <- filenametopath(indir,filen)
+  cat("SAU definitions of Probability density function parameters for each variable \n",
+      file=filename,append=FALSE)
+  cat("Randomly asigned to each population except the proportion of recruitment \n",
+      file=filename,append=TRUE)
+  cat("which is literally allocated down in the popREC section. Average recruitment \n",
+      file=filename,append=TRUE)
+  cat("has a tiny sd which is to aid in simplifying conditioning. \n",
+      file=filename,append=TRUE)
+  cat("\n\n",file=filename,append=TRUE)
+  cat("SPATIAL \n",file=filename,append=TRUE)
+  cat("nsau,",glb$nSAU,", number of spatial management units  \n",file=filename,append=TRUE)
+  cat("saupop,",paste0(glb$SAUpop,collapse=','),", number of populations per SAU in sequence  \n",
+      file=filename,append=TRUE)
+  cat("saunames,",paste0(glb$SAUnames,collapse=','),", labels for each SAU  \n",file=filename,append=TRUE)
+  cat("\n\n",file=filename,append=TRUE)
+  nvars <- nrow(saudat)
+  vars <- rownames(saudat)
+  cat("PDFs,",nvars,", \n",file=filename,append=TRUE)
+  for (i in 1:nvars) {
+    cat(vars[i],paste0(saudat[i,],collapse=','),", \n",file=filename,append=TRUE)
+  }
+  cat("\n\n",file=filename,append=TRUE)
+  poprec <- zone1$condC$poprec
+  npop <- nrow(poprec)
+  cat("propREC,   \n",file=filename,append=TRUE)
+  cat("SAU, pop, propR,  \n",file=filename,append=TRUE)
+  for (i in 1:npop) {
+    cat(paste0(poprec[i,],collapse=','),", \n",file=filename,append=TRUE)
+  }
+  cat("\n\n",file=filename,append=TRUE)
+} # end of rewritesaudatafle.csv
 

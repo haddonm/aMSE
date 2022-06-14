@@ -523,7 +523,6 @@ oneyearrec <- function(steep,R0,B0,Bsp,sigR,devR=-1) {
 #' const <- condDat$constants
 #' blkpop <- condDat$blkpop
 #' numpop <- condDat$numpop
-#' blockI <- defineBlock(nblock,blkpop,numpop)
 #' popdefs <- definepops(nblock,blockI,const)
 #' pop1 <- makeabpop(popdefs[1,],condDat$midpts,
 #'                   condDat$ProjLML[popdefs[1,20]])

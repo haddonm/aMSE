@@ -21,6 +21,8 @@
 #'
 #' @examples
 #' print("wait on suitable internal data sets")
+#' # sauZone=out$condout$sauZone; saucpue=sauZone$cpue; filen="";histCE=out$condC$histCE
+#' # glb=out$glb;obscol=2
 compareCPUE <- function(histCE,saucpue,glb,rundir,filen="",obscol=2) {
   if (nchar(filen) > 0) filen <- filenametopath(rundir,filen)
   years <- as.numeric(rownames(histCE))
@@ -36,12 +38,12 @@ compareCPUE <- function(histCE,saucpue,glb,rundir,filen="",obscol=2) {
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,verbose=FALSE)
   parset(plots=doplots,margin=c(0.3,0.3,0.05,0.05),outmargin=c(0,1,0,0),
          byrow=FALSE)
-  for (sau in 1:nsau) {
+  for (sau in 1:nsau) {  #  sau = 1
     ssq[sau] <- sum((histCE[,sau] - cpue[,sau])^2,na.rm=TRUE)
     ymax <- getmax(c(cpue[,sau],histCE[,sau]))
-    plot(years,cpue[,sau],type="l",lwd=2,col=1,xlab="",ylab="",panel.first=grid(),
-         ylim=c(0,ymax),yaxs="i")
-    lines(years,histCE[,sau],lwd=2,col=2)
+    plot(years,cpue[,sau],type="l",lwd=2,col=1,xlab="",ylab="",
+         panel.first=grid(),ylim=c(0,ymax),yaxs="i")
+    lines((years),histCE[,sau],lwd=2,col=2)
     lab2 <- paste0(label[sau],"  ",round(ssq[sau],1))
     mtext(lab2,side=1,line=-1.3,cex=1.25)
   }
@@ -478,7 +480,7 @@ plotCNt <- function(Nt,glb,vline=NULL,start=3) {
 #' @examples
 #' print("wait on suitable data sets")
 plotconditioning <- function(zoneDD,glb,zoneC,histCE,rundir,recdevs) {
-  # zoneDD=zoneDD;glb=glb;zoneC=zoneC;histCE=condC$histCE;rundir=rundir
+  # zoneDD=zoneDD;glb=glb;zoneC=zoneC;histCE=condC$histCE;rundir=rundir;recdevs=condC$recdevs
   sauindex <- glb$sauindex
   popB0 <- getlistvar(zoneC,"B0")
   B0 <- tapply(popB0,sauindex,sum)

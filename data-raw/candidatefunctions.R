@@ -419,7 +419,7 @@ kable(msybypop)
 
 plotprep(width=8,height=4,newdev=FALSE,filen="")
 parset(cex=1.0,margin=c(0.5,0.5,0.1,0.1))
-plot(popmsy[,"Catch"],glb$SAUpop,col=sauindex,pch=16,cex=1.25,xlab="MSY by Population (t)",
+plot(popmsy[,"Catch"],glb$SAUnum,col=sauindex,pch=16,cex=1.25,xlab="MSY by Population (t)",
      ylab="SAU",panel.first=grid())
 
 

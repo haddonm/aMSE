@@ -1,5 +1,5 @@
 
-
+# parfile,parameters_15_7_75.csv,csv file with optimum parameter estimates from sizemod,,,,,,,
 
 
 options("show.signif.stars"=FALSE,
@@ -18,7 +18,8 @@ dropdir <- getDBdir()
 prefixdir <- paste0(dropdir,"A_codeUse/aMSEUse/scenarios/")
 
 startime <- Sys.time()
-postfixdir <- "M15h7L75_lowvar"
+#postfixdir <- "SA"
+postfixdir <- "HS81"
 verbose <- TRUE
 #hsfile <- "TasHS1_Tas.R"
 rundir <- filenametopath(prefixdir,postfixdir)
@@ -37,11 +38,13 @@ hsargs <- list(mult=0.1,
                pmwts = c(0.65,0.25,0.1),
                hcr = c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2),
                startCE = 1992)
-doproduct=FALSE
+
+
+#doproduct=FALSE
 
 #zone <- makeequilzone(rundir,controlfile,verbose=verbose)
 
-zone1 <- readctrlfile(rundir,infile=ctrlfile,verbose=verbose)
+zone1 <- readctrlfile(rundir,infile=controlfile,verbose=verbose)
 ctrl <- zone1$ctrl
 glb <- zone1$globals     # glb without the movement matrix
 bysau <- ctrl$bysau

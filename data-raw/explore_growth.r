@@ -16,7 +16,7 @@ glb <- condDat$globals
 nblock <- condDat$nblock
 blkdef <- condDat$blkpop
 numpop <- condDat$numpop
-blockI <- defineBlock(nblock,blkdef,numpop)
+
 midpts <- condDat$midpts
 set.seed(condDat$randomseed)
 blockNames <- condDat$blockNames

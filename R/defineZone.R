@@ -72,7 +72,7 @@ defineBlock <- function(numblk,blknum,numpop) {
 #'   print(popdefs)
 #'  }
 definepops <- function(inSAU,inSAUindex,const,glob) {
-  #  inSAU=nSAU; inSAUindex=SAUindex; const=constants; glob=glb
+  #  inSAU=nSAU; inSAUindex=SAUindex; const=saudat; glob=glb
   numpop <- glob$numpop
   hyrs <- glob$hyrs
   columns <- c("DLMax","L50","L95","SigMax","SaMa","SaMb","Wta","Wtb","Me",
@@ -599,12 +599,16 @@ makeequilzone <- function(rundir,ctrlfile="control.csv",doproduct=TRUE,verbose=T
   zone1 <- readctrlfile(rundir,infile=ctrlfile,verbose=verbose)
   ctrl <- zone1$ctrl
   glb <- zone1$globals     # glb without the movement matrix
-  bysau <- ctrl$bysau
+  bysau <- zone1$ctrl$bysau
+  opar <- NULL
+  parsin <- zone1$condC$parsin
+  if (parsin) opar <- as.matrix(zone1$condC$optpars)
   if (is.null(bysau)) bysau <- 0
   if (bysau) {
-    saudata <- readsaudatafile(rundir,ctrl$datafile)
+    saudata <- readsaudatafile(rundir,ctrl$datafile,optpar=opar)
     constants <- saudata$constants
     saudat <- saudata$saudat
+    zone1$condC$poprec <- saudata$poprec
   } else {
     constants <- readdatafile(glb$numpop,rundir,ctrl$datafile)
     saudat <- constants
@@ -616,6 +620,10 @@ makeequilzone <- function(rundir,ctrlfile="control.csv",doproduct=TRUE,verbose=T
   glb <- out$glb             # glb now has the movement matrix
   product <- out$product     # important bits usually saved in rundir
   zone1$globals <- glb
+  if (parsin) {
+    rewritecontrolfile(rundir,zone1)
+    rewritedatafile(rundir,zone1,saudat)
+  }
   # did the larval dispersal level disturb the equilibrium?
   # zoneD <- testequil(zoneC,zoneD,glb,verbose=verbose)
   # ans <- resetexB0(zoneC,zoneD) # rescale exploitB to avexplB after dynamics
@@ -656,17 +664,18 @@ makeequilzone <- function(rundir,ctrlfile="control.csv",doproduct=TRUE,verbose=T
 #' recruits <- c(636146,263878,819189,1112513,285025,671573.9)
 #' makemove(npop=6,recs=recruits,ld=0.04)
 makemove <- function(npop,recs,ld,sigmove=0.0) {
+  ldh <- ld/2.0
   if (npop < 3) {
     if (npop == 1) {
       move <- matrix(0,nrow=1,ncol=1,dimnames=list(1:1,1:1))
       move[1,1] <- 1
     }
     if (npop == 2) {
-      move <- matrix(c(0.5,0.5,0.5,0.5),nrow=npop,ncol=npop,dimnames=list(1:npop,1:npop))
+      move <- matrix(c((1-ldh),ldh,ldh,(1-ldh)),nrow=npop,ncol=npop,
+                     dimnames=list(1:npop,1:npop))
     }
   } else {
     move <- matrix(0,nrow=npop,ncol=npop,dimnames=list(1:npop,1:npop))
-    ldh <- ld/2.0
     move[1,1:2] <- c((1-ldh),ldh)
     recseq <- c(ldh,(1-ld),ldh)
     for (r in 2:(npop-1)) {
@@ -736,8 +745,7 @@ makezoneC <- function(zone,const) { # zone=zone1; const=constants
   larvdisp <- glb$larvdisp
   move <- makemove(numpop,recs,larvdisp)
   glb$move <- as.matrix(move)
-  glb$SAUpop <- as.vector(const["SAU",])
- # glb$saunames <- sort(unique(glb$SAUpop))
+  glb$SAUnum <- as.vector(const["SAU",])
   class(zoneC) <- "zoneC"
   ans <- list(zoneC=zoneC,glb=glb,popdefs=popdefs)
   return(ans)

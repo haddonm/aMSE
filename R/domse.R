@@ -149,6 +149,8 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   addtable(round(t(zoneDD$harvestR[(hyrs-9):hyrs,]),4),"final_harvestR.csv",
            rundir,category="zoneDD",
            caption="Last ten years of population vs harvest rate.")
+  addtable(round(saudat,5),"saudat.csv",rundir,category="zoneDD",
+           caption="SAU constant definitions")
   popdefs <- as.data.frame(t(getlistvar(zoneC,"popdef")))
   popdefs[,c(1:6,8:18)] <- round(popdefs[,c(1:6,8:18)],3) #so SAU can be txt
   popdefs[,"SAU"] <- glb$sauname[glb$sauindex]  #so SAU can be txt

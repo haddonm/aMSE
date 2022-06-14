@@ -32,4 +32,6 @@ compareCPUE generates a plot of the historical cpue and compares
 }
 \examples{
 print("wait on suitable internal data sets")
+# sauZone=out$condout$sauZone; saucpue=sauZone$cpue; filen="";histCE=out$condC$histCE
+# glb=out$glb;obscol=2
 }

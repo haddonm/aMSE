@@ -30,7 +30,6 @@ condDat <- readdatafile(filename)
 const <- condDat$constants
 blkpop <- condDat$blkpop
 numpop <- condDat$numpop
-blockI <- defineBlock(nblock,blkpop,numpop)
 popdefs <- definepops(nblock,blockI,const)
 pop1 <- makeabpop(popdefs[1,],condDat$midpts,
                   condDat$ProjLML[popdefs[1,20]])

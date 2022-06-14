@@ -161,7 +161,7 @@ changeline <- function(indir, filename, linenumber, newline,verbose=FALSE) {
 #' @examples
 #' print("wait on suitable data sets in data")
 #' # rundir=rundir; controlfile=controlfile;calcpopC=calcexpectpopC
-#' # verbose=TRUE; doproduct=FALSE; dohistoric=TRUE; mincount=100
+#' # verbose=TRUE; doproduct=TRUE; dohistoric=TRUE; mincount=100
 do_condition <- function(rundir,controlfile,calcpopC,
                          verbose=FALSE,doproduct=FALSE,dohistoric=TRUE,
                          mincount=100) {
@@ -200,6 +200,8 @@ do_condition <- function(rundir,controlfile,calcpopC,
   addtable(round(t(zoneDD$harvestR[(hyrs-9):hyrs,]),4),"final_harvestR.csv",
            rundir,category="zoneDD",
            caption="Last ten years of population vs harvest rate.")
+  addtable(round(zone$saudat,5),"saudat.csv",rundir,category="zoneDD",
+           caption="SAU constant definitions")
   popdefs <- getlistvar(zone$zoneC,"popdef")
   addtable(round(t(popdefs),3),"popdefs.csv",rundir,category="zoneDD",
            caption="Population vs Operating model parameter definitions")
@@ -227,7 +229,8 @@ do_condition <- function(rundir,controlfile,calcpopC,
   tottime <- round((condtime - starttime),3)
   times <- list(tottime=tottime,condtime=condtime,starttime=starttime)
   out <- list(times=times,glb=glb,ctrl=ctrl,zoneC=zoneC,zoneD=zoneD,zoneDD=zoneDD,
-              condC=condC,condout=condout,projC=projC,production=production)
+              condC=condC,condout=condout,projC=projC,production=production,
+              saudat=zone$saudat,constants=zone$constants)
   return(out)
 } # end of do_condition
 

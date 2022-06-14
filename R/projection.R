@@ -166,7 +166,7 @@ makezoneDP <- function(allyr,iter,glb) { #  projyr=nyrs;iter=reps;glb=glob
   nSAU <- glb$nSAU
   saunames <- glb$saunames
   N <- glb$Nclass
-  SAU <- glb$SAUpop
+  SAU <- glb$SAUnum
   yrnames <- c(glb$hyrnames,glb$pyrnames)
   namedims <- list(yrnames,1:numpop,1:iter)
   namendims <- list(glb$midpts,yrnames,1:numpop,1:iter)

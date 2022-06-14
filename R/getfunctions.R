@@ -404,27 +404,29 @@ getsauzone <- function(zoneD,glb,B0,ExB0) { # zoneD=zoneDD; glb=glb; B0=B0;ExB0=
   iSAU <- glb$sauindex
   SAU <- unique(iSAU)
   nSAU <- length(SAU)
-  matB <- getsum(zoneD$matureB,iSAU)
+  hyrnames <- glb$hyrnames
+  matB <- getsum(zoneD$matureB,iSAU); rownames(matB) <- hyrnames
   deplsB <- matB
   nsau <- glb$nSAU
   for (i in 1:nsau) deplsB[,i] <- deplsB[,i]/B0[i]
-  expB <- getsum(zoneD$exploitB,iSAU)
+  expB <- getsum(zoneD$exploitB,iSAU); rownames(expB) <- hyrnames
   depleB <- expB
   for (i in 1:nsau) depleB[,i] <- depleB[,i]/ExB0[i]
-  catch <- getsum(zoneD$catch,iSAU)
-  recruit <- getsum(zoneD$recruit,iSAU)
+  catch <- getsum(zoneD$catch,iSAU); rownames(catch) <- hyrnames
+  recruit <- getsum(zoneD$recruit,iSAU); rownames(recruit) <- hyrnames
   harvestR <- catch/expB
   cpue <- catch # just to have a labelled matrix ready
   wtzone <- zoneD$catch/catch[,(nSAU+1)]
   wtsau <- zoneD$catch
   for (mu in 1:nSAU) { # mu=1
-    wtsau[,(iSAU==mu)] <- zoneD$catch[,(iSAU==mu)]/catch[,mu]
     pick <- which(iSAU == mu)
+    wtsau[,pick] <- zoneD$catch[,pick]/catch[,mu]
     if (length(pick) > 1) {
-      cpue[,mu] <- rowSums(zoneD$cpue[,(iSAU==mu)] * wtsau[,(iSAU==mu)])
+      cpue[,mu] <- rowSums(zoneD$cpue[,pick] * wtsau[,pick])
     } else {
-      cpue[,mu] <- zoneD$cpue[,(iSAU==mu)] * wtsau[,(iSAU==mu)]
+      cpue[,mu] <- zoneD$cpue[,pick] * wtsau[,pick]
     }
+    cpue[1,mu] <- cpue[2,mu] # to allow for no catches in first year
   }
   cpue[,(nSAU+1)] <- rowSums(zoneD$cpue * wtzone)
   ans <- list(matB=matB,expB=expB,catch=catch,recruit=recruit,
