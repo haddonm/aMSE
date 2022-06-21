@@ -7,7 +7,7 @@
 #' @importFrom utils object.size browseURL packageDescription read.csv
 #' @importFrom utils write.table head tail winDialog
 #' @importFrom hutils getmax getmin removeEmpty splitDate which.closest
-#' @importFrom hutils digitsbyrow outfit %ni%
+#' @importFrom hutils digitsbyrow outfit %ni% quants
 #' @importFrom hplot parset plotprep pickbound
 #' @importFrom makehtml addplot addtable dirExists filenametopath
 #' @importFrom makehtml getextension htmltable logfilename make_html pathend

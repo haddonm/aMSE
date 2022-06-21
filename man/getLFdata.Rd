@@ -27,6 +27,7 @@ getLFdata reads the observed LF-composition data, which needs
 }
 \examples{
 print("wait on suitable internal data files")
+# rundir=rundir; filename="CZ_CommShell_2mm_130_to_210mm.csv"
 }
 \seealso{
 {

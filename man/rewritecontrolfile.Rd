@@ -4,7 +4,7 @@
 \alias{rewritecontrolfile}
 \title{rewritecontrolfile generates a revised control file}
 \usage{
-rewritecontrolfile(indir, zone1)
+rewritecontrolfile(indir, zone1, controlfile)
 }
 \arguments{
 \item{indir}{the directory into which the new file should be written. This
@@ -14,10 +14,12 @@ would usually be the same as rundir, the scenario directory}
 contains SAUnames, SAUpop, minc, cw, larvdisp, randomseed, initLML,
 condC, projC, globals, ctrl, catches, and projyrs. Obviously there is
 some redundency.}
+
+\item{controlfile}{name of the original control file}
 }
 \value{
-nothing but it does write a file called 'new_controlfile.csv' into
-    rundir
+nothing but it does write a file called 'oldcontrolfilename_new.csv'
+    into rundir
 }
 \description{
 rewritecontrolfile is used to generate a new control file after

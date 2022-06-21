@@ -102,10 +102,10 @@ definepops <- function(inSAU,inSAUindex,const,glob) {
                                  const["sL50C",pop])
     popdefs[pop,"deltaC"] <-rnorm(1,mean=const["deltaC",pop],
                                   const["sdeltaC",pop])
-    popdefs[pop,"Wtb"] <- rnorm(1,mean=const["Wtb",pop],
-                                const["sWtb",pop])  # wt parameters
-    popdefs[pop,"Wta"] <- const["Wtbtoa",pop] *
-      popdefs[pop,"Wtb"]^const["sWtbtoa",pop]
+    popdefs[pop,"Wtb"] <- rnorm(1,mean=const["Wtb",pop],const["sWtb",pop])
+    # popdefs[pop,"Wta"] <- const["Wtbtoa",pop] *
+    #   popdefs[pop,"Wtb"]^const["sWtbtoa",pop]
+    popdefs[pop,"Wta"] <- rnorm(1,mean=const["Wta",pop],const["sWta",pop])
     popdefs[pop,"steeph"] <- rnorm(1,mean=const["defsteep",pop],
                                    const["sdefsteep",pop])
     popdefs[pop,"AvRec"] <- rlnorm(1,meanlog=const["AvRec",pop],
@@ -621,8 +621,10 @@ makeequilzone <- function(rundir,ctrlfile="control.csv",doproduct=TRUE,verbose=T
   product <- out$product     # important bits usually saved in rundir
   zone1$globals <- glb
   if (parsin) {
-    rewritecontrolfile(rundir,zone1)
-    rewritedatafile(rundir,zone1,saudat)
+    rewritecontrolfile(rundir,zone1,ctrlfile)
+    rewritedatafile(rundir,glb,zone1,saudat)
+    if (verbose)
+      cat("Control and Data files rewritten after amending values from sizemod \n")
   }
   # did the larval dispersal level disturb the equilibrium?
   # zoneD <- testequil(zoneC,zoneD,glb,verbose=verbose)

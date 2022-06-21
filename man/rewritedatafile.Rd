@@ -20,7 +20,7 @@ some redundency.}
 \item{saudat}{the main contents of the saudata file}
 }
 \value{
-nothing but it does write a file called 'new_saudatafile.csv' into
+nothing but it does write a file called 'oldsaudatafile_new.csv' into
     the indir
 }
 \description{

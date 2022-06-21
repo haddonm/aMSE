@@ -2,6 +2,54 @@
 # hutils::listFunctions("C:/Users/User/Dropbox/A_code/aMSE/R/inputfiles.R")
 
 
+#' @title checkmsedata contains some tests of the niput MSE saudata file
+#'
+#' @param intxt the data file from readLines used in readsaudatafile
+#' @param rundir the rundir for the scenario
+#' @param verbose should test results be put to the console as well as filed,
+#'     default=TRUE
+#'
+#' @return nothing but will write a file to rundir and may write to the console
+#' @export
+#'
+#' @examples
+#' print("wait on example data sets")
+checkmsedata <- function(intxt,rundir,verbose=TRUE) { # intxt=indat;verbose=TRUE
+  filen <- filenametopath(rundir,"input_data_tests.txt")
+  cat("Input data test \n\n",file=filen,append=FALSE)
+  endrun <- FALSE
+  pickwta <- grep("Wtbtoa",intxt)[1]
+  if (!is.na(pickwta)) {
+    txt <- "datafile uses deprecated Wtbtoa input variable instead of Wta  \n"
+    if (verbose) cat(txt)
+    cat(txt,file=filen,append=TRUE)
+    endrun=TRUE
+  }
+  pickL <- grep("lambda",intxt)[1]
+  if (pickL == 0) {
+    txt <- "datafile does not have a line containing a lambda value  \n"
+    if (verbose) cat(txt)
+    cat(txt,file=filen,append=TRUE)
+    endrun=TRUE
+  }
+  pickL <- grep("qest",intxt)[1]
+  if (pickL == 0) {
+    txt <- "datafile does not have a line containing a qest value  \n"
+    if (verbose) cat(txt)
+    cat(txt,file=filen,append=TRUE)
+    endrun=TRUE
+  }
+  # if (nrow(poprec) != numpop) {
+  #   txt <- "Number of population recruitment proportions different from numpop  \n"
+  #   if (verbose) cat(txt)
+  #   cat(txt,file=filen,append=TRUE)
+  #   endrun=TRUE
+  # }
+  if (endrun) stop(cat("See input_data_tests.txt for data errors \n"))
+} # end of checkmsedata
+
+
+
 #' @title ctrlfiletemplate generates a template input control file
 #'
 #' @description ctrlfiletemplate generates a standardized control file
@@ -801,13 +849,11 @@ readsaudatafile <- function(rundir,infile,optpar=NULL) {
    nsau <- getsingleNum("nsau",indat)
    saupop <- getConst(indat[grep("saupop",indat)],nsau)
    numpop <- sum(saupop)
+   checkmsedata(intxt=indat,rundir=rundir,verbose=TRUE)
    txt <- indat[grep("saunames",indat)]
    saunames <- unlist(strsplit(txt,","))[2:(nsau+1)]
-#   saunames <- getConst(indat[grep("saunames",indat)],nsau)
-#   initdepl <- getConst(indat[grep("initdepl",indat)],nsau)
-#   npar <- getConst(indat[begin],1)
    rows <- c("DLMax","sMaxDL","L50","sL50","L50inc","sL50inc","SigMax",
-             "sSigMax","LML","Wtb","sWtb","Wtbtoa","sWtbtoa","Me","sMe",
+             "sSigMax","LML","Wtb","sWtb","Wta","sWta","Me","sMe",
              "AvRec","sAvRec","defsteep","sdefsteep","L50C","sL50C",
              "deltaC","sdeltaC","MaxCEpars","sMaxCEpars","selL50p",
              "selL95p","SaMa","L50Mat","sL50Mat","lambda","qest")
@@ -856,7 +902,7 @@ readsaudatafile <- function(rundir,infile,optpar=NULL) {
    for (index in 1:npar) { # index=17
       vect <- ans[rows[index],]
       if (rows[index] == "AvRec") {
-         consts[rows[index],] <- (log(vect[sauindex]) * poprec[,"prec"])
+         consts[rows[index],] <- log(vect[sauindex] * poprec[,"prec"])
       } else {
          consts[rows[index],] <- vect[sauindex]
       }
@@ -923,18 +969,19 @@ replaceVar <- function(infile,invar,newval) {
 #'     contains SAUnames, SAUpop, minc, cw, larvdisp, randomseed, initLML,
 #'     condC, projC, globals, ctrl, catches, and projyrs. Obviously there is
 #'     some redundency.
+#' @param controlfile name of the original control file
 #'
-#' @return nothing but it does write a file called 'new_controlfile.csv' into
-#'     rundir
+#' @return nothing but it does write a file called 'oldcontrolfilename_new.csv'
+#'     into rundir
 #' @export
 #'
 #' @examples
 #' print("wait on internal data sets")
-rewritecontrolfile <- function(indir,zone1) { # indir=rundir; zone1=zone$zone1
+rewritecontrolfile <- function(indir,zone1,controlfile) { # indir=rundir; zone1=zone$zone1
   ctrl <- zone1$ctrl
   glb <- zone1$globals
   condC <- zone1$condC
-  filen <- "new_controlfile.csv"
+  filen <- gsub(".csv","_new.csv",controlfile)
   filename <- filenametopath(indir,filen)
   cat("DESCRIPTION \n",file=filename,append=FALSE)
   cat("Control file containing details of a particular run. Modify the  \n",
@@ -1059,14 +1106,15 @@ rewritecontrolfile <- function(indir,zone1) { # indir=rundir; zone1=zone$zone1
 #'     some redundency.
 #' @param saudat the main contents of the saudata file
 #'
-#' @return nothing but it does write a file called 'new_saudatafile.csv' into
+#' @return nothing but it does write a file called 'oldsaudatafile_new.csv' into
 #'     the indir
 #' @export
 #'
 #' @examples
 #' print("wait on internal data sets")
 rewritedatafile <- function(indir,glb,zone1,saudat) {
-  filen <- "new_saudatafile.csv"
+  olddatfile <- zone1$ctrl$datafile
+  filen <-gsub(".csv","_new.csv",olddatfile)
   filename <- filenametopath(indir,filen)
   cat("SAU definitions of Probability density function parameters for each variable \n",
       file=filename,append=FALSE)
@@ -1087,7 +1135,7 @@ rewritedatafile <- function(indir,glb,zone1,saudat) {
   vars <- rownames(saudat)
   cat("PDFs,",nvars,", \n",file=filename,append=TRUE)
   for (i in 1:nvars) {
-    cat(vars[i],paste0(saudat[i,],collapse=','),", \n",file=filename,append=TRUE)
+    cat(vars[i],",",paste0(saudat[i,],collapse=','),", \n",file=filename,append=TRUE)
   }
   cat("\n\n",file=filename,append=TRUE)
   poprec <- zone1$condC$poprec

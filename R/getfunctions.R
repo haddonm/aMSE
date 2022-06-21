@@ -181,6 +181,7 @@ getConst <- function(inline,nb,index=2) { # parses lines containing numbers
 #'
 #' @examples
 #' print("wait on suitable internal data files")
+#' # rundir=rundir; filename="CZ_CommShell_2mm_130_to_210mm.csv"
 getLFdata <- function(rundir,filename) {
   filen <- filenametopath(rundir,filename)
   lfdat <- read.csv(filen,header=TRUE)

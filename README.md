@@ -3,6 +3,12 @@
 
 # LATEST UPDATE
 
+-   2022-06-22 aMSE 0.0.7 Now have rewritecontrolfile and
+    rewritesaudatafile and the option to include a table of parameters
+    from sizemod into the inputs of aMSE. Have begun development of
+    functions to aid comparing the output from different scenarios,
+    including tables and plots. No EWN.
+
 -   2022-06-08 aMSE 0.0.6 Have revised the ctrltemplate and datatemplate
     generators so that they reflect a lambda = 0.75 and correctly use
     the hyperstability. No EWN

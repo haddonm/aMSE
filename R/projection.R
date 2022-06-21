@@ -221,9 +221,9 @@ modprojC <- function(zoneC,glob,projC) { # zoneC=zone$zoneC; glob=glb; projC=zon
   projyrs <- projC$projyrs
   popdefs <- getlistvar(zoneC,"popdef")
   projSel <- array(0,dim=c(glob$Nclass,numpop,projyrs),
-                   dimnames=list(midpts,glob$SAUpop,1:projyrs))
+                   dimnames=list(midpts,glob$SAUnum,1:projyrs))
   projSelWt <- array(0,dim=c(glob$Nclass,numpop,projyrs),
-                   dimnames=list(midpts,glob$SAUpop,1:projyrs))
+                   dimnames=list(midpts,glob$SAUnum,1:projyrs))
   pLML <- projC$projLML
   diffLML <- unique(pLML)
   nLML <- length(diffLML)
