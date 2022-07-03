@@ -570,7 +570,7 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
       zoneDP$catch[year,,iter] <- dyn["catch",]
       zoneDP$acatch[year,,iter] <- hcrout$acatch
       zoneDP$catsau[year,,iter] <- saudyn$saucatch
-      zoneDP$harvestR[year,,iter] <- dyn["catch",]/dyn["exploitb",]
+      zoneDP$harvestR[year,,iter] <- dyn["catch",]/dyn["midyexpB",]
       zoneDP$cpue[year,,iter] <- dyn["cpue",]
       zoneDP$cesau[year,,iter] <- saudyn$saucpue
       zoneDP$recruit[year,,iter] <- dyn["recruits",]

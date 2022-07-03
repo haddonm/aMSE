@@ -34,7 +34,7 @@ changecolumn is designed to be used when conditioning the OM
     between the predicted and observed CPUE for a selected range of years.
     If the length of new values is not the same as the selected linerange
     the function will stop with a warning. When a line is changed then all
-    -1 values are changed to +1
+    -1 values are changed to +1. Used in optimizerecdevs
 }
 \examples{
 print("wait on suitable internal data sets")

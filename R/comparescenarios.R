@@ -1,13 +1,14 @@
 
 
-#' @title comparevar generates the quantiles for eahc of a set of input scenarios
+#' @title comparevar generates the quantiles for each of a set of input scenarios
 #'
 #' @description comparevar generates quantiles for each of a set of input
 #'     scenarios. It takes the full timeline of dynamics and outputs just the
-#'     projections and the quantiles of those projections
+#'     projections and the quantiles of those projections. Used when comparing
+#'     scenarios after multiple runs. Used when post-processing results.
 #'
 #' @param dyn this is a list of the out$sauout$zonePsau produced by each
-#'     scenario. This has to be be generated from teh saved RData files from
+#'     scenario. This has to be be generated from the saved RData files from
 #'     each scenario
 #' @param glbc a list of the global objects from each scenario being compared
 #' @param scenes a  list of the out$ctrl$runlabel from each scenario

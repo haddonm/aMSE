@@ -1,6 +1,6 @@
 #
 # outcond=outcond
-# postfixdir <- "HS21"
+# postfixdir <- "HS81"
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
@@ -20,7 +20,7 @@
 # matureL = c(70,200)
 # wtatL = c(80,200)
 # mincount=100
-
+#
 
 #' @title do_MSE an encapsulating function to hold the details of a single run
 #'
@@ -194,11 +194,11 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   NAS <- list(Nt=zoneDP$Nt,catchN=zoneDP$catchN)
   # NumNe=zoneDP$NumNe, mid-year numbers-at-size removed to save space
   zoneDP <- zoneDP[-c(17,16,15)]
-  histCE <- condC$histCE
+ # histCE <- condC$histCE
   B0 <- getvar(zoneC,"B0")
   ExB0 <- getvar(zoneC,"ExB0")
   sauout <- sauplots(zoneDP,NAS,glb,rundir,B0,ExB0,
-                     startyr=startyr,addCI=TRUE,histCE=histCE)
+                     startyr=startyr,addCI=TRUE,histCE=condC$histCE)
   diagnosticsproj(sauout$zonePsau,glb,rundir,nrep=ndiagprojs)
   outzone <- poptozone(zoneDP,NAS,glb,
                        B0=sum(getvar(zoneC,"B0")),

@@ -48,62 +48,6 @@ addpops <- function(invar,nyrs,reps) {  # invar=invar; glb=glb
   return(result)
 } # end of addpops
 
-#' @title alldirExists Checks the existence of both a run and data directory
-#'
-#' @description alldirExists answers the questions 'do both a rundir and a
-#'     datadir directory exist?' It uses dir.exists and reports existence if
-#'     already present and provides a stop warning if either does not exist. Of
-#'     course it can also be used to determine whether a single directory exists.
-#'     By default the second directory, indir2 = indir1. This allows for the
-#'     datadir = rundir within aMSE, but also allows for a separate datadir.
-#'
-#' @param indir1 a character string containing the name of the first directory
-#'     whose existence is to be checked before it is created if it
-#'     does not already exist.
-#' @param indir2 a character string containing the name of a second directory
-#'     whose existence is to be checked, by default this has the same value as
-#'     indir1
-#' @param make if the directory does NOT exist should it be created.
-#'     default = FALSE; if make=FALSE and a directory does not exist
-#'     a warning will be given to the console.
-#' @param verbose default=TRUE, prints directory status to the console,
-#'     If make is set to FALSE and a directory does not exist a
-#'     warning will always be given.
-#'
-#' @return a message to the screen if the directory exists or is
-#'     created; if make is TRUE then it also creates the directory as
-#'     listed in 'indir1'.
-#' @export
-#'
-#' @examples
-#' indirect <- getwd()
-#' alldirExists(indirect)
-alldirExists <- function(indir1,indir2=indir1,make=FALSE,verbose=TRUE) {
-  if (dir.exists(indir1)) {
-    if (verbose) cat("rundir, ",indir1,":  exists  \n")
-  } else {
-    if (make) {
-      dir.create(indir1, recursive = TRUE)
-      if (verbose) cat(indir1,":  created  \n")
-    } else {
-      warning(cat(indir1,":  does not exist \n"))
-    }
-  }
-  if (indir2 != indir1) {
-    if (dir.exists(indir2)) {
-      if (verbose) cat("datadir, ",indir2,":  exists  \n")
-    } else {
-      if (make) {
-        dir.create(indir2, recursive = TRUE)
-        if (verbose) cat("datadir, ",indir2,":  created  \n")
-      } else {
-        warning(cat("datadir, ",indir2,":  does not exist \n"))
-      }
-    }
-  } # end of datadir != rundir
-}  # end of alldirExists
-
-
 #' @title catchweightCE uses historical catch-by-sau to make weighted zone cpue
 #'
 #' @description catchweightCE is used when characterizing the historical
@@ -142,7 +86,7 @@ catchweightCE <- function(cedat,cdat,nsau) {
 #'     if one wanted to conduct a retrospective analysis on what would have
 #'     happened should we have introduced the HS sooner, one could use
 #'     something like the following to change the value to 44 implying to start
-#'     projections in 2017.
+#'     projections in 2017, in stead of 2021, which would have3 been 48.
 #'     changevar(varname="CATCHES",newvalue=44,filename="controlsau.csv",
 #'               rundir=rundir)
 #'      This can only change a single value on a single line but can be used to
@@ -206,7 +150,7 @@ changevar <- function(filename,rundir,varname,newvalue,prompt=FALSE,verbose=TRUE
 #' @title confirmdir checks to see if a directory exists and makes it if not
 #'
 #' @description confirmdir enables one to be sure a selected directory exists.
-#'     If it has not bee created then confirmdir will create it if it does not
+#'     If it has not been created then confirmdir will create it if it does not
 #'     already exist. This is useful when defining output directories on the
 #'     hard drive where large objects may be stored.
 #'
@@ -470,6 +414,7 @@ poptozone <- function(inzone,NAS=NULL,glb, B0, ExB0) {
   deplsB <- matureB/B0
   exploitB <- addpops(inzone$exploitB,nyrs,reps)
   depleB <- exploitB/ExB0
+  midyexpB <- addpops(inzone$midyexpB,nyrs,reps)
   recruit <- addpops(inzone$recruit,nyrs,reps)
   catch <- addpops(inzone$catch,nyrs,reps)
   TAC <- addpops(inzone$acatch,nyrs,reps)
@@ -482,7 +427,7 @@ poptozone <- function(inzone,NAS=NULL,glb, B0, ExB0) {
   popcat <- inzone$catch
   popce <- inzone$cpue
   for (iter in 1:reps) {
-    harvestR[,iter] <- catch[,iter]/exploitB[,iter]
+    harvestR[,iter] <- catch[,iter]/midyexpB[,iter]
     for (yr in 1:nyrs) {
       totC <- sum(popcat[yr,,iter],na.rm=TRUE)
       cpue[yr,iter] <- sum(popce[yr,,iter] * (popcat[yr,,iter]/totC),na.rm=TRUE)
@@ -495,9 +440,10 @@ poptozone <- function(inzone,NAS=NULL,glb, B0, ExB0) {
       }
     }
   }
-  outzone <- list(matureB=matureB,exploitB=exploitB,catch=catch,
-                  acatch=inzone$acatch,TAC=TAC,harvestR=harvestR,cpue=cpue,
-                  recruit=recruit,deplsB=deplsB,depleB=depleB,
+  harvestR[1,] <- 0   # to account for the missing first year of midyexpB
+  outzone <- list(matureB=matureB,exploitB=exploitB,midyexpB=midyexpB,
+                  catch=catch,acatch=inzone$acatch,TAC=TAC,harvestR=harvestR,
+                  cpue=cpue,recruit=recruit,deplsB=deplsB,depleB=depleB,
                   catchN=catchN,Nt=Nt)
   return(outzone)
 } # end of poptozone
@@ -734,6 +680,7 @@ zonetosau <- function(inzone,NAS=NULL,glb, B0, ExB0) { # inzone=zoneDP; NAS=NAS;
   sauExB0 <- tapply(ExB0,sauindex,sum)
   matureB <- poptosau(invar,glb)
   exploitB <- poptosau(inzone$exploitB,glb)
+  midyexpB <- poptosau(inzone$midyexpB,glb)
   recruit <- poptosau(inzone$recruit,glb)
   catlab <- glb$midpts[(N-catN+1):N]
   catchN <- array(data=0,dim=c(catN,nyrs,nsau,reps), # define some arrays
@@ -782,10 +729,10 @@ zonetosau <- function(inzone,NAS=NULL,glb, B0, ExB0) { # inzone=zoneDP; NAS=NAS;
         }
       } # end of dealing with numbers-at-size
     }
-    harvestR[,,iter] <- catch[,,iter]/exploitB[,,iter]
+    harvestR[,,iter] <- catch[,,iter]/midyexpB[,,iter]
   }
-  outsau <- list(matureB=matureB,exploitB=exploitB,catch=catch,
-                 acatch=inzone$acatch,harvestR=harvestR,cpue=cpue,
+  outsau <- list(matureB=matureB,exploitB=exploitB,midyexpB=midyexpB,
+                 catch=catch,acatch=inzone$acatch,harvestR=harvestR,cpue=cpue,
                  recruit=recruit,deplsB=deplsB,depleB=depleB,
                  catchN=catchN,Nt=Nt) #,NumNe=NumNe
   return(outsau)

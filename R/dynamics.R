@@ -129,7 +129,7 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,sigR=1e-08,sigB=1e-08) 
     zoneDD$midyexpB[year,] <- dyn["midyexpB",]
     zoneDD$matureB[year,] <- dyn["matureb",]
     zoneDD$catch[year,] <- dyn["catch",]
-    zoneDD$harvestR[year,] <- dyn["catch",]/out$dyn["exploitb",]
+    zoneDD$harvestR[year,] <- dyn["catch",]/out$dyn["midyexpB",]
     zoneDD$cpue[year,] <- dyn["cpue",]
     zoneDD$recruit[year,] <- dyn["recruits",]
     zoneDD$deplsB[year,] <- dyn["deplsB",]

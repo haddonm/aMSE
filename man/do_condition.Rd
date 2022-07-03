@@ -60,7 +60,7 @@ do_condition is a utility function that can be used to speed the
 \examples{
 print("wait on suitable data sets in data")
 # rundir=rundir; controlfile=controlfile;calcpopC=calcexpectpopC
-# verbose=TRUE; doproduct=TRUE; dohistoric=TRUE; mincount=100
+# verbose=TRUE; doproduct=FALSE; dohistoric=TRUE; mincount=100
 }
 \seealso{
 {

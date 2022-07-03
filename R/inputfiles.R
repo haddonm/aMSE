@@ -2,12 +2,61 @@
 # hutils::listFunctions("C:/Users/User/Dropbox/A_code/aMSE/R/inputfiles.R")
 
 
+#' Title
+#' @param rundir the directory in which all files relating to a
+#'     particular run are to be held.
+#' @param controlfile default="control.csv", the filename of the control
+#'     file present in rundir containing information regarding the run.
+#' @param verbose Should progress comments be printed to console, default=TRUE#'
+#'
+#' @return nothing but it does plot a graph
+#' @export
+#'
+#' @examples
+#' print("wait on data sets")
+checksizecompdata <- function(rundir,controlfile,verbose=TRUE) {
+  zone1 <- readctrlfile(rundir,infile=controlfile,verbose=verbose)
+  setuphtml(rundir)
+  compdat <- zone1$condC$compdat$lfs
+  if (is.null(compdat))
+    stop(cat("No size-composition file found in copntrol file \n"))
+  palfs <- zone1$condC$compdat$palfs
+  saunames <- zone1$SAUnames
+  nsau <- length(saunames)
+  histyr <- zone1$condC$histyr
+  setuphtml(rundir)
+  addtable(palfs,"sizecomp_obs_by_year_by_SAU.csv",rundir,
+           category="predictedcatchN",
+           caption="Number of sizecomp observations by year and SAU.")
+  for (plotsau in 1:nsau) {
+    lfs <- preparesizecomp(compdat[,,plotsau],mincount=0)
+    yrsize <- as.numeric(colnames(lfs))
+    pickyr <- match(yrsize,histyr[,"year"])
+    LML <- histyr[pickyr,"histLML"]
+    plotsizecomp(rundir=rundir,incomp=lfs,SAU=saunames[plotsau],lml=LML,
+                 catchN=NULL,start=NA,proportion=TRUE,
+                 console=FALSE)
+  }
+    replist <- NULL
+    projy <- 0
+    runnotes <- c(controlfile,paste0("SAU = ",nsau))
+    make_html(replist = replist,  rundir = rundir,
+              controlfile=controlfile, datafile=zone1$ctrl$datafile,
+              width = 500, openfile = TRUE,  runnotes = runnotes,
+              verbose = verbose, packagename = "aMSE",  htmlname = "sizecomp")
+    if (verbose) cat("finished  \n")
+} # end of checksizecompdata
+
 #' @title checkmsedata contains some tests of the niput MSE saudata file
 #'
 #' @param intxt the data file from readLines used in readsaudatafile
 #' @param rundir the rundir for the scenario
 #' @param verbose should test results be put to the console as well as filed,
 #'     default=TRUE
+#'
+#' @seealso{
+#'  \link{readsaudatafile}
+#' }
 #'
 #' @return nothing but will write a file to rundir and may write to the console
 #' @export

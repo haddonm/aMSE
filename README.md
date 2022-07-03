@@ -3,6 +3,11 @@
 
 # LATEST UPDATE
 
+-   2022-06-29 aMSE 0.0.8 Corrected a large mistake where the estimated
+    SAU harvest rates were being biased high because the SAU’s end of
+    year exploitable biomass was being used instead of the mid-year
+    exploitable biomass.
+
 -   2022-06-22 aMSE 0.0.7 Now have rewritecontrolfile and
     rewritesaudatafile and the option to include a table of parameters
     from sizemod into the inputs of aMSE. Have begun development of
@@ -169,9 +174,8 @@ dbdir <- getDBdir()
 prefixdir <- paste0(dbdir,"A_CodeUse/aMSEUse/scenarios/")
 postfixdir <- "M15h75"
 rundir <- paste0(prefixdir,postfixdir)
-datadir <- rundir
-alldirExists(rundir,datadir,verbose=TRUE)
-#> rundir,  C:/Users/Malcolm/Dropbox/A_CodeUse/aMSEUse/scenarios/M15h75 :  exists
+confirmdir(rundir)
+#> C:/Users/Malcolm/Dropbox/A_CodeUse/aMSEUse/scenarios/M15h75  already exists
 controlfile <- "controlM15h75.csv"
 # equilibrium zone -------------------------------------------------------------
 # You now need to ensure that there is, at least, a control.csv, and a 

@@ -181,7 +181,7 @@ getConst <- function(inline,nb,index=2) { # parses lines containing numbers
 #'
 #' @examples
 #' print("wait on suitable internal data files")
-#' # rundir=rundir; filename="CZ_CommShell_2mm_130_to_210mm.csv"
+#' # rundir=rundir; filename="lf_WZ90-20.csv"
 getLFdata <- function(rundir,filename) {
   filen <- filenametopath(rundir,filename)
   lfdat <- read.csv(filen,header=TRUE)
@@ -411,11 +411,12 @@ getsauzone <- function(zoneD,glb,B0,ExB0) { # zoneD=zoneDD; glb=glb; B0=B0;ExB0=
   nsau <- glb$nSAU
   for (i in 1:nsau) deplsB[,i] <- deplsB[,i]/B0[i]
   expB <- getsum(zoneD$exploitB,iSAU); rownames(expB) <- hyrnames
+  midyexpB <-  getsum(zoneD$midyexpB,iSAU); rownames(midyexpB) <- hyrnames
   depleB <- expB
   for (i in 1:nsau) depleB[,i] <- depleB[,i]/ExB0[i]
   catch <- getsum(zoneD$catch,iSAU); rownames(catch) <- hyrnames
   recruit <- getsum(zoneD$recruit,iSAU); rownames(recruit) <- hyrnames
-  harvestR <- catch/expB
+  harvestR <- catch/midyexpB
   cpue <- catch # just to have a labelled matrix ready
   wtzone <- zoneD$catch/catch[,(nSAU+1)]
   wtsau <- zoneD$catch
@@ -430,7 +431,7 @@ getsauzone <- function(zoneD,glb,B0,ExB0) { # zoneD=zoneDD; glb=glb; B0=B0;ExB0=
     cpue[1,mu] <- cpue[2,mu] # to allow for no catches in first year
   }
   cpue[,(nSAU+1)] <- rowSums(zoneD$cpue * wtzone)
-  ans <- list(matB=matB,expB=expB,catch=catch,recruit=recruit,
+  ans <- list(matB=matB,expB=expB,midyexpB=midyexpB,catch=catch,recruit=recruit,
               harvestR=harvestR,cpue=cpue,deplsB=deplsB,depleB=depleB)
   return(ans)
 }  # end of getsauzone

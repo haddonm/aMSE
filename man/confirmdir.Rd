@@ -19,7 +19,7 @@ nothing but it can create a directory
 }
 \description{
 confirmdir enables one to be sure a selected directory exists.
-    If it has not bee created then confirmdir will create it if it does not
+    If it has not been created then confirmdir will create it if it does not
     already exist. This is useful when defining output directories on the
     hard drive where large objects may be stored.
 }

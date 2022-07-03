@@ -26,7 +26,8 @@ invisibly returns the biological properties of the populations
 biology_plots generates the yield vs spawning biomass,
     weight-at-lenght, and emergence plots for all populations. In
     addition, it also tabulates the biological properties of each
-    population and SAU and the total zone
+    population and SAU and the total zone. This is only called in
+    do_MSE.
 }
 \examples{
 args(biology_plots)

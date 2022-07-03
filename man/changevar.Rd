@@ -29,7 +29,7 @@ changevar is a DANGEROUS function for lazy people. I say that
     if one wanted to conduct a retrospective analysis on what would have
     happened should we have introduced the HS sooner, one could use
     something like the following to change the value to 44 implying to start
-    projections in 2017.
+    projections in 2017, in stead of 2021, which would have3 been 48.
     changevar(varname="CATCHES",newvalue=44,filename="controlsau.csv",
               rundir=rundir)
      This can only change a single value on a single line but can be used to

@@ -23,3 +23,8 @@ checkmsedata contains some tests of the niput MSE saudata file
 \examples{
 print("wait on example data sets")
 }
+\seealso{
+{
+ \link{readsaudatafile}
+}
+}

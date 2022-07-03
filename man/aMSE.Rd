@@ -13,9 +13,9 @@ The aMSE package provides functions to facilitate
     to age accurately and consistently). The growth dynamics are
     described using the inverse logistic curve (see Haddon et al.
     2008). Earlier versions of this invertebrate MSE are described
-    on A development version is #useDynLib aMSE, registration = TRUE
-    #importom Rcpp evalCpp
-    available on GitHub at github.com/haddonm/aMSE.
+    in Haddon et al, (2013) and Haddon and Mundy (2016). A development
+    version of this R package is available on GitHub at
+    https://github.com/haddonm/aMSE.
 }
 \section{Data sets}{
 

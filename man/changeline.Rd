@@ -27,13 +27,15 @@ nothing but it does alter a line in a text file. Optionally it may
 changeline enables a text file to be changed line by line.
     One identifies a given line, perhaps by using 'findlinenumber', and
     this can then be replaced by an input character string. Obviously this
-    is a fine way to mess up a data file so use with care.
+    is a fine way to mess up a data file so use with care. Used in
+    optimizerecdevs and sauavrecssq
 }
 \examples{
 print("wait on an example")
 }
 \seealso{
 {
- \link{findlinenumber}, \link{changevar}
+ \link{findlinenumber}, \link{changevar}, \link{optimizerecdevs},
+ \link{sauavrecssq}
 }
 }

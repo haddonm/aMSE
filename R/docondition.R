@@ -6,7 +6,7 @@
 #'     between the predicted and observed CPUE for a selected range of years.
 #'     If the length of new values is not the same as the selected linerange
 #'     the function will stop with a warning. When a line is changed then all
-#'     -1 values are changed to +1
+#'     -1 values are changed to +1. Used in optimizerecdevs
 #'
 #' @param rundir the rundir for the scenario
 #' @param filename the character name of the control file
@@ -55,7 +55,8 @@ changecolumn <- function(rundir, filename, linerange, column,newvect,
 #' @description changeline enables a text file to be changed line by line.
 #'     One identifies a given line, perhaps by using 'findlinenumber', and
 #'     this can then be replaced by an input character string. Obviously this
-#'     is a fine way to mess up a data file so use with care.
+#'     is a fine way to mess up a data file so use with care. Used in
+#'     optimizerecdevs and sauavrecssq
 #'
 #' @param indir the directory path in which to find the text file. Usually,
 #'     rundir
@@ -66,7 +67,8 @@ changecolumn <- function(rundir, filename, linerange, column,newvect,
 #' @param verbose should confirmation be output to the console. default=FALSE
 #'
 #' @seealso{
-#'  \link{findlinenumber}, \link{changevar}
+#'  \link{findlinenumber}, \link{changevar}, \link{optimizerecdevs},
+#'  \link{sauavrecssq}
 #' }
 #'
 #' @return nothing but it does alter a line in a text file. Optionally it may
@@ -161,7 +163,7 @@ changeline <- function(indir, filename, linenumber, newline,verbose=FALSE) {
 #' @examples
 #' print("wait on suitable data sets in data")
 #' # rundir=rundir; controlfile=controlfile;calcpopC=calcexpectpopC
-#' # verbose=TRUE; doproduct=TRUE; dohistoric=TRUE; mincount=100
+#' # verbose=TRUE; doproduct=FALSE; dohistoric=TRUE; mincount=100
 do_condition <- function(rundir,controlfile,calcpopC,
                          verbose=FALSE,doproduct=FALSE,dohistoric=TRUE,
                          mincount=100) {
@@ -342,15 +344,6 @@ getssqparts <- function(rundir,controlfile,calcpopC,mincount=100,wtsc=0.02) {
   ctrl <- zone1$ctrl
   glb <- zone1$globals     # glb without the movement matrix
   constants <- readsaudatafile(rundir,ctrl$datafile)
-  # make operating model
-  # zone <- makeequilzone(rundir,controlfile,doproduct=FALSE,
-  #                       verbose=FALSE)
-  # # declare main objects
-  # glb <- zone$glb
-  # condC <- zone$zone1$condC
-  # zoneC <- zone$zoneC
-  # zoneD <- zone$zoneD
-  #
   out <- setupzone(constants$constants,zone1,doproduct=FALSE,verbose=FALSE)
   zoneC <- out$zoneC
   zoneD <- out$zoneD

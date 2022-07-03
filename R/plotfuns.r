@@ -406,7 +406,7 @@ onezoneplot <- function(invar,rundir,glb,CIprobs,varname,startyr,addfile=TRUE) {
   plotprep(width=7,height=4,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
   parset(plots=c(1,1))
   ymax <- getmax(invar[pickyr,])
-  CI <- apply(invar,1,quantile,probs=CIprobs)
+  CI <- apply(invar,1,quantile,probs=CIprobs,na.rm=TRUE)
   plot(yrnames[pickyr],invar[pickyr,1],type="l",lwd=1,col="grey",ylab=varname,
        xlab="Years",panel.first=grid(),ylim=c(0,ymax),yaxs="i")
   for (i in 1:reps) lines(yrnames[pickyr],invar[pickyr,i],col="grey",lwd=1)
@@ -1000,8 +1000,8 @@ preparesizecomp <- function(sizecomp,mincount=100) { # sizecomp=compdat[,,sau]; 
   totals <- colSums(sizecomp,na.rm=TRUE)
   pick <- which(totals > mincount)
   sizecomp <- sizecomp[,pick]
-  numcol <- ncol(sizecomp)
-  sizecomp <- sizecomp[,2:numcol] # ignore the length column
+  # numcol <- ncol(sizecomp)
+  # sizecomp <- sizecomp[,2:numcol] # ignore the length column
   return(sizecomp)
 } # end of preparesizecomp
 
@@ -1033,7 +1033,7 @@ preparesizecomp <- function(sizecomp,mincount=100) { # sizecomp=compdat[,,sau]; 
 sauplots <- function(zoneDP,NAS,glb,rundir,B0,ExB0,startyr,addCI=TRUE,
                      histCE=NULL,tabcat="projSAU") {
   # zoneDP=zoneDP;NAS=NAS;glb=glb;rundir=rundir;B0=B0;ExB0=ExB0;
-  # startyr=48; addCI=TRUE;histCE=histCE; tabcat="projSAU"
+  # startyr=48; addCI=TRUE;histCE=condC$histCE; tabcat="projSAU"
   zonePsau <- zonetosau(zoneDP,NAS,glb,B0,ExB0)
   label <-  c("cpue","catch","acatch","matureB","exploitB","recruit","harvestR")
   out <- vector("list",length(label))
