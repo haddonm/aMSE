@@ -49,7 +49,8 @@ compareCPUE <- function(histCE,saucpue,glb,rundir,filen="",obscol=2) {
   }
   mtext("CPUE",side=2,line=-0.3,outer=TRUE,cex=1.25)
   if (nchar(filen) > 0) {
-    caption <- "Comparison of Observed CPUE with that predicted by operating model."
+    caption <- paste0("Comparison of Observed CPUE (red line) with that ",
+                      "predicted by operating model (black line).")
     addplot(filen,rundir=rundir,category="condition",caption)
   }
   return(ssq)

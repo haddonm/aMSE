@@ -13,7 +13,30 @@ knitr::opts_chunk$set(
 )
 ```
 
+# aMSE
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+This packages up a new Abalone Management Strategy Evaluation framework. It has a novel structure that is based around the spatial ideas of populations within spatial management units (SAUs), within a zone:
+
+* zone - highest geographical level. Is simply the totality of the spatial management units.
+
+* SAU - spatial assessment units. In Tasmania these would currently be the classical statistical blocks.
+
+* population - literally a population. These are the active components within the simulation framework. The dynamics of the simulation are based around the populations, although, with positive larval dispersal (the default) there is some dependency of neighbouring populations on each other.
+
+
+This conceptual structure has implications for how the simulations are conditioned during the management strategy testing. While it is still the case that the general properties of each SAU are used to set the scene for each SAU's component populations, the advent of sufficient GPS logger data now allows a more formal definition of the productivity of each population. Currently, the modelling assumes that each population is linearly arranged around the coastline, and this will allow, where available, specific catch/yield data to be used to define the bounds of each population within an SAU. 
+
+An important change from previous designs is that larval dispersal is implemented explicitly rather than implicitly being held constant. This alters the dynamics so that analytical equilibrium methods no longer work and we need to resort to iterative approaches to equilibrium if the larval dispersal rate is > 0.0.
+
+Of course, adding such a component increases the number of options that may need to be explored, but currently we envisage including a very low, a middle range, and a relatively high level of larval dispersal, to examine its implications.
+
+
 # LATEST UPDATE
+
+* 2022-07-10 aMSE 0.0.9 Added data sets to allow for examples and documentation to illustrate the conditioning and running of the MSE. Added adjustavrec as a function, nade a wrapper rnormz and rlnormz to enable zero variation while still using up a random number so the sequence was maintained. Ready for production work. No EWN.  
 
 * 2022-06-29 aMSE 0.0.8 Corrected a large mistake where the estimated SAU harvest rates were being biased high because the SAU's end of year exploitable biomass was being used instead of the mid-year exploitable biomass. 
 
@@ -35,25 +58,6 @@ knitr::opts_chunk$set(
 
 
 
-# aMSE
-
-<!-- badges: start -->
-<!-- badges: end -->
-
-This packages up a new Abalone Management Strategy Evaluation framework. It has a novel structure that is based around the spatial ideas of populations within spatial management units (SAUs), within a zone:
-
-* zone - highest geographical level. Is simply the totality of the spatial management units.
-
-* SAU - spatial assessment units. In Tasmania these would currently be the classical statistical blocks.
-
-* population - literally a population. These are the active components within the simulation framework. The dynamics of the simulation are based around the populations, although, with positive larval dispersal (the default) there is some dependency of neighbouring populations on each other.
-
-
-This conceptual structure has implications for how the simulations are conditioned during the management strategy testing. While it is still the case that the general properties of each SAU are used to set the scene for each SAU's component populations, the advent of sufficient GPS logger data now allows a more formal definition of the productivity of each population. Currently, the modelling assumes that each population is linearly arranged around the coastline, and this will allow, where available, specific catch/yield data to be used to define the bounds of each population within an SAU. 
-
-An important change from previous designs is that larval dispersal is implemented explicitly rather than implicitly being held constant. This alters the dynamics so that analytical equilibrium methods no longer work and we need to resort to iterative approaches to equilibrium if the larval dispersal rate is > 0.0.
-
-Of course, adding such a component increases the number of options that may need to be explored, but currently we envisage including a very low, a middle range, and a relatively high level of larval dispersal, to examine its implications.
 
 ## Installation
 

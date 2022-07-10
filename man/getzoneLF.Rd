@@ -21,5 +21,7 @@ getzoneLF extracts all LF data from a zone across
     matrix is compressed into a Nclass x Nyrs matrix
 }
 \examples{
-print("An example needs to be written")
+data(zone)
+zonelf <- getzoneLF(zone$zoneD,zone$glb)
+str(zonelf)
 }

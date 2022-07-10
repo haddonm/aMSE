@@ -264,7 +264,7 @@ getline <- function(rundir,filen,varname,nobs) {
 #' @examples
 #'  data(zone)
 #'  zoneC <- zone$zoneC
-#'  getlistvar(zoneC,"MSY")
+#'  getlistvar(zoneC,"MSY") # not defined in the internal data
 #'  getlistvar(zoneC,"B0")
 #'  getlistvar(zoneC,"popdef","AvRec")
 getlistvar <- function(zoneC,indexvar,indexvar2="") {
@@ -308,9 +308,9 @@ getlistvar <- function(zoneC,indexvar,indexvar2="") {
 #'
 #' @examples
 #'  txtline <- "Depleted, TRUE"
-#'  aMSE:::getLogical(txtline,nb=1)
+#'  getLogical(txtline,nb=1)
 #'  txtline2 <- "calcthis, TRUE, FALSE"
-#'  aMSE:::getLogical(txtline2,nb=2)
+#'  getLogical(txtline2,nb=2)
 getLogical <- function(inline,nb) {  #inline <- txtline; nb=2
   tmp <- unlist(strsplit(inline,","))
   tmp <- removeEmpty(tmp)
@@ -611,8 +611,7 @@ getvect <- function(zoneC,invar) {
   return(ans)
 } # end of getvect
 
-##  inzone <- zone1; indexVar <- "Nt"
-## gets all LF data from a zone across pops and years
+
 #' @title getzoneLF extracts all LF data from a zone across pops and years
 #'
 #' @description getzoneLF extracts all LF data from a zone across
@@ -627,7 +626,9 @@ getvect <- function(zoneC,invar) {
 #' @export
 #'
 #' @examples
-#' print("An example needs to be written")
+#' data(zone)
+#' zonelf <- getzoneLF(zone$zoneD,zone$glb)
+#' str(zonelf)
 getzoneLF <- function(zoneD,glb) { # need to define years
   numpop <- glb$numpop
   hyrs <- glb$hyrs
@@ -657,8 +658,8 @@ getzoneLF <- function(zoneD,glb) { # need to define years
 #'
 #' @examples
 #' data(zone)
-#' zoneprod <- getzoneprod(zone$product)
-#' head(zoneprod,20)
+#' outprod <- getzoneprod(zone$product)
+#' print(outprod[1:25,])
 getzoneprod <- function(product) {
   numrow <- dim(product)[1]
   rows <- rownames(product[,,1])
@@ -667,7 +668,6 @@ getzoneprod <- function(product) {
   zoneprod <- matrix(0,nrow=numrow,ncol=length(columns),
                      dimnames=list(rows,columns))
   for (i in 1:numpop) zoneprod <- zoneprod + product[,,i]
-  #head(zoneprod,20)
   zoneprod[,"AnnH"] <- apply(product[,"AnnH",],1,mean,na.rm=TRUE)
   zoneprod[,"Deplet"] <- zoneprod[,"MatB"]/zoneprod[1,"MatB"]
   zoneprod[,"RelCE"] <- apply(product[,"RelCE",],1,mean,na.rm=TRUE)
@@ -693,9 +693,7 @@ getzoneprod <- function(product) {
 #'
 #' @examples
 #' data(zone)
-#' str(zone,max.level=1)
-#' # round(getzoneprops(zone$zoneC,zone$zoneD,zone$glb),4)
-#' # zoneC=zoneC; zoneD=zoneD;glb=glb;year=1
+#' ans <- getzoneprops(zone$zoneC,zone$zoneD,zone$glb)
 getzoneprops <- function(zoneC,zoneD,glb,year=1) {
   numpop <- glb$numpop
   Nclass <- glb$Nclass

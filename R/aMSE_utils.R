@@ -238,6 +238,18 @@ copyto <- function(prefixdir,fromdir, todir, filelist,
   }
   if (verbose)
     for (i in 1:nfile) cat(filelist[i], " has been copied to ",todir,"\n")
+  newfilelist <- dir(tdir)  # change saudata file name in controlfile
+  pickC <- grep("control",newfilelist)
+  if (length(pickC) == 0)
+    stop(cat("No recognizable control file in ",tdir,"\n"))
+  filename <- filenametopath(tdir,newfilelist[pickC])
+  indat <- readLines(filename)
+  pickD <- grep("saudata",newfilelist)
+  if (length(pickD) == 0)
+    stop(cat("No recognizable saudata file in ",tdir,"\n"))
+  pick <- grep("datafile",indat)
+  indat[pick] <- paste0("datafile, ",newfilelist[pickD]," , name of saudata file,")
+  writeLines(indat,con=filename)
   if (verbose)
     cat("Be sure to change the control, data, and run files appropriately. \n")
   return(tdir)
@@ -293,12 +305,7 @@ findlinenumber <- function(rundir,filename,inc=20) {  # rundir=rundir; filename=
 #' @export
 #'
 #' @examples
-#' data(lf10)
-#' mids <- seq(138,210,2)
-#' answer <- makewidedat(lf10,mids)
-#' answer[1:20,]
-#' answerC <- makewidedat(lf10,mids,counts=TRUE)
-#' answerC[1:20,]
+#' print("wait on data sets")
 makewidedat <- function(inlong,mids,counts=FALSE) { # inlong=lf; mids=mids
   columns <- colnames(inlong)
   pickcol <- match(c("year","length","propcounts"),columns)
@@ -483,6 +490,91 @@ prepareDDNt <- function(inNt,incatchN,glb) { # Nt=zoneDD$Nt; catchN=zoneDD$catch
   }
   return(list(Nt=Nt,catchN=catchN))
 } # end of prepareDDNt
+
+
+#' @title rnormz when sd=0 it returns rep(mean,n) but also uses n random numbers
+#'
+#' @description when rnorm is used with sd=0 it returns the mean but it does not
+#'     use up any of the random numbers produced by the pseudo-random number
+#'     generator. Hence, if one just uses rnorm with sd=0 sometimes, then the
+#'     results would differ if it was repeated with sd > 0 because a slightly
+#'     different pseudo-random number sequence would eventuate. rnormz is a
+#'     wrapper function that returns the mean if sd = 0, but also uses up the
+#'     required number of random values.
+#'
+#' @param n number of random numbers needed
+#' @param mean the mean of the distribution, could be a vector, default=0
+#' @param sd the standard deviation of the distribution, could be a vector,
+#'     default = 1
+#'
+#' @seealso{
+#'   \link{rlnormz}
+#' }
+#'
+#' @return a vector of length n or Normal random numbers of mu = mean and stdev
+#'     = sd, if sd=0 it returns the mean, but uses n random numbers.
+#' @export
+#'
+#' @examples
+#' set.seed(12345)
+#' rnorm(5, mean=5, sd=1)
+#' rnorm(1,mean=5,sd=1)
+#' set.seed(12345)
+#' rnorm(5,mean=5,sd=0)
+#' rnorm(1,mean=5,sd=1)
+#' set.seed(12345)
+#' rnormz(5,mean=5,sd=0)
+#' rnorm(1,mean=5,sd=1)
+rnormz <- function(n,mean=0,sd=1) {
+  if (sd > 0) {
+    return(rnorm(n,mean=mean,sd=sd))
+  } else {
+    tmp <- rnorm(n,mean=mean,sd=1) # use up n random numbers
+    return(rep(mean,n))
+  }
+} # end of rnormz
+
+#' @title rlnormz when sd=0 it returns rep(mean,n) but also uses n random numbers
+#'
+#' @description when rlnorm is used with sd=0 it returns the meanlog but it does
+#'     not use up any of the random numbers produced by the pseudo-random number
+#'     generator. Hence, if one just uses rlnorm with sd=0 sometimes, then the
+#'     results would differ if it was repeated with sd > 0 because a slightly
+#'     different pseudo-random number sequence would eventuate. rlnormz is a
+#'     wrapper function that returns the meanlog if sdlog = 0, but also uses up
+#'     the required number of random values.
+#'
+#' @param n number of random numbers needed
+#' @param meanlog the mean of the distribution, on the log scale, default=0
+#' @param sdlog the standard deviation of the distribution, on the log scale,
+#'     default = 1
+#'
+#' @seealso{
+#'   \link{rnormz}
+#' }
+#'
+#' @return a vector of length n of Log-Normal random numbers, if sd=0 it returns
+#'     the meanlog, but uses n random numbers.
+#' @export
+#'
+#' @examples
+#' set.seed(12345)
+#' rlnorm(5, meanlog=5, sdlog=1)
+#' rlnorm(1,meanlog=5,sdlog=1)
+#' set.seed(12345)
+#' rlnorm(5,meanlog=5,sdlog=0)
+#' rlnorm(1,meanlog=5,sdlog=1)
+#' set.seed(12345)
+#' rlnormz(5,meanlog=5,sdlog=0)
+#' rlnorm(1,meanlog=5,sdlog=1)
+rlnormz <- function(n,meanlog=0,sdlog=1) {
+  if (sdlog > 0) {
+    return(rlnorm(n,meanlog=meanlog,sdlog=sdlog))
+  } else {
+    tmp <- rlnorm(n,meanlog=meanlog,sdlog=1) # use up n random numbers
+    return(rep(exp(meanlog),n))
+  }
+} # end of rlnormz
 
 #' @title sautopop translates a vector of SAU properties into population properties
 #'

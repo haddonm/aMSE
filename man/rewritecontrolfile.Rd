@@ -27,5 +27,10 @@ rewritecontrolfile is used to generate a new control file after
     rewritten file contains the revised parameter values.
 }
 \examples{
-print("wait on internal data sets")
+\dontrun{
+  data(zone1)
+  tmpdir <- tempdir()
+  rewritecontrolfile(tmpdir,zone1,"controlS21.csv")
+  dir(tmpdir)
+}
 }

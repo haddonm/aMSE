@@ -2,10 +2,9 @@
 
 
 
-options("show.signif.stars"=FALSE,
-        "stringsAsFactors"=FALSE,
-        "max.print"=50000,
-        "width"=240)
+
+options("show.signif.stars"=FALSE,"stringsAsFactors"=FALSE,
+        "max.print"=50000,"width"=240)
 suppressPackageStartupMessages({
   library(aMSE)
   library(TasHS)
@@ -18,31 +17,52 @@ dropdir <- getDBdir()
 prefixdir <- paste0(dropdir,"A_codeUse/aMSEUse/scenarios/")
 
 startime <- Sys.time()
-postfixdir <- "M15h7L75"
+postfixdir <- "S21"
 verbose <- TRUE
-#hsfile <- "TasHS1_Tas.R"
 rundir <- filenametopath(prefixdir,postfixdir)
 controlfile <- paste0("control",postfixdir,".csv")
-outdir <- "C:/aMSE_scenarios/M15h7L75/"
-confirmdir(outdir)
+confirmdir(rundir)
 
 
-# explore zonebiology --------------------------------------
+data(zone1)
+data(saudat)
 
-filen <- "zonebiology.csv"
 
-filename <- filenametopath(rundir,filen)
-filename
+rewritecontrolfile(rundir,zone1,controlfile=controlfile)
+rewritedatafile(rundir,zone1,saudat)
+rewritecompdata(rundir,zone1)
 
-biol <- read.csv(filename,header=TRUE)
+# need to rename the control and datafiles to remove the '_new' postfix.
 
-plotprep(width=8, height=4.5,newdev=FALSE)
-parset()
-x <- biol[,"B0"]*biol[,"MSYDepl"]
-plot1(x,biol[,"MSY"],type="p",pch=16,cex=1,col=factor(biol[,"SAU"]))
-model <- lm(biol[,"MSY"] ~ x - 1)
-abline(model,col=1,lwd=2)
-summary(model)
+hsargs <- list(mult=0.1,
+               wid = 4,
+               targqnt = 0.55,
+               maxtarg = c(150,150,150,150,150,150,150,150),
+               pmwts = c(0.65,0.25,0.1),
+               hcr = c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2),
+               startCE = 1992)
+
+
+
+out <- do_condition(rundir,controlfile,
+                    calcpopC=calcexpectpopC,
+                    verbose = TRUE,
+                    doproduct = TRUE,
+                    dohistoric=TRUE,
+                    mincount=120)
+
+aMSE::makeoutput(out,rundir,postfixdir,controlfile,hsfile="TasHS Package",
+                 doproject=FALSE,openfile=TRUE,verbose=FALSE)
+
+
+
+
+adjustavrec(rundir,out$glb,out$ctrl,calcpopC=calcexpectpopC,verbose=TRUE)
+
+
+
+
+
 
 
 

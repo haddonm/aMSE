@@ -1,4 +1,98 @@
 
+#' @title adjustavrec re-fits the AvRec saudatafile values in the MSE
+#'
+#' @description adjustavrec is used during the conditioning of the MSE. Once the
+#'     different SAU have been characterized and the data file values settled,
+#'     when do_condition is run the fit of the predicted cpue and
+#'     size-composition data can often be improved by re-fitting the AvRec
+#'     constants in each SAU to adjust their values to better suit the population
+#'     characteristics once random variation is added to each population's
+#'     properties. adjustavrec does this automatically. Be wary of this function
+#'     because it directly alters the values of AvRec inside the saudata.csv
+#'     file.
+#'
+#' @param rundir the full path to the directory in which all files relating to a
+#'     particular run are to be held.
+#' @param glb the globals object
+#' @param ctrl the control object - contains datafile and controlfile names
+#' @param calcpopC a function that takes the output from hcrfun and generates
+#'     the actual catch per population expected in the current year.
+#' @param verbose Should progress comments be printed to console, default=TRUE
+#'
+#' @return nothing though it will write results to the console if verbose=TRUE
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'   # needs at least libraries, aMSE, hutils, makehtml, TasHS
+#'   dropdir <- getDBdir()
+#'   prefixdir <- paste0(dropdir,"A_codeUse/aMSEUse/scenarios/")
+#'   startime <- Sys.time()
+#'   postfixdir <- "S21"
+#'   verbose <- TRUE
+#'   rundir <- filenametopath(prefixdir,postfixdir)
+#'   controlfile <- paste0("control",postfixdir,".csv")
+#'   confirmdir(rundir)
+#'   data(zone1)
+#'   data(saudat)
+#'   rewritecontrolfile(rundir,zone1,controlfile=controlfile)
+#'   rewritedatafile(rundir,zone1,saudat)
+#'   rewritecompdata(rundir,zone1)
+#'   hsargs <- list(mult=0.1,wid = 4,targqnt = 0.55,
+#'                  maxtarg = c(150,150,150,150,150,150,150,150),
+#'                  pmwts = c(0.65,0.25,0.1),
+#'                  hcr = c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2),
+#'                  startCE = 1992)
+#'   out <- do_condition(rundir,controlfile,calcpopC=calcexpectpopC,
+#'                       verbose = TRUE,doproduct = TRUE,dohistoric=TRUE,
+#'                       mincount=120)
+#'   makeoutput(out,rundir,postfixdir,controlfile,hsfile="TasHS Package",
+#'              doproject=FALSE,openfile=TRUE,verbose=FALSE)
+#'   adjustavrec(rundir,out$glb,out$ctrl,calcpopC=calcexpectpopC,verbose=TRUE)
+#'  # Now repeat the do_condition and makeoutput steps to see the final result
+#' }
+adjustavrec <- function(rundir,glb,ctrl,calcpopC,verbose=TRUE) {
+  startime <- Sys.time()
+  datafile <- ctrl$datafile
+  controlfile <- ctrl$controlfile
+  nsau <- glb$nSAU
+  final <- numeric(nsau)
+  for (sau in 1:nsau) { #  sau=3
+    initial <- getavrec(rundir,datafile,nsau=nsau)
+    param <- initial[sau]
+    low <- param * 0.6
+    high <- param * 1.4
+    extra <- initial[-sau]
+    if (verbose) cat("Running for sau ",sau,"\n")
+    origssq <- sauavrecssq(param,rundir,controlfile,
+                           datafile=datafile,linenum="AvRec",
+                           calcpopC=calcpopC,extra=extra,picksau=sau,
+                           nsau=nsau)
+    if (verbose) cat("oldssq ",origssq,"   orig param ",param,"\n")
+    ans <- optim(param,sauavrecssq,method="Brent",lower=low,upper=high,
+                 rundir=rundir,
+                 controlfile=controlfile,datafile=datafile,linenum="AvRec",
+                 calcpopC=calcpopC,extra=extra,picksau=sau,nsau=nsau,
+                 control=list(maxit=30))
+    final[sau] <- trunc(ans$par)
+    if (verbose) {
+      cat("ssq = ",ans$value,"  new R0 value = ",ans$par,"\n")
+      if (((ans$par - low) < 1) | ((high - ans$par) < 0))
+        warning(cat("Boundary reached for param ",sau,low,high,ans$par,"\n"))
+      cat(sau,"   ",low,"    ",param,"   ",trunc(ans$par),"   ",high,"\n")
+      cat("old ",round(origssq,1),"     new ",round(ans$value,1),"\n\n")
+      cat("old par",round(param,4),"     new ",round(ans$par,4),"\n\n")
+    }
+  }
+  endtime <- Sys.time()
+  if (verbose) {
+    print(initial); print(final)
+    print(endtime - startime)
+  }
+} # end of adjustavrec
+
+
+
 #' @title changecolumn alters a selected column of recdevs in the control file
 #'
 #' @description changecolumn is designed to be used when conditioning the OM
@@ -148,6 +242,10 @@ changeline <- function(indir, filename, linenumber, newline,verbose=FALSE) {
 #' @param verbose Should progress comments be printed to console, default=FALSE
 #' @param doproduct should production estimates be made. default=FALSE
 #' @param dohistoric should the historical catches be applied. Default=TRUE
+#' @param matureL is a vector of 2, default = c(70,200), that define the x-axis
+#'     bounds on the biology maturity-at-Length plots
+#' @param wtatL is a vector of 2, default = c(80,200), that define the x-axis
+#'     bounds on the biology weight-at-Length plots
 #' @param mincount determines the minimum sample size for a size-composition
 #'     sample to be included in plots and analyses. Default = 100
 #'
@@ -163,10 +261,10 @@ changeline <- function(indir, filename, linenumber, newline,verbose=FALSE) {
 #' @examples
 #' print("wait on suitable data sets in data")
 #' # rundir=rundir; controlfile=controlfile;calcpopC=calcexpectpopC
-#' # verbose=TRUE; doproduct=FALSE; dohistoric=TRUE; mincount=100
+#' # verbose=TRUE; doproduct=TRUE; dohistoric=TRUE; mincount=120
 do_condition <- function(rundir,controlfile,calcpopC,
                          verbose=FALSE,doproduct=FALSE,dohistoric=TRUE,
-                         mincount=100) {
+                         matureL=c(70,200),wtatL=c(80,200),mincount=100) {
   starttime <- Sys.time()
   zone <- makeequilzone(rundir,controlfile,doproduct=doproduct,
                         verbose=verbose)
@@ -179,6 +277,7 @@ do_condition <- function(rundir,controlfile,calcpopC,
   condC <- zone$zone1$condC
   zoneC <- zone$zoneC
   zoneD <- zone$zoneD
+  biology_plots(rundir, glb, zoneC, matL=matureL,Lwt=wtatL)
   production <- NULL
   if (doproduct) production <- zone$product
   #Condition on Fishery
@@ -205,7 +304,7 @@ do_condition <- function(rundir,controlfile,calcpopC,
   addtable(round(zone$saudat,5),"saudat.csv",rundir,category="zoneDD",
            caption="SAU constant definitions")
   popdefs <- getlistvar(zone$zoneC,"popdef")
-  addtable(round(t(popdefs),3),"popdefs.csv",rundir,category="zoneDD",
+  addtable(popdefs,"popdefs.csv",rundir,category="zoneDD",
            caption="Population vs Operating model parameter definitions")
   if (dohistoric) {
     condout <- plotconditioning(zoneDD,glb,zoneC,condC$histCE,rundir,

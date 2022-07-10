@@ -28,10 +28,5 @@ makewidedat takes the output of the commlf function makelongdat
     composition of catches from the operating model.
 }
 \examples{
-data(lf10)
-mids <- seq(138,210,2)
-answer <- makewidedat(lf10,mids)
-answer[1:20,]
-answerC <- makewidedat(lf10,mids,counts=TRUE)
-answerC[1:20,]
+print("wait on data sets")
 }

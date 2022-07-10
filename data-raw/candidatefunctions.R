@@ -897,3 +897,6 @@ makerect <- function (left, xinc, top, yinc, linecol = "grey",col = NULL)
   centery <- (top * 2 - yinc)/2
   return(invisible(c(centerx, centery)))
 }
+
+
+

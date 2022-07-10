@@ -20,7 +20,7 @@ getLogical obtains nb logicals from an input line
 }
 \examples{
  txtline <- "Depleted, TRUE"
- aMSE:::getLogical(txtline,nb=1)
+ getLogical(txtline,nb=1)
  txtline2 <- "calcthis, TRUE, FALSE"
- aMSE:::getLogical(txtline2,nb=2)
+ getLogical(txtline2,nb=2)
 }

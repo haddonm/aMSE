@@ -29,7 +29,7 @@ getlistvar extracts a vector or matrix from zoneC.
 \examples{
  data(zone)
  zoneC <- zone$zoneC
- getlistvar(zoneC,"MSY")
+ getlistvar(zoneC,"MSY") # not defined in the internal data
  getlistvar(zoneC,"B0")
  getlistvar(zoneC,"popdef","AvRec")
 }

@@ -3,27 +3,11 @@
 \docType{data}
 \name{zone}
 \alias{zone}
-\title{zone the primary object obtained from the function makeequilzone}
-\format{
-A list of objects plus a matrix and array that make up the initial
-    equilibrium zone
-\describe{
-  \item{zoneC}{a list of the constants for each population}
-  \item{zoneD}{a list of the dynamic parts of the populations of a zone}
-  \item{glb}{a list of global constants, containing numpop,nSAU,midpts,
-      Nclass, Nyrs}
-  \item{constants}{a matrix of biological properties for each population in
-      the zone, derived from the datafile}
-  \item{product}{the productivity array from doproduction}
-  \item{ctrl}{the list containing control information for the run, including
-      the datafile for the constants, the reps, the variation to be included
-      when projecting}
-  \item{zone1}{a list of objects used in the MSE}
-}
-}
+\title{zone a list of 8 major components from makeequilzone function}
 \description{
-zone contains seven objects, including 5 lists, a matrix, and
-    an array. This is the
+zone is the output from the function makeequilzone and contains
+    8 R objects including zoneC, zoneD, glb, constants, saudat, product,
+    ctrl, and zone1. This is a big object of about 1 Mb.
 }
 \examples{
  data(zone)

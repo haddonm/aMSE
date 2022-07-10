@@ -82,33 +82,33 @@ definepops <- function(inSAU,inSAUindex,const,glob) {
                     dimnames=list(1:numpop,columns))
   popdefs[,"Nyrs"] <- rep(hyrs,numpop) # Num Years - why is this here?
   for (pop in 1:numpop) {  # pop=1
-    popdefs[pop,"Me"] <- rnorm(1,mean=const["Me",pop],
+    popdefs[pop,"Me"] <- rnormz(1,mean=const["Me",pop],
                                sd=const["sMe",pop])
-    popdefs[pop,"DLMax"] <- rnorm(1,mean=const["DLMax",pop],
+    popdefs[pop,"DLMax"] <- rnormz(1,mean=const["DLMax",pop],
                                   sd=const["sMaxDL",pop])   # DLMax
-    popdefs[pop,"L50"] <- rnorm(1,mean=const["L50",pop],
+    popdefs[pop,"L50"] <- rnormz(1,mean=const["L50",pop],
                                 const["sL50",pop])
     popdefs[pop,"L95"] <- popdefs[pop,"L50"] +
-      rnorm(1,mean=const["L50inc",pop],const["sL50inc",pop]) #L95
-    popdefs[pop,"SigMax"] <- rnorm(1,mean=const["SigMax",pop],
+      rnormz(1,mean=const["L50inc",pop],const["sL50inc",pop]) #L95
+    popdefs[pop,"SigMax"] <- rnormz(1,mean=const["SigMax",pop],
                                    sd=const["sSigMax",pop])   # SigMax
-    popdefs[pop,"L50mat"] <- rnorm(1,mean=const["L50Mat",pop],
+    popdefs[pop,"L50mat"] <- rnormz(1,mean=const["L50Mat",pop],
                                    const["sL50Mat",pop])   # L50Mat
     popdefs[pop,"SaMa"] <- const["SaMa",pop]
     popdefs[pop,"SaMb"] <- -popdefs[pop,"SaMa"]/popdefs[pop,"L50mat"]
     popdefs[pop,"SelP1"] <- const["selL50p",pop]
     popdefs[pop,"SelP2"] <-  const["selL95p",pop]
-    popdefs[pop,"L50C"] <- rnorm(1,mean=const["L50C",pop],
+    popdefs[pop,"L50C"] <- rnormz(1,mean=const["L50C",pop],
                                  const["sL50C",pop])
-    popdefs[pop,"deltaC"] <-rnorm(1,mean=const["deltaC",pop],
+    popdefs[pop,"deltaC"] <-rnormz(1,mean=const["deltaC",pop],
                                   const["sdeltaC",pop])
-    popdefs[pop,"Wtb"] <- rnorm(1,mean=const["Wtb",pop],const["sWtb",pop])
+    popdefs[pop,"Wtb"] <- rnormz(1,mean=const["Wtb",pop],const["sWtb",pop])
     # popdefs[pop,"Wta"] <- const["Wtbtoa",pop] *
     #   popdefs[pop,"Wtb"]^const["sWtbtoa",pop]
-    popdefs[pop,"Wta"] <- rnorm(1,mean=const["Wta",pop],const["sWta",pop])
-    popdefs[pop,"steeph"] <- rnorm(1,mean=const["defsteep",pop],
+    popdefs[pop,"Wta"] <- rnormz(1,mean=const["Wta",pop],const["sWta",pop])
+    popdefs[pop,"steeph"] <- rnormz(1,mean=const["defsteep",pop],
                                    const["sdefsteep",pop])
-    popdefs[pop,"AvRec"] <- rlnorm(1,meanlog=const["AvRec",pop],
+    popdefs[pop,"AvRec"] <- rlnormz(1,meanlog=const["AvRec",pop],
                                    const["sAvRec",pop])
     popdefs[pop,"MaxCE"] <- 0 # gets value in makezone
     popdefs[pop,"SAU"] <- const["SAU",pop]
@@ -595,7 +595,7 @@ makeabpop <- function(popparam,midpts,projLML) {
 #' @examples
 #' print("wait on datafiles")
 makeequilzone <- function(rundir,ctrlfile="control.csv",doproduct=TRUE,verbose=TRUE) {
- #  rundir=rundir;ctrlfile=controlfile;doproduct=FALSE; verbose=TRUE
+ #  rundir=rundir;ctrlfile=controlfile;doproduct=TRUE; verbose=TRUE
   zone1 <- readctrlfile(rundir,infile=ctrlfile,verbose=verbose)
   ctrl <- zone1$ctrl
   glb <- zone1$globals     # glb without the movement matrix
@@ -622,7 +622,7 @@ makeequilzone <- function(rundir,ctrlfile="control.csv",doproduct=TRUE,verbose=T
   zone1$globals <- glb
   if (parsin) {
     rewritecontrolfile(rundir,zone1,ctrlfile)
-    rewritedatafile(rundir,glb,zone1,saudat)
+    rewritedatafile(rundir,zone1,saudat)
     if (verbose)
       cat("Control and Data files rewritten after amending values from sizemod \n")
   }

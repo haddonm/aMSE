@@ -4,11 +4,9 @@
 \alias{datafiletemplate}
 \title{datafiletemplate generates a template input datafile akin to M15h75}
 \usage{
-datafiletemplate(nSAU, indir, filename = "saudata_test.csv")
+datafiletemplate(indir, filename = "saudata_test.csv")
 }
 \arguments{
-\item{nSAU}{the number of SAU in the zone}
-
 \item{indir}{the directory into which to place the generated data file}
 
 \item{filename}{the name for the generated datafile, a character
@@ -32,7 +30,7 @@ datafiletemplate generates a standard input datafile
 \examples{
 \dontrun{
  yourdir <- tempdir()
- datafiletemplate(nSAU=8,yourdir,"saudata_test.csv")
+ datafiletemplate(yourdir,"saudata_test.csv")
  constants <- readsaudatafile(yourdir,"saudata_test.csv")
  str(constants,max.level=1)
  print(constants[,1:10])

@@ -1,81 +1,19 @@
 
-#' @title blockE13 is an abalone data-set for testing performance measures
+#' @title lfs is a 3-D array of size-composition data for use in examples
 #'
-#' @description blockE13 is a fishery data-set for blacklip abalone
-#'     (\emph{Haliotis rubra}) from block 13 in the eastern zone, this is
-#'     Tasmania's Block 13. It constitutes three time-series of the same cpue
-#'     data in different formats (see below). It is for use when testing the
-#'     performance measures within Tasmania's MCDA, although it could be used
-#'     for other purposes, such as illustrating the typical linear relationship
-#'     between catch and CPUE. Note there will only ever be one less PM value
-#'     than there are cpue data in the time-series.
+#' @description lfs is a 38 x 31 x 8 array of values for size-composition data
+#'     from the west coast of Tasmania made up of 38 size classes, 31 years,
+#'     from 1990 - 2020, and 8 statistical blocks. This is purely for use with
+#'     examples within the aMSE R package and requires quality control checks
+#'     before use anywhere else.
 #'
-#' @name blockE13
+#' @name lfs
 #'
 #' @docType data
 #'
-#' @format A data.frame of abalone fishery data
-#' \describe{
-#'   \item{year}{the year of fishing}
-#'   \item{coeff}{the back-transformed coefficients from a standardization}
-#'   \item{scaled}{the coefficients scaled to a mean of one}
-#'   \item{cpue}{the coefficients scaled to the nominal geometric mean of the
-#'       time series, to place it on the nominal scale}
-#'   \item{catch}{the related catch from the eastern parts of block 13}
-#' }
-#'
-#' @section Subjects:
-#'  \itemize{
-#'    \item performance measure estimation
-#'    \item relationship between catch and CPUE
-#'  }
-#'
-#' @source Mundy, C. and J.M. McAllister (2020) Tasmanian Abalone Assessment
-#'     2019. IMAS, University of Tasmania.
-#'
 #' @examples
-#' data(blockE13)
-#' blockE13
-NULL
-
-#' @title lf10 contains three years of length-composition data for block 10
-#'
-#' @description lf10 is a data.frame of length-composition of commercial catch
-#'     from block 10 on the west coast of Tasmania in a longdat format as
-#'     derived from the commlf function makelongdat.This makes it useful for
-#'     illustrating the use of makewidedat.
-#'
-#' @name lf10
-#'
-#' @docType data
-#'
-#' @format A data.frame of abalone size-composition data
-#' \describe{
-#'   \item{year}{the year of sampling}
-#'   \item{sau}{the block or SAU}
-#'   \item{length}{the measured size in mm, with 2mm size classes}
-#'   \item{counts}{the counts at each length class}
-#'   \item{propcounts}{the proportion of each length class of the total}
-#' }
-#'
-#' @section Subjects:
-#'  \itemize{
-#'    \item selectivity
-#'    \item size-based stock assessment model fitting
-#'    \item size-distributions of commercial catches
-#'  }
-#'
-#' @source Thanks to the Institute of Marine and Antarctic Science,
-#'     which is part of the University of Tasmania, and especially to
-#'     Dr Craig Mundy, leader of the Abalone Group, for permission to use
-#'     this data.
-#'
-#' @examples
-#'  data(lf10)
-#'  head(lf10,20)
-#'  mids <- seq(138,210,2)
-#'  answer <- makewidedat(lf10,mids)
-#'  answer[1:20,]
+#'  data(lfs)
+#'  lfs[,10:20,6]
 NULL
 
 #' @title midg is an abalone tagging data-set from the Actaeons
@@ -120,34 +58,31 @@ NULL
 #'  par(oldpar)
 NULL
 
-#' @title zone the primary object obtained from the function makeequilzone
+#' @title saudat is a matrix of constants read by readsaudatafile
 #'
-#' @description zone contains seven objects, including 5 lists, a matrix, and
-#'     an array. This is the
+#' @description saudat is a 32 x 2 matrix of values for biological variables
+#'     relating to growth, weight-at-size, maturity-at-size, average unfished
+#'     recruitment, selectivity, and other details, including the variation
+#'     expected for each main variable. This information is used to define the
+#'     populations within each SAU.
 #'
-#' @name zone
+#' @name saudat
 #'
 #' @docType data
 #'
-#' @format A list of objects plus a matrix and array that make up the initial
-#'     equilibrium zone
+#' @format A data.frame of biological and fishery parameters
 #' \describe{
-#'   \item{zoneC}{a list of the constants for each population}
-#'   \item{zoneD}{a list of the dynamic parts of the populations of a zone}
-#'   \item{glb}{a list of global constants, containing numpop,nSAU,midpts,
-#'       Nclass, Nyrs}
-#'   \item{constants}{a matrix of biological properties for each population in
-#'       the zone, derived from the datafile}
-#'   \item{product}{the productivity array from doproduction}
-#'   \item{ctrl}{the list containing control information for the run, including
-#'       the datafile for the constants, the reps, the variation to be included
-#'       when projecting}
-#'   \item{zone1}{a list of objects used in the MSE}
+#'   \item{DLMax}{maximum growth increment}
+#'   \item{L50}{size at half the maximum growth increment}
+#'   \item{L50inc}{L95 - L50, size where growth increment only 5percent of max}
+#'   \item{Wtb}{exponent of weight-at-size relationship}
+#'   \item{Wta}{intercept of weight-at-size relationship}
 #' }
 #'
+#'
 #' @examples
-#'  data(zone)
-#'  str(zone,max.level=1)
+#'  data(saudat)
+#'  round(saudat,5)
 NULL
 
 #' @title tasab is a matrix of abalone maturity-at-length data
@@ -187,5 +122,23 @@ NULL
 #'  head(tasab,20)
 #'  table(tasab$site,tasab$sex)
 NULL
+
+
+#' @title zone a list of 8 major components from makeequilzone function
+#'
+#' @description zone is the output from the function makeequilzone and contains
+#'     8 R objects including zoneC, zoneD, glb, constants, saudat, product,
+#'     ctrl, and zone1. This is a big object of about 1 Mb.
+#'
+#' @name zone
+#'
+#' @docType data
+#'
+#' @examples
+#'  data(zone)
+#'  str(zone,max.level=1)
+NULL
+
+
 
 

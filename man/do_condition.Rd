@@ -11,6 +11,8 @@ do_condition(
   verbose = FALSE,
   doproduct = FALSE,
   dohistoric = TRUE,
+  matureL = c(70, 200),
+  wtatL = c(80, 200),
   mincount = 100
 )
 }
@@ -30,6 +32,12 @@ per population in each SAU expected in the current year.}
 \item{doproduct}{should production estimates be made. default=FALSE}
 
 \item{dohistoric}{should the historical catches be applied. Default=TRUE}
+
+\item{matureL}{is a vector of 2, default = c(70,200), that define the x-axis
+bounds on the biology maturity-at-Length plots}
+
+\item{wtatL}{is a vector of 2, default = c(80,200), that define the x-axis
+bounds on the biology weight-at-Length plots}
 
 \item{mincount}{determines the minimum sample size for a size-composition
 sample to be included in plots and analyses. Default = 100}
@@ -60,7 +68,7 @@ do_condition is a utility function that can be used to speed the
 \examples{
 print("wait on suitable data sets in data")
 # rundir=rundir; controlfile=controlfile;calcpopC=calcexpectpopC
-# verbose=TRUE; doproduct=FALSE; dohistoric=TRUE; mincount=100
+# verbose=TRUE; doproduct=TRUE; dohistoric=TRUE; mincount=120
 }
 \seealso{
 {

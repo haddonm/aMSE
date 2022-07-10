@@ -28,7 +28,5 @@ getzoneprops extracts a set of properties for each
 }
 \examples{
 data(zone)
-str(zone,max.level=1)
-# round(getzoneprops(zone$zoneC,zone$zoneD,zone$glb),4)
-# zoneC=zoneC; zoneD=zoneD;glb=glb;year=1
+ans <- getzoneprops(zone$zoneC,zone$zoneD,zone$glb)
 }

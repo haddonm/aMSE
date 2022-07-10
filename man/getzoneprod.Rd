@@ -25,6 +25,6 @@ getzoneprod takes in the product matrix from doproduction and
 }
 \examples{
 data(zone)
-zoneprod <- getzoneprod(zone$product)
-head(zoneprod,20)
+outprod <- getzoneprod(zone$product)
+print(outprod[1:25,])
 }
