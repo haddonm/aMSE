@@ -45,5 +45,6 @@ depleteSAU resets the depletion level of the whole
   zoneDD <- depleteSAU(zone$zoneC,zone$zoneD,glb,initdepl=depl,zone$product)
   sum((zoneDD$matureB[1,]/sum(zoneDD$matureB[1,]))*zoneDD$deplsB[1,])
   mean(zoneDD$deplsB[1,])
+  zoneDD$deplsB[1,]
 }  # zoneC=zone$zoneC;zoneD=zone$zoneD;glob=zone$glb;initdepl=origdepl;product=zone$product;len=12
 }

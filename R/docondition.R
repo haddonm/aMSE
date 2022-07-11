@@ -18,6 +18,9 @@
 #' @param calcpopC a function that takes the output from hcrfun and generates
 #'     the actual catch per population expected in the current year.
 #' @param verbose Should progress comments be printed to console, default=TRUE
+#' @param lowmult multiplier to determine low range of search
+#' @param highmult multiplier to determine the high range of search
+#' @param iterlim the maximum number of iterations in the search for a solution
 #'
 #' @return nothing though it will write results to the console if verbose=TRUE
 #' @export
@@ -51,7 +54,8 @@
 #'   adjustavrec(rundir,out$glb,out$ctrl,calcpopC=calcexpectpopC,verbose=TRUE)
 #'  # Now repeat the do_condition and makeoutput steps to see the final result
 #' }
-adjustavrec <- function(rundir,glb,ctrl,calcpopC,verbose=TRUE) {
+adjustavrec <- function(rundir,glb,ctrl,calcpopC,verbose=TRUE,
+                        lowmult=0.6,highmult=1.4,iterlim=30) {
   startime <- Sys.time()
   datafile <- ctrl$datafile
   controlfile <- ctrl$controlfile
@@ -61,8 +65,8 @@ adjustavrec <- function(rundir,glb,ctrl,calcpopC,verbose=TRUE) {
   for (sau in 1:nsau) { #  sau=3
     initial <- getavrec(rundir,datafile,nsau=nsau)
     param <- initial[sau]
-    low <- param * 0.6
-    high <- param * 1.4
+    low <- param * lowmult
+    high <- param * highmult
     extra <- initial[-sau]
     if (verbose) cat("Running for sau ",saunames[sau],"\n")
     origssq <- sauavrecssq(param,rundir,controlfile,
@@ -74,7 +78,7 @@ adjustavrec <- function(rundir,glb,ctrl,calcpopC,verbose=TRUE) {
                  rundir=rundir,
                  controlfile=controlfile,datafile=datafile,linenum="AvRec",
                  calcpopC=calcpopC,extra=extra,picksau=sau,nsau=nsau,
-                 control=list(maxit=30))
+                 control=list(maxit=iterlim))
     final[sau] <- round(ans$par,1)
     if (verbose) {
      # cat("ssq = ",ans$value,"  new R0 value = ",ans$par,"\n")

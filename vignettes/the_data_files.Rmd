@@ -36,9 +36,9 @@ tab_nums <- captioner(prefix = "Table")
 fig_nums <- captioner(prefix = "Figure")
 
 if (dir.exists("C:/Users/Malcolm/Dropbox")) {
-  ddir <- "C:/Users/Malcolm/Dropbox/A_CodeUse/aMSEUse/"
+  ddir <- "C:/Users/Malcolm/Dropbox/A_CodeUse/aMSEUse/documentation/"
 } else {
-  ddir <- "C:/Users/User/Dropbox/A_CodeUse/aMSEUse/"
+  ddir <- "C:/Users/User/Dropbox/A_CodeUse/aMSEUse/documentation/"
 }
 
 ```
@@ -120,8 +120,8 @@ When using the R package __aMSE__ a typical scenario run would entail a number o
 
 
 ```{r FIG1, echo=FALSE, out.width = '65%', fig.align='center'}
-
-knitr::include_graphics(paste0(ddir,"figures/AlternativeMSE.png"))
+filen <- paste0(ddir,"figures/AlternativeMSE.png")
+suppressWarnings(knitr::include_graphics(filen))
 ```
 
 `r fig_nums("f1", caption=" A spectrum of alternative approaches for initiating and using the MSE framework.")`

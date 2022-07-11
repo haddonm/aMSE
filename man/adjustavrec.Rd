@@ -4,7 +4,16 @@
 \alias{adjustavrec}
 \title{adjustavrec re-fits the AvRec saudatafile values in the MSE}
 \usage{
-adjustavrec(rundir, glb, ctrl, calcpopC, verbose = TRUE)
+adjustavrec(
+  rundir,
+  glb,
+  ctrl,
+  calcpopC,
+  verbose = TRUE,
+  lowmult = 0.6,
+  highmult = 1.4,
+  iterlim = 30
+)
 }
 \arguments{
 \item{rundir}{the full path to the directory in which all files relating to a
@@ -18,6 +27,12 @@ particular run are to be held.}
 the actual catch per population expected in the current year.}
 
 \item{verbose}{Should progress comments be printed to console, default=TRUE}
+
+\item{lowmult}{multiplier to determine low range of search}
+
+\item{highmult}{multiplier to determine the high range of search}
+
+\item{iterlim}{the maximum number of iterations in the search for a solution}
 }
 \value{
 nothing though it will write results to the console if verbose=TRUE

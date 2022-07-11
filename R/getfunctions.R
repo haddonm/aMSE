@@ -264,7 +264,7 @@ getline <- function(rundir,filen,varname,nobs) {
 #' @examples
 #'  data(zone)
 #'  zoneC <- zone$zoneC
-#'  getlistvar(zoneC,"MSY") # not defined in the internal data
+#'  getlistvar(zoneC,"MSY")
 #'  getlistvar(zoneC,"B0")
 #'  getlistvar(zoneC,"popdef","AvRec")
 getlistvar <- function(zoneC,indexvar,indexvar2="") {
@@ -512,7 +512,7 @@ getsum <- function(inmat,index) { # inmat=zoneDD$matureB; index=zoneDD$SAU
 #' \dontrun{
 #'   data(zone) # would normally use zone <- makeequilzone(rundir,"control.csv")
 #'   unfish <- getunFished(zone$zoneC,zone$zoneD,zone$glb)
-#'   str(unfish,max.level=1)
+#'   str(unfish,max.level=2)
 #' }
 getunFished <- function(zoneC,zoneD,glb) {  # inzone=zone
   if((zoneC[[1]]$B0 - zoneD$matureB[1,1]) > 0.001) {
@@ -694,6 +694,7 @@ getzoneprod <- function(product) {
 #' @examples
 #' data(zone)
 #' ans <- getzoneprops(zone$zoneC,zone$zoneD,zone$glb)
+#' print(ans)
 getzoneprops <- function(zoneC,zoneD,glb,year=1) {
   numpop <- glb$numpop
   Nclass <- glb$Nclass

@@ -7,7 +7,9 @@
 \description{
 zone is the output from the function makeequilzone and contains
     8 R objects including zoneC, zoneD, glb, constants, saudat, product,
-    ctrl, and zone1. This is a big object of about 1 Mb.
+    ctrl, and zone1. This is for the scenario of 2 SAU each with 1 population
+    each, so it is not a large object. It is mainly used in examples for
+    various functions.
 }
 \examples{
  data(zone)
