@@ -34,6 +34,7 @@
 #'   zoneDD <- depleteSAU(zone$zoneC,zone$zoneD,glb,initdepl=depl,zone$product)
 #'   sum((zoneDD$matureB[1,]/sum(zoneDD$matureB[1,]))*zoneDD$deplsB[1,])
 #'   mean(zoneDD$deplsB[1,])
+#'   zoneDD$deplsB[1,]
 #' }  # zoneC=zone$zoneC;zoneD=zone$zoneD;glob=zone$glb;initdepl=origdepl;product=zone$product;len=12
 depleteSAU <- function(zoneC,zoneD,glob,initdepl,product,len=15) {
   #  zoneC=zoneC; zoneD=zoneD; glob=glb;  product=product; depl=initdepl;len=15
