@@ -63,7 +63,7 @@ wkdir <- paste0(ddir,"/AbMSE/AbMSE/data-raw/")
 options("show.signif.stars"=FALSE,"stringsAsFactors"=FALSE,
         "max.print"=50000,"width"=240)
 
-library(hutils)
+library(codeutils)
 library(hplot)
 library(knitr)
 library(captioner)

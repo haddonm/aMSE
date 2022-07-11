@@ -56,6 +56,7 @@ adjustavrec <- function(rundir,glb,ctrl,calcpopC,verbose=TRUE) {
   datafile <- ctrl$datafile
   controlfile <- ctrl$controlfile
   nsau <- glb$nSAU
+  saunames <- glb$saunames
   final <- numeric(nsau)
   for (sau in 1:nsau) { #  sau=3
     initial <- getavrec(rundir,datafile,nsau=nsau)
@@ -63,7 +64,7 @@ adjustavrec <- function(rundir,glb,ctrl,calcpopC,verbose=TRUE) {
     low <- param * 0.6
     high <- param * 1.4
     extra <- initial[-sau]
-    if (verbose) cat("Running for sau ",sau,"\n")
+    if (verbose) cat("Running for sau ",saunames[sau],"\n")
     origssq <- sauavrecssq(param,rundir,controlfile,
                            datafile=datafile,linenum="AvRec",
                            calcpopC=calcpopC,extra=extra,picksau=sau,
@@ -74,24 +75,23 @@ adjustavrec <- function(rundir,glb,ctrl,calcpopC,verbose=TRUE) {
                  controlfile=controlfile,datafile=datafile,linenum="AvRec",
                  calcpopC=calcpopC,extra=extra,picksau=sau,nsau=nsau,
                  control=list(maxit=30))
-    final[sau] <- trunc(ans$par)
+    final[sau] <- round(ans$par,1)
     if (verbose) {
-      cat("ssq = ",ans$value,"  new R0 value = ",ans$par,"\n")
+     # cat("ssq = ",ans$value,"  new R0 value = ",ans$par,"\n")
       if (((ans$par - low) < 1) | ((high - ans$par) < 0))
         warning(cat("Boundary reached for param ",sau,low,high,ans$par,"\n"))
-      cat(sau,"   ",low,"    ",param,"   ",trunc(ans$par),"   ",high,"\n")
-      cat("old ",round(origssq,1),"     new ",round(ans$value,1),"\n\n")
+     # cat(sau,"   ",low,"    ",param,"   ",trunc(ans$par),"   ",high,"\n")
+      cat("old ssq",round(origssq,1),"     new ",round(ans$value,1),"\n")
       cat("old par",round(param,4),"     new ",round(ans$par,4),"\n\n")
     }
   }
   endtime <- Sys.time()
   if (verbose) {
-    print(initial); print(final)
+    cat("Initial AvRec ",initial,"\n");
+    cat("Final   AvRec ",final,"\n")
     print(endtime - startime)
   }
 } # end of adjustavrec
-
-
 
 #' @title changecolumn alters a selected column of recdevs in the control file
 #'
@@ -304,7 +304,7 @@ do_condition <- function(rundir,controlfile,calcpopC,
   addtable(round(zone$saudat,5),"saudat.csv",rundir,category="zoneDD",
            caption="SAU constant definitions")
   popdefs <- getlistvar(zone$zoneC,"popdef")
-  addtable(popdefs,"popdefs.csv",rundir,category="zoneDD",
+  addtable(t(popdefs),"popdefs.csv",rundir,category="zoneDD",
            caption="Population vs Operating model parameter definitions")
   if (dohistoric) {
     condout <- plotconditioning(zoneDD,glb,zoneC,condC$histCE,rundir,

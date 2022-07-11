@@ -122,11 +122,22 @@ blockE13 <- read.csv(paste0(datadir,"block13e.csv"),header=TRUE)
 save(blockE13,file=paste0(datadir,"blockE13.RData"))
 
 
-# save zone data
+# save zone data for HS856
 
 datadir <- "./../../A_code/aMSE/data-raw/"
 
 save(zone,file=paste0(datadir,"zone.RData"))
+
+
+
+# save zone1 data for S21
+
+datadir <- "C:/Users/Malcolm/Dropbox/A_Code/aMSE/data/"
+
+save(zone1,file=paste0(datadir,"zone1.RData"))
+
+
+
 
 
 

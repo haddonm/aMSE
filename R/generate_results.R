@@ -268,11 +268,11 @@ fishery_plots <- function(rundir,glb,select,histyr,projLML, rge=50:90) {
 #' print("wait on internal data-sets")
 makeoutput <- function(out,rundir,postdir,controlfile,hsfile=NULL,
                        doproject=TRUE,openfile=TRUE,verbose=FALSE) {
-  replist <- list(starttime=as.character(out$starttime),
-                  endtime=as.character(out$projtime))
+  replist <- list(starttime=as.character(out$times$starttime),
+                  endtime=as.character(out$times$condtime))
   glb <- out$glb
   projy <- ifelse(doproject,glb$pyrs,0)
-  runnotes <- c(out$ctrl$runlabel,paste0("RunTime = ",out$tottime),
+  runnotes <- c(out$ctrl$runlabel,paste0("RunTime = ",out$times$tottime),
                 paste0("replicates = ",glb$reps),paste0("years projected = ",projy),
                 paste0("Populations = ",glb$numpop),paste0("SAU = ",glb$nSAU),
                 paste0("Randomseed for conditioning = ",out$ctrl$randseed))

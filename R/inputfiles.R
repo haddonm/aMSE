@@ -1255,12 +1255,13 @@ rewritedatafile <- function(indir,zone1,saudat) {
 
 
 
-#' Title
+#' @title writecompdata writes a size-composition file to indir
 #'
 #' @param indir the directory into which the new file should be written. This
 #'     would usually be the same as rundir, the scenario directory
 #' @param lfs the 3-dimensional array of length-composition data to be written
 #'     to lf_WZ90-20.csv.
+#' @param filen the filename of the size-comp data, default='lf_WZ90_20.csv'
 #'
 #' @return nothing but it does write a file called 'lf_WZ90-20.csv'
 #'     into indir=rundir, which will overwrite the same if already there.
@@ -1273,7 +1274,7 @@ rewritedatafile <- function(indir,zone1,saudat) {
 #'   writecompdata(tmpdir,lfs)
 #'   dir(tmpdir)
 #' }
-writecompdata <- function(indir,lfs) {
+writecompdata <- function(indir,lfs,filen="lf_WZ90-20.csv") {
   label <- dimnames(lfs)
   lengths <- as.numeric(label[[1]])
   nlen <- length(lengths)
@@ -1291,7 +1292,7 @@ writecompdata <- function(indir,lfs) {
   for (i in 2:nsau) {
     ans[((i-1)*nlen+1):(i*nlen),3:(nyr+2)] <- lfs[,,i]
   }
-  filename <- filenametopath(indir,"lf_WZ90-20.csv")
+  filename <- filenametopath(indir,filen)
   write.table(ans,file=filename,sep=",",row.names=FALSE)
 } # end of writecompdata
 

@@ -27,7 +27,7 @@ options("show.signif.stars"=FALSE,
         "width"=240)
 
 library(aMSE)
-library(hutils)
+library(codeutils)
 library(hplot)
 library(knitr)
 library(captioner)

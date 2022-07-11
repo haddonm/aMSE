@@ -2,9 +2,9 @@
 % Please edit documentation in R/inputfiles.R
 \name{writecompdata}
 \alias{writecompdata}
-\title{Title}
+\title{writecompdata writes a size-composition file to indir}
 \usage{
-writecompdata(indir, lfs)
+writecompdata(indir, lfs, filen = "lf_WZ90-20.csv")
 }
 \arguments{
 \item{indir}{the directory into which the new file should be written. This
@@ -12,13 +12,15 @@ would usually be the same as rundir, the scenario directory}
 
 \item{lfs}{the 3-dimensional array of length-composition data to be written
 to lf_WZ90-20.csv.}
+
+\item{filen}{the filename of the size-comp data, default='lf_WZ90_20.csv'}
 }
 \value{
 nothing but it does write a file called 'lf_WZ90-20.csv'
     into indir=rundir, which will overwrite the same if already there.
 }
 \description{
-Title
+writecompdata writes a size-composition file to indir
 }
 \examples{
 \dontrun{

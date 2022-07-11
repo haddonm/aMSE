@@ -139,6 +139,23 @@ NULL
 #'  str(zone,max.level=1)
 NULL
 
+#' @title zone1 a list of 13 components from makeequilzone's zone for S21
+#'
+#' @description zone1 is part of the output from the function makeequilzone and
+#'     contains 13 R objects including SAUnames, SAUpop, minc, cw, larvdisp,
+#'     randomseed, initLML, condC, projC, globals=glb, ctrl, catches, and
+#'     projyrs. This is for the scenario of 2 sau each with 1 population so it
+#'     is a much smaller object than the 8 sau and 56 population scenario. It
+#'     is used in the Example_MSE documentation.
+#'
+#' @name zone1
+#'
+#' @docType data
+#'
+#' @examples
+#'  data(zone1)
+#'  str(zone1,max.level=1)
+NULL
 
 
 

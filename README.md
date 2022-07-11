@@ -45,6 +45,9 @@ examine its implications.
 
 # LATEST UPDATE
 
+-   2022-07-10 aMSE 0.0.10 Switched dependency from hutils to codeutils.
+    re-added zone1 for S21 to the data sets. No EWN.
+
 -   2022-07-10 aMSE 0.0.9 Added data sets to allow for examples and
     documentation to illustrate the conditioning and running of the MSE.
     Added adjustavrec as a function, nade a wrapper rnormz and rlnormz

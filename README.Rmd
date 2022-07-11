@@ -36,6 +36,8 @@ Of course, adding such a component increases the number of options that may need
 
 # LATEST UPDATE
 
+* 2022-07-10 aMSE 0.0.10 Switched dependency from hutils to codeutils. re-added zone1 for S21 to the data sets. No EWN.
+
 * 2022-07-10 aMSE 0.0.9 Added data sets to allow for examples and documentation to illustrate the conditioning and running of the MSE. Added adjustavrec as a function, nade a wrapper rnormz and rlnormz to enable zero variation while still using up a random number so the sequence was maintained. Ready for production work. No EWN.  
 
 * 2022-06-29 aMSE 0.0.8 Corrected a large mistake where the estimated SAU harvest rates were being biased high because the SAU's end of year exploitable biomass was being used instead of the mid-year exploitable biomass. 
