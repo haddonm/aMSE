@@ -28,25 +28,29 @@ the actual catch per population expected in the current year.}
 
 \item{verbose}{Should progress comments be printed to console, default=TRUE}
 
-\item{lowmult}{multiplier to determine low range of search}
+\item{lowmult}{multiplier to determine low range of search, default=0.6}
 
-\item{highmult}{multiplier to determine the high range of search}
+\item{highmult}{multiplier to determine the high range of search, default=1.4}
 
-\item{iterlim}{the maximum number of iterations in the search for a solution}
+\item{iterlim}{the maximum number of iterations in the search for a solution,
+default=30}
 }
 \value{
 nothing though it will write results to the console if verbose=TRUE
 }
 \description{
-adjustavrec is used during the conditioning of the MSE. Once the
-    different SAU have been characterized and the data file values settled,
-    when do_condition is run the fit of the predicted cpue and
-    size-composition data can often be improved by re-fitting the AvRec
-    constants in each SAU to adjust their values to better suit the population
-    characteristics once random variation is added to each population's
-    properties. adjustavrec does this automatically. Be wary of this function
-    because it directly alters the values of AvRec inside the saudata.csv
-    file.
+adjustavrec is used during the conditioning of the MSE to
+    improve the fit to the time-series of CPUE by adjusting the SAU initial
+    value for AvRec. Once the different SAU have been characterized and the
+    data file values settled (even when sizemod has been used), when
+    do_condition is run the fit of the predicted cpue and size-composition
+    data can often be improved by re-fitting the AvRec constants in each SAU
+    to adjust their values to better suit the population characteristics once
+    random variation is added to each population's properties. adjustavrec
+    does this automatically. Be wary of this function because it directly
+    alters the values of AvRec inside the saudata.csv file. If the
+    differences remain too great it may be necessary to adhust the recdevs
+    as well (see optimizerecdevs).
 }
 \examples{
 \dontrun{
@@ -76,5 +80,10 @@ adjustavrec is used during the conditioning of the MSE. Once the
              doproject=FALSE,openfile=TRUE,verbose=FALSE)
   adjustavrec(rundir,out$glb,out$ctrl,calcpopC=calcexpectpopC,verbose=TRUE)
  # Now repeat the do_condition and makeoutput steps to see the final result
+}
+}
+\seealso{
+{
+    \link{optimizerecdevs}
 }
 }

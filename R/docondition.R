@@ -1,15 +1,18 @@
 
 #' @title adjustavrec re-fits the AvRec saudatafile values in the MSE
 #'
-#' @description adjustavrec is used during the conditioning of the MSE. Once the
-#'     different SAU have been characterized and the data file values settled,
-#'     when do_condition is run the fit of the predicted cpue and
-#'     size-composition data can often be improved by re-fitting the AvRec
-#'     constants in each SAU to adjust their values to better suit the population
-#'     characteristics once random variation is added to each population's
-#'     properties. adjustavrec does this automatically. Be wary of this function
-#'     because it directly alters the values of AvRec inside the saudata.csv
-#'     file.
+#' @description adjustavrec is used during the conditioning of the MSE to
+#'     improve the fit to the time-series of CPUE by adjusting the SAU initial
+#'     value for AvRec. Once the different SAU have been characterized and the
+#'     data file values settled (even when sizemod has been used), when
+#'     do_condition is run the fit of the predicted cpue and size-composition
+#'     data can often be improved by re-fitting the AvRec constants in each SAU
+#'     to adjust their values to better suit the population characteristics once
+#'     random variation is added to each population's properties. adjustavrec
+#'     does this automatically. Be wary of this function because it directly
+#'     alters the values of AvRec inside the saudata.csv file. If the
+#'     differences remain too great it may be necessary to adhust the recdevs
+#'     as well (see optimizerecdevs).
 #'
 #' @param rundir the full path to the directory in which all files relating to a
 #'     particular run are to be held.
@@ -18,9 +21,14 @@
 #' @param calcpopC a function that takes the output from hcrfun and generates
 #'     the actual catch per population expected in the current year.
 #' @param verbose Should progress comments be printed to console, default=TRUE
-#' @param lowmult multiplier to determine low range of search
-#' @param highmult multiplier to determine the high range of search
-#' @param iterlim the maximum number of iterations in the search for a solution
+#' @param lowmult multiplier to determine low range of search, default=0.6
+#' @param highmult multiplier to determine the high range of search, default=1.4
+#' @param iterlim the maximum number of iterations in the search for a solution,
+#'     default=30
+#'
+#' @seealso{
+#'     \link{optimizerecdevs}
+#' }
 #'
 #' @return nothing though it will write results to the console if verbose=TRUE
 #' @export
@@ -611,77 +619,6 @@ getrecdevcolumn <- function(rundir, filename, yearrange, sau,verbose=FALSE) {
   return(list(recdevs=recdevs,yearrange=yearrange,linerange=line1:line2))
 } # end of getrecdevcolumn
 
-#' @title optimizeAvRec improves OM fit to CPUE by adjustnig AvRec
-#'
-#' @description optimizeAvRec is used to improve the fit to the time-series
-#'     of CPUE by adjusting the SAU initial value for AvRec. If one assesses
-#'     an SAU using the sizemod package, that summarizes across a whole SAU.
-#'     After population allocation within aMSE, the productivity of an SAU
-#'     may well have been disturbed away (up or down) from the assessed
-#'     optimum. Hence, it becomes necessary, still, to optimize both the
-#'     AvRec and the recdevs during the conditioning.
-#'
-#' @param rundir the rundir for the scenario
-#' @param controlfile the name of the control file
-#' @param datafile the name of the datafile from the controlfile
-#' @param calcpopC the funciton, from the HS file that allocates catches
-#'     across each of the populations within each SAU
-#' @param snames the names given to each SAU
-#' @param lowmult the multiplier to place a lower bound when search for the
-#'     optimum AvRec for each SAU. default = 0.7, ie param AvRec * 0.7
-#' @param highmult the multiplier to place an upper bound when search for the
-#'     optimum AvRec for each SAU. default = 1.3, ie param AvRec * 1.3
-#' @param linenumber the linenumber inside the datafile that is to be changed
-#'     to the optimum AvRec values. Default = 29, whic suits Tasmania.
-#' @param verbose should updates on progress be sent to the console.
-#'     default=TRUE
-#'
-#' @return a vector of the final optimized AvRec values. This also modifies
-#'     the datafile - SO BE CAREFUL.
-#' @export
-#'
-#' @examples
-#' print("wait on suitable data files")
-optimizeAvRec <- function(rundir,controlfile,datafile,calcpopC,snames,
-                          lowmult=0.7,highmult=1.3,linenumber=29,verbose=TRUE) {
-  indat <- readLines(filenametopath(rundir,datafile))
-  nsau <- getsingleNum("nsau",indat)
-  final <- numeric(nsau)
-  initial <- getavrec(rundir,datafile,nsau=nsau)
-  for (sau in 1:nsau) { #  sau=8
-    cleaninit <- initial  # to ensure that 'extra' retains integrity
-    param <- cleaninit[sau]
-    low <- param * lowmult
-    high <- param * highmult
-    extra <- initial[-sau]
-    origssq <- sauavrecssq(param,rundir,controlfile,
-                           datafile=datafile,linenum=linenumber,
-                           calcpopC=calcpopC,extra=extra,picksau=sau,
-                           nsau=nsau)
-    if (verbose) cat("starting AvRec fit for ",snames[sau],"\n")
-    ans <- optim(param,sauavrecssq,method="Brent",lower=low,upper=high,
-                 rundir=rundir,controlfile=controlfile,datafile=datafile,
-                 linenum=linenumber,calcpopC=calcpopC,extra=extra,picksau=sau,
-                 nsau=nsau,control=list(maxit=30,trace=4))
-    final[sau] <- trunc(ans$par)
-    if (verbose) {
-      cat("orig = ",origssq,"  ssq = ",ans$value,"\n")
-      cat("orig par = ",param,"  par value = ",ans$par,"\n")
-      if (((ans$par - low) < 1) | ((high - ans$par) < 0))
-        warning(cat(" Boundary reached for param ",sau,low,high,ans$par,"\n"))
-      cat(sau,"   ",low,"    ",param,"   ",trunc(ans$par),"   ",high,"\n\n\n")
-    }
-    finalssq <- sauavrecssq(ans$par,rundir,controlfile,
-                            datafile=datafile,linenum=linenumber,
-                            calcpopC=calcpopC,extra=extra,picksau=sau,
-                            nsau=nsau,outplot=TRUE)
-    valuesbit <- paste0(as.character(final),collapse=",")
-    replacetxt <- paste0("AvRec,",valuesbit)
-    changeline(rundir,datafile,linenumber,replacetxt)
-  }  # end of sau loop
-  return(final)
-} # end of optimizeAvRec
-
 #' @title optimizerecdevs improves the fit to the recdevs for a given sau
 #'
 #' @description optimizerecdevs an important part of optimizing the match
@@ -705,6 +642,10 @@ optimizeAvRec <- function(rundir,controlfile,datafile,calcpopC,snames,
 #' @param plottoconsole should the final plot be sent to the console = TRUE
 #'     of the rundir = FALSE. default=FALSE
 #' @param optimmethod which optim method to use? default='Nelder-Mead'
+#'
+#' @seealso{
+#'     \link{adjustavrec}
+#' }
 #'
 #' @return a scalar value which is the total SSQ for the selected years for
 #'     the CPUE and sizecomps. It also alters the recdevs in the controlfile!

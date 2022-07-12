@@ -59,3 +59,8 @@ optimizerecdevs an important part of optimizing the match
 \examples{
 print("wait on data sets")
 }
+\seealso{
+{
+    \link{adjustavrec}
+}
+}
