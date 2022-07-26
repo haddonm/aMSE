@@ -528,7 +528,7 @@ logistic <- function(inL50,delta,lens,knifeedge=0) {
 #' @examples
 #' print("See the code for makezoneC to see usage of makeabpop")
 makeabpop <- function(popparam,midpts,projLML) {
-  #  popparam=popdef;midpts=midpts;projLML=projLML
+  #  popparam=popdef;midpts=midpts;projLML=projC$projLML
   #(DLMax,L50,L95,SigMax,SaMa,SaMb,Wta,Wtb,Me,L50C,L95C,R0 SelP[1],SelP[2],Nyrs,steeph,MaxCE,L50Mat block
   #   1    2   3    4      5    6   7   8   9 10   11   12  13     14      15   16     17    18     19
   numYr <- popparam["Nyrs"]
@@ -595,7 +595,7 @@ makeabpop <- function(popparam,midpts,projLML) {
 #' @examples
 #' print("wait on datafiles")
 makeequilzone <- function(rundir,ctrlfile="control.csv",doproduct=TRUE,verbose=TRUE) {
- #  rundir=rundir;ctrlfile=controlfile;doproduct=TRUE; verbose=TRUE
+ #  rundir=rundir;ctrlfile=controlfile;doproduct=FALSE; verbose=TRUE
   zone1 <- readctrlfile(rundir,infile=ctrlfile,verbose=verbose)
   ctrl <- zone1$ctrl
   glb <- zone1$globals     # glb without the movement matrix
@@ -610,7 +610,7 @@ makeequilzone <- function(rundir,ctrlfile="control.csv",doproduct=TRUE,verbose=T
     saudat <- saudata$saudat
     zone1$condC$poprec <- saudata$poprec
   } else {
-    constants <- readdatafile(glb$numpop,rundir,ctrl$datafile)
+    constants <- readpopdatafile(rundir,ctrl$datafile)
     saudat <- constants
   }
   if (verbose) cat("Files read, now making zone \n")
@@ -733,8 +733,13 @@ makezoneC <- function(zone,const) { # zone=zone1; const=constants
      glb$hyrs <- length(initialLML)
    } else {
      initialLML <- rep(zone$initLML,glb$hyrs)
+   }
+  if (zone$ctrl$bysau) {
+    popdefs <- definepops(nSAU,SAUindex,const,glob=glb) # define pops
+  } else {
+    popdefs <- popsdefine(const,glob=glb)
   }
-  popdefs <- definepops(nSAU,SAUindex,const,glob=glb) # define pops
+
   zoneC <- vector("list",numpop)
   for (pop in 1:numpop) {      # pop <- 1
     popdef <- popdefs[pop,]
@@ -924,6 +929,68 @@ modzoneC <- function(zoneC,zoneD,glob,lowlim=0.0,uplim=0.4,inc=0.005) {
   }
   return(list(zoneC=zoneC,product=production))
 } # end of modzoneC
+
+#' @title popsdefine makes a parameter vector, popdef, for each population
+#'
+#' @description popsdefine makes a parameter vector, popdef, for each
+#'     population. However, instead of imputing random variation the input
+#'     matrix of constants is already defined by population. This contrasts with
+#'     the function definepops which is used if saudata is read instead of
+#'     population level data.
+#'
+#' @param const a matrix with rows containing the constants defined for
+#'     each of the biological parameters. The columns of the matrix
+#'     reflect values for each populations from readpopdatafile.
+#' @param glob the globals object from readctrlfile
+#'
+#' @seealso{
+#'   \link{definepops}, \link{readpopdatafile}, \link{readdatafile}
+#' }
+#'
+#' @return a matrix with a row for each population and whose columns
+#'     are parameters defining the biological parameters for each population.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'   data(zone1)
+#'   glb <- zone1$globals
+#' }
+popsdefine <- function(const,glob) {
+  #  inSAU=nSAU; inSAUindex=SAUindex; const=saudat; glob=glb
+  numpop <- glob$numpop
+  hyrs <- glob$hyrs
+  columns <- c("DLMax","L50","L95","SigMax","SaMa","SaMb","Wta","Wtb","Me",
+               "L50C","deltaC","AvRec","SelP1","SelP2","Nyrs","steeph",
+               "MaxCE","L50mat","SAU","lambda","qest","scalece")
+  popdefs <- matrix(0,nrow=numpop,ncol=length(columns),
+                    dimnames=list(1:numpop,columns))
+  popdefs[,"Nyrs"] <- rep(hyrs,numpop) # Num Years - why is this here?
+  popdefs[,"Me"] <- const["Me",]
+  popdefs[,"DLMax"] <- const["DLMax",]
+  popdefs[,"L50"] <- const["L50",]
+  popdefs[,"L95"] <- const["L50",] + const["L50inc",]
+  popdefs[,"SigMax"] <- const["SigMax",]
+  popdefs[,"L50mat"] <- const["L50Mat",]
+  popdefs[,"SaMa"] <- const["SaMa",]
+  popdefs[,"SaMb"] <- -const["SaMa",]/const["L50Mat",]
+  popdefs[,"SelP1"] <- const["selL50p",]
+  popdefs[,"SelP2"] <- const["selL95p",]
+  popdefs[,"L50C"] <- const["L50C",]
+  popdefs[,"deltaC"] <- const["deltaC",]
+  popdefs[,"Wtb"] <- const["Wtb",]
+  popdefs[,"Wta"] <- const["Wta",]
+  popdefs[,"steeph"] <- const["defsteep",]
+  popdefs[,"AvRec"] <- const["AvRec",]
+  popdefs[,"MaxCE"] <- 0 # gets value in makezone
+  popdefs[,"SAU"] <- const["SAU",]
+  popdefs[,"lambda"] <- const["lambda",]
+  popdefs[,"qest"] <- const["qest",]
+  popdefs[,"scalece"] <- 0 # gets value in makezone
+  test <- popdefs[,"L95"] - popdefs[,"L50"]
+  if (any(test < 0)) stop("L95 < L50 - adjust the input data file  \n")
+  return(popdefs)
+} # end of popsdefinepops
 
 
 #' @title print.zoneDefinition S3 method for printing zonedef summary

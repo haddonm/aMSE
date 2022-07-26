@@ -29,6 +29,45 @@ getavrec <- function(rundir,datafile,nsau) {
 } # end of getavrec
 
 
+#' @title getdynamics extracts the sau dynamics for a sau
+#'
+#' @description getdynamics assists with conditioning by generating the sauZone
+#'     and extracting the fishery dynamics for the historical conditioning
+#'     period ready for printing.
+#'
+#' @param sau which sau to extract, default = 1
+#' @param zoneC the constants object for all populations
+#' @param zoneDD the dynamic object for all populations
+#' @param condC the conditioning fishery data includeding the catches and cpue
+#' @param glb the globals object
+#'
+#' @return amatrix of the dynamics for the given sau
+#' @export
+#'
+#' @examples
+#' print("wait on data sets")
+getdynamics <- function(zoneC,zoneDD,condC,glb,sau=1) {
+  sauindex <- glb$sauindex
+  popB0 <- getlistvar(zoneC,"B0")
+  B0 <- tapply(popB0,sauindex,sum,na.rm=TRUE)
+  popExB0 <- getlistvar(zoneC,"ExB0")
+  ExB0 <- tapply(popExB0,sauindex,sum,na.rm=TRUE)
+  sauZone <- getsauzone(zoneDD,glb,B0=B0,ExB0=ExB0)
+  columns <- c("year","matB","expB","harvest","recruit",
+               "predC","predce","depl")
+  dyn <- matrix(0,nrow=glb$hyrs,ncol=length(columns),
+                dimnames=list(glb$hyrnames,columns))
+  dyn[,"year"] <- glb$hyrnames
+  dyn[,"matB"] <- sauZone$matB[,sau]
+  dyn[,"expB"] <- sauZone$expB[,sau]
+  dyn[,"harvest"] <- sauZone$harvestR[,sau]
+  dyn[,"recruit"] <- sauZone$recruit[,sau]
+  dyn[,"predC"] <- sauZone$catch[,sau]
+  dyn[,"predce"] <- sauZone$cpue[,sau]
+  dyn[,"depl"] <- sauZone$deplsB[,sau]
+  return(invisible(dyn))
+} # end of getdynamics
+
 #' @title getmaxCE identifies peak CPUE during projections for each SAU
 #'
 #' @description getmaxCE is one of the HS performance statistics. Because it
@@ -347,10 +386,6 @@ getnas <- function(zoneD,yr,glob) {# zoneD=zoneD;yr=1;glob=glb;
                 dimnames=list(glob$midpts,columns))
   for (pop in 1:numpop) nas[,pop] <- zoneD$Nt[,yr,pop]
   nas[,"zone"] <- rowSums(nas[,1:numpop],na.rm=TRUE)
-  # for (mu in 1:nSAU) {
-  #   pickcol <- which(zoneD$SAU == mu)
-  #   nas[,(numpop+mu)] <- rowSums(nas[,pickcol],na.rm=TRUE)
-  # }
   return(nas)
 } #end of getnas
 
@@ -428,7 +463,7 @@ getsauzone <- function(zoneD,glb,B0,ExB0) { # zoneD=zoneDD; glb=glb; B0=B0;ExB0=
     } else {
       cpue[,mu] <- zoneD$cpue[,pick] * wtsau[,pick]
     }
-    cpue[1,mu] <- cpue[2,mu] # to allow for no catches in first year
+    cpue[1,mu] <- NA  # cpue[2,mu] # to allow for no catches in first year
   }
   cpue[,(nSAU+1)] <- rowSums(zoneD$cpue * wtzone)
   ans <- list(matB=matB,expB=expB,midyexpB=midyexpB,catch=catch,recruit=recruit,

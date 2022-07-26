@@ -1,6 +1,6 @@
 #
 # outcond=outcond
-# postfixdir <- "HS81"
+# postfixdir <- "HS39"
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
@@ -162,15 +162,17 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   catchN <- zoneDD$catchN
   sauCt <- popNAStosau(catchN,glb)
   compdat <- condC$compdat$lfs
-  for (plotsau in 1:glb$nSAU) {
-    lfs <- preparesizecomp(compdat[,,plotsau],mincount=mincount)
-    yrsize <- as.numeric(colnames(lfs))
-    histyr <- condC$histyr
-    pickyr <- match(yrsize,histyr[,"year"])
-    LML <- histyr[pickyr,"histLML"]
-    plotsizecomp(rundir=rundir,incomp=lfs,SAU=glb$saunames[plotsau],lml=LML,
-                 catchN=sauCt[,,plotsau],start=NA,proportion=TRUE,
-                 console=FALSE)
+  if (!is.null(compdat)) {
+    for (plotsau in 1:glb$nSAU) {
+      lfs <- preparesizecomp(compdat[,,plotsau],mincount=mincount)
+      yrsize <- as.numeric(colnames(lfs))
+      histyr <- condC$histyr
+      pickyr <- match(yrsize,histyr[,"year"])
+      LML <- histyr[pickyr,"histLML"]
+      plotsizecomp(rundir=rundir,incomp=lfs,SAU=glb$saunames[plotsau],lml=LML,
+                   catchN=sauCt[,,plotsau],start=NA,proportion=TRUE,
+                   console=FALSE)
+    }
   }
   # do projections ------------------------------------------------------------
   if (verbose) cat("Doing the projections \n")
@@ -215,6 +217,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
     sauoutD <- sauout$zonePsau
     sauoutD <- sauoutD[-c(11,10)]
     save(sauoutD,file=paste0(rundir,"/sauoutD.RData"))
+    if (verbose) cat("saudatD.RData  saved in rundir  \n")
   }
   # calculate HS performance statistics
   sum5 <- getprojyrC(catsau=zoneDP$catsau,glb=glb,period=5)
@@ -223,6 +226,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   save(HSstats,file=paste0(rundir,"/HSstats.RData"))
   save(glb,file=paste0(rundir,"/glb.RData"))
   save_hsargs(rundir,hsargs)
+  if (verbose) cat("HSstats.RData, glb.RData, and hsargs.txt saved to rundir \n")
   plothsstats(rundir,HSstats,glb)
   addtable(hcrout$refpts,"hcrout_refpts.csv",rundir,category="HSperf",
            caption="HCR reference points")
@@ -230,7 +234,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
               ctrl=ctrl,zoneCP=zoneCP,zoneD=zoneD,zoneDD=zoneDD,zoneDP=zoneDP,
               NAS=NAS,projC=projC,condC=condC,sauout=sauout,outzone=outzone,
               hcrout=hcrout,production=production,condout=condout,
-              HSstats=HSstats,saudat=saudat,constants=constants)
+              HSstats=HSstats,saudat=saudat,constants=constants,hsargs=hsargs)
   return(out)
 } # end of do_MSE
 

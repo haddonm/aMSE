@@ -144,6 +144,117 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
   return(res)
 } # end of calcsau
 
+#' @title doprojections conducts the replicate model runs for Tasmania
+#'
+#' @description doprojections conducts the replicate model runs for
+#'     Tasmania using the mcdahcr and the input hsargs. Note the use of a list
+#'     that takes up both the population and catch numbers-at-size and puts that
+#'     into getdata. By referencing the iteration in the arrays being passed to
+#'     getdata the object sizes are being reduced and hence, hopefully, the
+#'     runtime will be reduced accordingly.
+#'
+#' @param ctrl the ctrl object from readctrlfile
+#' @param zoneDP the object used to contain the dynamics from the replicate
+#'     model runs
+#' @param zoneCP the object used to contain the constants for each population
+#'     used in model dynamics
+#' @param glb the object containing the global constants for the given run
+#' @param hcrfun the name of the harvest control rule that is used to
+#'     calculate the multiplier for the previous aspirational catches (possibly
+#'     for each SAU but possibly the TAC for the whole zone) so as to
+#'     estimate the aspirational catches or TAC or the following year
+#' @param hsargs the constants used to define the workings of the hcr
+#' @param sampleCE a function that generates the CPUE statistics
+#' @param sampleFIS a function that generates the FIS statistics
+#' @param sampleNaS a function that generates the Numbers-at-size samples
+#' @param getdata a function that gathers all the data required by the hcrfun
+#'     and combines it into an hcrdata object ready for the hcrfun. It is
+#'     expected to call sampleCE, sampleFIS, and sampleNAS, even if they only
+#'     return NULL.
+#' @param calcpopC a function that takes the output from hcrfun and generates
+#'     the actual catch per population expected in the current year.
+#' @param makehcrout is a function from HS.R that produces an object that is
+#'     updated in each iteration by the hcrfun. If no such object is required
+#'     then have a function that returns NULL.
+#' @param verbose should the iterations be counted on the console?
+#' @param ... the ellipsis used in case any of the functions hcrfun, sampleCE,
+#'     sampleFIS, sampleNas, and getdata require extra arguments not included
+#'     in the default named collection
+#'
+#' @seealso{
+#'  \link{oneyearsauC}, \link[makehtml]{make_html}, \link{do_MSE}
+#' }
+#'
+#' @return a list containing the full dynamics across all years zoneDP, and the
+#'     final output from the HCR as hcrout
+#' @export
+#'
+#' @examples
+#' print("wait on suitable internal data sets")
+doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
+                          sampleCE,sampleFIS,sampleNaS,getdata,calcpopC,
+                          makehcrout,verbose=FALSE,...) {
+  # ctrl=ctrl; zoneDP=zoneDP; zoneCP=zoneCP; glb=glb; hcrfun=mcdahcr; hsargs=hsargs
+  # sampleCE=tasCPUE; sampleFIS=tasFIS; sampleNaS=tasNaS;  getdata=tasdata
+  # calcpopC=calcexpectpopC; verbose=TRUE
+  reps <- ctrl$reps
+  sigmar <- ctrl$withsigR
+  sigmab <- ctrl$withsigB
+  sigce <- ctrl$withsigCE
+  hyrs <- glb$hyrs
+  startyr <- hyrs + 1
+  pyrs <- glb$pyrs
+  endyr <- hyrs + pyrs
+  sauindex <- glb$sauindex
+  saunames <- glb$saunames
+  yrnames <- c(glb$hyrnames,glb$pyrnames)
+  Nclass <- glb$Nclass
+  movem <- glb$move
+  r0 <- getvar(zoneCP,"R0") #R0 by population
+  b0 <- getvar(zoneCP,"B0") #sapply(zoneC,"[[","B0")
+  exb0 <- getvar(zoneCP,"ExB0")
+  hcrout <- makehcrout(glb,hsargs)
+  for (iter in 1:reps) {
+    if (verbose) if ((iter %% 25) == 0) cat(iter,"   ")
+    for (year in startyr:endyr) { # iter=1; year=startyr
+      hcrdata <- getdata(sampleCE,sampleFIS,sampleNaS,
+                         sauCPUE=zoneDP$cesau[,,iter],
+                         sauacatch=zoneDP$acatch[,,iter],
+                         sauNAS=list(Nt=zoneDP$Nt[,,,iter],
+                                     catchN=zoneDP$catchN[,,,iter],
+                                     NumNe=zoneDP$NumNe[,,,iter]),
+                         year=year)
+      hcrout <- hcrfun(hcrdata,hsargs,saunames=glb$saunames)
+      popC <- calcpopC(hcrout,exb=zoneDP$exploitB[year-1,,iter],
+                       sauindex,sigmab=sigmab)
+      outy <- oneyearsauC(zoneCC=zoneCP,inN=zoneDP$Nt[,year-1,,iter],
+                          popC=popC,year=year,Ncl=Nclass,sauindex=sauindex,
+                          movem=movem,sigmar=sigmar,sigce,
+                          r0=r0,b0=b0,exb0=exb0)
+      dyn <- outy$dyn
+      saudyn <- poptosauCE(dyn["catch",],dyn["cpue",],sauindex)
+      zoneDP$exploitB[year,,iter] <- dyn["exploitb",]
+      zoneDP$midyexpB[year,,iter] <- dyn["midyexpB",]
+      zoneDP$matureB[year,,iter] <- dyn["matureb",]
+      zoneDP$catch[year,,iter] <- dyn["catch",]
+      zoneDP$acatch[year,,iter] <- hcrout$acatch
+      zoneDP$catsau[year,,iter] <- saudyn$saucatch
+      zoneDP$harvestR[year,,iter] <- dyn["catch",]/dyn["midyexpB",]
+      zoneDP$cpue[year,,iter] <- dyn["cpue",]
+      zoneDP$cesau[year,,iter] <- saudyn$saucpue
+      zoneDP$recruit[year,,iter] <- dyn["recruits",]
+      zoneDP$deplsB[year,,iter] <- dyn["deplsB",]
+      zoneDP$depleB[year,,iter] <- dyn["depleB",]
+      zoneDP$Nt[,year,,iter] <- outy$NaL
+      zoneDP$catchN[,year,,iter] <- outy$catchN
+      zoneDP$NumNe[,year,,iter] <- outy$NumNe
+      zoneDP$TAC[year,iter] <- hcrout$TAC
+    } # year loop
+  }   # iter loop
+  cat("\n")
+  return(list(zoneDP=zoneDP,hcrout=hcrout))
+} # end of doprojections
+
 #' @title makezoneDP generates the container for the projection dynamics
 #'
 #' @description makezoneDP generates an object designed to hold the outputs
@@ -476,113 +587,4 @@ prepareprojection <- function(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
   return(list(zoneDP=zoneDP,projC=projC,zoneCP=zoneCR))
 } # end of prepareprojection
 
-#' @title doprojections conducts the replicate model runs for Tasmania
-#'
-#' @description doprojections conducts the replicate model runs for
-#'     Tasmania using the mcdahcr and the input hsargs. Note the use of a list
-#'     that takes up both the population and catch numbers-at-size and puts that
-#'     into getdata. By referencing the iteration in the arrays being passed to
-#'     getdata the object sizes are being reduced and hence, hopefully, the
-#'     runtime will be reduced accordingly.
-#'
-#' @param ctrl the ctrl object from readctrlfile
-#' @param zoneDP the object used to contain the dynamics from the replicate
-#'     model runs
-#' @param zoneCP the object used to contain the constants for each population
-#'     used in model dynamics
-#' @param glb the object containing the global constants for the given run
-#' @param hcrfun the name of the harvest control rule that is used to
-#'     calculate the multiplier for the previous aspirational catches (possibly
-#'     for each SAU but possibly the TAC for the whole zone) so as to
-#'     estimate the aspirational catches or TAC or the following year
-#' @param hsargs the constants used to define the workings of the hcr
-#' @param sampleCE a function that generates the CPUE statistics
-#' @param sampleFIS a function that generates the FIS statistics
-#' @param sampleNaS a function that generates the Numbers-at-size samples
-#' @param getdata a function that gathers all the data required by the hcrfun
-#'     and combines it into an hcrdata object ready for the hcrfun. It is
-#'     expected to call sampleCE, sampleFIS, and sampleNAS, even if they only
-#'     return NULL.
-#' @param calcpopC a function that takes the output from hcrfun and generates
-#'     the actual catch per population expected in the current year.
-#' @param makehcrout is a function from HS.R that produces an object that is
-#'     updated in each iteration by the hcrfun. If no such object is required
-#'     then have a function that returns NULL.
-#' @param verbose should the iterations be counted on the console?
-#' @param ... the ellipsis used in case any of the functions hcrfun, sampleCE,
-#'     sampleFIS, sampleNas, and getdata require extra arguments not included
-#'     in the default named collection
-#'
-#' @seealso{
-#'  \link{oneyearsauC}, \link[makehtml]{make_html}, \link{do_MSE}
-#' }
-#'
-#' @return a list containing the full dynamics across all years zoneDP, and the
-#'     final output from the HCR as hcrout
-#' @export
-#'
-#' @examples
-#' print("wait on suitable internal data sets")
-doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
-                             sampleCE,sampleFIS,sampleNaS,getdata,calcpopC,
-                             makehcrout,verbose=FALSE,...) {
-  # ctrl=ctrl; zoneDP=zoneDP; zoneCP=zoneCP; glb=glb; hcrfun=mcdahcr; hsargs=hsargs
-  # sampleCE=tasCPUE; sampleFIS=tasFIS; sampleNaS=tasNaS;  getdata=tasdata
-  # calcpopC=calcexpectpopC; verbose=TRUE
-  reps <- ctrl$reps
-  sigmar <- ctrl$withsigR
-  sigmab <- ctrl$withsigB
-  sigce <- ctrl$withsigCE
-  hyrs <- glb$hyrs
-  startyr <- hyrs + 1
-  pyrs <- glb$pyrs
-  endyr <- hyrs + pyrs
-  sauindex <- glb$sauindex
-  saunames <- glb$saunames
-  yrnames <- c(glb$hyrnames,glb$pyrnames)
-  Nclass <- glb$Nclass
-  movem <- glb$move
-  r0 <- getvar(zoneCP,"R0") #R0 by population
-  b0 <- getvar(zoneCP,"B0") #sapply(zoneC,"[[","B0")
-  exb0 <- getvar(zoneCP,"ExB0")
-  hcrout <- makehcrout(glb,hsargs)
-  for (iter in 1:reps) {
-    if (verbose) if ((iter %% 25) == 0) cat(iter,"   ")
-    for (year in startyr:endyr) { # iter=1; year=startyr
-      hcrdata <- getdata(sampleCE,sampleFIS,sampleNaS,sauCPUE=zoneDP$cesau[,,iter],
-                         sauacatch=zoneDP$acatch[,,iter],
-                         sauNAS=list(Nt=zoneDP$Nt[,,,iter],
-                                     catchN=zoneDP$catchN[,,,iter],
-                                     NumNe=zoneDP$NumNe[,,,iter]),
-                         year=year)
-      hcrout <- hcrfun(hcrdata,hsargs,saunames=glb$saunames)
-      popC <- calcpopC(hcrout,exb=zoneDP$exploitB[year-1,,iter],
-                       sauindex,sigmab=sigmab)
-      outy <- oneyearsauC(zoneCC=zoneCP,inN=zoneDP$Nt[,year-1,,iter],
-                          popC=popC,year=year,Ncl=Nclass,sauindex=sauindex,
-                          movem=movem,sigmar=sigmar,sigce,
-                          r0=r0,b0=b0,exb0=exb0)
-      dyn <- outy$dyn
-      saudyn <- poptosauCE(dyn["catch",],dyn["cpue",],sauindex)
-      zoneDP$exploitB[year,,iter] <- dyn["exploitb",]
-      zoneDP$midyexpB[year,,iter] <- dyn["midyexpB",]
-      zoneDP$matureB[year,,iter] <- dyn["matureb",]
-      zoneDP$catch[year,,iter] <- dyn["catch",]
-      zoneDP$acatch[year,,iter] <- hcrout$acatch
-      zoneDP$catsau[year,,iter] <- saudyn$saucatch
-      zoneDP$harvestR[year,,iter] <- dyn["catch",]/dyn["midyexpB",]
-      zoneDP$cpue[year,,iter] <- dyn["cpue",]
-      zoneDP$cesau[year,,iter] <- saudyn$saucpue
-      zoneDP$recruit[year,,iter] <- dyn["recruits",]
-      zoneDP$deplsB[year,,iter] <- dyn["deplsB",]
-      zoneDP$depleB[year,,iter] <- dyn["depleB",]
-      zoneDP$Nt[,year,,iter] <- outy$NaL
-      zoneDP$catchN[,year,,iter] <- outy$catchN
-      zoneDP$NumNe[,year,,iter] <- outy$NumNe
-      zoneDP$TAC[year,iter] <- hcrout$TAC
-    } # year loop
-  }   # iter loop
-  cat("\n")
-  return(list(zoneDP=zoneDP,hcrout=hcrout))
-} # end of doprojections
 

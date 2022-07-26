@@ -2,9 +2,10 @@
 
 
 
-
-options("show.signif.stars"=FALSE,"stringsAsFactors"=FALSE,
-        "max.print"=50000,"width"=240)
+options("show.signif.stars"=FALSE,
+        "stringsAsFactors"=FALSE,
+        "max.print"=50000,
+        "width"=240)
 suppressPackageStartupMessages({
   library(aMSE)
   library(TasHS)
@@ -17,22 +18,14 @@ dropdir <- getDBdir()
 prefixdir <- paste0(dropdir,"A_codeUse/aMSEUse/scenarios/")
 
 startime <- Sys.time()
-postfixdir <- "S21"
+postfixdir <- "HS21"
 verbose <- TRUE
 rundir <- filenametopath(prefixdir,postfixdir)
 controlfile <- paste0("control",postfixdir,".csv")
+outdir <- "C:/aMSE_scenarios/M15h7L75/"
 confirmdir(rundir)
+confirmdir(outdir)
 
-
-data(zone1)
-data(saudat)
-
-
-rewritecontrolfile(rundir,zone1,controlfile=controlfile)
-rewritedatafile(rundir,zone1,saudat)
-rewritecompdata(rundir,zone1)
-
-# need to rename the control and datafiles to remove the '_new' postfix.
 
 hsargs <- list(mult=0.1,
                wid = 4,
@@ -44,6 +37,36 @@ hsargs <- list(mult=0.1,
 
 
 
+zone1 <- readctrlfile(rundir,infile=controlfile,verbose=verbose)
+ctrl <- zone1$ctrl
+glb <- zone1$globals     # glb without the movement matrix
+bysau <- zone1$ctrl$bysau
+opar <- NULL
+parsin <- zone1$condC$parsin
+if (parsin) opar <- as.matrix(zone1$condC$optpars)
+if (is.null(bysau)) bysau <- 0
+if (bysau) {
+  saudata <- readsaudatafile(rundir,ctrl$datafile,optpar=opar)
+  constants <- saudata$constants
+  saudat <- saudata$saudat
+  zone1$condC$poprec <- saudata$poprec
+} else {
+  constants <- readpopdatafile(rundir,ctrl$datafile)
+  saudat <- constants
+}
+
+if (verbose) cat("Files read, now making zone \n")
+out <- setupzone(constants,zone1,doproduct=TRUE,verbose=verbose) # make operating model
+zoneC <- out$zoneC
+zoneD <- out$zoneD
+glb <- out$glb             # glb now has the movement matrix
+product <- out$product     # important bits usually saved in rundir
+zone1$globals <- glb
+
+
+zone <- makeequilzone(rundir,controlfile,doproduct=doproduct,verbose=verbose)
+
+
 out <- do_condition(rundir,controlfile,
                     calcpopC=calcexpectpopC,
                     verbose = TRUE,
@@ -51,37 +74,23 @@ out <- do_condition(rundir,controlfile,
                     dohistoric=TRUE,
                     mincount=120)
 
-aMSE::makeoutput(out,rundir,postfixdir,controlfile,hsfile="TasHS Package",
+makeoutput(out,rundir,postfixdir,controlfile,hsfile="TasHS Package",
                  doproject=FALSE,openfile=TRUE,verbose=FALSE)
 
 
 
 
-adjustavrec(rundir,out$glb,out$ctrl,calcpopC=calcexpectpopC,verbose=TRUE)
+
+plotcpue <- function(zoneC,zoneDD,condC,glb,sau=1){
+  dyn <- getdynamics(zoneC,zoneDD,condC,glb,sau=sau)
+  parset()
+  plot(yrs,dyn[,],type="l",lwd=2)
 
 
+}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+plotprep(width=8, height=5,newdev=FALSE)
+plotcpue(glb$hyrnames,)
 
 

@@ -70,6 +70,7 @@ adjustavrec <- function(rundir,glb,ctrl,calcpopC,verbose=TRUE,
   nsau <- glb$nSAU
   saunames <- glb$saunames
   final <- numeric(nsau)
+  original <- getavrec(rundir,datafile,nsau=nsau)
   for (sau in 1:nsau) { #  sau=3
     initial <- getavrec(rundir,datafile,nsau=nsau)
     param <- initial[sau]
@@ -99,7 +100,7 @@ adjustavrec <- function(rundir,glb,ctrl,calcpopC,verbose=TRUE,
   }
   endtime <- Sys.time()
   if (verbose) {
-    cat("Initial AvRec ",initial,"\n");
+    cat("Initial AvRec ",original,"\n");
     cat("Final   AvRec ",final,"\n")
     print(endtime - startime)
   }
@@ -273,7 +274,8 @@ changeline <- function(indir, filename, linenumber, newline,verbose=FALSE) {
 #' @examples
 #' print("wait on suitable data sets in data")
 #' # rundir=rundir; controlfile=controlfile;calcpopC=calcexpectpopC
-#' # verbose=TRUE; doproduct=TRUE; dohistoric=TRUE; mincount=120
+#' # verbose=TRUE; doproduct=FALSE; dohistoric=TRUE; mincount=120
+#' # matureL=c(70,200);wtatL=c(80,200);mincount=120
 do_condition <- function(rundir,controlfile,calcpopC,
                          verbose=FALSE,doproduct=FALSE,dohistoric=TRUE,
                          matureL=c(70,200),wtatL=c(80,200),mincount=100) {
@@ -303,6 +305,9 @@ do_condition <- function(rundir,controlfile,calcpopC,
     if (verbose) cat("Conditioning on the Fishery data  \n")
     zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,condC,calcpopC=calcpopC,
                           sigR=1e-08,sigB=1e-08)
+    dyn <- getdynamics(zoneC,zoneDD,condC,glb,sau=1)
+    addtable(round(dyn,4),"dynamics_sau1.csv",rundir,category="zoneDD",caption=
+               "dynamics of sau following conditioning on historical catches.")
   } else {
     zoneDD <- zoneD
   }
@@ -318,22 +323,26 @@ do_condition <- function(rundir,controlfile,calcpopC,
   popdefs <- getlistvar(zone$zoneC,"popdef")
   addtable(t(popdefs),"popdefs.csv",rundir,category="zoneDD",
            caption="Population vs Operating model parameter definitions")
-  if (dohistoric) {
+  if (dohistoric)
     condout <- plotconditioning(zoneDD,glb,zoneC,condC$histCE,rundir,
                                 condC$recdevs)
     # plot predicted size-comp of catch vs observed size-comps
+  if (!is.null(condC$compdat)) {
     catchN <- zoneDD$catchN
     sauCt <- popNAStosau(catchN,glb)
-    compdat <- condC$compdat$lfs
-    for (plotsau in 1:glb$nSAU) {
-      lfs <- preparesizecomp(compdat[,,plotsau],mincount=mincount)
-      yrsize <- as.numeric(colnames(lfs))
-      histyr <- condC$histyr
-      pickyr <- match(yrsize,histyr[,"year"])
-      LML <- histyr[pickyr,"histLML"]
+    lfs <- condC$compdat$lfs
+    for (plotsau in 1:glb$nSAU) { # plotsau=1
+      if (is.null(lfs)) {
+        lfs <- NULL
+       } else {
+         lfs <- preparesizecomp(condC$compdat$lfs[,,plotsau],mincount=mincount)
+         yrsize <- as.numeric(colnames(lfs))
+         pickyr <- match(yrsize,condC$histyr[,"year"])
+      }
+      LML <- condC$histyr[pickyr,"histLML"]
       plotsizecomp(rundir=rundir,incomp=lfs,SAU=glb$saunames[plotsau],lml=LML,
                    catchN=sauCt[,,plotsau],start=NA,proportion=TRUE,
-                   console=FALSE)
+                  console=FALSE)
     }
   } else {
     condout <- NULL
@@ -819,8 +828,7 @@ sauavrecssq <- function(param,rundir,controlfile,datafile,linenum,
                          paste0(as.character(extra[1:nsaum1]),collapse=","),
                          ",",as.character(param),collapse=",")
   changeline(rundir,datafile,linenum,replacetxt)
-  zone <- makeequilzone(rundir,controlfile,doproduct=FALSE,
-                        verbose=FALSE)
+  zone <- makeequilzone(rundir,controlfile,doproduct=FALSE,verbose=FALSE)
   # declare main objects
   glb <- zone$glb
   condC <- zone$zone1$condC

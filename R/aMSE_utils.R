@@ -171,13 +171,17 @@ confirmdir <- function(x,make=TRUE,verbose=TRUE) {
   } else {
     if (verbose) cat(x," did not exist  \n")
     if (make) {
-      dir.create(x, recursive = TRUE)
-      if (verbose) cat(x," has been created  \n")
+      label <- paste0("Create directory: ",x," [Y, y, N, n]: ")
+      goahead <- readline(prompt=label)
+      if (goahead %in% c("y","Y")) {
+        dir.create(x, recursive = TRUE)
+        if (verbose) cat(x," has been created  \n")
+      }
     }
   }
 } # end of confirmdir
 
-#' @title copyto copies a vector of files from one scenario directory to annother
+#' @title copyto copies a vector of files from one scenario directory to another
 #'
 #' @description copyto copies a vector of files (see examples) from one
 #'     scenario's directory to another. If a filename includes the

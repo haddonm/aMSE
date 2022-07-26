@@ -25,4 +25,5 @@ saurecdevs enables a visual comparison of the 'fitted'
 }
 \examples{
 print("wait on suitable data sets")
+# recdevs=condC$recdevs;glb=glb;rundir=rundir; filen=""
 }

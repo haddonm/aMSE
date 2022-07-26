@@ -627,7 +627,7 @@ datafiletemplate <- function(indir,filename="saudata_test.csv") {
 # Utility functions used within parseFile, not exported
 
 
-#' @title readctrlfile checks rundir contains the required csv files
+#' @title readctrlfile reads the rundir scenario's control file
 #'
 #' @description readctrlfile checks rundir contains the required csv
 #'     files including the named control file, which then contains
@@ -736,15 +736,16 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE) {
       colnames(histCatch) <- SAUnames
       histyr <- matrix(0,nrow=hyrs,ncol=2)
       colnames(histyr) <- c("year","histLML")
-      for (i in 1:hyrs) {
+      for (i in 1:hyrs) { # i=2
          begin <- begin + 1
-         asnum <- as.numeric(unlist(strsplit(indat[begin],",")))
+         asnum <- as.numeric(removeEmpty(unlist(strsplit(indat[begin],","))))
          histyr[i,] <- asnum[1:2]
          histCatch[i,] <- asnum[3:(nSAU+2)]
       }
       rownames(histCatch) <- histyr[,1]
       rownames(histyr) <- histyr[,1]
    } # end of catches loop
+   hyrnames <- as.numeric(histyr[,1])
    yrce <- getsingleNum("CEYRS",indat)
    if (yrce > 0) {
       # yrce <- hyrs - startce + 1
@@ -759,13 +760,12 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE) {
           histCE[i,] <- cenum[2:(nSAU+1)]
        }
       rownames(histCE) <- yearCE
-      hyrnames <- as.numeric(histyr[,1])
       firstyear <- tail(hyrnames,1) + 1
       if (projyrs > 0) pyrnames <- firstyear:(firstyear + projyrs - 1)
    } # end of if(yrce == 0)
+   lffiles <- NULL
    sizecomp <- getsingleNum("SIZECOMP",indat)
    if (sizecomp > 0) {
-      lffiles <- NULL
       locsizecomp <- grep("SIZECOMP",indat)
       if (sizecomp > 1) {
          compdat <- vector("list",sizecomp)
@@ -825,15 +825,15 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE) {
    return(totans)
 } # end of readctrlzone
 
-#' @title readdatafile reads in a matrix of data defining each population
+
+#' @title readpopdatafile reads in a matrix of data defining each population
 #'
-#' @description readdatafile expects a matrix of probability density
-#'     function definitions that are used to define the populations
+#' @description readpopdatafile expects a matrix of constants defining the
+#'     biological properties used to define the populations
 #'     used in the simulation. These constitute the definition of
 #'     popdefs.
 #'
-#' @param numpop the total number of populations across the zone
-#' @param indir directory in which to find the date file
+#' @param indir directory in which to find the date file = rundir
 #' @param infile character string with filename of the data file
 #'
 #' @return a matrix of values defining the PDFs used to define the
@@ -841,38 +841,35 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' data(zone1)
-#' glb <- zone1$globals
-#' glb
-#' data(constants)
-#' constants
-#' ctrlfile <- "control.csv"
-#' ctrl <- readctrlfile(glb$numpop,rundir,ctrlfile)
-#' reg1 <- readzonefile(rundir,ctrl$zonefile)
-#' popdefs <- readdatafile(reg1$globals,rundir,ctrl$datafile)
-#' print(popdefs)
-#' }
-readdatafile <- function(numpop,indir,infile) {  # indir=rundir;infile="zone1sau2pop6.csv";numpop=6
-   filename <- filenametopath(indir,infile)
-   indat <- readLines(filename)   # reads the whole file as character strings
-   begin <- grep("PDFs",indat)
-   npar <- getConst(indat[begin],1)
-   rows <- c("popnum","SAU","DLMax","sMaxDL","L50","sL50","L50inc","sL50inc","SigMax",
-             "sSigMax","LML","Wtb","sWtb","Wtbtoa","sWtbtoa","Me","sMe",
-             "AvRec","sAvRec","defsteep","sdefsteep","L50C","sL50C",
-             "deltaC","sdeltaC","MaxCEpars","sMaxCEpars","selL50p",
-             "selL95p","SaMa","L50Mat","sL50Mat")
-   ans <- matrix(0,nrow=length(rows),ncol=numpop)
-   begin <- begin + 1
-   for (i in 1:npar) {
-      ans[i,] <- getConst(indat[begin],numpop)
-      begin <- begin + 1
-   } # completed filling ans matrix
-   rownames(ans) <- rows
-   colnames(ans) <- ans["popnum",]
-   return(ans)
-} # end of readdatafile
+#' print("wait on data sets")
+readpopdatafile <- function(indir,infile) {
+  # indir=rundir;infile="zone1sau2pop6.csv"
+  filename <- filenametopath(indir,infile)
+  indat <- readLines(filename)   # reads the whole file as character strings
+  nsau <- getsingleNum("nsau",indat)
+  saupop <- getConst(indat[grep("saupop",indat)],nsau)
+  numpop <- sum(saupop)
+  checkmsedata(intxt=indat,rundir=rundir,verbose=TRUE)
+  txt <- indat[grep("saunames",indat)]
+  saunames <- unlist(strsplit(txt,","))[2:(nsau+1)]
+
+  begin <- grep("PDFs",indat)
+  npar <- getConst(indat[begin],1)
+  rows <- c("popnum","SAU","DLMax","L50","L50inc","SigMax",
+            "LML","Wtb","Wta","Me","AvRec","defsteep","L50C",
+            "deltaC","MaxCEpars","selL50p","selL95p",
+            "SaMa","L50Mat","lambda","qest")
+  ans <- matrix(0,nrow=length(rows),ncol=numpop)
+  begin <- begin + 1
+  for (i in 1:npar) {
+    ans[i,] <- getConst(indat[begin],numpop)
+    begin <- begin + 1
+  } # completed filling ans matrix
+  rownames(ans) <- rows
+  colnames(ans) <- ans["popnum",]
+  return(ans)
+} # end of readpopdatafile
+
 
 
 #' @title readsaudatafile generates the constants matrix from sau data

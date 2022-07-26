@@ -25,12 +25,20 @@
 #' # glb=out$glb;obscol=2
 compareCPUE <- function(histCE,saucpue,glb,rundir,filen="",obscol=2) {
   if (nchar(filen) > 0) filen <- filenametopath(rundir,filen)
-  years <- as.numeric(rownames(histCE))
-  hyrs <- glb$hyrnames
-  pick <- match(years,hyrs)
   nsau <- glb$nSAU
-  cpue <- saucpue[pick,1:nsau]
-  rownames(cpue) <- years
+  hce <- TRUE
+  if (is.null(histCE)) {
+    hyrs <- glb$hyrs
+    years <- 1:hyrs
+    cpue <- saucpue[,1:nsau]
+    hce <- FALSE
+   } else {
+    years <- as.numeric(rownames(histCE))
+    hyrs <- glb$hyrnames
+    pick <- match(years,hyrs)
+    cpue <- saucpue[pick,1:nsau]
+    rownames(cpue) <- years
+  }
   label <- glb$saunames
   colnames(cpue) <- label
   ssq <- numeric(nsau)
@@ -39,18 +47,27 @@ compareCPUE <- function(histCE,saucpue,glb,rundir,filen="",obscol=2) {
   parset(plots=doplots,margin=c(0.3,0.3,0.05,0.05),outmargin=c(0,1,0,0),
          byrow=FALSE)
   for (sau in 1:nsau) {  #  sau = 1
-    ssq[sau] <- sum((histCE[,sau] - cpue[,sau])^2,na.rm=TRUE)
-    ymax <- getmax(c(cpue[,sau],histCE[,sau]))
+    ymax <- getmax(cpue[,sau])
+    if (hce) {
+      ssq[sau] <- sum((histCE[,sau] - cpue[,sau])^2,na.rm=TRUE)
+      ymax <- getmax(c(cpue[,sau],histCE[,sau]))
+    }
     plot(years,cpue[,sau],type="l",lwd=2,col=1,xlab="",ylab="",
          panel.first=grid(),ylim=c(0,ymax),yaxs="i")
-    lines((years),histCE[,sau],lwd=2,col=2)
-    lab2 <- paste0(label[sau],"  ",round(ssq[sau],1))
-    mtext(lab2,side=1,line=-1.3,cex=1.25)
+   if (hce) {
+     lines(years,histCE[,sau],lwd=2,col=2)
+     lab2 <- paste0(label[sau],"  ",round(ssq[sau],1))
+     mtext(lab2,side=1,line=-1.3,cex=1.25)
+   }
   }
   mtext("CPUE",side=2,line=-0.3,outer=TRUE,cex=1.25)
   if (nchar(filen) > 0) {
-    caption <- paste0("Comparison of Observed CPUE (red line) with that ",
-                      "predicted by operating model (black line).")
+    if (hce) {
+      caption <- paste0("Comparison of Observed CPUE (red line) with that ",
+                        "predicted by operating model (black line).")
+      } else {
+      caption  <- "Predicted CPUE from Operating Model."
+    }
     addplot(filen,rundir=rundir,category="condition",caption)
   }
   return(ssq)
@@ -160,8 +177,14 @@ diagnosticsproj <- function(zonePsau,glb,rundir,nrep=3) {
 #' @examples
 #' print("wait on suitable data-sets")
 dosau <- function(inzone,glb,picksau,histCE,yrnames,recdev) {
-  # inzone=sauZone;glb=glb;picksau=sau;histCE=histCE;yrnames=glb$hyrnames; extra=FALSE
-  histceyr <- as.numeric(rownames(histCE))
+  # inzone=sauZone;glb=glb;picksau=sau;histCE=histCE;yrnames=glb$hyrnames; recdev=recdevs[,sau]
+  hce <- TRUE
+  if (is.null(histCE)) {
+    hce <- FALSE
+    yrnames <- 1:glb$hyrs
+  } else {
+    histceyr <- as.numeric(rownames(histCE))
+  }
   saunames <- glb$saunames #as.numeric(glb$saunames)
   saunum <- 1:glb$nSAU
   indexsau <- which(saunum == picksau)
@@ -172,12 +195,13 @@ dosau <- function(inzone,glb,picksau,histCE,yrnames,recdev) {
   nyrs <- dim(matB)[1]
   parset(plots=doplots,margin=c(0.3,0.4,0.05,0.05),outmargin=c(1,0,1,0),
          byrow=FALSE)
-  for (invar in 1:(nvar-1)) {  #  invar=1
+  for (invar in 1:(nvar-1)) {  #  invar=2
     dvar <- inzone[[label[invar]]][,indexsau]
     ymax <- getmax(dvar)
     plot(yrnames,dvar,type="l",lwd=2,col=4,panel.first=grid(),yaxs="i",
          ylab=paste0(label[invar]),ylim=c(0,ymax),xlab="",cex=1.0)
-    if (label[invar] == "cpue") lines(histceyr,histCE[,indexsau],lwd=2,col=3)
+    if ((label[invar] == "cpue") & (hce))
+        lines(histceyr,histCE[,indexsau],lwd=2,col=3)
     if (label[invar] %in% c("deplsB","depleB")) {
       abline(h=0.2,col=2,lwd=1)
       pickyr <-round(nyrs/2)
@@ -185,7 +209,7 @@ dosau <- function(inzone,glb,picksau,histCE,yrnames,recdev) {
     }
     if (label[invar] == "harvestR") abline(h=c(0.4,0.75),col=2,lwd=1,lty=2)
     if (label[invar] == "recruit") {
-      loessfit <- loess(dvar ~ glb$hyrnames,span=0.625)
+      loessfit <- loess(dvar ~ yrnames,span=0.625)
       lines(loessfit$x,loessfit$fitted,lwd=2,col=2)
     }
   }
@@ -830,7 +854,7 @@ plotprod <- function(product,xname="MatB",yname="Catch",xlimit=NA,
 plotsizecomp <- function(rundir,incomp,SAU="",lml=NULL,catchN=NULL,start=NA,
                          proportion=TRUE,console=TRUE,width=10,height=9,
                          fnt=7,tabcategory="predictedcatchN") {
-  # incomp=sizecomp; Nt=out$Nt; proportion=TRUE
+  # incomp=lfs; Nt=out$Nt; proportion=TRUE
   if (console) { filen <- "" } else {
     filen <- filenametopath(rundir,paste0(SAU,"sizecomp_nas_by_year.png"))
   }
@@ -1114,6 +1138,7 @@ sauplots <- function(zoneDP,NAS,glb,rundir,B0,ExB0,startyr,addCI=TRUE,
 #'
 #' @examples
 #' print("wait on suitable data sets")
+#' # recdevs=condC$recdevs;glb=glb;rundir=rundir; filen=""
 saurecdevs <- function(recdevs,glb,rundir,filen="") {
   if (nchar(filen) > 0) filen <- filenametopath(rundir,filen)
   years <- as.numeric(rownames(recdevs))

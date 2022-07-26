@@ -2,7 +2,7 @@
 % Please edit documentation in R/aMSE_utils.R
 \name{copyto}
 \alias{copyto}
-\title{copyto copies a vector of files from one scenario directory to annother}
+\title{copyto copies a vector of files from one scenario directory to another}
 \usage{
 copyto(prefixdir, fromdir, todir, filelist, makenew = TRUE, verbose = TRUE)
 }
