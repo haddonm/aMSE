@@ -45,4 +45,6 @@ makeoutput simplifies taking the output from do_MSE and
 }
 \examples{
 print("wait on internal data-sets")
+# out=out;rundir=rundir;postdir=postfixdir;controlfile=controlfile;hsfile="TasHS Package"
+# doproject=TRUE;openfile=TRUE;verbose=FALSE
 }
