@@ -42,6 +42,7 @@ print("wait on some data sets")
 }
 \seealso{
 {
- \link{oneyearsauC}, \link{oneyearcat}, \link{oneyearrec}, \link{do_MSE}
+ \link{oneyearsauC}, \link{oneyearcat}, \link{oneyearrec}, \link{do_MSE},
+ \link{do_condition}
 }
 }

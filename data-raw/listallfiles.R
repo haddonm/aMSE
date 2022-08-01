@@ -2,7 +2,7 @@
  # infile="C:/Users/User/Dropbox/A_Code/aMSE/R/inputfiles.R"; allfuns=allfilesort[,"function"]
 
 
-library(rutilsMH)
+library(codeutils)
 
 if (dir.exists("c:/Users/User/DropBox")) {
   ddir <- "c:/Users/User/DropBox/A_code/"
@@ -16,7 +16,9 @@ files <- c("aMSE_utils.R","defineZone.R","docondition.R","domse.R","dynamics.R",
            "projection.R")
 outfile <- paste0(ddir,"aMSE/data-raw/allfile.csv")
 
-x <- describefunctions(indir,files,outfile=outfile)
+
+
+x <- describefunctions(indir=indir,files=files,outfile=outfile)
 
 
 

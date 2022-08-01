@@ -389,6 +389,37 @@ getnas <- function(zoneD,yr,glob) {# zoneD=zoneD;yr=1;glob=glb;
   return(nas)
 } #end of getnas
 
+#' @title getprojyrs i sused to truncate an array to only the projected year
+#'
+#' @description getprojyrs is used when calculating the harvest strategy
+#'     performance measures. To do that requires us to focus on the projection
+#'     years, and possibly include the last year of observations for continuity.
+#'
+#' @param sauarr the projection data summarized to the sau scale. This might be
+#'     matureB, exploitB, midyexpB, catch, acatch, harvestR, cpue, recruit,
+#'     deplsB, or depleB. CatchN and Nt need different treatment
+#' @param glb the global object = out$glb
+#' @param withlast should the last year of observations be included from the
+#'     simulation or only the projection years used? default=TRUE
+#'
+#' @return an array of the input data truncated to the projection years with,
+#'     optionally, just the last year of the observed period included.
+#' @export
+#'
+#' @examples
+#' print("wait on data sets")
+getprojyrs <- function(sauarr,glb,withlast=TRUE) {
+  # sauarr=catches; glb=glb
+  yrs <- dim(sauarr)[1]
+  hyrs <- glb$hyrs
+  pyrs <- glb$pyrs
+  if (yrs != hyrs + pyrs)
+    stop(cat("Input error in getprojyrs, input array has incorrect dimensions \n"))
+  first <- hyrs+1
+  if (withlast) first <- hyrs
+  return(sauarr[first:yrs,,])
+} # end of getprojyrs
+
 #' @title getsingleNum find a line of text and extracts a single number
 #'
 #' @description getsingleNum uses grep to find an input line. If the variable

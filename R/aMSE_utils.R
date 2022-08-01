@@ -147,6 +147,58 @@ changevar <- function(filename,rundir,varname,newvalue,prompt=FALSE,verbose=TRUE
   return(cat(label," \n"))
 } # end of changevar
 
+#' @title checksizecompdata is a utility to allow a check of their sizecomp data
+#'
+#' @description checksizecompdata is a utility which allows a user to check the
+#'     coverage and level of sampling of size-composition data prior to
+#'     analysis in the MSE (or sizemod) so that a selection can be made to
+#'     potentially excluded inadequate samples. This is not a required function
+#'     for every analysis it is designed simply as a tool for quality control of
+#'     the input data.
+#'
+#' @param rundir the directory in which all files relating to a
+#'     particular run are to be held.
+#' @param controlfile default="control.csv", the filename of the control
+#'     file present in rundir containing information regarding the run.
+#' @param verbose Should progress comments be printed to console, default=TRUE#'
+#'
+#' @return nothing but it does plot a graph
+#' @export
+#'
+#' @examples
+#' print("wait on data sets")
+checksizecompdata <- function(rundir,controlfile,verbose=TRUE) {
+  zone1 <- readctrlfile(rundir,infile=controlfile,verbose=verbose)
+  setuphtml(rundir)
+  compdat <- zone1$condC$compdat$lfs
+  if (is.null(compdat))
+    stop(cat("No size-composition file found in copntrol file \n"))
+  palfs <- zone1$condC$compdat$palfs
+  saunames <- zone1$SAUnames
+  nsau <- length(saunames)
+  histyr <- zone1$condC$histyr
+  addtable(palfs,"sizecomp_obs_by_year_by_SAU.csv",rundir,
+           category="predictedcatchN",
+           caption="Number of sizecomp observations by year and SAU.")
+  for (plotsau in 1:nsau) {
+    lfs <- preparesizecomp(compdat[,,plotsau],mincount=0)
+    yrsize <- as.numeric(colnames(lfs))
+    pickyr <- match(yrsize,histyr[,"year"])
+    LML <- histyr[pickyr,"histLML"]
+    plotsizecomp(rundir=rundir,incomp=lfs,SAU=saunames[plotsau],lml=LML,
+                 catchN=NULL,start=NA,proportion=TRUE,
+                 console=FALSE)
+  }
+  replist <- NULL
+  projy <- 0
+  runnotes <- c(controlfile,paste0("SAU = ",nsau))
+  make_html(replist = replist,  rundir = rundir,
+            controlfile=controlfile, datafile=zone1$ctrl$datafile,
+            width = 500, openfile = TRUE,  runnotes = runnotes,
+            verbose = verbose, packagename = "aMSE",  htmlname = "sizecomp")
+  if (verbose) cat("finished  \n")
+} # end of checksizecompdata
+
 #' @title confirmdir checks to see if a directory exists and makes it if not
 #'
 #' @description confirmdir enables one to be sure a selected directory exists.
@@ -695,7 +747,8 @@ saveobject <- function(obname,object,postfix="",rundir) {
 #' zoneprod <- summarizeprod(product,saunames=zone$zone1$SAUnames)
 #' round(zoneprod,3)
 #' }
-summarizeprod <- function(product,saunames) { # product=zone$product; saunames=zone$zone1$SAUnames
+summarizeprod <- function(product,saunames) {
+  # product=out$production; saunames=out$glb$saunames
   numrow <- dim(product)[1]
   numpop <- dim(product)[3]
   prodrows <- rownames(product[,,1])
@@ -705,10 +758,10 @@ summarizeprod <- function(product,saunames) { # product=zone$product; saunames=z
   rows <- c(saunames,"zone")
   nrows <- length(rows)
   ans <- matrix(0,nrow=nrows,ncol=length(columns),dimnames=list(rows,columns))
-  for (sau in 1:numpop) {
-    sauprod <- product[,,sau]
+  for (pop in 1:numpop) { # sau=1
+    sauprod <- product[,,pop]
     pick <- which(sauprod[,"Catch"] == max(sauprod[,"Catch"],na.rm=TRUE))
-    ans[sau,] <- sauprod[pick,2:6]
+    ans[pop,] <- sauprod[pick,2:6]
   }
   zoneprod <- matrix(0,nrow=numrow,ncol=length(prodcols),
                      dimnames=list(prodrows,prodcols))

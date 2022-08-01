@@ -45,6 +45,9 @@ examine its implications.
 
 # LATEST UPDATE
 
+-   2022-08-01 aMSE 0.0.11 Added a bunch of functions to assist with
+    comparing scenarios. No EWN.
+
 -   2022-07-10 aMSE 0.0.10 Switched dependency from hutils to codeutils.
     re-added zone1 for S21 to the data sets. No EWN.
 

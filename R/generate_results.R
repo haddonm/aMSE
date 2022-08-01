@@ -346,13 +346,14 @@ numbersatsize <- function(rundir, glb, zoneD, ssc=5) {
 #' @param product the productivity 3-D array
 #' @param glb the globals list
 #'
-#' @return nothing but it does place five png files into rundir
+#' @return It produces five png files into rundir and returns sauprod, a matrix
+#'     of B0, Bmsy, MSY, Depletionmsy, and CEmsy for each sau
 #' @export
 #'
 #' @examples
 #' print("this will be quite long when I get to it")
 plotproductivity <- function(rundir,product,glb) {
-  # All these plots only use the product array
+  # rundir=rundir; product=production;glb=glb
   xval <- findmsy(product)
   numpop <- glb$numpop
   if (numpop <= 16) {
@@ -404,11 +405,16 @@ plotproductivity <- function(rundir,product,glb) {
   nh <- dim(product)[1]
   label <- dimnames(product)
   sauindex <- glb$sauindex
+  saunames <- glb$saunames
   wts <- matrix(0,nrow=nh,ncol=npop,dimnames=list(label[[1]],label[[3]]))
-  sauyield <- matrix(0,nrow=nh,ncol=nsau,dimnames=list(label[[1]],glb$saunames))
-  saucpue <- matrix(0,nrow=nh,ncol=nsau,dimnames=list(label[[1]],glb$saunames))
+  sauyield <- matrix(0,nrow=nh,ncol=nsau,dimnames=list(label[[1]],saunames))
+  saumatB <- matrix(0,nrow=nh,ncol=nsau,dimnames=list(label[[1]],saunames))
+  saucpue <- matrix(0,nrow=nh,ncol=nsau,dimnames=list(label[[1]],saunames))
+  rows <- c("B0","Bmsy","MSY","Dmsy","CEmsy")
+  sauprod <- matrix(0,nrow=length(rows),ncol=nsau,dimnames=list(rows,saunames))
   # Now do sau production
   for (i in 1:nh) {
+    saumatB[i,] <- tapply(product[i,"MatB",],sauindex,sum,na.rm=TRUE)
     sauyield[i,] <- tapply(product[i,"Catch",],sauindex,sum,na.rm=TRUE)
     wts[i,] <- product[i,"Catch",]/sauyield[i,sauindex]
     saucpue[i,] <- tapply((product[i,"RelCE",] * wts[i,]),sauindex,sum,na.rm=TRUE)
@@ -427,6 +433,8 @@ plotproductivity <- function(rundir,product,glb) {
     text(0.7*max(saucpue[,i]),0.92*ymax,msylab,cex=1.2,pos=4)
     text(0.8*max(saucpue[,i]),0.75*ymax,label[i],cex=1.5,pos=4)
     text(1.1*msyce,0.15*ymax,round(msyce,2),cex=1.25,pos=4)
+    sauprod[,i] <- c(saumatB[1,i],saumatB[pick,i],sauyield[pick,i],
+                     (saumatB[pick,i]/saumatB[1,i]),saucpue[pick,i])
   }
   mtext("CPUE at Bmsy (note different scales)",side=1,outer=TRUE,cex=1.0,
         line = -0.1)
@@ -436,7 +444,6 @@ plotproductivity <- function(rundir,product,glb) {
                     "vertical lines and related number represent the expected",
                     "CPUE when biomass is at Bmsy.")
   addplot(filen,rundir=rundir,category="Production",caption)
-
   # Now do total production
   yield <- rowSums(product[,"Catch",])
   spb <- rowSums(product[,"MatB",])
@@ -483,5 +490,6 @@ plotproductivity <- function(rundir,product,glb) {
               "relationships between spawning biomass depletion and ",
               "harvest rate.")
   addplot(filen,rundir=rundir,category="Production",caption)
+  return(invisible(sauprod))
 } # end of plotproductivity
 

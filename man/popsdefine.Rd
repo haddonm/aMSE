@@ -32,6 +32,6 @@ popsdefine makes a parameter vector, popdef, for each
 }
 \seealso{
 {
-  \link{definepops}, \link{readpopdatafile}, \link{readdatafile}
+  \link{definepops}, \link{readpopdatafile}, \link{readsaudatafile}
 }
 }

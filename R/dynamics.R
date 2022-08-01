@@ -97,7 +97,8 @@ depleteSAU <- function(zoneC,zoneD,glob,initdepl,product,len=15) {
 #'     avoids any effective fisher allocation error between populations.
 #'
 #' @seealso{
-#'  \link{oneyearsauC}, \link{oneyearcat}, \link{oneyearrec}, \link{do_MSE}
+#'  \link{oneyearsauC}, \link{oneyearcat}, \link{oneyearrec}, \link{do_MSE},
+#'  \link{do_condition}
 #' }
 #'
 #' @return a zoneD object

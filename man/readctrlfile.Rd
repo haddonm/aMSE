@@ -2,7 +2,7 @@
 % Please edit documentation in R/inputfiles.R
 \name{readctrlfile}
 \alias{readctrlfile}
-\title{readctrlfile checks rundir contains the required csv files}
+\title{readctrlfile reads the rundir scenario's control file}
 \usage{
 readctrlfile(rundir, infile = "control.csv", verbose = TRUE)
 }

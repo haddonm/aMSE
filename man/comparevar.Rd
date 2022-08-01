@@ -8,12 +8,12 @@ comparevar(dyn, glbc, scenes, var = "cpue")
 }
 \arguments{
 \item{dyn}{this is a list of the out$sauout$zonePsau produced by each
-scenario. This has to be be generated from the saved RData files from
+scenario. The out object can be from a saved RData file from
 each scenario}
 
 \item{glbc}{a list of the global objects from each scenario being compared}
 
-\item{scenes}{a  list of the out$ctrl$runlabel from each scenario}
+\item{scenes}{a list of the out$ctrl$runlabel from each scenario}
 
 \item{var}{what variable from the dynamics to summarize, valid names include
 catch, acatch, cpue, harvestR, desplsB, depleB, recruit, matureB, and
@@ -25,10 +25,13 @@ a list of the quantiles of the input var for all sau, with each
     three dimensional arrays of the actual values of var in the varc list.
 }
 \description{
-comparevar generates quantiles for each of a set of input
+comparevar is used when post-processing results and comparing
+    different scenarios. For a given variable within the projected dynamics,
+    the function estimates the quantiles for each of the set of input
     scenarios. It takes the full timeline of dynamics and outputs just the
-    projections and the quantiles of those projections. Used when comparing
-    scenarios after multiple runs. Used when post-processing results.
+    projections and the quantiles of those projections. The variables it can
+    work with include: matureB, exploitB, midyrexpB, catch, acatch, harvestR,
+    cpue, recruit, deplsB, and depleB.
 }
 \examples{
 print("wait on internal datasets")

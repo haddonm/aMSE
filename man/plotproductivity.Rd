@@ -14,7 +14,8 @@ plotproductivity(rundir, product, glb)
 \item{glb}{the globals list}
 }
 \value{
-nothing but it does place five png files into rundir
+It produces five png files into rundir and returns sauprod, a matrix
+    of B0, Bmsy, MSY, Depletionmsy, and CEmsy for each sau
 }
 \description{
 plotproductivity characterizes each population's yield curve, it

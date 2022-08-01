@@ -944,7 +944,7 @@ modzoneC <- function(zoneC,zoneD,glob,lowlim=0.0,uplim=0.4,inc=0.005) {
 #' @param glob the globals object from readctrlfile
 #'
 #' @seealso{
-#'   \link{definepops}, \link{readpopdatafile}, \link{readdatafile}
+#'   \link{definepops}, \link{readpopdatafile}, \link{readsaudatafile}
 #' }
 #'
 #' @return a matrix with a row for each population and whose columns

@@ -11,7 +11,8 @@ plotscene(
   ymin = 0,
   filen = "",
   legloc = "topleft",
-  legplot = 1
+  legplot = 1,
+  qnt = 90
 )
 }
 \arguments{
@@ -32,6 +33,8 @@ default = '', which implies the plot goes to the console.}
 \item{legloc}{legend location, default='topleft'}
 
 \item{legplot}{which plot should contain the legend, default=1}
+
+\item{qnt}{which quantile to plot? defauilt = 90 percent}
 }
 \value{
 nothing but it does generate a plot with nsau panels

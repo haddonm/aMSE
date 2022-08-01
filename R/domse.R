@@ -1,6 +1,6 @@
 #
 # outcond=outcond
-# postfixdir <- "HS39"
+# postfixdir <- "HS856"
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
@@ -20,7 +20,7 @@
 # matureL = c(70,200)
 # wtatL = c(80,200)
 # mincount=100
-#
+
 
 #' @title do_MSE an encapsulating function to hold the details of a single run
 #'
@@ -126,7 +126,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   constants <- zone$constants
   # save some equil results -------------------------------------------------
   biology_plots(rundir, glb, zoneC, matL=matureL,Lwt=wtatL)
-  plotproductivity(rundir,production,glb)
+  sauprod <- plotproductivity(rundir,production,glb)
   numbersatsize(rundir, glb, zoneD)
   #Condition on Fishery -----------------------------------------------------
   if (any(condC$initdepl < 1)) {
@@ -234,7 +234,8 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
               ctrl=ctrl,zoneCP=zoneCP,zoneD=zoneD,zoneDD=zoneDD,zoneDP=zoneDP,
               NAS=NAS,projC=projC,condC=condC,sauout=sauout,outzone=outzone,
               hcrout=hcrout,production=production,condout=condout,
-              HSstats=HSstats,saudat=saudat,constants=constants,hsargs=hsargs)
+              HSstats=HSstats,saudat=saudat,constants=constants,hsargs=hsargs,
+              sauprod=sauprod)
   return(out)
 } # end of do_MSE
 
