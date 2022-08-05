@@ -18,7 +18,7 @@ dropdir <- getDBdir()
 prefixdir <- paste0(dropdir,"A_codeUse/aMSEUse/scenarios/")
 
 startime <- Sys.time()
-postfixdir <- "HS21"
+postfixdir <- "HS856"
 verbose <- TRUE
 rundir <- filenametopath(prefixdir,postfixdir)
 controlfile <- paste0("control",postfixdir,".csv")

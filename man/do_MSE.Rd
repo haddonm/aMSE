@@ -23,7 +23,8 @@ do_MSE(
   cutcatchN = 56,
   matureL = c(70, 200),
   wtatL = c(80, 200),
-  mincount = 100
+  mincount = 100,
+  includeNAS = FALSE
 )
 }
 \arguments{
@@ -92,6 +93,9 @@ bounds on the biology weight-at-Length plots}
 \item{mincount}{given size-composition data what minimum sample size will
 be deemed acceptable for inclusion in the plots and conditioning.
 default=100.}
+
+\item{includeNAS}{should the NAS projections be included in the output. If
+they are then the final output size is greatly increased. default=FALSE}
 }
 \value{
 a large list containing tottime, projtime, starttime, glb, ctrl,

@@ -93,6 +93,8 @@
 #' @param mincount given size-composition data what minimum sample size will
 #'     be deemed acceptable for inclusion in the plots and conditioning.
 #'     default=100.
+#' @param includeNAS should the NAS projections be included in the output. If
+#'     they are then the final output size is greatly increased. default=FALSE
 #'
 #' @seealso{
 #'  \link{makeequilzone}, \link{dohistoricC}, \link{prepareprojection},
@@ -108,7 +110,8 @@
 do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                    sampleNaS,getdata,calcpopC,makeouthcr,varyrs=7,startyr=42,
                    verbose=FALSE,ndiagprojs=3,savesauout=FALSE,cutcatchN=56,
-                   matureL=c(70,200),wtatL=c(80,200),mincount=100) {
+                   matureL=c(70,200),wtatL=c(80,200),mincount=100,
+                   includeNAS=FALSE) {
   # generate equilibrium zone -----------------------------------------------
   starttime <- (Sys.time())
   zone <- makeequilzone(rundir,controlfile,verbose=verbose)
@@ -230,12 +233,17 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   plothsstats(rundir,HSstats,glb)
   addtable(hcrout$refpts,"hcrout_refpts.csv",rundir,category="HSperf",
            caption="HCR reference points")
+  scores <- finalscoreoutputs(rundir=rundir,cpue=sauoutD$cpue,
+                              catches=sauoutD$catch,
+                              glb=glb,yearCE=condC$yearCE,
+                              hsargs=hsargs)
+  if (!includeNAS) NAS=NULL
   out <- list(tottime=tottime,projtime=projtime,starttime=starttime,glb=glb,
               ctrl=ctrl,zoneCP=zoneCP,zoneD=zoneD,zoneDD=zoneDD,zoneDP=zoneDP,
               NAS=NAS,projC=projC,condC=condC,sauout=sauout,outzone=outzone,
               hcrout=hcrout,production=production,condout=condout,
               HSstats=HSstats,saudat=saudat,constants=constants,hsargs=hsargs,
-              sauprod=sauprod)
+              sauprod=sauprod,scores=scores)
   return(out)
 } # end of do_MSE
 
