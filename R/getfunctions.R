@@ -389,6 +389,33 @@ getnas <- function(zoneD,yr,glob) {# zoneD=zoneD;yr=1;glob=glb;
   return(nas)
 } #end of getnas
 
+#' @title gerprojyraavc applies the aavc function to the input catches
+#'
+#' @description gerprojyraavc takes in a 3D array of catches (or whatever) and
+#'     applies the aavc function to obtain the average annual variation of
+#'     catches across the second array dimension. The expected dimensions are
+#'     years x sau x replicates. The function uses 'apply' to obtain the aavc
+#'     along the year dimension for every replicate. To contrain the number of
+#'     years analysed one needs to constrain the input array, eg catch[1:10,,]
+#'
+#' @param catches the three dimensional array of catches from the projection
+#'     dynamics, years x sau x replicates
+#' @param glb the gloabls object for the scenario
+#'
+#' @return a replicates x nsau matrix of aavc for whatever number of years were
+#'     input to the function, the default is all years.
+#' @export
+#'
+#' @examples
+#' print("Wait on data sets")
+getprojyraavc <- function(catches,glb) {
+  nsau <- glb$nSAU
+  reps <- glb$reps
+  result <- matrix(0,nrow=reps,ncol=nsau,dimnames=list(1:reps,glb$saunames))
+  for (i in 1:nsau) result[,i] <- apply(catches[,i,],2,getaav)
+  return(result)
+} # end of getprojyaavc
+
 #' @title getprojyrs i sused to truncate an array to only the projected year
 #'
 #' @description getprojyrs is used when calculating the harvest strategy
@@ -419,6 +446,8 @@ getprojyrs <- function(sauarr,glb,withlast=TRUE) {
   if (withlast) first <- hyrs
   return(sauarr[first:yrs,,])
 } # end of getprojyrs
+
+
 
 #' @title getsingleNum find a line of text and extracts a single number
 #'

@@ -341,6 +341,29 @@ findlinenumber <- function(rundir,filename,inc=20) {  # rundir=rundir; filename=
   }
 } # end of findlinenumber
 
+#' @title makelist a utility that outputs a list structure defined by its input
+#'
+#' @description makelist is a utility that performs the common task of making
+#'     a list structure of the same length as the vector of names input. It
+#'     also names each of the list components after the vector of names. The
+#'     output list structure is tehn ready to be populated with results.
+#'
+#' @param scenes an vector of character names describing different scenarios
+#'
+#' @return a list of length scenes names for the vector of names in scenes
+#' @export
+#'
+#' @examples
+#' scenarios <- c("base_case","higher_M","Lower_M")
+#' changeM <- makelist(scenes=scenarios)
+#' changeM
+makelist <- function(scenes) {
+  nscen <- length(scenes)
+  tmp <- vector(mode="list",length=nscen)
+  names(tmp) <- scenes
+  return(tmp)
+} # end of makelist
+
 #' @title makewidedat converts long data to a wide data format
 #'
 #' @description makewidedat takes the output of the commlf function makelongdat

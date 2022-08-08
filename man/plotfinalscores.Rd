@@ -35,13 +35,13 @@ plotfinalscores takes the inidivual sau output from getcpueHS
     sau. In sequence these plots are the projected catches, the projected
     cpue, the gradient 1 scores, the gradient 4 scores, the target cpue, and
     the final total score. This enables the relationships between the scores
-    to be examined.
+    to be examined. Only used in do_MSE
 }
 \examples{
 print("wait on data sets")
 }
 \seealso{
 {
-   \link{getcpueHS}
+   \link{do_MSE}
 }
 }

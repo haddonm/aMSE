@@ -1,5 +1,158 @@
 
 
+#' @title catchbpstats saves the boxplot statistics and adds to MSE webpage
+#'
+#' @description catchbpstats takes the results from plotting the boxplots of the
+#'     catch HSPMs aavc, sum5, and sum10 and tabulates the statistical
+#'     properties of the boxplots, ie, the lower and upper whiskers, the
+#'     inter-quartile bounds and the median. These are all output into a single
+#'     table. The aavc, sum5, and sum10 results for each scenario are grouped
+#'     together in the final data.frame.
+#'
+#' @param rundir the directory into which all the comparison results are placed
+#' @param outtab the output from catchHSPM
+#'
+#' @seealso  \link{catchHSPM}
+#'
+#' @return  invisibly returns the matrix version of the input list. It also
+#'     saves a csv file and adds to the webpage
+#' @export
+#'
+#' @examples
+#' print("wait on example data sets")
+catchbpstats <- function(rundir,outtab) {
+  # translate the outtab list into a dataframe
+  label <- names(outtab)
+  nlab <- length(label)
+  col1 <- NULL
+  pick <- grep("aavc",label)
+  npick <- length(pick)
+  for (i in 1:npick) col1 <- c(col1,rep(label[pick[i]],5))
+  pick <- grep("sum5",label)
+  npick <- length(pick)
+  for (i in 1:npick) col1 <- c(col1,rep(label[pick[i]],5))
+  pick <- grep("sum10",label)
+  npick <- length(pick)
+  for (i in 1:npick) col1 <- c(col1,rep(label[pick[i]],5))
+  numrow <- length(col1)
+  columns <- c("scenarios","bpstat",colnames(outtab[[1]]))
+  numcol <- length(columns)
+  col2 <- rep(rownames(outtab[[1]]),nlab)
+  result <- as.data.frame(matrix(0,nrow=numrow,ncol=numcol,
+                                 dimnames=list(1:numrow,columns)))
+  result[,1] <- col1
+  result[,2] <- col2
+  begin <- 1
+  finish <- 5
+  pick <- grep("aavc",label)
+  npick <- length(pick)
+  for (i in 1:npick) {
+    result[begin:finish,3:numcol] <- outtab[[pick[i]]]
+    begin <- begin + 5
+    finish <- finish + 5
+  }
+  pick <- grep("sum5",label)
+  npick <- length(pick)
+  for (i in 1:npick) {
+    result[begin:finish,3:numcol] <- outtab[[pick[i]]]
+    begin <- begin + 5
+    finish <- finish + 5
+  }
+  pick <- grep("sum10",label)
+  npick <- length(pick)
+  for (i in 1:npick) {
+    result[begin:finish,3:numcol] <- outtab[[pick[i]]]
+    begin <- begin + 5
+    finish <- finish + 5
+  }
+  filen <- paste0("catch_boxplot_stats.csv")
+  caption <- "Boxplot statistics for all scenarios."
+  addtable(result,filen,rundir=rundir,category="catches",caption)
+  return(invisible(result))
+} # end of catchbpstats
+
+#' @title catchHSPM generates boxplots of catch HSPMs and output statistics
+#'
+#' @description catchHSPM is used to generate boxplots of the aavc, the sum5,
+#'     and the sum10 for projected catches. The number of years over which the
+#'     aavc is calculated can be modified using the aavcyrs argument. In
+#'     addition to the boxplots, the function outputs the statistics describing
+#'     the statistics from the boxplots.
+#'
+#' @param rundir the directory in which comparisons are being made. It is best
+#'     to be a separate directory form any particular scenario.
+#' @param dyn a list of the dynamics objects from each scenario's out object
+#' @param glbc a list of the globals objects from each scenario
+#' @param scenes the names of the different scenarios being compared
+#' @param filen the filename for saving the plot, the default="", which sends
+#'     the plot to the console.
+#' @param aavcyrs the number of projection years to use for the aavc calculation
+#'     the default = 10
+#' @param maxvals the maximum y-axis value for the aavc, the sum5, and the sum10,
+#'     default=c(0.25,750,1500)
+#'
+#' @seealso{
+#'    \link{getprojyrs}, \link{getprojyraavc},  \link{getprojyrC}
+#' }
+#'
+#' @return a list of the boxplot statistics for the three HSPMs x the number of
+#'     scenarios compared
+#' @export
+#'
+#' @examples
+#' print("wait on data sets")
+catchHSPM <- function(rundir,dyn,glbc,scenes,filen="",aavcyrs=10,
+                      maxvals=c(0.25,750,1500)) {
+  nscen <- length(scenes)
+  catch <- makelist(scenes)
+  catches <- makelist(scenes)
+  aavc <- makelist(scenes)
+  sum5 <- makelist(scenes)
+  sum10 <- makelist(scenes)
+  saunames <- glbc[[1]]$saunames
+  for (i in 1:nscen) {
+    catch[[i]] <- dyn[[i]]$catch
+    catches[[i]] <- getprojyrs(catch[[i]],glbc[[i]])
+    aavc[[i]] <- getprojyraavc((catches[[i]][1:aavcyrs,,]),glbc[[i]])
+    sum5[[i]] <- getprojyrC(catch[[i]],glbc[[i]],period=5)
+    sum10[[i]] <- getprojyrC(catch[[i]],glbc[[i]],period=10)
+  }
+  label <- NULL
+  for (i in 1:nscen) label <- c(label,paste0(scenes[i],"_",c("aavc","sum5","sum10")))
+  boxresult <- vector(mode="list",length=(3 * nscen))
+  names(boxresult) <- label
+  nres <- length(boxresult)
+  if (nchar(filen) > 0) {
+    filen <- filenametopath(rundir,filen)
+    caption <- paste0("Boxplots of aavc, sum5, and sum10 for each SAU.")
+  }
+  plotprep(width=9, height=9,newdev=FALSE,filename = filen,verbose=FALSE)
+  parset(plots=c(3,2),margin=c(0.4,0.4,0.05,0.1),outmargin=c(1,0,0,0),byrow=FALSE)
+  count <- 0
+  for (i in 1:nscen) { # i = 1
+    count <- count + 1
+    boxresult[[count]] <- boxplot(aavc[[i]],ylim=c(0,maxvals[1]),yaxs="i",
+                                  ylab="Average Annual Catch Variation")
+    count <- count + 1
+    boxresult[[count]] <- boxplot(sum5[[i]][,1:8],ylim=c(0,maxvals[2]),yaxs="i",
+                                  ylab="sum first 5 years catch")
+    count <- count + 1
+    boxresult[[count]] <- boxplot(sum10[[i]][,1:8],ylim=c(0,maxvals[3]),yaxs="i",
+                                  ylab="sum first 10 years catch")
+    mtext(scenes[i],side=1,outer=FALSE,cex=1,line=1.75)
+  }
+  if (nchar(filen) > 0)
+    addplot(filen=filen,rundir=rundir,category="catches",caption)
+  for (i in 1:nres) {
+    namelab <- boxresult[[i]]$names
+    stats <- boxresult[[i]]$stats
+    colnames(stats) <- namelab
+    rownames(stats) <- c("lowwhisk","25thQ","median","75thQ","highwhisk")
+    boxresult[[i]] <- stats
+  }
+  return(boxresult)
+} #end of catchHSPM
+
 #' @title comparevar generates the quantiles for each of a set of input scenarios
 #'
 #' @description comparevar is used when post-processing results and comparing
@@ -229,7 +382,7 @@ comparefinalscores <- function(rundir,scores,scenes,legloc="bottomright",
     legend(legloc,legend=scenes,col=1:nmed,lwd=3,bty="n",cex=1.0)
   }
   if (nchar(filen) > 0) filen <- filenametopath(rundir,filen)
-  plotprep(width=8, height=9,newdev=FALSE,filename=filen)
+  plotprep(width=8, height=9,newdev=FALSE,filename=filen,verbose=FALSE)
   parset(plots=c(4,2),margin=c(0.25,0.4,0.05,0.1),byrow=FALSE,
          outmargin=c(0,1,0,0))
   for (i in 1:nsau) {
@@ -316,7 +469,7 @@ makecompareoutput <- function(rundir,glbc,scenes,postdir,
 #'     sau. In sequence these plots are the projected catches, the projected
 #'     cpue, the gradient 1 scores, the gradient 4 scores, the target cpue, and
 #'     the final total score. This enables the relationships between the scores
-#'     to be examined.
+#'     to be examined. Only used in do_MSE
 #'
 #' @param outscores each sau's results from getcpueHS, which extracts the HS
 #'     scores and other results from the projection dynamics
@@ -327,7 +480,7 @@ makecompareoutput <- function(rundir,glbc,scenes,postdir,
 #'     default = '', which implies the plot goes to the console.
 #'
 #' @seealso{
-#'    \link{getcpueHS}
+#'    \link{do_MSE}
 #' }
 #'
 #' @return invisibly a list of the median catches, cpue, targetce, finalscore,

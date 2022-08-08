@@ -15,6 +15,7 @@ do_MSE(
   getdata,
   calcpopC,
   makeouthcr,
+  cpueHSPMs = NULL,
   varyrs = 7,
   startyr = 42,
   verbose = FALSE,
@@ -60,6 +61,9 @@ per population in each SAU expected in the current year.}
 an object that is continually updated by the hcrfun. To avoid very
 inefficient code this object (at least for Tasmania) is cycled through
 the iterations.}
+
+\item{cpueHSPMs}{Another function defined in the HS package that reconstructs
+the cpue HSPM scores, and other measures ready for plotting}
 
 \item{varyrs}{how many years at the end of the conditioning on the fishery,
 data into zoneDD, to which to add recruitment variation, default = 7,

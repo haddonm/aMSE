@@ -4,10 +4,22 @@
 \alias{finalscoreoutputs}
 \title{finalscoreoutputs generates plots of the PM scores and interactions}
 \usage{
-finalscoreoutputs(rundir, cpue, catches, glb, yearCE, hsargs, verbose = TRUE)
+finalscoreoutputs(
+  rundir,
+  cpueHSPMs,
+  cpue,
+  catches,
+  glb,
+  yearCE,
+  hsargs,
+  verbose = TRUE
+)
 }
 \arguments{
-\item{rundir}{the direcotry for a given scenario}
+\item{rundir}{the directory for a given scenario}
+
+\item{cpueHSPMs}{is a function defined in the HS package that reconstructs
+the cpue HSPM scores, and other measures ready for plotting}
 
 \item{cpue}{the projected cpue dynamics from out$sauout$zonePsau$cpue}
 
@@ -20,12 +32,12 @@ model, found in condC$yearCE.}
 
 \item{hsargs}{the list of arguments required by the HS}
 
-\item{verbose}{should updates on progess be sent to console? default=TRUE}
+\item{verbose}{should updates on progress be sent to console? default=TRUE}
 }
 \value{
 a list of two lists. The first being outHS containing all the
     reconstructed HS outputs, and the second being the medians of the
-    variosu scores and targetcpue.
+    various scores and targetcpue.
 }
 \description{
 finalscoreoutputs is used to reconstruct the harvest strategy
