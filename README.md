@@ -45,6 +45,9 @@ examine its implications.
 
 # LATEST UPDATE
 
+-   2022-08-05 aMSE 0.0.14 Added more functions to assist with comparing
+    scenarios.
+
 -   2022-08-05 aMSE 0.0.12 Added more functions to assist with comparing
     scenarios. Still sorting out references to other packages.
 

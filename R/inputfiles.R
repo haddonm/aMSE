@@ -676,6 +676,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE) {
    histCE <- NULL
    yearCE <- NULL
    compdat=NULL
+   indexCE <- NULL
    if (projyrs > 0) {
       projLML <- numeric(projyrs)
       from <- grep("PROJLML",indat)
@@ -704,7 +705,6 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE) {
    hyrnames <- as.numeric(histyr[,1])
    yrce <- getsingleNum("CEYRS",indat)
    if (yrce > 0) {
-      # yrce <- hyrs - startce + 1
       begin <- grep("CEYRS",indat)
       histCE <- matrix(NA,nrow=yrce,ncol=nSAU)
       yearCE <- numeric(yrce)
@@ -716,6 +716,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE) {
           histCE[i,] <- cenum[2:(nSAU+1)]
        }
       rownames(histCE) <- yearCE
+      indexCE <- match(yearCE,hyrnames)[1]
       firstyear <- tail(hyrnames,1) + 1
       if (projyrs > 0) pyrnames <- firstyear:(firstyear + projyrs - 1)
    } # end of if(yrce == 0)
@@ -772,7 +773,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE) {
    globals <- list(numpop=numpop, nSAU=nSAU, midpts=midpts,Nclass=Nclass,
                    reps=reps,hyrs=hyrs,pyrs=projyrs,hyrnames=hyrnames,
                    pyrnames=pyrnames,saunames=SAUnames,SAUpop=SAUpop,
-                   larvdisp=larvdisp)
+                   larvdisp=larvdisp,indexCE=indexCE)
    totans <- list(SAUnames,SAUpop,minc,cw,larvdisp,randomseed,
                   initLML,condC,projC,globals,outctrl,catches,projyrs)
    names(totans) <- c("SAUnames","SAUpop","minc","cw","larvdisp","randomseed",

@@ -2,19 +2,27 @@
 % Please edit documentation in R/getfunctions.R
 \name{getprojyrs}
 \alias{getprojyrs}
-\title{getprojyrs i sused to truncate an array to only the projected year}
+\title{getprojyrs i sused to truncate an array to projected years}
 \usage{
-getprojyrs(sauarr, glb, withlast = TRUE)
+getprojyrs(sauarr, hyrs, pyrs, startyr = hyrs)
 }
 \arguments{
 \item{sauarr}{the projection data summarized to the sau scale. This might be
 matureB, exploitB, midyexpB, catch, acatch, harvestR, cpue, recruit,
 deplsB, or depleB. CatchN and Nt need different treatment}
 
-\item{glb}{the global object = out$glb}
+\item{hyrs}{the number of harvested years used in teh conditioning, from
+the global object = out$glb$hyrs}
 
-\item{withlast}{should the last year of observations be included from the
-simulation or only the projection years used? default=TRUE}
+\item{pyrs}{the number of projected years used, from the global object =
+out$glb$hyrs}
+
+\item{startyr}{enables data selection from any indexed year. This is
+especially useful when examining cpue as one would start from 1992 which
+in Tasmania, = index 30. The default = hyrs, which means the last year of
+observations will be included from the simulations. If hyrs+1 is used,
+then only the projection years would be used. if startyr=30 then in
+Tasmania the years from 1992 to the end of the projections will be used.}
 }
 \value{
 an array of the input data truncated to the projection years with,
@@ -24,6 +32,9 @@ an array of the input data truncated to the projection years with,
 getprojyrs is used when calculating the harvest strategy
     performance measures. To do that requires us to focus on the projection
     years, and possibly include the last year of observations for continuity.
+    If examining the cpue, in Tasmania it is necessary to include years from
+    1992, or at least the startCE year from hsargs = year 30, do not put a
+    year eg 1992 in here, it needs to be an index.
 }
 \examples{
 print("wait on data sets")

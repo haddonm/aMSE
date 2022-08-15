@@ -68,7 +68,7 @@ getdynamics <- function(zoneC,zoneDD,condC,glb,sau=1) {
   return(invisible(dyn))
 } # end of getdynamics
 
-#' @title getmaxCE identifies peak CPUE during projections for each SAU
+#' @title getmaxCE identifies peak median CPUE during projections for each SAU
 #'
 #' @description getmaxCE is one of the HS performance statistics. Because it
 #'     uses the targetCE from the TasmanianHS it is obviously Tasmanian
@@ -126,6 +126,7 @@ getmaxCE <- function(ceCI,glb,targetCE) {
 #'
 #' @examples
 #' print("wait on suitable internal data sets")
+#' # catsau=catch[[1]]; glb=glbc[[1]];period=5
 getprojyrC <- function(catsau,glb,period=10) {
   hyrs <- glb$hyrs
   totyrs <- hyrs + glb$pyrs
@@ -416,18 +417,29 @@ getprojyraavc <- function(catches,glb) {
   return(result)
 } # end of getprojyaavc
 
-#' @title getprojyrs i sused to truncate an array to only the projected year
+#' @title getprojyrs i sused to truncate an array to projected years
 #'
 #' @description getprojyrs is used when calculating the harvest strategy
 #'     performance measures. To do that requires us to focus on the projection
 #'     years, and possibly include the last year of observations for continuity.
+#'     If examining the cpue, in Tasmania it is necessary to include years from
+#'     1992, or at least the startCE year from hsargs = year 30, do not put a
+#'     year eg 1992 in here, it needs to be an index.
 #'
 #' @param sauarr the projection data summarized to the sau scale. This might be
 #'     matureB, exploitB, midyexpB, catch, acatch, harvestR, cpue, recruit,
 #'     deplsB, or depleB. CatchN and Nt need different treatment
-#' @param glb the global object = out$glb
-#' @param withlast should the last year of observations be included from the
-#'     simulation or only the projection years used? default=TRUE
+#' @param hyrs the number of harvested years used in teh conditioning, from
+#'     the global object = out$glb$hyrs
+#' @param pyrs the number of projected years used, from the global object =
+#'     out$glb$hyrs
+#' @param startyr enables data selection from any indexed year. This is
+#'     especially useful when examining cpue as one would start from 1992 which
+#'     in Tasmania, = index 30. The default = hyrs, which means the last year of
+#'     observations will be included from the simulations. If hyrs+1 is used,
+#'     then only the projection years would be used. if startyr=30 then in
+#'     Tasmania the years from 1992 to the end of the projections will be used.
+#'
 #'
 #' @return an array of the input data truncated to the projection years with,
 #'     optionally, just the last year of the observed period included.
@@ -435,16 +447,11 @@ getprojyraavc <- function(catches,glb) {
 #'
 #' @examples
 #' print("wait on data sets")
-getprojyrs <- function(sauarr,glb,withlast=TRUE) {
-  # sauarr=catches; glb=glb
+getprojyrs <- function(sauarr,hyrs,pyrs,startyr=hyrs) {
   yrs <- dim(sauarr)[1]
-  hyrs <- glb$hyrs
-  pyrs <- glb$pyrs
   if (yrs != hyrs + pyrs)
-    stop(cat("Input error in getprojyrs, input array has incorrect dimensions \n"))
-  first <- hyrs+1
-  if (withlast) first <- hyrs
-  return(sauarr[first:yrs,,])
+    stop(cat("Input error in getprojyrs, array in has incorrect dimensions \n"))
+  return(sauarr[startyr:yrs,,])
 } # end of getprojyrs
 
 
@@ -705,6 +712,46 @@ getvect <- function(zoneC,invar) {
   for (i in 1:npop) ans[i] <- zoneC[[i]]$popdef[invar]
   return(ans)
 } # end of getvect
+
+#' @title getyr2maxce gives a nsau x reps matrix of years to max(cpue)
+#'
+#' @description getyr2maxce uses apply and 'which.closest' from codeutils to
+#'     identify the year of maximum cpue in each replicate for each sau in the
+#'     cpue array out of the projected dynamics.
+#'
+#' @param cpue this is the 3D array of the out$sauout$zonePsau$cpue produced by
+#'     each scenario. The out objects can be from a saved RData file from
+#'     each scenario. The idea being that each cpue array should be processed in
+#'     turn and the matrices of the reuslts processed in whatever function calls
+#'     this one.
+#' @param glb the globals object for the scenario
+#'
+#' @seealso {
+#'     \link{which.closest}
+#' }
+#'
+#' @return a reps x nsau matrix of the year in which the maximum cpue occurs in
+#'     the projections
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'   glb <- out$glb  # alternative might be ans[[i]]$glb
+#'   cpue <- out$sauout$zonePsau$cpue
+#'   ce <- getprojyrs(ce,glb$hyrs,glb$pyrs,startyr=glb$indexCE)
+#'   maxce <- getyr2maxce(ce,glb)
+#'   str1(maxce)
+#' }
+getyr2maxce <- function(cpue,glb) {
+  # cpue=cpue; glb=glb
+  yrs <- as.numeric(dimnames(cpue)[[1]])
+  nsau <- glb$nSAU
+  reps <- glb$reps
+  result <- matrix(0,nrow=reps,ncol=nsau,dimnames=list(1:reps,glb$saunames))
+  for (i in 1:nsau)
+    result[,i] <- apply(cpue[,i,],2,function(x) which.closest(max(x),x))
+  return(result)
+} # end of getyr2maxce
 
 
 #' @title getzoneLF extracts all LF data from a zone across pops and years

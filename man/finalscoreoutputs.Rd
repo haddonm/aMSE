@@ -48,4 +48,7 @@ finalscoreoutputs is used to reconstruct the harvest strategy
 }
 \examples{
 print("wait on data sets, example soon")
+# rundir=rundir;cpueHSPMs=getcpueHS;cpue=out$sauout$zonePsau$cpue;
+# catches=out$sauout$zonePsau$catches;glb=out$glb;yearCE=out$condC$yearCE
+# hsargs=out$hsargs
 }

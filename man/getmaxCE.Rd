@@ -2,7 +2,7 @@
 % Please edit documentation in R/getfunctions.R
 \name{getmaxCE}
 \alias{getmaxCE}
-\title{getmaxCE identifies peak CPUE during projections for each SAU}
+\title{getmaxCE identifies peak median CPUE during projections for each SAU}
 \usage{
 getmaxCE(ceCI, glb, targetCE)
 }

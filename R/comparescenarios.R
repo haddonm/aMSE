@@ -1,3 +1,116 @@
+#' @title boxbysau generates boxplots of sau x aavc or sum5 or sum10
+#'
+#' @description boxbysau is used to generate boxplots of the aavc, or sum5,
+#'     of sum10 for each sau, in each of the scenarios. The number of years over
+#'     which the aavc is calculated can be modified using the aavcyrs argument.
+#'
+#' @param rundir the directory in which comparisons are being made. It is best
+#'     to be a separate directory form any particular scenario.
+#' @param hspm a list of the harvest strategy performance measures for actual
+#'     catches as calculated by calccatchHSPM
+#' @param glbc a list of the globals objects from each scenario
+#' @param scenes the names of the different scenarios being compared
+#' @param compvar which variable should be compared. The options are 'aavc',
+#'      'sum5', and 'sum10'. default = 'aavc'
+#' @param filen the filename for saving the plot, the default="", which sends
+#'     the plot to the console.
+#' @param aavcyrs the number of projection years to use for the aavc calculation
+#'     the default = 10
+#' @param maxval the maximum y-axis value for the aavc, default=0, which means
+#'     the maximum for each boxplot is taken from the data for that plot.
+#'
+#' @seealso{
+#'    \link{getprojyrs}, \link{getprojyraavc},  \link{catchHSPM}
+#' }
+#'
+#' @return a list of the boxplot statistics for the aavc x number of sau x the
+#'     number of scenarios compared
+#' @export
+#'
+#' @examples
+#' print("wait on data sets")
+boxbysau <- function(rundir,hspm,glbc,scenes,compvar="aavc",filen="",aavcyrs=10,
+                      maxval=0) {
+  #  compvar="sum10"; hspm=outcatchHSPM
+  nscen <- length(scenes)
+  pickV <- grep(compvar,names(hspm))
+  boxvar <- hspm[[pickV]]
+  nsau <- glbc[[1]]$nSAU
+  saunames <- glbc[[1]]$saunames
+  boxresult <- vector(mode="list",length=nsau)
+  names(boxresult) <- saunames
+  reps <- glbc[[1]]$reps
+  boxdat <- matrix(0,nrow=reps,ncol=nscen,dimnames=list(1:reps,scenes))
+  if (nchar(filen) > 0) {
+    filen <- filenametopath(rundir,filen)
+    caption <- paste0("Boxplots of ",compvar," for each SAU.")
+  }
+  plotprep(width=8, height=8,newdev=FALSE,filename = filen,verbose=FALSE)
+  parset(plots=pickbound(nsau),margin=c(0.3,0.4,0.05,0.1),outmargin=c(1,0,0.25,0),
+         byrow=FALSE)
+  for (sau in 1:nsau) { # sau=1; i = 1
+    for (i in 1:nscen) boxdat[,i] <- boxvar[[i]][,sau]
+    if (maxval > 0) {
+      maxy <- maxval
+    } else {
+      maxy <- getmax(boxdat)
+    }
+    boxresult[[sau]] <- boxplot(boxdat,ylim=c(0,maxy),yaxs="i",
+                                ylab=saunames[sau])
+    abline(h=boxresult[[sau]]$stats[3,1],lwd=2,lty=2,col=2)
+  }
+  label <- switch(compvar,
+                  "aavc" = "Average Annual Variation in Catches",
+                  "sum5" = "Sum of Catches over first 5 Years",
+                  "sum10" = "Sum of Catches over first 10 Years")
+  mtext(label,side=1,outer=TRUE,line=-0.3,cex=1.0)
+  if (nchar(filen) > 0)
+    addplot(filen=filen,rundir=rundir,category="catches",caption)
+} # end of boxbysau
+
+
+#' @title calccatchHSPM calculates all the HSPMs for the actual catch data
+#'
+#' @description calccatchHSPM calculates all the Harvest Strategy Performance
+#'     Measures for the actual catch data. The number of years over which the
+#'     aavc is calculated can be modified using the aavcyrs argument. The output
+#'     data can be analysed separately or plotted (eg as boxplots)
+#'
+#' @param dyn a list of the dynamics objects from each scenario's out object
+#' @param glbc a list of the globals objects from each scenario
+#' @param scenes the names of the different scenarios being compared
+#' @param aavcyrs the number of projection years to use for the aavc calculation
+#'     the default = 10
+#'
+#' @seealso{
+#'    \link{getprojyrs}, \link{getprojyraavc},  \link{catchHSPM}
+#' }
+#'
+#' @return a list of  the aavc x sau x scene, and the sum5 and sum10 for the
+#'     same sau and scenes.
+#' @export
+#'
+#' @examples
+#' print("wait on data sets")
+calccatchHSPM <- function(dyn,glbc,scenes,aavcyrs=10) {
+  # dyn=dyn;glbc=glbc;scenes=scenes;aavcyrs=10
+  nscen <- length(scenes)
+  catch <- makelist(scenes)
+  catches <- makelist(scenes)
+  aavc <- makelist(scenes)
+  sum5 <- makelist(scenes)
+  sum10 <- makelist(scenes)
+  saunames <- glbc[[1]]$saunames
+  for (i in 1:nscen) {   # i = 1
+    catch[[i]] <- dyn[[i]]$catch
+    catches[[i]] <- getprojyrs(catch[[i]],glbc[[i]]$hyrs,glbc[[i]]$pyrs,
+                             startyr=glbc[[i]]$hyrs)
+    aavc[[i]] <- getprojyraavc((catches[[i]][1:aavcyrs,,]),glbc[[i]])
+    sum5[[i]] <- getprojyrC(catch[[i]],glbc[[i]],period=5)
+    sum10[[i]] <- getprojyrC(catch[[i]],glbc[[i]],period=10)
+  }
+  return(invisible(list(aavc=aavc,sum5=sum5,sum10=sum10)))
+} # end of calccatchHSPM
 
 
 #' @title catchbpstats saves the boxplot statistics and adds to MSE webpage
@@ -22,6 +135,7 @@
 #' print("wait on example data sets")
 catchbpstats <- function(rundir,outtab) {
   # translate the outtab list into a dataframe
+  # rundir=rundir; outtab=outtab
   label <- names(outtab)
   nlab <- length(label)
   col1 <- NULL
@@ -81,7 +195,8 @@ catchbpstats <- function(rundir,outtab) {
 #'
 #' @param rundir the directory in which comparisons are being made. It is best
 #'     to be a separate directory form any particular scenario.
-#' @param dyn a list of the dynamics objects from each scenario's out object
+#' @param hspm a list of the harvest strategy performance measures for actual
+#'     catches as calculated by calccatchHSPM
 #' @param glbc a list of the globals objects from each scenario
 #' @param scenes the names of the different scenarios being compared
 #' @param filen the filename for saving the plot, the default="", which sends
@@ -101,22 +216,12 @@ catchbpstats <- function(rundir,outtab) {
 #'
 #' @examples
 #' print("wait on data sets")
-catchHSPM <- function(rundir,dyn,glbc,scenes,filen="",aavcyrs=10,
+catchHSPM <- function(rundir,hspm,glbc,scenes,filen="",aavcyrs=10,
                       maxvals=c(0.25,750,1500)) {
   nscen <- length(scenes)
-  catch <- makelist(scenes)
-  catches <- makelist(scenes)
-  aavc <- makelist(scenes)
-  sum5 <- makelist(scenes)
-  sum10 <- makelist(scenes)
-  saunames <- glbc[[1]]$saunames
-  for (i in 1:nscen) {
-    catch[[i]] <- dyn[[i]]$catch
-    catches[[i]] <- getprojyrs(catch[[i]],glbc[[i]])
-    aavc[[i]] <- getprojyraavc((catches[[i]][1:aavcyrs,,]),glbc[[i]])
-    sum5[[i]] <- getprojyrC(catch[[i]],glbc[[i]],period=5)
-    sum10[[i]] <- getprojyrC(catch[[i]],glbc[[i]],period=10)
-  }
+  aavc <- hspm$aavc
+  sum5 <- hspm$sum5
+  sum10 <- hspm$sum10
   label <- NULL
   for (i in 1:nscen) label <- c(label,paste0(scenes[i],"_",c("aavc","sum5","sum10")))
   boxresult <- vector(mode="list",length=(3 * nscen))
@@ -143,14 +248,14 @@ catchHSPM <- function(rundir,dyn,glbc,scenes,filen="",aavcyrs=10,
   }
   if (nchar(filen) > 0)
     addplot(filen=filen,rundir=rundir,category="catches",caption)
-  for (i in 1:nres) {
+  for (i in 1:nres) { # i = 1
     namelab <- boxresult[[i]]$names
     stats <- boxresult[[i]]$stats
     colnames(stats) <- namelab
     rownames(stats) <- c("lowwhisk","25thQ","median","75thQ","highwhisk")
     boxresult[[i]] <- stats
   }
-  return(boxresult)
+  return(invisible(boxresult))
 } #end of catchHSPM
 
 #' @title comparevar generates the quantiles for each of a set of input scenarios
@@ -211,6 +316,61 @@ comparevar <- function(dyn,glbc,scenes,var="cpue") {
   }
   return(list(quantscen=quantscen,varc=varc))
 } # end of comparevar
+
+#' @title constructTasHSout remakes outputs from the hcrfun for all projections
+#'
+#' @description constructTasHSout uses the scenario's hcrfun to reconstrcut the
+#'     scores and reference points for the Tasmanian HS.
+#'
+#' @param hcrfun the same as used in do_MSE = mcdahcr from TasHS package
+#' @param ce the 3D array of cpue, which, for Tas, will include all years back
+#'     to 1992, the start of defensible cpue data.
+#' @param acatch the projected aspirational catches required by mcdahcr
+#' @param glb the global object for the given scenario  out$glb
+#' @param hsargs the hsargs used in teh scenario out$hsargs
+#'
+#' @return invisibly a list of multTAC, grad1, grad4,score1, score4, scoret,
+#'     scoretot, and targrefpts. Each is a 3D array of years x sau x reps,
+#'     except for the targrefpts which is the sau x 4 matrix of refpts for the
+#'     final year in each replicate.
+#' @export
+#'
+#' @examples
+#' print("wait on data sets")
+constructTasHSout <- function(hcrfun,ce,acatch,glb,hsargs) {
+  startCE <- glb$indexCE
+  finalyr <- glb$hyrs + glb$pyrs
+  saunames <- glb$saunames
+  nsau <- glb$nSAU
+  reps <- glb$reps
+  ce <- getprojyrs(ce,glb$hyrs,glb$pyrs,startyr=glb$indexCE)
+  yrnames <- rownames(ce[,,1])
+  nyrs <- length(yrnames)
+  multTAC <- array(data=0,dim=c(nyrs,nsau,reps),
+                   dimnames=list(yrnames,saunames,1:reps))
+  grad1 <- grad4 <- score1 <- score4 <- scoret <- scoretot <- multTAC
+  ptlabel <- c("low","trp","high","realtrp")
+  targrefpts <- array(data=0,dim=c(nsau,length(ptlabel),reps),
+                      dimnames=list(saunames,ptlabel,1:reps))
+  for (iter in 1:reps) { # iter=1
+    cpue <- ce[,,iter]
+    hcrdata <- list(arrce=cpue,yearnames=yrnames,acatches=acatch[finalyr,,iter],
+                    fis=NULL,nas=NULL)
+    hcrout <- hcrfun(hcrdata,hsargs,saunames=saunames)
+    multTAC[,,iter] <- hcrout$multTAC
+    details <- hcrout$details
+    grad1[,,iter] <- details$grad1
+    grad4[,,iter] <- details$grad4
+    score1[,,iter] <- details$score1
+    score4[,,iter] <- details$score4
+    scoret[,,iter] <- details$scoret
+    scoretot[,,iter] <- details$scoretot
+    targrefpts[,,iter] <- hcrout$refpts
+  }
+  return(invisible(list(multTAC=multTAC,grad1=grad1,grad4=grad4,score1=score1,
+                        score4=score4,scoret=scoret,scoretot=scoretot,
+                        targrefpts=targrefpts)))
+} # end of constructrTasHSout
 
 #' @title plotscene literally plots up the output from comparevar
 #'
@@ -364,7 +524,7 @@ comparedynamics <- function(rundir,dyn,glbc,scenes) {
 #' print("wait on data")
 comparefinalscores <- function(rundir,scores,scenes,legloc="bottomright",
                                filen="",category="Tables") {
-  #   scores=scores;scenes=scenes;legloc="bottomleft"
+  #   scores=scores;scenes=scenes;legloc="bottomleft"; filen="";
   nmed <- length(scores)
   meds <- vector(mode="list",length=nmed)
   for (i in 1:nmed) {
