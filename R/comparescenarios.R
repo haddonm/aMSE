@@ -76,7 +76,8 @@ boxbysau <- function(rundir,hspm,glbc,scenes,compvar="aavc",filen="",aavcyrs=10,
 #'     aavc is calculated can be modified using the aavcyrs argument. The output
 #'     data can be analysed separately or plotted (eg as boxplots)
 #'
-#' @param dyn a list of the dynamics objects from each scenario's out object
+#' @param catch a list of the actual catches from the out$sauout$zonePsau$catch
+#'     array from each scenario's out object
 #' @param glbc a list of the globals objects from each scenario
 #' @param scenes the names of the different scenarios being compared
 #' @param aavcyrs the number of projection years to use for the aavc calculation
@@ -92,17 +93,15 @@ boxbysau <- function(rundir,hspm,glbc,scenes,compvar="aavc",filen="",aavcyrs=10,
 #'
 #' @examples
 #' print("wait on data sets")
-calccatchHSPM <- function(dyn,glbc,scenes,aavcyrs=10) {
-  # dyn=dyn;glbc=glbc;scenes=scenes;aavcyrs=10
+calccatchHSPM <- function(catch,glbc,scenes,aavcyrs=10) {
+  # catch=catch;glbc=glbc;scenes=scenes;aavcyrs=10
   nscen <- length(scenes)
-  catch <- makelist(scenes)
   catches <- makelist(scenes)
   aavc <- makelist(scenes)
   sum5 <- makelist(scenes)
   sum10 <- makelist(scenes)
   saunames <- glbc[[1]]$saunames
   for (i in 1:nscen) {   # i = 1
-    catch[[i]] <- dyn[[i]]$catch
     catches[[i]] <- getprojyrs(catch[[i]],glbc[[i]]$hyrs,glbc[[i]]$pyrs,
                              startyr=glbc[[i]]$hyrs)
     aavc[[i]] <- getprojyraavc((catches[[i]][1:aavcyrs,,]),glbc[[i]])
@@ -250,13 +249,202 @@ catchHSPM <- function(rundir,hspm,glbc,scenes,filen="",aavcyrs=10,
     addplot(filen=filen,rundir=rundir,category="catches",caption)
   for (i in 1:nres) { # i = 1
     namelab <- boxresult[[i]]$names
-    stats <- boxresult[[i]]$stats
-    colnames(stats) <- namelab
-    rownames(stats) <- c("lowwhisk","25thQ","median","75thQ","highwhisk")
-    boxresult[[i]] <- stats
+    bstat <- boxresult[[i]]$stats
+    colnames(bstat) <- namelab
+    rownames(bstat) <- c("lowwhisk","25thQ","median","75thQ","highwhisk")
+    boxresult[[i]] <- bstat
   }
   return(invisible(boxresult))
 } #end of catchHSPM
+
+#' @title catchvsMSY by sau divides the projected catches by the sau MSY value
+#'
+#' @description catchvsMSY is used when calculating the ratio of the projected
+#'     catches to the MSY. This uses the estimate of MSY for each sau that is
+#'     given in out$sauprod object from each scenario, each of which is placed
+#'     into the 'prods' list.
+#'
+#' @param catch the projected catches array of all years x nsau x replicates
+#' @param glbc the globals object for each scenario
+#' @param prods a list of the production statistics matrix for each scenario,
+#'     this is the out$sauprod matrix stored for each scenario.
+#' @param scenes  the names of the different scenarios being compared in the
+#'     same order in which the out objects are decomposed into their components
+#'
+#' @return a list of 3D arrays of the ratio of catch/MSY for each sau in each
+#'     scenario
+#' @export
+#'
+#' @examples
+#' print("wait on data sets")
+catchvsMSY <- function(catch,glbc,prods,scenes) {
+  nscen <- length(scenes)
+  cdivmsy <- makelist(scenes)
+  for (i in 1:nscen) {   # i = 1
+    glb <- glbc[[i]]
+    nsau <- glb$nSAU
+    cvsmsy <- getprojyrs(catch[[i]],glb$hyrs,glb$pyrs,startyr=glb$hyrs)
+    tmp <- cvsmsy
+    prodsc <- prods[[i]]
+    msy <- prodsc["MSY",]
+    for (sau in 1:nsau) cvsmsy[,sau,] <- tmp[,sau,]/msy[sau]
+    cdivmsy[[i]] <- cvsmsy
+  }
+  return(invisible(cdivmsy))
+} # end of catchvsMSY
+
+#' @title cpueboxbysau generates boxplots of sau x years to max median cpue
+#'
+#' @description cpueboxbysau is used to generate boxplots of the years taken to
+#'     reach the maximum median cpue for each sau x senario. It also provides
+#'     the summary statistics from teh boxplots for each sau.
+#'
+#' @param rundir the directory in which comparisons are being made. It is best
+#'     to be a separate directory form any particular scenario.
+#' @param cpue a list of the cpue arrays from the out$sauout$zonePsau$cpue
+#'     arrays from each scenario's out object
+#' @param glbc a list of the globals objects from each scenario
+#' @param scenes the names of the different scenarios being compared
+#' @param filen the filename for saving the plot, the default="", which sends
+#'     the plot to the console.
+#' @param startyr what year to start the search for the maximum median cpue,
+#'     default = 0, this means that only the projection years are used.
+#' @param maxval the maximum y-axis value for the years to max median cpue,
+#'     default=0, which means the maximum for each boxplot is taken from the
+#'     data for that plot.
+#'
+#' @seealso{
+#'    \link{getprojyrs}, \link{getprojyraavc},  \link{catchHSPM}
+#' }
+#'
+#' @return a matrix of the boxplot statistics for the years to max median cpue
+#'     for each scenario and sau considered.
+#' @export
+#'
+#' @examples
+#' print("wait on data sets")
+cpueboxbysau <- function(rundir,cpue,glbc,scenes,filen="",startyr=0,maxval=0) {
+  #  rundir=rundir;cpue=cpue;glbc=glbc;scenes=scenes;filen="sau_maxceyr_box.png";startyr=0; maxval=0
+  nscen <- length(scenes)
+  nsau <- glbc[[1]]$nSAU
+  saunames <- glbc[[1]]$saunames
+  columns <- c("sau","stat",scenes)
+  cpuebox <- as.data.frame(matrix(0,nrow=(nsau*5),ncol=5,
+                                  dimnames=list(1:(nsau*5),columns)))
+  label <- NULL
+  for (sau in 1:nsau) label <- c(label,rep(saunames[sau],5))
+  cpuebox[,1] <- label
+  cpuebox[,2] <- rep(c("lowwhisk","25thQ","median","75thQ","highwhisk"),nsau)
+  reps <- glbc[[1]]$reps
+  boxdat <- matrix(0,nrow=reps,ncol=nscen,dimnames=list(1:reps,scenes))
+  if (startyr == 0) {
+    beginyr <- glbc[[1]]$hyrs
+  } else {
+    beginyr <- startyr
+  }
+  ce <- makelist(scenes)
+  maxceyr <- makelist(scenes)
+  for (i in 1:nscen) { # i =1
+    glb <- glbc[[i]]
+    ce[[i]] <- getprojyrs(cpue[[i]],glb$hyrs,glb$pyrs,startyr=beginyr)
+    maxceyr[[i]] <- getyr2maxce(ce[[i]],glb)
+  }
+  if (nchar(filen) > 0) {
+    filen2 <- filenametopath(rundir,filen)
+    caption <- paste0("Boxplots of year of maximum cpue by sau.")
+  }
+  start=1; finish=5
+  plotprep(width=8, height=8,newdev=FALSE,filename = filen2,verbose=FALSE)
+  parset(plots=pickbound(nsau),margin=c(0.3,0.4,0.05,0.1),outmargin=c(1,0,0.25,0),
+         byrow=FALSE)
+  for (sau in 1:nsau) { # sau=1; i = 1
+    for (i in 1:nscen) boxdat[,i] <- maxceyr[[i]][,sau]
+    if (maxval > 0) {
+      maxy <- maxval
+    } else {
+      maxy <- getmax(boxdat)
+    }
+    tmp <- boxplot(boxdat,ylim=c(0,maxy),yaxs="i",ylab=saunames[sau])
+    abline(h=tmp$stats[3,1],lwd=2,lty=2,col=2)
+    cpuebox[start:finish,3:5] <- tmp$stats
+    start <- finish + 1
+    finish <- finish + 5
+  }
+  label <- "Years to Maximum Median CPUE by sau"
+  mtext(label,side=1,outer=TRUE,line=-0.3,cex=1.0)
+  if (nchar(filen) > 0) {
+    addplot(filen=filen2,rundir=rundir,category="cpue",caption)
+    filen <- unlist(strsplit(filen,".",fixed=TRUE))[1]
+    filen <- paste0(filen,".csv")
+    write.csv(cpuebox,file=filen)
+    caption <- "Years to maximum median cpue by sau from boxplots."
+    addtable(cpuebox,filen,rundir=rundir,category="cpue",caption)
+  }
+  return(invisible(cpuebox))
+} # end of cpueboxbysau
+
+
+#' @title cpueHSPM generates boxplots of cpue HSPMs and output statistics
+#'
+#' @description cpueHSPM is used to generate boxplots of the year of the maximum
+#'     median cpue for all projections. The number of years over which the
+#'     aavc is calculated can be modified using the startyr argument. In
+#'     addition to the boxplots, the function outputs the statistics describing
+#'     the statistics from the boxplots.
+#'
+#' @param rundir the directory in which comparisons are being made. It is best
+#'     to be a separate directory form any particular scenario.
+#' @param cpue a list of the cpue arrays from the out$sauout$zonePsau$cpue
+#'     arrays from each scenario's out object
+#' @param glbc a list of the globals objects from each scenario
+#' @param scenes the names of the different scenarios being compared
+#' @param filen the filename for saving the plot, the default="", which sends
+#'     the plot to the console.
+#' @param startyr what year to start the search for the maximum median cpue,
+#'     default = 0, this means that only the projection years are used.
+#'
+#' @seealso{
+#'    \link{getprojyrs}, \link{getprojyraavc},  \link{getprojyrC}
+#' }
+#'
+#' @return a list of the boxplot statistics for the three HSPMs x the number of
+#'     scenarios compared
+#' @export
+#'
+#' @examples
+#' print("wait on data sets")
+cpueHSPM <- function(rundir,cpue,glbc,scenes,filen="",startyr=0) {
+  #  rundir=rundir;cpue=cpue;glbc=glbc;scenes=scenes;filen="sau_maxce_boxplots.png";startyr=0
+  nscen <- length(scenes)
+  boxresult <- makelist(scenes)
+  if (nchar(filen) > 0) {
+    filen <- filenametopath(rundir,filen)
+    caption <- paste0("Boxplots of year of maximum cpue.")
+  }
+  plotprep(width=9, height=9,newdev=FALSE,filename = filen,verbose=FALSE)
+  parset(plots=c(3,1),margin=c(0.4,0.4,0.05,0.1),outmargin=c(1,0,0,0),byrow=FALSE)
+  for (i in 1:nscen) { # i = 1
+    glb <- glbc[[i]]
+    if (startyr == 0) {
+      beginyr <- glb$hyrs
+      } else {
+      beginyr <- startyr
+    }
+    ce <- getprojyrs(cpue[[i]],glb$hyrs,glb$pyrs,startyr=beginyr)
+    maxceyr <- getyr2maxce(ce,glb)
+    qs <- boxplot(maxceyr,ylim=c(0,max(maxceyr)+2),yaxs="i",
+                  ylab="Years to maximum CPUE")
+    mtext(scenes[i],side=1,outer=FALSE,cex=1,line=1.75)
+    qsstats <- qs$stats
+    colnames(qsstats) <- glb$saunames
+    rownames(qsstats) <- c("lower_whisker","lower_hinge","median","upper_hinge",
+                           "upper_whisker")
+    boxresult[[i]] <- qsstats
+  }
+  if (nchar(filen) > 0)
+    addplot(filen=filen,rundir=rundir,category="cpue",caption)
+  return(invisible(boxresult))
+} #end of cpueHSPM
 
 #' @title comparevar generates the quantiles for each of a set of input scenarios
 #'
@@ -372,6 +560,113 @@ constructTasHSout <- function(hcrfun,ce,acatch,glb,hsargs) {
                         targrefpts=targrefpts)))
 } # end of constructrTasHSout
 
+
+#' @title do_comparison is a wrapper function that compares scenarios
+#'
+#' @description do_comparison provides a simplified interface for when making
+#'     comparisons between multiple scenarios. It uses the saved .RData files
+#'     from each scenario and it is up to the user to put those filenames into
+#'     a vector of characters.
+#'
+#' @param rundir the complete path to the directory into which all results and
+#'     plots from the comparisons will be placed.
+#' @param postfixdir the name of the final sub-directory into which the results
+#'     will be placed. This is used as the name of the website generated to
+#'     display the results
+#' @param outdir the full path to the directory holding all the required .RData
+#'     files
+#' @param files the vector of file names to be used.
+#' @param pickfiles a vector of indices selecting the files to be used.
+#' @param verbose should progress updates be made to the console, default=TRUE
+#'
+#' @return nothing but it does conduct a comparison of at least two scenarios
+#'     and places tables and plots into a given sub-directory
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'   suppressPackageStartupMessages({
+#'   library(aMSE)
+#'   library(TasHS)
+#'   library(codeutils)
+#'   library(hplot)
+#'   library(makehtml)
+#'   library(knitr)
+#'   })
+#'   dropdir <- getDBdir()
+#'   prefixdir <- paste0(dropdir,"A_codeUse/aMSEUse/scenarios/")
+#'   postfixdir <- "BC_compare"
+#'   rundir <- filenametopath(prefixdir,postfixdir)
+#'   # normally one would use code to select the files
+#'   files=c("BC.RData","BC433.RData","BC541.RData")
+#'   do_comparison(rundir,postfixdir,outdir,files,pickfiles=c(1,2,3))
+#' }
+do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE) {
+  files2 <- files[pickfiles]
+  nfile <- length(pickfiles)
+  ans <- vector(mode="list",length=nfile)
+  dyn <- vector(mode="list",length=nfile)
+  glbc <- vector(mode="list",length=nfile)
+  prods <- vector(mode="list",length=nfile)
+  scenes <- vector(mode="character",length=nfile)
+  scores <- vector(mode="list",length=nfile)
+  for (i in 1:nfile) { # i = 1
+    filename <- paste0(outdir,files2[i])
+    if (verbose)
+       cat("Loading ",files2[i]," which may take time, be patient  \n")
+    out <- NULL # so the function knows an 'out' exists
+    load(filename)
+    ans[[i]] <- out
+    dyn[[i]] <- out$sauout$zonePsau
+    glbc[[i]] <- out$glb
+    prods[[i]] <- out$sauprod
+    scenes[i] <- out$ctrl$runlabel
+    scores[[i]] <- out$scores
+  }
+  nscenes <- length(scenes)
+  catch <- makelist(scenes)
+  cpue <- makelist(scenes)
+  for (i in 1:nscenes) {
+    catch[[i]] <- dyn[[i]]$catch
+    cpue[[i]] <- dyn[[i]]$cpue
+  }
+  if (verbose) cat("Now doing the comparisons  \n")
+  setuphtml(rundir=rundir)
+  comparedynamics(rundir=rundir,dyn,glbc,scenes)
+  tabulateproductivity(rundir,prods,scenes)
+
+  filename <- "compare_final_HSscores.png"
+  meds <- comparefinalscores(rundir,scores,scenes,legloc="bottomright",
+                             filen=filename,category="Scores")
+  addplot(filen=filename,rundir=rundir,category="Scores",
+          caption="The HS final scores for each sau.")
+
+  tabulatefinalHSscores(rundir,meds,scenes,category="Scores")
+  outcatchHSPM <- calccatchHSPM(catch,glbc,scenes,aavcyrs=10)
+  outtab <- catchHSPM(rundir,hspm=outcatchHSPM,glbc,scenes,
+                      filen="compare_catches_boxplots.png",aavcyrs=10)
+  boxbysau(rundir,hspm=outcatchHSPM,glbc,scenes,compvar="aavc",
+           filen="sau_aavc_boxplots.png",aavcyrs=10,maxval=0.4)
+  boxbysau(rundir,hspm=outcatchHSPM,glbc,scenes,compvar="sum5",
+           filen="sau_sum5_boxplots.png",aavcyrs=10,maxval=0) #
+  boxbysau(rundir,hspm=outcatchHSPM,glbc,scenes,compvar="sum10",
+           filen="sau_sum10_boxplots.png",aavcyrs=10,maxval=0) #
+  catchbpstats(rundir,outtab)
+  cpueHSPM(rundir,cpue,glbc,scenes,filen="sau_maxce_boxplots.png")
+  outcpue <- cpueboxbysau(rundir,cpue,glbc,scenes,filen="sau_maxceyr_box.png",
+                          startyr=0,maxval=0)
+  cdivmsy <- catchvsMSY(catch,glbc,prods,scenes)
+  nscen <- length(scenes)
+  for (i in 1:nscen) {
+    plotsceneproj(rundir,cdivmsy[[i]],glbc[[i]],scenes[i],
+                  filen=paste0("Catch_div_MSY_",scenes[i],".png"),
+                  label="Catch / MSY",hline=1,Q=90)
+  }
+  makecompareoutput(rundir=rundir,glbc,scenes,postfixdir,openfile=TRUE,
+                    verbose=FALSE)
+} # end of do_comparison
+
+
 #' @title plotscene literally plots up the output from comparevar
 #'
 #' @description plotscene takes the output from comparevar and plots the
@@ -461,7 +756,7 @@ plotscene <- function(scenquant,glbc,var="cpue",ymin=0,filen="",
 #' @examples
 #' \dontrun{
 #'   print("wait on an example")
-#'
+#'  # rundir=rundir;dyn=dyn;glbc=glbc;scenes=scenes
 #' }
 comparedynamics <- function(rundir,dyn,glbc,scenes) {
   invar <- "cpue"
@@ -709,6 +1004,80 @@ plotfinalscores <- function(outscores,minprojC=0,minprojCE=60,mintargCE=110,
                         medsc=medsc,medg1s=medg1s,medg4s=medg4s,medts=medts)))
 } # end of plotfinalscores
 
+
+#' @title plotscenproj plots a 3D array of data by sau in a single plot
+#'
+#' @description plotsceneproj uses a 3D array of years x sau x replicates to
+#'     produce a plot by sau of those projections all in a single plot. Options
+#'     exist to include a horizontal dashed line and to include a median line
+#'     and either 90 or 95 quantiles across the plot.
+#'
+#' @param rundir the directory in which all results are held for a scenario or
+#'     comparison of scenarios
+#' @param inarr the 3D array of projections for a given scenario derived from
+#'     catch or cpue or whatever
+#' @param glb the global object relating to the particular acenario
+#' @param scene the scenario name
+#' @param filen the filename in which to store the plot, default="" which draws
+#'     the plot to the console
+#' @param label what is the name of the variable being plotted, default=""
+#' @param maxy what constant maximum y-axis to use? default=0 which uss the
+#'     maximum for each sau
+#' @param Q which quantile to use, default = 90. If set to 0 no median or
+#'     quantiles are plotted, 95 will lead to the 95 percent quantiles being
+#'     plotted
+#' @param hline should a horizontal dashed line be included. default=NA, which
+#'     means that no line is added. Otherwise whichever value is given this
+#'     argument will lead to a dashed horizontal black line of width 1.
+#'
+#' @return invisibly a list of the quantiles for each sau
+#' @export
+#'
+#' @examples
+#' print("wait on data sets")
+#' #  rundir=rundir; inarr=cdivmsy[[1]];glb=glbc[[1]];scenes=scenes[1];
+#' #  filen="";label="Catch / MSY";maxy=0
+plotsceneproj <- function(rundir,inarr,glb,scene,filen="",label="",
+                          maxy=0,Q=90,hline=NA) {
+  nsau <- glb$nSAU
+  saunames <- glb$saunames
+  outmed <- makelist(saunames)
+  reps <- glb$reps
+  if (nchar(filen) > 0) {
+    filen <- filenametopath(rundir,filen)
+    caption <- paste0("Projections of ",label," for ",scene," for each SAU.")
+  }
+  yrs <- as.numeric(names(inarr[,1,1]))
+  plotprep(width=8, height=8,newdev=FALSE,filename = filen,verbose=FALSE)
+  parset(plots=pickbound(nsau),margin=c(0.3,0.4,0.05,0.1),outmargin=c(0,1,0.25,0),
+         byrow=FALSE)
+  for (sau in 1:nsau) { # sau=1; i = 1
+    dat <- inarr[,sau,]
+    meds <- apply(dat,1,quants)
+    outmed[[sau]] <- meds
+    maxy <- maxy
+    if (maxy == 0) maxy <- getmax(dat)
+    plot(yrs,dat[,1],type="l",lwd=1,col="grey",panel.first=grid(),
+         ylim=c(0,maxy),ylab=saunames[sau],xlab="")
+    for (i in 1:reps) lines(yrs,dat[,i],lwd=1,col="grey")
+    if (Q > 0) {
+      lines(yrs,meds["50%",],lwd=2,col=4)
+      if (Q == 90) {
+        lines(yrs,meds["5%",],lwd=1,col=2)
+        lines(yrs,meds["95%",],lwd=1,col=2)
+      } else {
+        lines(yrs,meds["2.5%",],lwd=1,col=2)
+        lines(yrs,meds["97.5%",],lwd=1,col=2)
+      }
+    }
+    if (!is.na(hline)) abline(h=hline,lwd=1,col="black",lty=2)
+  }
+  mtext(paste0(scene,"  ",label),side=2,line=-0.2,outer=TRUE,cex=1.1)
+  if (nchar(filen) > 0)
+    addplot(filen=filen,rundir=rundir,category="C_vs_MSY",caption)
+  return(invisible(outmed))
+} # end of plotsceneproj
+
 #' @title tabulateproductivity produces tables of the MSY and related statistics
 #'
 #' @description tabulateproductivity writes out csv files for each scenario
@@ -718,18 +1087,41 @@ plotfinalscores <- function(outscores,minprojC=0,minprojCE=60,mintargCE=110,
 #' @param prods the sauprod objects from each scenario in a list
 #' @param scenes a vector of the names for each scenario
 #'
-#' @return nothing but it does add nscenario csv files as tables to the rundir
+#' @return It adds a csv file to rundir (or nscenario csv files if unexpectedly
+#'     the productivity tables differ) and returns either a single identical
+#'     matrix of productivity stats, or the full list.
 #' @export
 #'
 #' @examples
 #' print("wait on data sets")
 tabulateproductivity <- function(rundir,prods,scenes) {
   nscen <- length(scenes)
+  same <- vector(mode="logical",length=nscen)
+  count <- 1
   for (i in 1:nscen) {
-    filen <- paste0("productivity_",scenes[i],".csv")
-    caption <- paste0("SAU productivity statistics for ",scenes[i],".")
-    addtable(prods[[i]],filen,rundir=rundir,category="productivity",caption)
+    for (j in 2:nscen) {
+      if (j > i) {
+         same[count] <- all(prods[[i]] == prods[[j]])
+         count <- count+1
+      }
+    }
   }
+  if (all(same)) {
+    filen <- paste0("productivity_",scenes[i],".csv")
+    caption <- paste0("SAU productivity statistics for ",scenes[i],".",
+                      " All productivity matrices identical.")
+    addtable(prods[[i]],filen,rundir=rundir,category="productivity",caption)
+    out <- prods[[1]]
+  } else {
+    for (i in 1:nscen) {
+      filen <- paste0("productivity_",scenes[i],".csv")
+      caption <- paste0("SAU productivity statistics for ",scenes[i],".",
+                        " Productivity matrices NOT identical.")
+      addtable(prods[[i]],filen,rundir=rundir,category="productivity",caption)
+      out <- prods
+    }
+  }
+  return(invisible(out))
 } # end of tabulateproductivity
 
 

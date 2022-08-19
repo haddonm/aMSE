@@ -5,7 +5,7 @@
 #' @importFrom stats dnorm pnorm rlnorm rnorm quantile sd lm coef median
 #' @importFrom stats loess optim
 #' @importFrom utils object.size browseURL packageDescription read.csv
-#' @importFrom utils write.table head tail winDialog
+#' @importFrom utils write.table write.csv head tail winDialog
 #' @importFrom codeutils getmax getmin removeEmpty splitDate which.closest
 #' @importFrom codeutils digitsbyrow outfit %ni% quants
 #' @importFrom hplot parset plotprep pickbound

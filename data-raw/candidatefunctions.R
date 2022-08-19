@@ -1,123 +1,5 @@
 
 
-
-
-
-rundir
-
-pop <- read.csv(paste0(rundir,"/zonebiology.csv"),header=TRUE)
-
-plotprep(width=8, height=8,newdev=FALSE)
-parset()
-pairs(pop[,c("M","MaxDL","L50","L95","AvRec","steep")])
-
-
-
-grow <- read.csv("C:/Users/Malcolm/Dropbox/A_CodeUse/aMSEUse/condition/growth/hel_etal_2011.csv")
-
-
-plotprep(width=8, height=8,newdev=FALSE)
-parset()
-pairs(grow[,c("MaxDL","L50","L95","isd")])
-
-
-plot1(grow[,"L50"],grow[,"MaxDL"],type="p",pch=16,cex=1)
-
-model1 <- lm(grow[,"L50"] ~ grow[,"MaxDL"])
-summary(model1)
-anova(model1)
-
-
-model <- lm(grow[,"L95"] ~ grow[,"L50"] + grow[,"MaxDL"])
-summary(model)
-anova(model)
-
-dat2 <- grow[,c("L50","MaxDL")]
-
-y1 <- predict(model,newdata=dat2)
-y2 <- predict(model,newdata=dat2,se.fit=TRUE)
-
-y2f <- rnorm(length(y2$fit),mean=y2$fit,sd=y2$se.fit)
-
-
-plot1(grow[,"L50"],grow[,"L95"],type="p",pch=16,cex=1)
-points(grow[,"L50"],y2f,pch=16,col=2,cex=1)
-points(grow[,"L50"],y1,pch=16,col=3,cex=1)
-
-
-
-
-library(mvtnorm)
-
-dat <- grow[,c("L50","L95")]
-vcov <- cov(dat)
-summary(dat)
-
-x <- rmvnorm(100,mean=c(113.1,150.8),sigma=vcov)
-
-# prepare size-composition data ------------------------------------------------
-
-zoneCP <- out$zoneCP
-zoneDP <- out$zoneDP
-NAS <- out$NAS
-glb <- out$glb
-B0 <- getvar(zoneCP,"B0")
-ExB0 <- getvar(zoneCP,"ExB0")
-zoneDsau <- zonetosau(zoneDDR,NAS,glb,B0,ExB0)
-zonePsau <- zonetosau(zoneDP,NAS,glb,B0,ExB0)
-
-
-plotprep(width=8,height=8,newdev=FALSE)
-x <- plotNt(zonePsau$Nt, year=58, glb=glb, start=3, medcol=1)
-str(x)
-
-numbersatsizeSAU(rundir="",out$glb,zoneC=out$zoneCP,zoneD=zoneDP, sau=4, ssc=5,
-                 yr=58, defpar=TRUE, exploit=TRUE, mature=TRUE,filename="")
-
-
-lcomp <- prepareDDNt(zoneDD$Nt,zoneDD$catchN,glb)
-
-plotCNt(lcomp$Nt,glb,vline=c(140),start=3) # plot the conditioning history
-
-plotCNt(zonePsau$Nt[,,,51],glb,vline=140,start=3) # plot a single replicate from projections
-
-zonePsau <- zonetosau(zoneDP,NAS,glb,B0,ExB0)
-
-plotprep(width=6,height=8,newdev=FALSE)
-
-parset(plots=c(4,2))
-saunames <- glb$saunames
-nsau <- glb$nSAU
-cpue <- zonePsau$cpue
-exploitb <- zonePsau$exploitB
-for (sau in 1:nsau) {
-  ymax <- getmax(cpue[,sau,1])
-  xmax <- getmax(exploitb[,sau,1])
-  plot(exploitb[,sau,1],cpue[,sau,1],type="p",pch=16,cex=1.0,panel.first=grid(),
-       )
-}
-
-
-sau <- 1
-title <- paste0("SAU ",saunames[sau])
-pickyr <- c(1,5,10,15,20,25,30)
-start <- 3
-Nt <- lcomp$Nt[,,sau]
-Nclass <- glb$Nclass
-midpts <- glb$midpts
-xmax <- getmax(Nt[start:Nclass,])/1000.0
-nplot <- length(pickyr)
-parset(plots=c(1,nplot),margin=c(0.3,0.1,0.05,0.05),outmargin=c(1,2,0,0),bty="n")
-for (i in 1:nplot) {
-   plot(Nt[,pickyr[i]]/1000.0,midpts,type="l",lwd=2,col=1,xlim=c(0,xmax),
-        ylim=rev(range(midpts)),panel.first=grid(),ylab="",xlab="",xaxs="i")
-  text(0.3*xmax,(Nclass * 2) + 5,paste0("yr ",pickyr[i]),cex=1.1,pos=4)
-}
-mtext("Shell Length mm",side=2,line=0.75,outer=TRUE,cex=1.1)
-mtext(paste0(title,"  Numbers-at-Size 000's"),side=1,line=-0.2,outer=TRUE,cex=1.1)
-
-
-
 # plot all first years and all last years
 start <- 3
 Nt <- zonePsau$Nt
@@ -164,162 +46,7 @@ oneyearrec <- function(steep,R0,B0,Bsp,sigR,devR=-1,rho=0.0) {
 
 
 
-
-# plot Catch vs Productivity function -------------------------------------------------------
-
-popdefs <- getlistvar(out$zoneC,"popdef")
-propD <- getzoneprops(out$zoneC,out$zoneDD,out$glb,year=glb$hyrs)
-msy <- findmsy(out$zone$product)[,"Catch"]
-nsau <- glb$nSAU
-saunames <- glb$saunames
-plts <- pickbound(length(msy))
-histcat <- out$condC$histCatch
-yrs <- as.numeric(rownames(histcat))
-nyrs <- length(yrs)
-plotprep(width=6,height=8,newdev = FALSE)
-parset(plots=plts)
-for (i in 1:nsau) {
-  plot(yrs,histcat[,i],type="l",lwd=2,xlab="",ylab=paste0("SAU ",saunames[i]),
-       panel.first=grid())
-  abline(h=c(msy[i],geomean(histcat[,i])),lwd=c(2,1),col=c(2,4),
-         lty=c(1,2))
- label <- paste0("depletion = ",round(propD["SpBDepl",i],3))
- x <- trunc(nyrs/4)
- text(yrs[x],5,label,cex=1.0,pos=4)
-}
-
-
-
-
-
-
-x <- matrix(rnorm(25,mean=5,sd=1),nrow=5,ncol=5)
-kablerow(x,rowdigits=c(2,3,4,3,2))
-
-rownames(x) <-  c("a","b","c","d","e")
-colnames(x) <- c(1:5)
-kablerow(x,rowdigits=c(2,3,4,3,2),namerows=TRUE)
-
-
-x <- matrix(rnorm(25,mean=5,sd=1),nrow=5,ncol=5)
-numdig <- c(2,3,4,3,2)
-colnames(x) <- 1:5
-kable(x,digits=numdig)
-rownames(x) <- c("a","b","c","d","e")
-kablerow(x,rowdigits=c(2,3,4,3,2),namerows=TRUE)
-
-
-
 # compare runs-----------------------------------------------------------------
-
-outzone6 <- out$outzone
-TAC6 <- t(outzone6$TAC)
-med2016 <- apply(TAC6,2,median)
-
-load(paste0(ddir,"HS652510/ozoneDP.RData"))
-
-paste0(ddir,"aMSEUse/scenarios/HS652510_2019/")
-outzone9 <- outzone
-TAC9 <- t(outzone9$TAC)
-med2019 <- apply(TAC9,2,median)
-
-yrs <- 2017:2049
-plotprep(width=7, height=4,newdev = FALSE)
-parset()
-ymax <- getmax(c(med2016,med2019))
-plot(yrs,c(med2016,NA,NA,NA),type="l",lwd=2,xlab="",ylim=c(0,ymax),
-     ylab="Median TAC from 100 Replicates",panel.first=grid())
-lines(yrs,c(NA,NA,NA,med2019),lwd=2,col=2)
-
-
-load(paste0(rundir,"/out.RData"))
-
-str1(out)
-
-condC <- out$condC
-saunames <- paste0("sau",6:13)
-hcatch <- condC$histCatch
-hcatch <- hcatch[-1,]
-totC <- rowSums(hcatch)
-
-
-plotprep(width=8,height=6,newdev=FALSE)
-plotzonesau(zonetot=totC,saudat=hcatch,saunames=saunames,label="Zone Catch (t)",
-            labelsau="sauCatch",side=4,sauscale=FALSE)
-
-
-
-hce <- condC$histCE
-yrs <- as.numeric(rownames(hcatch))
-ceyrs <- as.numeric(rownames(hce))
-pick <- match(ceyrs,yrs)
-relC <- hcatch[pick,]
-zonece <- catchweightCE(cedat=hce,cdat=relC,nsau=out$glb$nSAU)
-
-plotprep(width=8,height=6,newdev=FALSE)
-plotzonesau(zonetot=zonece,saudat=relC,saunames=saunames,label="Zone CPUE",
-            labelsau="sauCatch",side=3,sauscale=FALSE)
-
-
-plotprep(width=8,height=6,newdev=FALSE)
-plotzonesau(zonetot=zonece,saudat=hce,saunames=saunames,label="Zone CPUE",
-            labelsau="sauCPUE",side=1,sauscale=FALSE)
-
-
-
-zoneDP <- out$zoneDP
-str1(zoneDP)
-NAS <- list(Nt=zoneDP$Nt,NumNe=zoneDP$NumNe,catchN=zoneDP$catchN)
-
-
-
-str1(zoneDyn)
-
-
-
-
-# HCR -------------------------------------------------------
-str1(out)
-
-glb <- out$glb
-nsau <- glb$nSAU
-hcr <- out$hcrout
-cpue <- out$zoneDP$cesau
-saucpue <- matrix(0,nrow=nrow(cpue),ncol=nsau)
-
-for (i in 1:nsau) saucpue[,i] <- apply(cpue[,i,],1,median)
-
-head(saucpue)
-details <- hcr$details
-
-
-rownames(details$scoret) <- 1992:2049
-scoret <- details$scoret
-
-invar=scoret
-incpue <- saucpue[30:87,]
-
-plotprep(width=8, height=10,newdev=FALSE)
-parset(plots=c(8,1),margin=c(0.3,0.3,0.05,0.05))
-yrs <- as.numeric(rownames(invar))
-for (i in 1:nsau) {
-  ymax <- getmax(hcr$multTAC[,i])
-  plot(yrs,hcr$multTAC[,i],type="l",lwd=2,xlab="",ylab="",ylim=c(0.3,1.5),yaxs="i",
-       panel.first=grid())
-  # plot(yrs,scoret[,i],type="l",lwd=2,xlab="",ylab="",ylim=c(0,10),yaxs="i",
-  #      panel.first=grid())
-  # lines(yrs,details$score4[,i],lwd=2,col=2)
-  # lines(yrs,details$score1[,i],lwd=2,col=3)
-  # lines(yrs,details$scoretot[,i],lwd=4,col=4)
-  # abline(h=5,lwd=1,col=2)
-  abline(v=2020.5,lwd=1,col=2)
-
-}
-
-
-
-hcr$refpts
-
 
 
 # Compare CatchN through time ----------------------------------------------------------------
@@ -467,118 +194,8 @@ y <- c(3,3,3,3,3)
 x * y
 
 
-# HS performance ---------------------------------------------------------
-
-zoneDP <- out$zoneDP
-catch <- zoneDP$catsau
-glb <- out$glb
-nsau <- glb$nSAU
-sum10 <- getprojyrC(catsau=catch,glb=glb)
 
 
-
-
-
-labelnames <- colnames(sum10)
-plotprep(width=8, height=7)
-parset(plots=c(3,3))
-for (i in 1:(nsau+1)) {
-  label <- paste0("Tonnes     ",labelnames[i])
-  hist(sum5[,i],breaks=15,main="",xlab=label)
-}
-
-
-# Compare HS --------------------------------------------------------------
-options("show.signif.stars"=FALSE,
-        "stringsAsFactors"=FALSE,
-        "max.print"=50000,
-        "width"=240)
-# declare libraries ------------------------------------------------------------
-library(aMSE)
-library(rutilsMH)
-library(makehtml)
-library(knitr)
-# Obviously you should modify the rundir to suit your own setup
-prefixdir <- "C:/A_Mal/scenarios/"
-
-verbose <- TRUE
-postfixdir <- "M15h75"
-rundir <- paste0(prefixdir,postfixdir)
-alldirExists(rundir,datadir,verbose=verbose)
-source(paste0(rundir,"/TasmanianHS.R"))
-
-controlfile <- "controlM15h75.csv"
-
-
-zoneDP <- out$zoneDP
-catch <- zoneDP$catsau
-glb <- out$glb
-nsau <- glb$nSAU
-
-
-sum10 <- out$HSstats$sum10
-sum5 <- out$HSstats$sum5
-
-pd <- density(sum5[,(nsau+1)])
-plotprep(width=8,height=4,newdev=FALSE)
-parset(plots=c(1,8),margin=c(0.1,0.2,0.1,0.01),outmargin=c(3.5,1.75,0,0.5))
-xmax <- getmax(pd$y)
-plot(pd$y,pd$x,type="l",xlim=c(0,xmax),xaxs="i",ylab="")
-mtext("M1h75_5",side=1,outer=FALSE,line=1.3,cex=0.9)
-mtext("Relative Density",side=1,outer=TRUE,line=2.4)
-mtext("10 Year Summmed Catch (t) by Zone",side=2,outer=TRUE,line=0.5)
-pd2 <- density(sum10[,(nsau+1)])
-xmax <- getmax(pd2$y)
-plot(pd2$y,pd2$x,type="l",xlim=c(0,xmax),xaxs="i",ylab="")
-mtext("M1h75_10",side=1,outer=FALSE,line=1.3,cex=0.9)
-
-
-
-sauout <- out$sauout$zonePsau
-object.size(sauout)
-sauout <- sauout[-c(11,10)]
-object.size(sauout)
-
-str(HSstats)
-
-catchN <- out$sauout$zonePsau$catchN
-catchN <- catchN[56:105,,,]
-nn <- object.size(catchN)
-nn/118298272
-
-
-load(paste0(rundir,"/sauoutD.RData"))
-sauout <- sauoutD
-
-ceCI <- out$sauout$outCI$cpue
-glb <- out$glb
-targCE <- hsargs$maxtarg
-
-getmaxCE(ceCI=ceCI,glb=glb,targetCE=targCE)
-
-
-projce <- out$sauout$zonePsau$cpue
-glb <- out$glb
-targetCE <- hsargs$maxtarg
-
-
-reachtargCE <- function(projce,glb,targetCE) {
-  pyrs <- glb$pyrs
-  hyrs <- glb$hyrs
-  totyrs <- hyrs + pyrs
-  projcek <- projce[(hyrs+1):totyrs,,]
-  nsau <- glb$nSAU
-  label <- glb$saunames
-  yrs <- glb$pyrnames
-  reps <- glb$reps
-  result <- matrix(0,nrow=reps,ncol=nsau,dimnames=list(1:reps,label))
-  for (sau in 1:nsau) {
-    for (i in 1:reps) {
-      pick <- which(projcek[,sau,i] > targetCE[sau])
-      result[i,sau] <- yrs[pick[1]]
-    }
-  }
-}
 
 
 
@@ -745,115 +362,6 @@ numbersatsizeSAU <- function(rundir, glb, zoneC, Nt, sau, ssc=5, yr=1,
 
 
 
-
-options("show.signif.stars"=FALSE,
-        "stringsAsFactors"=FALSE,
-        "max.print"=50000,
-        "width"=240)
-# declare libraries ------------------------------------------------------------
-library(aMSE)
-library(TasHS)
-library(rutilsMH)
-library(makehtml)
-library(knitr)
-# Obviously you should modify the rundir to suit your own setup
-if (dir.exists("c:/Users/User/DropBox")) {
-  prefixdir <- "c:/Users/User/DropBox/A_codeUse/aMSEUse/scenarios/"
-} else {
-  prefixdir <- "c:/Users/Malcolm/DropBox/A_codeUse/aMSEUse/scenarios/"
-}
-doproject <- TRUE  # change to FALSE if only conditioning is required
-verbose <- TRUE
-postfixdir <- "M15h75"
-rundir <- paste0(prefixdir,postfixdir)
-alldirExists(rundir,datadir,verbose=verbose)
-controlfile <- "controlM15h75.csv"
-hsfile <- "TasHS1_Tas.R"
-source(paste0(rundir,"/",hsfile))
-
-load(file=paste0("C:/aMSE_scenarios/",postfixdir,".RData"))
-
-compdat <- out$condC$compdat
-
-lfs <- compdat$lfs
-palfs <- compdat$palfs
-glb <- out$glb
-zoneCP <- out$zoneCP
-Nt <- out$NAS$Nt
-sau <- "sau8"
-
-dim(lfs)
-label <- dimnames(lfs)
-# sum predicted Nt for each sau for the historic period to cpmpare with data
-
-
-
-
-
-hyrs=glb$hyrs
-ssc <- 5
-first=1
-last=hyrs
-Nt <- out$zoneDD$Nt
-
-sauNt <- plotcondsizes(Nt,first,last,glb,ssc=5,filen="")
-
-catchN <- out$zoneDD$catchN
-ssc <- 65
-first=30
-last=hyrs-5
-
-sauCN <- plotcondsizes(Nt=catchN,first,last,glb,ssc=ssc,filen="",
-                       legloc="topright",prop=TRUE)
-
-
-# compare conditoned predict CatchN ----------------------------------------
-
-
-
-library(freqdata)
-
-
-filen <- "c:/Users/Malcolm/DropBox/A_code/freqdata/data-raw/compiledMM.df.final.RDS"
-comp <- readRDS(filen)
-columns <- colnames(comp)
-columns
-newnames <- c("docket","msrdate","proc","procname","procnum","proclist","zone",
-              "ndays","daylist","day_max","msrdate_diff","nblocks","blocks",
-              "nsubblocks","subblocks","catch","length","n","meanSL","minSL",
-              "species","weightg","datasource","blockno","subblockno","sampleid",
-              "year","block1","block2","block3","block4","block5","id","region1",
-              "region2","region3","region4","region5","same.region")
-colnames(comp) <- newnames
-props <- properties(comp)
-
-blks <- c("6","7","8","9","10","11","12","13")
-nblk <- length(blks)
-pickb <- which((comp$blocks %in% blks) & (comp$year > 1989) &
-                 (comp$year < 2021) & (comp$zone == "W") &
-                 (comp$length >= 135) & (comp$length < 211))
-cols <- c(7,12,13,16,17,18,21,22,26,27)
-
-wz1 <- comp[pickb,cols]
-nbby <- as.matrix(table(wz1$year,wz1$blocks))
-nbby1 <- expandmatrix(nbby)
-nbby2 <- cbind(nbby1[,5:8],nbby1[,1:4])
-
-nbby2 - palfs[7:37,]
-
-pick <- which((wz1$year == 2014) & (wz1$blocks == 12))
-dat <- wz1[pick,]
-
-plotprep(width=7,height=4,newdev=FALSE)
-parset()
-inthist(dat$length,width=0.8,border=2)
-
-head(dat,20)
-
-dat$len2 <- trunc((dat$length+1)/2)*2
-inthist(dat$len2,width=0.8,border=2)
-
-
 # Characterize APPs or Populations---------------------------------------------
 # uses out$zoneCP and out$zoneDD
 
@@ -882,21 +390,62 @@ parset()
 pairs(propD[1:glb$numpop,c(1,5,7,9,11,14,15,16)],pch=16,col=2,cex=1)
 
 
+# plotphase
+
+#' @title plotphase generates a kobe-plot of harvest rate against mature depletion
+#'
+#' @description plotphase generates a kobe-like plot of harvest rate again the
+#'     mature biomass depletion. This can provide a summary of the stock status
+#'     although currently, there is no limit refernece point defined,
+#'
+#' @param dyn a matrix of the predicted dynamics. It must include a column of
+#'  h the dynamics are running.
+#' @param answer
+#' @param maxdepl this can be used to constrain the plot so that details can be
+#'     seen which are obscured if depletionsup to 1.0 are used. default=1.0
+#' @param startyr which year to start plotting the dynamics. default = 1992,
+#'     which suits Tasmania but elsewhere will likely want somwething different.
+#'
+#' @return nothing, but is does plot a graph
+#' @export
+#'
+#' @examples
+#' print("wait on data sets")
+plotphase <- function(dyn,answer,maxdepl=1.0,startyr=1992) {
+  # dyn <- outans$outdyn$dyn; answer=outprod$answer; maxdepl=0.4; startyr=1995
+  yrs <- as.numeric(rownames(dyn))
+  picky <- which(yrs >= startyr)
+  nyrs <- length(picky)
+  matB <- dyn[picky,"matB"]
+  depl <- dyn[picky,"depl"]
+  H <- dyn[picky,"harvest"]
+  rown <- nrow(answer)
+  targH <- answer[rown,"HarvestR"]
+  targdepl <- answer[rown,"Depletion"]
+  plotprep(width=7, height=6, newdev=FALSE)
+  parset(cex.lab=1.25)
+  ymax <- getmax(H)
+  plot(depl,H,type="p",pch=16,xlim=c(0,maxdepl),ylim=c(0,ymax),xaxs="i",yaxs="i",
+       xlab="Mature Biomass Depletion",ylab="Harvest Rate")
+  polygon(x=c(0,targdepl,targdepl,0,0),y=c(targH,targH,ymax,ymax,targH),
+          col=rgb(255,0,0,175,maxColorValue=255))
+  polygon(x=c(targdepl,maxdepl,maxdepl,targdepl,targdepl),
+          y=c(targH,targH,ymax,ymax,targH),
+          col=rgb(255,255,0,170,maxColorValue=255))
+  polygon(x=c(0,targdepl,targdepl,0,0),y=c(0,0,targH,targH,0),
+          col=rgb(255,255,0,175,maxColorValue=255))
+  polygon(x=c(targdepl,maxdepl,maxdepl,targdepl,targdepl),y=c(0,0,targH,targH,0),
+          col=rgb(0,255,0,120,maxColorValue=255))
+  abline(h=targH,lwd=2,col=1)
+  abline(v=targdepl,lwd=2,col=1)
+  arrows(x0=depl[1:(nyrs-1)],y0=H[1:(nyrs-1)],x1=depl[2:nyrs],y1=H[2:nyrs],lwd=2,
+         length=0.125)
+  points(depl,H,pch=16,cex=1.25)
+  points(depl[c(1,nyrs)],H[c(1,nyrs)],pch=16,cex=2,col=c(1,4))
+} # end of plotphase
 
 
 
-
-
-
-
-makerect <- function (left, xinc, top, yinc, linecol = "grey",col = NULL)
-{
-  polygon(makevx(left, xinc), makevy(top, yinc), col = col,
-          border = linecol)
-  centerx <- (left * 2 + xinc)/2
-  centery <- (top * 2 - yinc)/2
-  return(invisible(c(centerx, centery)))
-}
 
 
 

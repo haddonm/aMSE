@@ -28,6 +28,6 @@ comparedynamics plots, for each sau, the medians and 90th
 \examples{
 \dontrun{
   print("wait on an example")
-
+ # rundir=rundir;dyn=dyn;glbc=glbc;scenes=scenes
 }
 }

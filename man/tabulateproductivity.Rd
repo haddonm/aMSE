@@ -14,7 +14,9 @@ tabulateproductivity(rundir, prods, scenes)
 \item{scenes}{a vector of the names for each scenario}
 }
 \value{
-nothing but it does add nscenario csv files as tables to the rundir
+It adds a csv file to rundir (or nscenario csv files if unexpectedly
+    the productivity tables differ) and returns either a single identical
+    matrix of productivity stats, or the full list.
 }
 \description{
 tabulateproductivity writes out csv files for each scenario

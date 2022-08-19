@@ -45,6 +45,9 @@ examine its implications.
 
 # LATEST UPDATE
 
+-   2022-08-19 aMSE 0.0.15 Added do_comparison as a wrapper function for
+    comparing scenarios.
+
 -   2022-08-05 aMSE 0.0.14 Added more functions to assist with comparing
     scenarios.
 
@@ -186,14 +189,12 @@ suppressPackageStartupMessages({
   library(makehtml)
   library(knitr)
 })
-#> Warning: package 'knitr' was built under R version 4.1.3
 dbdir <- getDBdir()
 # Obviously you should modify the rundir and datadir to suit your own setup
 prefixdir <- paste0(dbdir,"A_CodeUse/aMSEUse/scenarios/")
 postfixdir <- "M15h75"
 rundir <- paste0(prefixdir,postfixdir)
 confirmdir(rundir)
-#> C:/Users/Malcolm/Dropbox/A_CodeUse/aMSEUse/scenarios/M15h75  already exists
 controlfile <- "controlM15h75.csv"
 # equilibrium zone -------------------------------------------------------------
 # You now need to ensure that there is, at least, a control.csv, and a 

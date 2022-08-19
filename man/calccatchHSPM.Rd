@@ -4,10 +4,11 @@
 \alias{calccatchHSPM}
 \title{calccatchHSPM calculates all the HSPMs for the actual catch data}
 \usage{
-calccatchHSPM(dyn, glbc, scenes, aavcyrs = 10)
+calccatchHSPM(catch, glbc, scenes, aavcyrs = 10)
 }
 \arguments{
-\item{dyn}{a list of the dynamics objects from each scenario's out object}
+\item{catch}{a list of the actual catches from the out$sauout$zonePsau$catch
+array from each scenario's out object}
 
 \item{glbc}{a list of the globals objects from each scenario}
 

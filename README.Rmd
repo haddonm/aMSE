@@ -36,6 +36,8 @@ Of course, adding such a component increases the number of options that may need
 
 # LATEST UPDATE
 
+* 2022-08-19 aMSE 0.0.15 Added do_comparison as a wrapper function for comparing scenarios.
+
 * 2022-08-05 aMSE 0.0.14 Added more functions to assist with comparing scenarios. 
 
 * 2022-08-05 aMSE 0.0.12 Added more functions to assist with comparing scenarios. Still sorting out references to other packages.
@@ -86,7 +88,7 @@ It would be a good idea to read Hadley Wickham's draft chapter on Git and GitHub
 
 This is an example which illustrates the generation of an initial equilibrium, which then goes on to apply an early version of the Tasmania MCDA using only 50 replicates (that bit takes about 15 seconds on my computer, hence 2.5 minutes for 1000). It uses built in data-sets but usually you would read in a control file, which would contain the name of the biological datafile describing each population.
 
-```{r example, echo=TRUE}
+```{r example, echo=TRUE, eval=FALSE }
 # a constant TAC example
 starttime <- (Sys.time())
 options("show.signif.stars"=FALSE,
