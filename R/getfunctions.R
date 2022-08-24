@@ -446,7 +446,7 @@ getprojyraavc <- function(catches,glb) {
 #' @export
 #'
 #' @examples
-#' print("wait on data sets")
+#' print("getprojyrs(out$sauout$zonePsau$catch, hyrs=out$glb$hyrs, pyrs=out$glb$pyrs, startyr=out$glb$hyrs)")
 getprojyrs <- function(sauarr,hyrs,pyrs,startyr=hyrs) {
   yrs <- dim(sauarr)[1]
   if (yrs != hyrs + pyrs)
