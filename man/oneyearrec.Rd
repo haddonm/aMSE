@@ -4,7 +4,7 @@
 \alias{oneyearrec}
 \title{oneyearrec calculates the Beverton-Holt recruitment}
 \usage{
-oneyearrec(steep, R0, B0, Bsp, sigR, devR = -1)
+oneyearrec(steep, R0, B0, Bsp, sigR, devR = -1, depensate = 0)
 }
 \arguments{
 \item{steep}{the steepness for the population; scalar}
@@ -22,6 +22,13 @@ scalar. set this to 1e-08 to avoid recruitment variability}
 here. If negative values then a random epsilon is used, otherwise
 epsilon is given the value of devR. default=-1, so by default fixed
 recruitment deviates are off.}
+
+\item{depensate}{should depensation occur at low biomass levels? default=0,
+which means no depensation. If one puts, say, 0.2, here then biomass
+levels from 0.2B0 will lead to a linear decline in recruitment down to
+zero rather than the B-H curve that normally occurs. any recruitment
+deviates continue to be applied. Conditioning the model would need to be
+done with depesation turned on in sizemod as well.}
 }
 \value{
 an absolute number of recruits from a given spawning biomass
@@ -45,7 +52,7 @@ Bsp <- 147
 insigmar <- 0.3
 oneyearrec(steep,R0,B0,Bsp,insigmar)
 }
-# steep=steep;R0=r0;B0=b0;Bsp=dyn["matureb",];sigR=sigmar;devR=rdev
+# steep=steep;R0=r0;B0=b0;Bsp=matb;sigR=sigmar;devR=-1
 }
 \seealso{
 {

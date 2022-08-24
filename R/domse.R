@@ -1,6 +1,6 @@
 #
 # outcond=outcond
-# postfixdir <- "HS856"
+# postfixdir <- "EG"
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
@@ -20,6 +20,8 @@
 # matureL = c(70,200)
 # wtatL = c(80,200)
 # mincount=100
+# includeNAS=FALSE
+# depensate=0
 
 
 #' @title do_MSE an encapsulating function to hold the details of a single run
@@ -97,10 +99,13 @@
 #'     default=100.
 #' @param includeNAS should the NAS projections be included in the output. If
 #'     they are then the final output size is greatly increased. default=FALSE
+#' @param depensate should depensation occur. If > 0, eg depensate=0.2, then
+#'     depensation will occur when depletion is < whatever value one puts in for
+#'     depensate. Implemented inside the function 'oneyearrec'.
 #'
 #' @seealso{
 #'  \link{makeequilzone}, \link{dohistoricC}, \link{prepareprojection},
-#'  \link{doprojections}, \link{getprojyrC}
+#'  \link{doprojections}, \link{getprojyrC}, \link{oneyearrec}
 #' }
 #'
 #' @return a large list containing tottime, projtime, starttime, glb, ctrl,
@@ -113,7 +118,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                    sampleNaS,getdata,calcpopC,makeouthcr,cpueHSPMs=NULL,varyrs=7,startyr=42,
                    verbose=FALSE,ndiagprojs=3,savesauout=FALSE,cutcatchN=56,
                    matureL=c(70,200),wtatL=c(80,200),mincount=100,
-                   includeNAS=FALSE) {
+                   includeNAS=FALSE,depensate=0) {
   # generate equilibrium zone -----------------------------------------------
   starttime <- (Sys.time())
   zone <- makeequilzone(rundir,controlfile,verbose=verbose)

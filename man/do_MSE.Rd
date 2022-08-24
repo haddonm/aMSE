@@ -25,7 +25,8 @@ do_MSE(
   matureL = c(70, 200),
   wtatL = c(80, 200),
   mincount = 100,
-  includeNAS = FALSE
+  includeNAS = FALSE,
+  depensate = 0
 )
 }
 \arguments{
@@ -100,6 +101,10 @@ default=100.}
 
 \item{includeNAS}{should the NAS projections be included in the output. If
 they are then the final output size is greatly increased. default=FALSE}
+
+\item{depensate}{should depensation occur. If > 0, eg depensate=0.2, then
+depensation will occur when depletion is < whatever value one puts in for
+depensate. Implemented inside the function 'oneyearrec'.}
 }
 \value{
 a large list containing tottime, projtime, starttime, glb, ctrl,
@@ -134,6 +139,6 @@ print("wait on suitable data sets in data")
 \seealso{
 {
  \link{makeequilzone}, \link{dohistoricC}, \link{prepareprojection},
- \link{doprojections}, \link{getprojyrC}
+ \link{doprojections}, \link{getprojyrC}, \link{oneyearrec}
 }
 }

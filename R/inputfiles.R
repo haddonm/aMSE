@@ -53,24 +53,23 @@ checkmsedata <- function(intxt,rundir,verbose=TRUE) { # intxt=indat;verbose=TRUE
   if (endrun) stop(cat("See input_data_tests.txt for data errors \n"))
 } # end of checkmsedata
 
-
-
 #' @title ctrlfiletemplate generates a template input control file
 #'
 #' @description ctrlfiletemplate generates a standardized control file
-#'     template. Generate this and then modify the contents to suit
-#'     the system you are attempting to simulate. Defaults to 100
-#'     replicates. There needs to be as many recdevs as there are conditioning
-#'     catches (in the template = 58 rows. If they are all set to -1,
-#'     the default, then they will have no effect and recdevs will be taken off
-#'     the stock-recruitment curve with random deviates defined by withsigR
-#'     found in the ctrl file. If devrec = 1.0 then the recdevs from 1980 to
-#'     2016 will be set to 1.0 which means there will be no random variation
-#'     and the system is ready to be conditioned on those recdevs to improve
-#'     the predicted CPUE during the historical conditioning period. If
-#'     devrec = 0.0, then the recdevs for 1980 - 2016 will be set to values
-#'     that have already conditioned the model and provides a reasonable fit to
-#'     the observed CPUE trends.
+#'     template, which is the equivalent to the Tasmanian base-case. It is used
+#'     in the documentation to illustrate how to run aMSE. Generate this and
+#'     then modify the contents to suit the system you are attempting to
+#'     simulate. Defaults to 100 replicates. There needs to be as many recdevs
+#'     as there are conditioning catches (in the template = 58 rows. If they are
+#'     all set to -1, the default, then they will have no effect and recdevs
+#'     will be taken off the stock-recruitment curve with random deviates
+#'     defined by withsigR found in the ctrl file. If devrec = 1.0 then the
+#'     recdevs from 1980 to 2016 will be set to 1.0 which means there will be no
+#'     random variation and the system is ready to be conditioned on those
+#'     recdevs to improve the predicted CPUE during the historical conditioning
+#'     period. If devrec = 0.0, then the recdevs for 1980 - 2016 will be set to
+#'     values that have already conditioned the model and provides a reasonable
+#'     fit to the observed CPUE trends.
 #'
 #' @param indir directory in which to place the control.csv file
 #' @param filename the name for the generated ctrlfile, a character
@@ -94,12 +93,13 @@ checkmsedata <- function(intxt,rundir,verbose=TRUE) { # intxt=indat;verbose=TRUE
 #' @examples
 #' \dontrun{
 #'  yourdir <- tempdir()
-#'  datafiletemplate(nSAU=8,yourdir,"saudata_test.csv")
-#'  ctrlfiletemplate(yourdir,filename="testctrl.csv",devrec=-1)   #
-#'  control <- readctrlfile(yourdir,"testctrl.csv")
-#'  str(control,max.level=1)
+#'  datafiletemplate(yourdir,"saudataEG.csv")
+#'  compdatatemplate(rundir=yourdir,filen="lf_WZ90-20.csv")
+#'  ctrlfiletemplate(yourdir,filename="controlEG.csv",devrec=-1)   #
+#'  zone1 <- readctrlfile(yourdir,"controlEG.csv")
+#'  str(zone1,max.level=1)
 #' }
-ctrlfiletemplate <- function(indir,filename="controlsau.csv",devrec=-1) { # indir=rundir; filename="control2.csv"
+ctrlfiletemplate <- function(indir,filename="controlEG.csv",devrec=-1) { # indir=rundir; filename="control2.csv"
    if (!(devrec %in% c(-1,0.0,1.0)))
       stop("devrec must be either -1, 0.0, or 1 in ctrlfiletemplate  \n")
    filename <- filenametopath(indir,filename)
@@ -113,9 +113,9 @@ ctrlfiletemplate <- function(indir,filename="controlsau.csv",devrec=-1) { # indi
        file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
    cat("START \n",file=filename,append=TRUE)
-   cat("runlabel, a_meaningful_name, label for particular run \n",
+   cat("runlabel, Base_Case, a label for particular scenario \n",
        file=filename,append=TRUE)
-   cat("datafile, saudata_test.csv, name of saudefs file \n",
+   cat("datafile, saudataEG.csv, name of saudefs file \n",
        file=filename,append=TRUE)
    cat("bysau, 1, 1=TRUE and 0=FALSE  \n",file=filename,append=TRUE)
    cat("parfile, NA, name of file containing optimum parameters from sizemod \n",
@@ -426,7 +426,7 @@ ctrlfiletemplate <- function(indir,filename="controlsau.csv",devrec=-1) { # indi
 #'  str(constants,max.level=1)
 #'  print(constants[,1:10])
 #' }
-datafiletemplate <- function(indir,filename="saudata_test.csv") {
+datafiletemplate <- function(indir,filename="saudataEG.csv") {
    genconst <- function(invect) { # a function to generate constant values
       nlab <- length(invect)
       invect <- as.character(invect)
@@ -457,51 +457,51 @@ datafiletemplate <- function(indir,filename="saudata_test.csv") {
    cat("DLMax , 21.5060321746972,26.6005907815097,24.3520350566157,29.0972888599621,",
        "29.2904865501258,28.6097710536279,26.7206918605892,21.5736807435363 ,",
         "maximum growth increment \n",file=filename, append=TRUE)
-   cat("sMaxDL ,",genconst(rep(1e-04,nSAU)),", variation of MaxDL \n",
+   cat("sMaxDL ,",genconst(rep(0.3,nSAU)),", variation of MaxDL \n",
        file=filename, append=TRUE)
    cat("L50 ,",genconst(rep(130.0,nSAU)),", Length at 50% MaxDL \n",
        file=filename, append=TRUE)
-   cat("sL50 ,",genconst(rep(2e-04,nSAU)),", variation of L50 \n",
+   cat("sL50 ,",genconst(rep(1.0,nSAU)),", variation of L50 \n",
        file=filename, append=TRUE)
    cat("L50inc , 54.3495728192894,43.1978234068735,53.7880354443096,49.2417858122113,",
        "53.621543719204,51.5238879305982,48.7727579990218,54.2813866497762,",
        "L95 - L50 = delta =L50inc \n",file=filename, append=TRUE)
-   cat("sL50inc ,",genconst(rep(1e-04,nSAU)),", variation of L50inc \n",
+   cat("sL50inc ,",genconst(rep(0.5,nSAU)),", variation of L50inc \n",
        file=filename, append=TRUE)
    cat("SigMax  ,",genconst(rep(3.3784,nSAU)),", max var around growth \n",
        file=filename, append=TRUE)
-   cat("sSigMax ,",genconst(rep(1e-04,nSAU)),", var of SigMax \n",
+   cat("sSigMax ,",genconst(rep(0.075,nSAU)),", var of SigMax \n",
        file=filename, append=TRUE)
    cat("LML ,",genconst(rep(132,nSAU)),", initial legal minimum length \n",
        file=filename, append=TRUE)  # deprecated. now set in the control file
    cat("Wtb ,3.162046,3.162046,3.162046,3.162046,3.292563,3.162046,3.183611,3.162046 ,",
        ", weight-at-length exponent \n", file=filename, append=TRUE)
-   cat("sWtb ,",genconst(rep(0.000148,nSAU)),", var of Wtb \n",
+   cat("sWtb ,",genconst(rep(0.01,nSAU)),", var of Wtb \n",
        file=filename, append=TRUE)
    cat("Wta , 6.4224e-05,5.62e-05,6.4224e-05,6.4224e-05,3.388e-05,6.4224e-05,5.64e-05,",
        "5.62e-05, intercept of power curve  \n",
        file=filename,append=TRUE)
-   cat("sWta ,",genconst(rep(1e-08,nSAU)),", \n",file=filename,append=TRUE)
+   cat("sWta ,",genconst(rep(1e-10,nSAU)),", \n",file=filename,append=TRUE)
    cat("Me ,",genconst(rep(0.15,nSAU)),", Nat Mort, 0.2 maxage=23, 0.1 maxage=46 \n",
        file=filename, append=TRUE)
-   cat("sMe ,",genconst(rep(0.0003,nSAU)),", var of Me\n",
+   cat("sMe ,",genconst(rep(0.005,nSAU)),", var of Me\n",
        file=filename, append=TRUE)
-   cat("AvRec ,245104.49443123,466856.350762581,260150.843272428,1040501.51466161,",
-       "838542.867453192,1764761.04011726,1514858.94140123,581059.118386339 , LnR0 \n",
+   cat("AvRec ,259139.774265476,461927.163575104,239640.765262055,1058386.47452758,",
+       "836450.262661839,1720636.75033048,1546066.27018382,583244.145493237 , LnR0 \n",
        file=filename, append=TRUE)
-   cat("sAvRec ,",genconst(rep(0.00001,nSAU)),", \n",file=filename, append=TRUE)
+   cat("sAvRec ,",genconst(rep(1e-05,nSAU)),", \n",file=filename, append=TRUE)
    cat("defsteep ,",genconst(rep(0.7,nSAU)),", Beverton-Holt steepness \n",
        file=filename, append=TRUE)
-   cat("sdefsteep ,",genconst(rep(0.0002,nSAU)),", \n",file=filename,
+   cat("sdefsteep ,",genconst(rep(0.0125,nSAU)),", \n",file=filename,
        append=TRUE)
    cat("L50C ,",genconst(rep(126.4222,nSAU)),", length at 50% emergent \n",
        file=filename, append=TRUE)
-   cat("sL50C ,",genconst(rep(5e-04,nSAU)),", \n",file=filename, append=TRUE)
+   cat("sL50C ,",genconst(rep(2,nSAU)),", \n",file=filename, append=TRUE)
    cat("deltaC ,",genconst(rep(10.0,nSAU)),", length at 95% emergent \n",
        file=filename, append=TRUE)
-   cat("sdeltaC ,",genconst(rep(1e-04,nSAU)),", \n",file=filename, append=TRUE)
+   cat("sdeltaC ,",genconst(rep(0.5,nSAU)),", \n",file=filename, append=TRUE)
    cat("MaxCEpar,0.374212895,0.237660281,0.45,0.475,0.45,0.45,0.375,0.3,",
-       "max cpue t-hr \n",file=filename, append=TRUE) # deprecated
+                "max cpue t-hr \n",file=filename, append=TRUE) # deprecated
    cat("sMaxCEvar,",genconst(rep(0.02,nSAU)),", \n",file=filename, append=TRUE)
    cat("selL50p ,",genconst(rep(0.0,nSAU)),", L50 of selectivity \n",
        file=filename, append=TRUE)
@@ -513,7 +513,7 @@ datafiletemplate <- function(indir,filename="saudata_test.csv") {
    cat("L50Mat,98.8992042,98.8992042,116.395209,116.7892518,122.9011777,",
        "112.2374631,121.1964692,105.8963211 ,  L50 for maturity b = -1/L50\n",
        file=filename, append=TRUE)
-   cat("sL50Mat,",genconst(rep(0.00015,nSAU)),", \n",file=filename, append=TRUE)
+   cat("sL50Mat,",genconst(rep(3,nSAU)),", \n",file=filename, append=TRUE)
    cat("lambda,",genconst(rep(0.75,nSAU)),", \n",file=filename, append=TRUE)
    cat("qest,4.7580120450086,2.24922282881994,5.17035161801573,1.63308027497998,",
        "1.27670203205689,0.777980219036715,0.609440955039425,1.45560892679734 , \n",
@@ -827,8 +827,6 @@ readpopdatafile <- function(indir,infile) {
   return(ans)
 } # end of readpopdatafile
 
-
-
 #' @title readsaudatafile generates the constants matrix from sau data
 #'
 #' @description readsaudatafile uses data described at the SAU level to make
@@ -1105,7 +1103,9 @@ rewritecontrolfile <- function(indir,zone1,controlfile) { # indir=rundir; zone1=
 
 
 
-#' Title
+#' @title rewritecompdasta recreates the size composition data file
+#'
+#' @description rewritecompdata recreates the size composition data file
 #'
 #' @param indir the directory into which the new file should be written. This
 #'     would usually be the same as rundir, the scenario directory

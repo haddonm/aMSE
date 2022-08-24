@@ -25,6 +25,7 @@ aszone calculates zone wide totals by summing the mature and
     zone totals through time by the initial zone wide B0 and ExB0. Finally,
     it calculates a zone-wide cpue by catch-weighting each of the SAU cpue
     values and then summing each set of SAU for each year and iteration.
+    appears to be redundant
 }
 \examples{
 print("wait on data")

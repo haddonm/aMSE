@@ -3,7 +3,7 @@
 #'
 #' @description asSAU takes the population based results in zoneDP and converts
 #'     them into a list based around SAU. saucpue is already calculated during
-#'     the application of the harvest strategy.
+#'     the application of the harvest strategy. Appears redundant
 #'
 #' @param projzone the population based results list zoneDP plus the saucpue
 #'     all from doprojection
@@ -43,6 +43,7 @@ asSAU <- function(projzone,sauindex,saunames,b0,exb0) {
 #'     zone totals through time by the initial zone wide B0 and ExB0. Finally,
 #'     it calculates a zone-wide cpue by catch-weighting each of the SAU cpue
 #'     values and then summing each set of SAU for each year and iteration.
+#'     appears to be redundant
 #'
 #' @param sauzone the output from the applyharvest strategy function, a large
 #'     list of arrays or results
@@ -83,7 +84,8 @@ aszone <- function(sauzone,zoneCP) { # sauzone=sauzoneDP; zoneCP=zoneCP; reps=ct
 #'     Nclass x projyrs matrix, a separate selectivity for each projection year,
 #'     which allows for changing the selectivity during the projection. The
 #'     projSelWt is a Nclass x projyrs x numpop array, required because each
-#'     population's weight-at-size relationship will be slihtly different.
+#'     population's weight-at-size relationship will be slightly different. Now
+#'     appears to be redundant.
 #'
 #' @param zoneC the constants object
 #' @param projC the projection object from zone1

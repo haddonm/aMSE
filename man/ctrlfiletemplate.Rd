@@ -4,7 +4,7 @@
 \alias{ctrlfiletemplate}
 \title{ctrlfiletemplate generates a template input control file}
 \usage{
-ctrlfiletemplate(indir, filename = "controlsau.csv", devrec = -1)
+ctrlfiletemplate(indir, filename = "controlEG.csv", devrec = -1)
 }
 \arguments{
 \item{indir}{directory in which to place the control.csv file}
@@ -25,27 +25,29 @@ invisibly the fill path and name of the control file. More
 }
 \description{
 ctrlfiletemplate generates a standardized control file
-    template. Generate this and then modify the contents to suit
-    the system you are attempting to simulate. Defaults to 100
-    replicates. There needs to be as many recdevs as there are conditioning
-    catches (in the template = 58 rows. If they are all set to -1,
-    the default, then they will have no effect and recdevs will be taken off
-    the stock-recruitment curve with random deviates defined by withsigR
-    found in the ctrl file. If devrec = 1.0 then the recdevs from 1980 to
-    2016 will be set to 1.0 which means there will be no random variation
-    and the system is ready to be conditioned on those recdevs to improve
-    the predicted CPUE during the historical conditioning period. If
-    devrec = 0.0, then the recdevs for 1980 - 2016 will be set to values
-    that have already conditioned the model and provides a reasonable fit to
-    the observed CPUE trends.
+    template, which is the equivalent to the Tasmanian base-case. It is used
+    in the documentation to illustrate how to run aMSE. Generate this and
+    then modify the contents to suit the system you are attempting to
+    simulate. Defaults to 100 replicates. There needs to be as many recdevs
+    as there are conditioning catches (in the template = 58 rows. If they are
+    all set to -1, the default, then they will have no effect and recdevs
+    will be taken off the stock-recruitment curve with random deviates
+    defined by withsigR found in the ctrl file. If devrec = 1.0 then the
+    recdevs from 1980 to 2016 will be set to 1.0 which means there will be no
+    random variation and the system is ready to be conditioned on those
+    recdevs to improve the predicted CPUE during the historical conditioning
+    period. If devrec = 0.0, then the recdevs for 1980 - 2016 will be set to
+    values that have already conditioned the model and provides a reasonable
+    fit to the observed CPUE trends.
 }
 \examples{
 \dontrun{
  yourdir <- tempdir()
- datafiletemplate(nSAU=8,yourdir,"saudata_test.csv")
- ctrlfiletemplate(yourdir,filename="testctrl.csv",devrec=-1)   #
- control <- readctrlfile(yourdir,"testctrl.csv")
- str(control,max.level=1)
+ datafiletemplate(yourdir,"saudataEG.csv")
+ compdatatemplate(rundir=yourdir,filen="lf_WZ90-20.csv")
+ ctrlfiletemplate(yourdir,filename="controlEG.csv",devrec=-1)   #
+ zone1 <- readctrlfile(yourdir,"controlEG.csv")
+ str(zone1,max.level=1)
 }
 }
 \seealso{

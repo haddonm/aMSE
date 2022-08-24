@@ -4,7 +4,7 @@
 \alias{datafiletemplate}
 \title{datafiletemplate generates a template input datafile akin to M15h75}
 \usage{
-datafiletemplate(indir, filename = "saudata_test.csv")
+datafiletemplate(indir, filename = "saudataEG.csv")
 }
 \arguments{
 \item{indir}{the directory into which to place the generated data file}

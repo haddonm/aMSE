@@ -22,7 +22,8 @@ calcprojsel is used to produce each projection years'
     Nclass x projyrs matrix, a separate selectivity for each projection year,
     which allows for changing the selectivity during the projection. The
     projSelWt is a Nclass x projyrs x numpop array, required because each
-    population's weight-at-size relationship will be slihtly different.
+    population's weight-at-size relationship will be slightly different. Now
+    appears to be redundant.
 }
 \examples{
  print("wait on new example data")

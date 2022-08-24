@@ -4,7 +4,7 @@
 \alias{confirmdir}
 \title{confirmdir checks to see if a directory exists and makes it if not}
 \usage{
-confirmdir(x, make = TRUE, verbose = TRUE)
+confirmdir(x, make = TRUE, verbose = TRUE, ask = TRUE)
 }
 \arguments{
 \item{x}{the directory to be checked and created if necessary}
@@ -13,6 +13,10 @@ confirmdir(x, make = TRUE, verbose = TRUE)
 default=TRUE}
 
 \item{verbose}{should responses be sent to the console? default=TRUE}
+
+\item{ask}{should confirmdir ask whether to create the directory or not?
+default = TRUE. Set to FALSE if running a script rather than working
+interactively.}
 }
 \value{
 nothing but it can create a directory

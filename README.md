@@ -45,6 +45,9 @@ examine its implications.
 
 # LATEST UPDATE
 
+-   2022-08-24 aMSE 0.0.16 Started to add depensation and other
+    refinements.
+
 -   2022-08-19 aMSE 0.0.15 Added do_comparison as a wrapper function for
     comparing scenarios.
 

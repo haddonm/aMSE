@@ -65,6 +65,8 @@ oneyearsauC conducts one year's dynamics in the simulation
 }
 \examples{
 print("Wait on new data")
+#  zoneCC=zoneC;inN=inN;popC=popC;year=year;Ncl=glob$Nclass;sauindex=sauindex
+#  movem=glob$move;sigmar=1e-08;r0=r0;b0=b0;exb0=exb0;rdev=rdev;sigce=1e-08
 }
 \seealso{
 {

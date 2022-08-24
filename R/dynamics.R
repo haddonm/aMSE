@@ -364,10 +364,10 @@ oneyearcat <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
 #'
 #' @examples
 #' print("Wait on new data")
+#' #  zoneCC=zoneC;inN=inN;popC=popC;year=year;Ncl=glob$Nclass;sauindex=sauindex
+#' #  movem=glob$move;sigmar=1e-08;r0=r0;b0=b0;exb0=exb0;rdev=rdev;sigce=1e-08
 oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,
                         movem,sigmar=1e-08,sigce=1e-08,r0,b0,exb0,rdev=-1) {
-#  zoneCC=zoneC;inN=inN;popC=popC;year=year;Ncl=glob$Nclass;sauindex=sauindex;
-#  movem=glob$move;sigmar=1e-08;r0=r0;b0=b0;exb0=exb0;rdev=rdev;sigce=1e-08
   npop <- length(popC)
   ans <- vector("list",npop)
   for (popn in 1:npop) {  # popn=1
@@ -476,6 +476,12 @@ oneyearD <- function(zoneC,zoneD,inHt,year,sigmar,Ncl,npop,movem) {
 #'     here. If negative values then a random epsilon is used, otherwise
 #'     epsilon is given the value of devR. default=-1, so by default fixed
 #'     recruitment deviates are off.
+#' @param depensate should depensation occur at low biomass levels? default=0,
+#'     which means no depensation. If one puts, say, 0.2, here then biomass
+#'     levels from 0.2B0 will lead to a linear decline in recruitment down to
+#'     zero rather than the B-H curve that normally occurs. any recruitment
+#'     deviates continue to be applied. Conditioning the model would need to be
+#'     done with depesation turned on in sizemod as well.
 #'
 #' @seealso{
 #'  \link{oneyearsauC}, \link{oneyearcat}, \link{dohistoricC}
@@ -493,14 +499,20 @@ oneyearD <- function(zoneC,zoneD,inHt,year,sigmar,Ncl,npop,movem) {
 #' insigmar <- 0.3
 #' oneyearrec(steep,R0,B0,Bsp,insigmar)
 #' }
-#' # steep=steep;R0=r0;B0=b0;Bsp=dyn["matureb",];sigR=sigmar;devR=rdev
-oneyearrec <- function(steep,R0,B0,Bsp,sigR,devR=-1) {
+#' # steep=steep;R0=r0;B0=b0;Bsp=matb;sigR=sigmar;devR=-1
+oneyearrec <- function(steep,R0,B0,Bsp,sigR,devR=-1,depensate=0) { #
   if (devR[1] > 0) {
     epsilon <- devR
   } else {
     epsilon <- exp(rnorm(length(Bsp),mean=0,sd=sigR) - (sigR * sigR)/2)
   }
-  rec <- ((4*steep*R0*Bsp)/((1-steep)*B0+(5*steep-1)*Bsp)) * epsilon
+  if ((depensate < 0)) { # not yet implemented
+    bcurr <- B0 * depensate
+    thres <- ((4*steep*R0*bcurr)/((1-steep)*B0+(5*steep-1)*bcurr))
+    rec <- ((Bsp/B0)/depensate) * thres * epsilon
+  } else {
+    rec <- ((4*steep*R0*Bsp)/((1-steep)*B0+(5*steep-1)*Bsp)) * epsilon
+  }
   return(rec)
 } # end of oneyearrec
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/inputfiles.R
 \name{rewritecompdata}
 \alias{rewritecompdata}
-\title{Title}
+\title{rewritecompdasta recreates the size composition data file}
 \usage{
 rewritecompdata(indir, zone1)
 }
@@ -20,7 +20,7 @@ nothing but it does write a file called 'lffilename.csv'
     into rundir, which will overwrite the same if already there.
 }
 \description{
-Title
+rewritecompdata recreates the size composition data file
 }
 \examples{
 \dontrun{

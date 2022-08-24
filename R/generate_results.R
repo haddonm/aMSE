@@ -490,6 +490,10 @@ plotproductivity <- function(rundir,product,glb) {
               "relationships between spawning biomass depletion and ",
               "harvest rate.")
   addplot(filen,rundir=rundir,category="Production",caption)
+  # add sauprod table to production tab
+  filen <- paste0("Production_by_sau.csv")
+  caption <- "Productivity properties: B0, Mnsy, MSY, Dmsy, Cemsy by sau."
+  addtable(sauprod,filen,rundir=rundir,category="Production",caption)
   return(invisible(sauprod))
 } # end of plotproductivity
 

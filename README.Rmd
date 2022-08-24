@@ -36,6 +36,8 @@ Of course, adding such a component increases the number of options that may need
 
 # LATEST UPDATE
 
+* 2022-08-24 aMSE 0.0.16 Started to add depensation and other refinements.
+
 * 2022-08-19 aMSE 0.0.15 Added do_comparison as a wrapper function for comparing scenarios.
 
 * 2022-08-05 aMSE 0.0.14 Added more functions to assist with comparing scenarios. 

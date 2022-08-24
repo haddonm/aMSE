@@ -24,7 +24,7 @@ a list of results based around SAU
 \description{
 asSAU takes the population based results in zoneDP and converts
     them into a list based around SAU. saucpue is already calculated during
-    the application of the harvest strategy.
+    the application of the harvest strategy. Appears redundant
 }
 \examples{
 print("wait on new data")

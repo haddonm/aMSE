@@ -445,6 +445,87 @@ plotphase <- function(dyn,answer,maxdepl=1.0,startyr=1992) {
 } # end of plotphase
 
 
+library(codeutils)
+library(hplot)
+
+#' # steep=steep;R0=R0;B0=B0;Bsp=820;sigR=insigmar;devR=-1;depensate=0.2
+oneyearrec <- function(steep,R0,B0,Bsp,sigR,devR=-1,depensate=0) { #
+  if (devR[1] > 0) {
+    epsilon <- devR
+  } else {
+    epsilon <- exp(rnorm(length(Bsp),mean=0,sd=sigR) - (sigR * sigR)/2)
+  }
+  if ((depensate > 0) & (Bsp/B0 < depensate)) {
+    bcurr <- B0 * depensate
+    thres <- ((4*steep*R0*bcurr)/((1-steep)*B0+(5*steep-1)*bcurr))
+    rec <- ((Bsp/B0)/depensate) * thres * epsilon
+  } else {
+    rec <- ((4*steep*R0*Bsp)/((1-steep)*B0+(5*steep-1)*Bsp)) * epsilon
+  }
+  return(rec)
+} # end of oneyearrec
+
+insigmar <- 1e-07
+steep <- 0.7
+R0 <- 1720637
+B0 <- 4152
+depen <- 0.2
+Bsp <- seq(20,4000,20)
+nB <- length(Bsp)
+recs <- numeric(nB); names(recs) <- Bsp
+for (i in 1:nB)
+  recs[i] <- oneyearrec2(steep,R0,B0,Bsp[i],insigmar,depensate=depen)
+
+
+
+plotprep(width=8, height=5,newdev=FALSE)
+parset()
+plot1(Bsp/B0,recs,defpar = FALSE,xlab="depletion",ylab="recruitment")
+rec1=recs
+for (i in 1:nB)
+  rec1[i] <- oneyearrec2(steep,R0,B0,Bsp[i],insigmar,depensate=0)
+lines(Bsp/B0,rec1,col=2)
+
+
+# compdatatemplate -----------------------------------------------------------
+
+library(aMSE)
+library(codeutils)
+library(makehtml)
+
+
+
+
+rundir <- "C:/Users/Malcolm/Dropbox/A_CodeUse/aMSEUse/scenarios/example/"
+
+compdatatemplate(rundir)
+
+
+
+sau=1; len=1
+
+cat(lens[len],",",saunames[sau],",",paste0(lfs[len,,sau],collapse=",")," \n")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

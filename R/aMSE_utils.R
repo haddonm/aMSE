@@ -210,6 +210,9 @@ checksizecompdata <- function(rundir,controlfile,verbose=TRUE) {
 #' @param make should the directory be created if it does not already exist?
 #'     default=TRUE
 #' @param verbose should responses be sent to the console? default=TRUE
+#' @param ask should confirmdir ask whether to create the directory or not?
+#'    default = TRUE. Set to FALSE if running a script rather than working
+#'    interactively.
 #'
 #' @return nothing but it can create a directory
 #' @export
@@ -217,14 +220,18 @@ checksizecompdata <- function(rundir,controlfile,verbose=TRUE) {
 #' @examples
 #' x <- tempdir()
 #' confirmdir(x)
-confirmdir <- function(x,make=TRUE,verbose=TRUE) {
+confirmdir <- function(x,make=TRUE,verbose=TRUE,ask=TRUE) {
   if (dir.exists(x)) {
     if (verbose) cat(x," already exists  \n")
   } else {
     if (verbose) cat(x," did not exist  \n")
     if (make) {
-      label <- paste0("Create directory: ",x," [Y, y, N, n]: ")
-      goahead <- readline(prompt=label)
+      if (ask) {
+        label <- paste0("Create directory: ",x," [Y, y, N, n]: ")
+        goahead <- readline(prompt=label)
+      } else {
+        goahead <- "Y"
+      }
       if (goahead %in% c("y","Y")) {
         dir.create(x, recursive = TRUE)
         if (verbose) cat(x," has been created  \n")
