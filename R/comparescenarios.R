@@ -598,11 +598,12 @@ cpueboxbysau <- function(rundir,cpue,glbc,scenes,filen="",startyr=0,maxval=0) {
   mtext(label,side=1,outer=TRUE,line=-0.3,cex=1.0)
   if (nchar(filen) > 0) {
     addplot(filen=filen2,rundir=rundir,category="cpue",caption)
-    filen <- unlist(strsplit(filen,".",fixed=TRUE))[1]
-    filen <- paste0(filen,".csv")
+    filen3 <- unlist(strsplit(filen,".",fixed=TRUE))[1]
+    filen3 <- paste0(filen3,".csv")
+    filen <- filenametopath(rundir,filen3)
     write.csv(cpuebox,file=filen)
     caption <- "Years to maximum median cpue by sau from boxplots."
-    addtable(cpuebox,filen,rundir=rundir,category="cpue",caption)
+    addtable(cpuebox,filen3,rundir=rundir,category="cpue",caption)
   }
   return(invisible(cpuebox))
 } # end of cpueboxbysau
@@ -712,12 +713,15 @@ cpueHSPM <- function(rundir,cpue,glbc,scenes,filen="",startyr=0) {
 do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE) {
   files2 <- files[pickfiles]
   nfile <- length(pickfiles)
-  ans <- vector(mode="list",length=nfile)
-  dyn <- vector(mode="list",length=nfile)
-  glbc <- vector(mode="list",length=nfile)
-  prods <- vector(mode="list",length=nfile)
-  scenes <- vector(mode="character",length=nfile)
-  scores <- vector(mode="list",length=nfile)
+  label <- vector(mode="character",length=nfile)
+  for (i in 1:nfile) label[i] <- unlist(strsplit(files[i],".",fixed=TRUE))[1]
+  ans <- makelist(label) # vector(mode="list",length=nfile)
+  dyn <- makelist(label) # vector(mode="list",length=nfile)
+  glbc <- makelist(label) # vector(mode="list",length=nfile)
+  prods <- makelist(label) # vector(mode="list",length=nfile)
+  scenes <- makelist(label) # vector(mode="character",length=nfile)
+  scores <- makelist(label) # vector(mode="list",length=nfile)
+  zone <- makelist(label)
   for (i in 1:nfile) { # i = 1
     filename <- paste0(outdir,files2[i])
     if (verbose)
@@ -730,6 +734,7 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE)
     prods[[i]] <- out$sauprod
     scenes[i] <- out$ctrl$runlabel
     scores[[i]] <- out$scores
+    zone[[i]] <- out$outzone
   }
   nscenes <- length(scenes)
   catch <- makelist(scenes)
@@ -770,6 +775,8 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE)
                   filen=paste0("Catch_div_MSY_",scenes[i],".png"),
                   label="Catch / MSY",hline=1,Q=90)
   }
+  plotzonedyn(rundir,scenes,zone,glbc[[1]],console=FALSE,q90=TRUE)
+
   makecompareoutput(rundir=rundir,glbc,scenes,postfixdir,openfile=TRUE,
                     verbose=FALSE)
 } # end of do_comparison
@@ -1045,6 +1052,100 @@ plotsceneproj <- function(rundir,inarr,glb,scene,filen="",label="",
     addplot(filen=filen,rundir=rundir,category="C_vs_MSY",caption)
   return(invisible(outmed))
 } # end of plotsceneproj
+
+
+
+#' @title plotzonedyn plots zonewide catch, mature biomass, harvestR and CPUE
+#'
+#' @description plotzonedyn generates plots of the zone-wide total catches, the
+#'     mature biomass, the harvest rate, and the CPUE across the years of
+#'     projection.
+#'
+#' @param rundir the directory in which all results are held for a scenario or
+#'     comparison of scenarios
+#' @param scenes the names of the different scenarios being compared
+#' @param zone a list of the out$outzone objects from each chosen scenario
+#' @param glb one of the global objects from out. They should all have the
+#'     same reps and years.
+#' @param console should the plot be sent to the console or saved for use in the
+#'     web-page output? default=TRUE, set to FALSE to save it
+#' @param q90 should the 90th quantiles be plotted? default=TRUE. If FALSE then
+#'     the 95th quantiles are used.
+#'
+#' @seealso {
+#'   \link{poptozone}, \link{plotZone}
+#' }
+#'
+#' @return nothing but it does generate a plot and saves it if console=FALSE
+#' @export
+#'
+#' @examples
+#' print("wait on data sets")
+plotzonedyn <- function(rundir,scenes,zone,glb,console=TRUE,q90=TRUE) {
+  doquantplot <- function(varq,varname,yrnames,scenes,q90) {
+    maxy <- getmax(varq)
+    nscen <- length(scenes)
+    plot(yrnames,varq[3,,1],type="l",lwd=2,col=1,xlab="",ylab=varname,
+         panel.first=grid(),ylim=c(0,maxy))
+    for (i in 1:nscen) {
+      lines(yrnames,varq[3,,i],lwd=2,col=i)
+      if (q90) {
+        lines(yrnames,varq[2,,i],lwd=1,col=i)
+        lines(yrnames,varq[4,,i],lwd=1,col=i)
+      } else {
+        lines(yrnames,varq[1,,i],lwd=1,col=i)
+        lines(yrnames,varq[5,,i],lwd=1,col=i)
+      }
+    }
+  } # end of doquantplot
+  nscen <- length(scenes)
+  reps <- glb$reps
+  hyrs <- glb$hyrs
+  pyrs <- glb$pyrs
+  yrs <- hyrs + pyrs
+  pyrnames <- glb$pyrnames
+  yrnames <- as.numeric(c(tail(glb$hyrnames,1),pyrnames))
+  varx <- array(0,dim=c((pyrs+1),reps,nscen),
+                dimnames=list(yrnames,1:reps,scenes))
+  qlab <- c("2.5%","5%","50%","95%","97.5%")
+  varq <- array(0,dim=c(5,(pyrs+1),nscen),
+                dimnames=list(qlab,yrnames,scenes))
+  filen=""
+  if (!console) {
+    filen <- filenametopath(rundir,"zonedynamics.png")
+    caption <- paste0("Outputs for each swcenario summarized across the whole ",
+                      "zone. Plots of Catch, MatureB, HarvestR, and deplsB.")
+  }
+  plotprep(width=8,height=6,newdev=FALSE,filename=filen,verbose=FALSE)
+  parset(plots=c(2,2),margin=c(0.3,0.4,0.05,0.05),outmargin=c(0,1,0,0),
+         byrow=FALSE)
+  for (i in 1:nscen) {
+    varx[,,i] <- zone[[i]]$catch[hyrs:yrs,]
+    varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975))
+  }
+  doquantplot(varq,varname="Catch (t)",yrnames,scenes,q90=TRUE)
+  for (i in 1:nscen) {
+    varx[,,i] <- zone[[i]]$matureB[hyrs:yrs,]
+    varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975))
+  }
+  doquantplot(varq,varname="Mature Biomass",yrnames,scenes,q90=TRUE)
+  for (i in 1:nscen) {
+    varx[,,i] <- zone[[i]]$harvestR[hyrs:yrs,]
+    varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975))
+  }
+  doquantplot(varq,varname="Harvest Rate",yrnames,scenes,q90=TRUE)
+  for (i in 1:nscen) {
+    varx[,,i] <- zone[[i]]$cpue[hyrs:yrs,]
+    varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975))
+  }
+  doquantplot(varq,varname="CPUE",yrnames,scenes,q90=TRUE)
+  label <- paste0(scenes,collapse=",")
+  legend("bottomright",legend=scenes,lwd=3,col=1:nscen,bty="n",cex=1.1)
+  mtext("Zone Wide Dynamics",side=2,line=-0.2,outer=TRUE,cex=1.1)
+  if (!console) {
+    addplot(filen=filen,rundir=rundir,category="zone",caption)
+  }
+} # end of plotzonedyn
 
 #' @title tabulatefinalHSscores saves and write the medina final scores to rundir
 #'

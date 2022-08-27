@@ -207,5 +207,14 @@ out <- list(tottime=tottime,projtime=projtime,starttime=starttime,glb=glb,
 
 
 
+getDBdir2 <- function() {
+  if (dir.exists("./../../../Dropbox")) {
+    prefixdir <- "./../../../Dropbox/"
+  } else {
+    prefixdir <- NULL
+    stop("No dropbox directory found \n")
+  }
+  return(prefixdir)
+}
 
-
+x <- getDBdir2()

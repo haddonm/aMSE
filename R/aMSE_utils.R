@@ -311,10 +311,12 @@ copyto <- function(prefixdir,fromdir, todir, filelist,
   if (length(pickD) == 0)
     stop(cat("No recognizable saudata file in ",tdir,"\n"))
   pick <- grep("datafile",indat)
-  indat[pick] <- paste0("datafile, ",newfilelist[pickD]," , name of saudata file,")
+  indat[pick] <- paste0("datafile, ",newfilelist[pickD],
+                        " , name of saudata file,")
   writeLines(indat,con=filename)
   if (verbose)
-    cat("Be sure to change the control, data, and run files appropriately. \n")
+    cat("\n\n")
+    cat("Be sure to change the control, data, and run files where necessary \n")
   return(tdir)
 } # end of copyto
 

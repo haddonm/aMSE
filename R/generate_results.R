@@ -271,7 +271,7 @@ fishery_plots <- function(rundir,glb,select,histyr,projLML, rge=50:90) {
 makeoutput <- function(out,rundir,postdir,controlfile,hsfile=NULL,
                        doproject=TRUE,openfile=TRUE,verbose=FALSE) {
   replist <- list(starttime=as.character(out$starttime),
-                  endtime=as.character(out$condtime))
+                  endtime=as.character(out$projtime))
   glb <- out$glb
   projy <- ifelse(doproject,glb$pyrs,0)
   runnotes <- c(out$ctrl$runlabel,paste0("RunTime = ",out$tottime),

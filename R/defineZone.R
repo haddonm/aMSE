@@ -228,9 +228,9 @@ dodepletion <- function(zoneC,zoneD,glob,depl,product,len=15) {
 #' @export
 #'
 #' @examples
-#' print("wait") #  zoneC=zoneC; zoneD=zoneD; glob=glb; lowlim=0.0;uplim=0.4;inc=0.01
-doproduction <- function(zoneC,zoneD,glob,
-                         lowlim=0.0,uplim=0.35,inc=0.005) {
+#' print("wait")
+#' #  zoneC=zoneC; zoneD=zoneD; glob=glb; lowlim=0.0;uplim=0.4;inc=0.01
+doproduction <- function(zoneC,zoneD,glob,lowlim=0.0,uplim=0.35,inc=0.005) {
   numpop <- glob$numpop
   Nclass <- glob$Nclass
  # hyrs <- glob$hyrs
@@ -250,7 +250,6 @@ doproduction <- function(zoneC,zoneD,glob,
   } # end of yr loop
   return(results)
 } # end of doproduction
-
 
 #' @title driftrec adjusts the recruitment allowing for larval drift
 #'
