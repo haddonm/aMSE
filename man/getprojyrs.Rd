@@ -37,5 +37,5 @@ getprojyrs is used when calculating the harvest strategy
     year eg 1992 in here, it needs to be an index.
 }
 \examples{
-print("wait on data sets")
+# print("getprojyrs(out$sauout$zonePsau$catch, hyrs=out$glb$hyrs, pyrs=out$glb$pyrs, startyr=out$glb$hyrs)")
 }
