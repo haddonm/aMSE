@@ -716,7 +716,7 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE)
   files2 <- files[pickfiles]
   nfile <- length(pickfiles)
   label <- vector(mode="character",length=nfile)
-  for (i in 1:nfile) label[i] <- unlist(strsplit(files[i],".",fixed=TRUE))[1]
+  for (i in 1:nfile) label[i] <- unlist(strsplit(files2[i],".",fixed=TRUE))[1]
   ans <- makelist(label) # vector(mode="list",length=nfile)
   dyn <- makelist(label) # vector(mode="list",length=nfile)
   glbc <- makelist(label) # vector(mode="list",length=nfile)
@@ -731,7 +731,7 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE)
     out <- NULL # so the function knows an 'out' exists
     load(filename)
     ans[[i]] <- out
-    dyn[[i]] <- out$sauout$zonePsau
+    dyn[[i]] <- out$sauout
     glbc[[i]] <- out$glb
     prods[[i]] <- out$sauprod
     scenes[i] <- out$ctrl$runlabel
