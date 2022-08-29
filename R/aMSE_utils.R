@@ -294,7 +294,7 @@ copyto <- function(prefixdir,fromdir, todir, filelist,
     present <- grep(fromdir,filelist[i])
     fileout <- filenametopath(tdir, filelist[i])
     if (length(present) > 0) {
-      newfile <- sub(fromdir,todir,filelist[i])
+      newfile <- sub(fromdir,todir,filelist[i]) # alter filenames
       fileout <- filenametopath(tdir, newfile)
     }
     file.copy(filen, fileout, overwrite = TRUE, copy.date = TRUE)

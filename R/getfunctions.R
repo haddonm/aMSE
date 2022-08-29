@@ -68,45 +68,6 @@ getdynamics <- function(zoneC,zoneDD,condC,glb,sau=1) {
   return(invisible(dyn))
 } # end of getdynamics
 
-#' @title getmaxCE identifies peak median CPUE during projections for each SAU
-#'
-#' @description getmaxCE is one of the HS performance statistics. Because it
-#'     uses the targetCE from the TasmanianHS it is obviously Tasmanian
-#'     specific.
-#'
-#' @param ceCI is the sauout$outCI$cpue object which contains the CI for the
-#'     replicate projections
-#' @param glb the globals object
-#' @param targetCE the target CE from the hsargs
-#'
-#' @return a matrix of nSAU x 5: 5p, 50p, 95p year, and difference between
-#'     the target and the maximum median value, all for each SAU
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#'   ceCI <- out$sauout$outCI$cpue
-#'   glb <- out$glb
-#'   targCE <- hsargs$maxtarg
-#'   getmaxCE(ceCI=ceCI,glb=glb,targetCE=targCE)
-#' }
-getmaxCE <- function(ceCI,glb,targetCE) {
-  nsau <- glb$nSAU
-  label <- names(ceCI)
-  yrs <- glb$pyrnames
-  columns <- c("5p","50p","95p","year","diff")
-  result <- matrix(0,nrow=nsau,ncol=5,dimnames=list(label,columns))
-  for (i in 1:nsau) { # i = 1
-    sauce <- ceCI[[label[i]]]
-    pick <- which.max(sauce["50%",])
-    result[i,] <- c(sauce[,pick],yrs[pick],sauce["50%",pick] - targetCE[i])
-  }
-  pyrs <- glb$pyrs
-  tail(pyrs,n=10)
-  return(result)
-} # end of getmaxCE
-
-
 #' @title getprojyrC returns cumulative catch from selected projection years
 #'
 #' @description getprojyrC is used to calculate the cumulative catch taken

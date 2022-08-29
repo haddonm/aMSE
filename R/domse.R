@@ -1,5 +1,4 @@
 #
-# outcond=outcond
 # postfixdir <- "EG"
 # rundir <- rundir
 # controlfile=controlfile
@@ -14,8 +13,8 @@
 # startyr=38
 # verbose=TRUE
 # ndiagprojs=4
-# savesauout=TRUE
 # makehcrout=makeouthcr
+# cpueHSPMs=getcpueHS
 # cutcatchN=56
 # matureL = c(70,200)
 # wtatL = c(80,200)
@@ -83,9 +82,7 @@
 #' @param ndiagprojs the number of replicate trajectories to plot in the
 #'     diagnostics tab to illustrate ndiagprojs trajectories to ensure that
 #'     such projections appear realistic; default=3
-#' @param savesauout should the sau dynamics object be saved as an sauoutD.RData
-#'     file? 100 replicates of 56 populations for 58 years of conditioning and
-#'     30 years of projection = about 5.7 Mb. default=FALSE.
+#' @param savesauout default=NULL, this has now be deprecated and no longer used
 #' @param cutcatchN to reduce the size of the final array of numbers-at-size
 #'     in the catch one can remove all the empty cells below a given size
 #'     class. In the default there are 105 2mm size classes and setting
@@ -115,11 +112,13 @@
 #' @examples
 #' print("wait on suitable data sets in data")
 do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
-                   sampleNaS,getdata,calcpopC,makeouthcr,cpueHSPMs=NULL,varyrs=7,startyr=42,
-                   verbose=FALSE,ndiagprojs=3,savesauout=FALSE,cutcatchN=56,
-                   matureL=c(70,200),wtatL=c(80,200),mincount=100,
+                   sampleNaS,getdata,calcpopC,makeouthcr,cpueHSPMs,varyrs=7,
+                   startyr=42,verbose=FALSE,ndiagprojs=3,savesauout=NULL,
+                   cutcatchN=56,matureL=c(70,200),wtatL=c(80,200),mincount=100,
                    includeNAS=FALSE,depensate=0) {
   # generate equilibrium zone -----------------------------------------------
+  if (!is.null(savesauout))
+    cat("savesauout is deprecated, omit it from your code \n")
   starttime <- (Sys.time())
   zone <- makeequilzone(rundir,controlfile,verbose=verbose)
   equiltime <- (Sys.time()); if (verbose) print(equiltime - starttime)
@@ -211,7 +210,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   ExB0 <- getvar(zoneC,"ExB0")
   sauout <- sauplots(zoneDP,NAS,glb,rundir,B0,ExB0,
                      startyr=startyr,addCI=TRUE,histCE=condC$histCE)
-  diagnosticsproj(sauout$zonePsau,glb,rundir,nrep=ndiagprojs)
+  diagnosticsproj(sauout,glb,rundir,nrep=ndiagprojs)
   outzone <- poptozone(zoneDP,NAS,glb,
                        B0=sum(getvar(zoneC,"B0")),
                        ExB0=sum(getvar(zoneC,"ExB0")))
@@ -223,12 +222,6 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   NAS$catchN <- NAS$catchN[(cutcatchN:glb$Nclass),,,]
   projtime <- Sys.time()
   tottime <- round((projtime - starttime),3)
-  if (savesauout) {
-    sauoutD <- sauout$zonePsau
-    sauoutD <- sauoutD[-c(11,10)]
-    save(sauoutD,file=paste0(rundir,"/sauoutD.RData"))
-    if (verbose) cat("saudatD.RData  saved in rundir  \n")
-  }
   # calculate HS performance statistics
   sum5 <- getprojyrC(catsau=zoneDP$catsau,glb=glb,period=5)
   sum10 <- getprojyrC(catsau=zoneDP$catsau,glb=glb)
@@ -241,7 +234,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   addtable(hcrout$refpts,"hcrout_refpts.csv",rundir,category="HSperf",
            caption="HCR reference points")
   scores <- finalscoreoutputs(rundir=rundir,cpueHSPMs=cpueHSPMs,
-                              cpue=sauoutD$cpue,catches=sauoutD$catch,
+                              cpue=sauout$cpue,catches=sauout$catch,
                               glb=glb,yearCE=condC$yearCE,
                               hsargs=hsargs)
   if (!includeNAS) NAS=NULL
