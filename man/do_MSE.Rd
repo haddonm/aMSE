@@ -15,12 +15,12 @@ do_MSE(
   getdata,
   calcpopC,
   makeouthcr,
-  cpueHSPMs = NULL,
+  cpueHSPMs,
   varyrs = 7,
   startyr = 42,
   verbose = FALSE,
   ndiagprojs = 3,
-  savesauout = FALSE,
+  savesauout = NULL,
   cutcatchN = 56,
   matureL = c(70, 200),
   wtatL = c(80, 200),
@@ -80,9 +80,7 @@ used in sauplots.}
 diagnostics tab to illustrate ndiagprojs trajectories to ensure that
 such projections appear realistic; default=3}
 
-\item{savesauout}{should the sau dynamics object be saved as an sauoutD.RData
-file? 100 replicates of 56 populations for 58 years of conditioning and
-30 years of projection = about 5.7 Mb. default=FALSE.}
+\item{savesauout}{default=NULL, this has now be deprecated and no longer used}
 
 \item{cutcatchN}{to reduce the size of the final array of numbers-at-size
 in the catch one can remove all the empty cells below a given size

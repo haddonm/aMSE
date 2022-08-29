@@ -553,7 +553,8 @@ cpueboxbysau <- function(rundir,cpue,glbc,scenes,filen="",startyr=0,maxval=0) {
   nsau <- glbc[[1]]$nSAU
   saunames <- glbc[[1]]$saunames
   columns <- c("sau","stat",scenes)
-  cpuebox <- as.data.frame(matrix(0,nrow=(nsau*5),ncol=5,
+  numcol=length(columns)
+  cpuebox <- as.data.frame(matrix(0,nrow=(nsau*5),ncol=numcol,
                                   dimnames=list(1:(nsau*5),columns)))
   label <- NULL
   for (sau in 1:nsau) label <- c(label,rep(saunames[sau],5))
@@ -590,7 +591,7 @@ cpueboxbysau <- function(rundir,cpue,glbc,scenes,filen="",startyr=0,maxval=0) {
     }
     tmp <- boxplot(boxdat,ylim=c(0,maxy),yaxs="i",ylab=saunames[sau])
     abline(h=tmp$stats[3,1],lwd=2,lty=2,col=2)
-    cpuebox[start:finish,3:5] <- tmp$stats
+    cpuebox[start:finish,3:numcol] <- tmp$stats
     start <- finish + 1
     finish <- finish + 5
   }
@@ -711,6 +712,7 @@ cpueHSPM <- function(rundir,cpue,glbc,scenes,filen="",startyr=0) {
 #'   do_comparison(rundir,postfixdir,outdir,files,pickfiles=c(1,2,3))
 #' }
 do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE) {
+# rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(1,2,3,4)
   files2 <- files[pickfiles]
   nfile <- length(pickfiles)
   label <- vector(mode="character",length=nfile)
@@ -719,7 +721,7 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE)
   dyn <- makelist(label) # vector(mode="list",length=nfile)
   glbc <- makelist(label) # vector(mode="list",length=nfile)
   prods <- makelist(label) # vector(mode="list",length=nfile)
-  scenes <- makelist(label) # vector(mode="character",length=nfile)
+  scenes <- vector(mode="character",length=nfile)
   scores <- makelist(label) # vector(mode="list",length=nfile)
   zone <- makelist(label)
   for (i in 1:nfile) { # i = 1
