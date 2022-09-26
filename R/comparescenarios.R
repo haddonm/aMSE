@@ -777,12 +777,81 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE)
                   filen=paste0("Catch_div_MSY_",scenes[i],".png"),
                   label="Catch / MSY",hline=1,Q=90)
   }
-  plotzonedyn(rundir,scenes,zone,glbc[[1]],console=FALSE,q90=TRUE)
+  plotzonedyn(rundir,scenes,zone,glbc[[1]],console=FALSE,q90=TRUE,polys=TRUE,
+              intens=127)
 
   makecompareoutput(rundir=rundir,glbc,scenes,postfixdir,openfile=TRUE,
                     verbose=FALSE)
   return(invisible(list(scenes=scenes,ans=ans)))
 } # end of do_comparison
+
+#' @title doquantplot generates a plot of multiple quantile values
+#'
+#' @description doquantplot is used when trying to present a summary of multiple
+#'     scenarios applied across a sequence of years (for example in the
+#'     projection years of an MSE). It assumes that for each scenario quantiles
+#'     have been calculated for each year so that the input array if 5 x nyrs x
+#'     nscenes, where nyrs is the number of years and nscenes is the number of
+#'     scenarios. Five quantiles are assumed with values
+#'     probs=c(0.025, 0.05, 0.5, 0.95 0.975), and the option exists of plotting
+#'     either the 90th (0.05 and 0.95) or the 95th (0.025, 0.975). If the input
+#'     quantiles have different values then the 'q90' argument,if TRUE, will
+#'     reference the 2nd and 4th row and the 1st and 5th if FALSE. If polys is
+#'     TRUE then filled transparent polygons will be plotted, with colours in
+#'     the same sequence as the scenarios, alternatively, if polys=FALSE, then
+#'     lines will be plotted instead. This function is currently only used by
+#'     plotzonedyn
+#'
+#' @param varq an array of quantiles with dimensions the 5 quantiles of the
+#'     variable in question (2.5, 5, 50, 95 97.5), by years, the number of
+#'     years for which quantiles are available
+#' @param varname The names of the variable being summarized, used as the
+#'     y-label on the plot
+#' @param yrnames the numeric values of the years to be plotted. Used as the
+#'     x-axis as well as the x-axis labels
+#' @param scenes the names given to the different scenarios
+#' @param q90 should the 90th or 95th quantiles be plotted, TRUE = 90th
+#' @param polys should transparent polygons be plotted = TRUE, or lines = FALSE
+#' @param intens if polys=TRUE then intens signifies the intensity of colour on
+#'     a scale of 0 - 255. 127 is about 50 percent dense.
+#'
+#' @seealso {
+#'    \link{plotzonedyn}, \link{RGB}
+#' }
+#'
+#' @return nothing but it does add polygons or lines to a plot
+#' @export
+#'
+#' @examples
+#' print("wait on datasets")
+doquantplot <- function(varq,varname,yrnames,scenes,q90,polys,intens=127) {
+  maxy <- getmax(varq)
+  nscen <- length(scenes)
+  plot(yrnames,varq[3,,1],type="l",lwd=2,col=0,xlab="",ylab=varname,
+       panel.first=grid(),ylim=c(0,maxy))
+  if (polys) {
+    for (i in 1:nscen) {
+      if (q90) {
+        poldat <- makepolygon(varq[2,,i],varq[4,,i],yrnames)
+        polygon(poldat,col=RGB(i,alpha=intens))
+      } else {
+        poldat <- makepolygon(varq[1,,i],varq[5,,i],yrnames)
+        polygon(poldat,col=RGB(i,alpha=intens))
+      }
+    }
+  } else {
+    for (i in 1:nscen) {
+      lines(yrnames,varq[3,,i],lwd=2,col=i)
+      if (q90) {
+        lines(yrnames,varq[2,,i],lwd=1,col=i)
+        lines(yrnames,varq[4,,i],lwd=1,col=i)
+      } else {
+        lines(yrnames,varq[1,,i],lwd=1,col=i)
+        lines(yrnames,varq[5,,i],lwd=1,col=i)
+      }
+    }
+  } # end of polys if
+} # end of doquantplot
 
 #' @title makecompareoutput generates HTML files when comnparing scenarios
 #'
@@ -1056,8 +1125,6 @@ plotsceneproj <- function(rundir,inarr,glb,scene,filen="",label="",
   return(invisible(outmed))
 } # end of plotsceneproj
 
-
-
 #' @title plotzonedyn plots zonewide catch, mature biomass, harvestR and CPUE
 #'
 #' @description plotzonedyn generates plots of the zone-wide total catches, the
@@ -1074,6 +1141,9 @@ plotsceneproj <- function(rundir,inarr,glb,scene,filen="",label="",
 #'     web-page output? default=TRUE, set to FALSE to save it
 #' @param q90 should the 90th quantiles be plotted? default=TRUE. If FALSE then
 #'     the 95th quantiles are used.
+#' @param polys should transparent polygons be plotted = TRUE, or lines = FALSE
+#' @param intens if polys=TRUE then intens signifies the intensity of colour on
+#'     a scale of 0 - 255. 127 is about 50 percent dense.
 #'
 #' @seealso {
 #'   \link{poptozone}, \link{plotZone}
@@ -1084,23 +1154,8 @@ plotsceneproj <- function(rundir,inarr,glb,scene,filen="",label="",
 #'
 #' @examples
 #' print("wait on data sets")
-plotzonedyn <- function(rundir,scenes,zone,glb,console=TRUE,q90=TRUE) {
-  doquantplot <- function(varq,varname,yrnames,scenes,q90) {
-    maxy <- getmax(varq)
-    nscen <- length(scenes)
-    plot(yrnames,varq[3,,1],type="l",lwd=2,col=1,xlab="",ylab=varname,
-         panel.first=grid(),ylim=c(0,maxy))
-    for (i in 1:nscen) {
-      lines(yrnames,varq[3,,i],lwd=2,col=i)
-      if (q90) {
-        lines(yrnames,varq[2,,i],lwd=1,col=i)
-        lines(yrnames,varq[4,,i],lwd=1,col=i)
-      } else {
-        lines(yrnames,varq[1,,i],lwd=1,col=i)
-        lines(yrnames,varq[5,,i],lwd=1,col=i)
-      }
-    }
-  } # end of doquantplot
+plotzonedyn <- function(rundir,scenes,zone,glb,console=TRUE,
+                        q90=TRUE,polys=TRUE,intens=127) {
   nscen <- length(scenes)
   reps <- glb$reps
   hyrs <- glb$hyrs
@@ -1116,7 +1171,7 @@ plotzonedyn <- function(rundir,scenes,zone,glb,console=TRUE,q90=TRUE) {
   filen=""
   if (!console) {
     filen <- filenametopath(rundir,"zonedynamics.png")
-    caption <- paste0("Outputs for each swcenario summarized across the whole ",
+    caption <- paste0("Outputs for each scenario summarized across the whole ",
                       "zone. Plots of Catch, MatureB, HarvestR, and deplsB.")
   }
   plotprep(width=8,height=6,newdev=FALSE,filename=filen,verbose=FALSE)
@@ -1126,22 +1181,26 @@ plotzonedyn <- function(rundir,scenes,zone,glb,console=TRUE,q90=TRUE) {
     varx[,,i] <- zone[[i]]$catch[hyrs:yrs,]
     varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975))
   }
-  doquantplot(varq,varname="Catch (t)",yrnames,scenes,q90=TRUE)
+  doquantplot(varq,varname="Catch (t)",yrnames,scenes,q90=q90,polys=polys,
+              intens=intens)
   for (i in 1:nscen) {
     varx[,,i] <- zone[[i]]$matureB[hyrs:yrs,]
     varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975))
   }
-  doquantplot(varq,varname="Mature Biomass",yrnames,scenes,q90=TRUE)
+  doquantplot(varq,varname="Mature Biomass",yrnames,scenes,q90=q90,polys=polys,
+              intens=intens)
   for (i in 1:nscen) {
     varx[,,i] <- zone[[i]]$harvestR[hyrs:yrs,]
     varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975))
   }
-  doquantplot(varq,varname="Harvest Rate",yrnames,scenes,q90=TRUE)
+  doquantplot(varq,varname="Harvest Rate",yrnames,scenes,q90=q90,polys=polys,
+              intens=intens)
   for (i in 1:nscen) {
     varx[,,i] <- zone[[i]]$cpue[hyrs:yrs,]
     varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975))
   }
-  doquantplot(varq,varname="CPUE",yrnames,scenes,q90=TRUE)
+  doquantplot(varq,varname="CPUE",yrnames,scenes,q90=q90,polys=polys,
+              intens=intens)
   label <- paste0(scenes,collapse=",")
   legend("bottomright",legend=scenes,lwd=3,col=1:nscen,bty="n",cex=1.1)
   mtext("Zone Wide Dynamics",side=2,line=-0.2,outer=TRUE,cex=1.1)

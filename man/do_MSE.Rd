@@ -20,7 +20,6 @@ do_MSE(
   startyr = 42,
   verbose = FALSE,
   ndiagprojs = 3,
-  savesauout = NULL,
   cutcatchN = 56,
   matureL = c(70, 200),
   wtatL = c(80, 200),
@@ -79,8 +78,6 @@ used in sauplots.}
 \item{ndiagprojs}{the number of replicate trajectories to plot in the
 diagnostics tab to illustrate ndiagprojs trajectories to ensure that
 such projections appear realistic; default=3}
-
-\item{savesauout}{default=NULL, this has now be deprecated and no longer used}
 
 \item{cutcatchN}{to reduce the size of the final array of numbers-at-size
 in the catch one can remove all the empty cells below a given size

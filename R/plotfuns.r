@@ -293,6 +293,68 @@ dosauplot <- function(ylabel,postrep,glb,startyr,addCI=FALSE,
   return(invisible(sauCI))
 } # end of dosauplot
 
+#' @title finalcondyeardepletion plots and tabulates final depletion after conditioning
+#'
+#' @description finalcondyeardepletion generates histograms and tabulations of
+#'     either the spawning biomass or exploitable biomass depletion levels in the
+#'     final year of conditioning. This includes the varyrs of recruitment
+#'     variation prior to projections. It plots a histogram for each sau and
+#'     generates a table of quantiles at probs of 0, 0.05, 0.5, 0.95, and 1.0.
+#'
+#' @param rundir the scenario's directory
+#' @param sauzone the output from zonetosau, found in sauplots. This is
+#'     the projeciton results summarized into their respective sau rather than
+#'     the individual populations
+#' @param glb the globals object
+#' @param deplvar which depletion variable to use, either 'sB' or 'eB' are the
+#'     only options. Any other input will use 'sB'
+#' @param console should the plot go to the console or be saved into rundir?
+#'     default=TRUE
+#'
+#' @seealso{
+#'    \link{zonetosau}, \link{sauplots}
+#' }
+#'
+#' @return invisibly returns the matrix of quantiles for each sau
+#' @export
+#'
+#' @examples
+#' print("wait on data sets")
+finalcondyeardepletion <- function(rundir,sauzone,glb,deplvar="sB",console=TRUE) {
+  nsau <- glb$nSAU
+  hyrs <- glb$hyrs
+  saunames <- glb$saunames
+  if (!(deplvar %in% c("sB","eB"))) deplvar <- "sB"
+  depl <- switch(deplvar,"sB" = sauzone$deplsB,
+                 "eB" = sauzone$depleB)
+  deplquant <- matrix(0,nrow=nsau,ncol=5,
+                      dimnames=list(saunames,c("0%","5%","50%","95%","100%")))
+  filen <- ""
+  if (!console) {
+    nfile <- paste0("finalcondyear_",deplvar,"_depletion.png")
+    filen <- filenametopath(rundir,nfile)
+    caption <- "Histograms of the depletion in the final year of conditioning."
+  }
+  plotprep(width=8,height=9,newdev=TRUE,filename=filen,cex=0.9,verbose=FALSE)
+  parset(plots=c(4,2),byrow=FALSE,margin=c(0.3,0.4,0.05,0.05),
+         outmargin=c(1,1,0,0))
+  for (i in 1:nsau) {
+    deplquant[i,] <- quantile(depl[hyrs,i,],probs=c(0,0.05,0.5,0.95,1))
+    hist(depl[hyrs,i,],main="",xlab="",ylab=saunames[i])
+    abline(v=deplquant[i,3],lwd=2,col=2)
+  }
+  label <- paste0("Final Conditioning Year ",deplvar," Depletion")
+  mtext(label,side=1,outer=TRUE,cex=1.1,line=-0.2)
+  mtext("Frequency",side=2,outer=TRUE,cex=1.1,line=-0.2)
+  if (!console) {
+    addplot(filen,rundir=rundir,category="condition",caption)
+    tabname <- paste0("finalcondyear_",deplvar,"_depletion.csv")
+    addtable(round(deplquant,4),tabname,rundir,category="condition",caption=
+               "Quantiles on depletion after conditioning on historical catches.")
+  }
+  return(invisible(deplquant))
+} # end of finalcondyeardepletion
+
 #' @title historicalplots a wrapper function to call plots of fishery plots
 #'
 #' @description historicalplots is a wrapper used by do_MSE and do_condition,
@@ -1061,6 +1123,8 @@ sauplots <- function(zoneDP,NAS,glb,rundir,B0,ExB0,startyr,addCI=TRUE,
   # startyr=48; addCI=TRUE;histCE=condC$histCE; tabcat="projSAU"
   zonePsau <- zonetosau(zoneDP,NAS,glb,B0,ExB0)
   label <-  c("cpue","catch","acatch","matureB","exploitB","recruit","harvestR")
+  finalcondyeardepletion(rundir,sauzone=zonePsau,glb,deplvar="sB",console=FALSE)
+  finalcondyeardepletion(rundir,sauzone=zonePsau,glb,deplvar="eB",console=FALSE)
 #  out <- vector("list",length(label))
 #  names(out) <- label
   #CPUE

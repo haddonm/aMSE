@@ -1,14 +1,14 @@
 
 #' @importFrom grDevices palette dev.off
 #' @importFrom graphics grid hist lines mtext par plot points title
-#' @importFrom graphics legend abline text layout boxplot
+#' @importFrom graphics legend abline text layout boxplot polygon
 #' @importFrom stats dnorm pnorm rlnorm rnorm quantile sd lm coef median
 #' @importFrom stats loess optim
 #' @importFrom utils object.size browseURL packageDescription read.csv
 #' @importFrom utils write.table write.csv head tail winDialog
 #' @importFrom codeutils getmax getmin removeEmpty splitDate which.closest
-#' @importFrom codeutils digitsbyrow outfit %ni% quants
-#' @importFrom hplot parset plotprep pickbound
+#' @importFrom codeutils digitsbyrow outfit %ni% quants makelist
+#' @importFrom hplot parset plotprep pickbound RGB makepolygon
 #' @importFrom makehtml addplot addtable dirExists filenametopath
 #' @importFrom makehtml getextension htmltable logfilename make_html pathend
 #' @importFrom makehtml pathtype setuphtml write_css write_head

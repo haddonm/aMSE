@@ -361,6 +361,71 @@ numbersatsizeSAU <- function(rundir, glb, zoneC, Nt, sau, ssc=5, yr=1,
 
 
 
+getsaucatchN <- function(catchN,glb,sau,year,ss,bysau=TRUE) {
+#  catchN=catchN; glb=glb; sau=6; year=48; ss=1000
+  reps <- glb$reps
+  indexsau <- which(glb$sauindex == sau)
+  numC <- catchN[,year,indexsau,]
+  pickR <- trunc(runif(1,min=1,max=reps))
+  nC <- rowSums(numC[,,pickR])
+  nS <- round(ss*nC/sum(nC))
+  actualss <- sum(nS)
+  bootdat <- numeric(actualss)
+  pickP <- which(nS > 0)
+  datboot <- nS[pickP]
+  sizes <- as.numeric(names(datboot))
+  index <- 1
+  for (i in 1:length(datboot)) { # i=1
+    reps <- datboot[i]
+    addat <- rep(sizes[i],reps)
+    bootdat[index:(index+reps - 1)] <- addat
+    index <- index+reps
+  }
+  ans <- sample(bootdat,size=actualss,replace=TRUE)
+  return(ans)
+} # end of getsaucatchN
+
+
+samp <- getsaucatchN(catchN,glb,sau=6,year=47,ss=500)
+
+
+sizecomp <- out$condC$compdat$lfs
+lfs <- preparesizecomp(sizecomp[,,6],mincount = 120)
+plfs <- prop.table(lfs,2)
+sizes <- as.numeric(rownames(plfs))
+
+
+
+
+plotprep(width=9, height=5,newdev=FALSE)
+parset()
+plot1(sizes,plfs[,13],lwd=2)
+for (i in 1:4) {
+  samp <- getsaucatchN(catchN,glb,sau=6,year=47,ss=500)
+  sampt <- table(samp)
+  ssizes <- as.numeric(names(sampt))
+  counts <- as.numeric(sampt)
+  props <- counts/sum(counts)
+  lines(ssizes,props,lwd=2,col=(i+1))
+}
+
+
+
+bootdat <- numeric(tot[yr])
+dat <- sizecomp[,yr]
+pickC <- which(dat > 0)
+index <- 1
+for (i in 1:length(pickC)) { # i=1
+  reps <- dat[pickC[i]]
+  addat <- rep(sizes[pickC[i]],reps)
+  bootdat[index:(index+reps - 1)] <- addat
+  index <- index+reps
+}
+
+
+
+
+
 
 # Characterize APPs or Populations---------------------------------------------
 # uses out$zoneCP and out$zoneDD
@@ -508,6 +573,18 @@ cat(lens[len],",",saunames[sau],",",paste0(lfs[len,,sau],collapse=",")," \n")
 
 
 
+plotprep(width=8,height=6,newdev=FALSE,filename=filen,verbose=FALSE)
+parset(plots=c(1,1),margin=c(0.3,0.4,0.05,0.05),outmargin=c(0,1,0,0),
+       byrow=FALSE)
+maxy <- getmax(varq)
+nscen <- length(scenes)
+plot(yrnames,varq[3,,1],type="l",lwd=2,col=0,xlab="",ylab=varname,
+     panel.first=grid(),ylim=c(0,maxy))
+
+polygon(poldat4,col=RGB(8,alpha=255))
+
+
+colname <- c("black","red","green3","blue","cyan","magenta","yellow","gray")
 
 
 
@@ -516,9 +593,23 @@ cat(lens[len],",",saunames[sau],",",paste0(lfs[len,,sau],collapse=",")," \n")
 
 
 
+rundir=rundir
+scenes=scenes
+zone=zone
+glb=glbc[[1]]
+console=TRUE
+q90=TRUE
+
+
+plotzonedyn(rundir,scenes,zone,glb,console=TRUE,q90=TRUE,polys=TRUE,intens=150)
 
 
 
+
+
+
+x1 <- finalcondyeardepletion(rundir,ans[[1]]$sauout,ans[[1]]$glb,deplvar="eB",console=TRUE)
+x1
 
 
 

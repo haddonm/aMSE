@@ -1,5 +1,5 @@
 #
-# postfixdir <- "EG"
+# postfixdir <- "BCmult15"
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
@@ -82,7 +82,6 @@
 #' @param ndiagprojs the number of replicate trajectories to plot in the
 #'     diagnostics tab to illustrate ndiagprojs trajectories to ensure that
 #'     such projections appear realistic; default=3
-#' @param savesauout default=NULL, this has now be deprecated and no longer used
 #' @param cutcatchN to reduce the size of the final array of numbers-at-size
 #'     in the catch one can remove all the empty cells below a given size
 #'     class. In the default there are 105 2mm size classes and setting
@@ -113,12 +112,10 @@
 #' print("wait on suitable data sets in data")
 do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                    sampleNaS,getdata,calcpopC,makeouthcr,cpueHSPMs,varyrs=7,
-                   startyr=42,verbose=FALSE,ndiagprojs=3,savesauout=NULL,
+                   startyr=42,verbose=FALSE,ndiagprojs=3,
                    cutcatchN=56,matureL=c(70,200),wtatL=c(80,200),mincount=100,
                    includeNAS=FALSE,depensate=0) {
   # generate equilibrium zone -----------------------------------------------
-  if (!is.null(savesauout))
-    cat("savesauout is deprecated, omit it from your code \n")
   starttime <- (Sys.time())
   zone <- makeequilzone(rundir,controlfile,verbose=verbose)
   equiltime <- (Sys.time()); if (verbose) print(equiltime - starttime)

@@ -50,11 +50,16 @@ prepareprojection is a high level function that restructures
     this by converting the arrays of year x pop, to year x pop x replicate.
     It then uses the conditioned data in zoneDep to predict the first
     aspirational catches for the projections and conducts the initial
-    replicate, thus starting the application of the HS.
-    Finally, it adds recruitment variation
-    to each of the replicates and keeps the last year of each iteration of
-    the addrecvar function as the start of each replicate projection, with
-    zeros in the catch, cpue, and cesau arrays
+    replicate, thus starting the application of the HS. Finally, it adds
+    recruitment variation to each of the replicates and keeps the last year
+    of each iteration of the addrecvar function as the start of each
+    replicate projection, with zeros in the catch, cpue, and cesau arrays.
+    If the repeatable projections are wanted either set _randseedP_ = 0,
+    whereupon the pseudorandom numbers will proceed from those started using
+    the _randomseed_ set in teh control file. Alternatively set a new seed
+    into _randseedP_ (perhaps use _getseed()_), or set it to NA, which means
+    it will merely run _set.seed()_, which will use the system time as a
+    starting seed (hence each scenario run will differ).
 }
 \examples{
 print("wait on data files")

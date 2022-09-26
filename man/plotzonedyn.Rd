@@ -4,7 +4,16 @@
 \alias{plotzonedyn}
 \title{plotzonedyn plots zonewide catch, mature biomass, harvestR and CPUE}
 \usage{
-plotzonedyn(rundir, scenes, zone, glb, console = TRUE, q90 = TRUE)
+plotzonedyn(
+  rundir,
+  scenes,
+  zone,
+  glb,
+  console = TRUE,
+  q90 = TRUE,
+  polys = TRUE,
+  intens = 127
+)
 }
 \arguments{
 \item{rundir}{the directory in which all results are held for a scenario or
@@ -22,6 +31,11 @@ web-page output? default=TRUE, set to FALSE to save it}
 
 \item{q90}{should the 90th quantiles be plotted? default=TRUE. If FALSE then
 the 95th quantiles are used.}
+
+\item{polys}{should transparent polygons be plotted = TRUE, or lines = FALSE}
+
+\item{intens}{if polys=TRUE then intens signifies the intensity of colour on
+a scale of 0 - 255. 127 is about 50 percent dense.}
 }
 \value{
 nothing but it does generate a plot and saves it if console=FALSE
