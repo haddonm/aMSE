@@ -1,3 +1,5 @@
+# x <- hutils::describefunctions("C:/Users/User/Dropbox/A_code/aMSE/R/","aMSE_utils.R")
+
 
 #' @title putNA can add NAs to the start and end of a vector
 #'
@@ -23,8 +25,6 @@ putNA <- function(x,pre,post) { # x=med14; pre=0; post=5
   if (post > 0) x <- c(x,rep(NA,post))
   return(x)
 } # end of addNA
-
-# x <- hutils::describefunctions("C:/Users/User/Dropbox/A_code/aMSE/R/","aMSE_utils.R")
 
 #' @title addpops adds the populations from a single replicate together
 #'

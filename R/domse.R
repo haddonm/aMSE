@@ -1,5 +1,5 @@
 #
-# postfixdir <- "BCmult15"
+# postfixdir <- "BCwid3"
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
@@ -211,8 +211,8 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   outzone <- poptozone(zoneDP,NAS,glb,
                        B0=sum(getvar(zoneC,"B0")),
                        ExB0=sum(getvar(zoneC,"ExB0")))
-  plotZone(outzone,rundir,glb,startyr=startyr,CIprobs=c(0.05,0.5,0.95),
-           addfile=TRUE)
+  zonesummary <- plotZone(outzone,rundir,glb,startyr=startyr,
+                          CIprobs=c(0.05,0.5,0.95),addfile=TRUE)
   fishery_plots(rundir=rundir,glb=glb,select=zoneCP[[1]]$Select,
                 histyr=condC$histyr,projLML=projC$projLML)
   historicalplots(rundir=rundir,condC=condC,glb=glb)
@@ -240,7 +240,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
               NAS=NAS,projC=projC,condC=condC,sauout=sauout,outzone=outzone,
               hcrout=hcrout,production=production,condout=condout,
               HSstats=HSstats,saudat=saudat,constants=constants,hsargs=hsargs,
-              sauprod=sauprod,scores=scores)
+              sauprod=sauprod,scores=scores,zonesummary=zonesummary)
   return(out)
 } # end of do_MSE
 

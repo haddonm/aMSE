@@ -29,7 +29,8 @@ default = c(0.05,0.5,0.95)}
 the console = FALSE. Default = TRUE}
 }
 \value{
-nothing but it adds a plot to the zonescale tab in the rundir
+the median and 90th quantiles (invisibly) and it adds a plot to the
+    zonescale tab in the rundir
 }
 \description{
 plotZone plots out the projected TAC for all replicates. The
@@ -37,5 +38,6 @@ plotZone plots out the projected TAC for all replicates. The
 }
 \examples{
 print("wait on suitable datasets")
-# inzone=outzone;rundir=rundir;glb=glb;CIprobs=c(0.05,0.5,0.95);addfile=TRUE; startyr=40
+# inzone=outzone;rundir=rundir;glb=glb;CIprobs=c(0.05,0.5,0.95);addfile=TRUE;
+# startyr=startyr; addfile=TRUE
 }

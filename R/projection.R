@@ -283,9 +283,9 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
 #'
 #' @examples
 #' print("wait on data sets, example soon")
-#' # rundir=rundir;cpueHSPMs=getcpueHS;cpue=out$sauout$zonePsau$cpue;
-#' # catches=out$sauout$zonePsau$catches;glb=out$glb;yearCE=out$condC$yearCE
-#' # hsargs=out$hsargs
+#' # rundir=rundir;cpueHSPMs=cpueHSPMs;cpue=sauout$cpue;
+#' # catches=sauout$catches;glb=glb;yearCE=condC$yearCE
+#' # hsargs=hsargs
 finalscoreoutputs <- function(rundir,cpueHSPMs,cpue,catches,glb,yearCE,hsargs,
                               verbose=TRUE) {
   if (!is.null(cpueHSPMs)) {

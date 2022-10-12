@@ -502,6 +502,7 @@ onezoneplot <- function(invar,rundir,glb,CIprobs,varname,startyr,addfile=TRUE) {
   lines(yrnames[pickyr],CI[2,pickyr],lwd=2,col=4)
   caption <- paste0("Projected ",varname," across all replicates.")
   if (addfile) addplot(filen,rundir=rundir,category="zonescale",caption)
+  return(invisible(CI))
 } # end of onezoneplot
 
 
@@ -980,27 +981,43 @@ plotsizecomp <- function(rundir,incomp,SAU="",lml=NULL,catchN=NULL,start=NA,
 #' @param addfile should the plots be added to the rundir =TRUE or only sent to
 #'     the console = FALSE. Default = TRUE
 #'
-#' @return nothing but it adds a plot to the zonescale tab in the rundir
+#' @return the median and 90th quantiles (invisibly) and it adds a plot to the
+#'     zonescale tab in the rundir
 #' @export
 #'
 #' @examples
 #' print("wait on suitable datasets")
-#' # inzone=outzone;rundir=rundir;glb=glb;CIprobs=c(0.05,0.5,0.95);addfile=TRUE; startyr=40
+#' # inzone=outzone;rundir=rundir;glb=glb;CIprobs=c(0.05,0.5,0.95);addfile=TRUE;
+#' # startyr=startyr; addfile=TRUE
 plotZone <- function(inzone,rundir,glb,startyr,CIprobs=c(0.05,0.5,0.95),addfile=TRUE) {
-  onezoneplot(inzone$catch,rundir,glb,CIprobs=CIprobs,"Catch",startyr=startyr,
-              addfile=addfile)
-  onezoneplot(inzone$cpue,rundir,glb,CIprobs=CIprobs,"CPUE",startyr=startyr,
-              addfile=addfile)
-  onezoneplot(inzone$deplsB,rundir,glb,CIprobs=CIprobs,"Mature_Biomass_Depletion",
-              startyr=startyr,addfile=addfile)
-  onezoneplot(inzone$matureB,rundir,glb,CIprobs=CIprobs,"Mature_Biomass",
-              startyr=startyr,addfile=addfile)
-  onezoneplot(inzone$harvestR,rundir,glb,CIprobs=CIprobs,"Harvest_Rate",
-              startyr=startyr,addfile=addfile)
-  onezoneplot(inzone$recruit,rundir,glb,CIprobs=CIprobs,"Recruitment",
-              startyr=startyr,addfile=addfile)
-  onezoneplot(inzone$TAC,rundir,glb,CIprobs=CIprobs,"TAC",startyr=startyr,
-              addfile=addfile)
+  catchCI <- onezoneplot(inzone$catch,rundir,glb,CIprobs=CIprobs,"Catch",
+                         startyr=startyr,addfile=addfile)
+  cpueCI <- onezoneplot(inzone$cpue,rundir,glb,CIprobs=CIprobs,"CPUE",
+                        startyr=startyr,addfile=addfile)
+  deplCI <- onezoneplot(inzone$deplsB,rundir,glb,CIprobs=CIprobs,
+                        "Mature_Biomass_Depletion",startyr=startyr,addfile=addfile)
+  matbCI <- onezoneplot(inzone$matureB,rundir,glb,CIprobs=CIprobs,"Mature_Biomass",
+                        startyr=startyr,addfile=addfile)
+  HCI <- onezoneplot(inzone$harvestR,rundir,glb,CIprobs=CIprobs,"Harvest_Rate",
+                     startyr=startyr,addfile=addfile)
+  recCI <- onezoneplot(inzone$recruit,rundir,glb,CIprobs=CIprobs,"Recruitment",
+                       startyr=startyr,addfile=addfile)
+  tacCI <- onezoneplot(inzone$TAC,rundir,glb,CIprobs=CIprobs,"TAC",startyr=startyr,
+                       addfile=addfile)
+  meds <- cbind(catchCI[2,],cpueCI[2,],deplCI[2,],matbCI[2,],HCI[2,],recCI[2,],
+                tacCI[2,])
+  colnames(meds) <- c("Catch","cpue","depl","matureB","HarvestR","Recruit","TAC")
+  rownames(meds) <- c(glb$hyrnames,glb$pyrnames)
+  CI <- cbind(catchCI[1,],catchCI[3,],cpueCI[1,],cpueCI[3,],deplCI[1,],deplCI[3,],
+              matbCI[1,],matbCI[3,],HCI[1,],HCI[3,],recCI[1,],recCI[3,],
+              tacCI[1,],tacCI[3,])
+  rownames(CI) <- c(glb$hyrnames,glb$pyrnames)
+  colnames(CI) <- c("CatchL90","CatchU90","cpueL90","cpueU90","deplL90","deplU90",
+                    "matBL90","matBU90","HL90","HU90","recL90","recU90",
+                    "tacL90","tacU90")
+  addtable(meds,"zone-medians.csv",rundir,category="zonescale",
+           caption="Medians of zonescale dynamics.")
+  return(invisible(list(zonemeds=meds,zoneCI=CI)))
 } # end of plotZone
 
 #' @title plotzonesau generates a plot of the zone scale and sau scale
