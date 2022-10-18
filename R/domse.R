@@ -198,8 +198,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   if (verbose) cat("Now generating final plots and tables \n")
   zoneDP=outproj$zoneDP
   hcrout <- outproj$hcrout; #str(hcrout)
-  if (includeNAS) NAS <- list(Nt=zoneDP$Nt,catchN=zoneDP$catchN)
-  # NumNe=zoneDP$NumNe, mid-year numbers-at-size removed to save space
+  NAS <- list(Nt=zoneDP$Nt,catchN=zoneDP$catchN)
   zoneDP <- zoneDP[-c(17,16,15)]
  # histCE <- condC$histCE
   B0 <- getvar(zoneC,"B0")

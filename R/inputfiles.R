@@ -740,8 +740,10 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
        }
        rownames(fisindex) <- yearFIS
        begin <- grep("FISSETTINGS",indat)
-       fissettingfile <- removeEmpty(unlist(strsplit(indat[begin],",")))[2]
-       fissettings <- fisreadfun(rundir,fissettingfile)
+       if (length(begin) > 0) {
+         fissettingfile <- removeEmpty(unlist(strsplit(indat[begin],",")))[2]
+         fissettings <- fisreadfun(rundir,fissettingfile)
+       }
      }
    } # end of !is.null(yrfis)
    lffiles <- NULL

@@ -660,6 +660,24 @@ for (i in 2:15) lines(sc,sau11[rge,1,1,i],lwd=1,col=i)
 round(sau11[,1,1,1:3])
 
 
+# Using quantscen----------------------------
+
+quantscen <- result$quantscen
+
+label <- names(quantscen)
+nvar <- length(label)
+scenes <- names(quantscen[[1]])
+
+
+
+
+
+
+
+
+
+
+
 
 
 
