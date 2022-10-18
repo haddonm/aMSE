@@ -16,7 +16,9 @@ oneyearcat(
   incat,
   sigce,
   lambda,
-  qest
+  qest,
+  fissettings = NULL,
+  fisindex = NULL
 )
 }
 \arguments{
@@ -51,6 +53,11 @@ exploitable biomass value from the model}
 \item{lambda}{the hyper-stability term from zoneC}
 
 \item{qest}{the estimated catchability from sizemod from zoneC}
+
+\item{fissettings}{an object containing settings used when calculating
+indices for the FIS}
+
+\item{fisindex}{a function used to estimate the FIS index}
 }
 \value{
 a list containing a vector of ExploitB, MatureB, Catch, and ce, and

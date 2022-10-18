@@ -45,6 +45,11 @@ examine its implications.
 
 # LATEST UPDATE
 
+-   2022-10-18 aMSE 0.0.18 In the projections relicates across years has
+    now been changed to years across replicates to allow for inclusion
+    of FIS performance measures. Also, further comparison functions
+    included.
+
 -   2022-09-26 aMSE 0.0.17 Added finalcondyeardepletion to aid in
     comparisons.
 

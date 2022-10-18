@@ -313,6 +313,9 @@ copyto <- function(prefixdir,fromdir, todir, filelist,
   pick <- grep("datafile",indat)
   indat[pick] <- paste0("datafile, ",newfilelist[pickD],
                         " , name of saudata file,")
+  # now change the runlabel to the same name as the todir
+  pickL <- grep("runlabel",indat)
+  indat[pickL] <- paste0("runlabel, ",todir," , the scenario label ")
   writeLines(indat,con=filename)
   if (verbose)
     cat("\n\n")

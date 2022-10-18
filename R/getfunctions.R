@@ -319,6 +319,37 @@ getLogical <- function(inline,nb) {  #inline <- txtline; nb=2
   return(outtmp)
 }
 
+#' @title getmedbysau extracts the median projected values for input variables
+#'
+#' @description getmedbysau takes the output from the projections summarized
+#'     to an sau scale, found in sauout. This contains matureB, exploitB,
+#'     midyexpB, catch, acatch, harvestR, cpue, recruit, deplsB, depleB, catchN,
+#'     and Nt, each of which is for (hyrs + pyrs) x nsau x reps, or nclass x
+#'     (hyrs + pyrs) x nsau x reps. The input variable can only be one if these.
+#'
+#' @param invar this must be one of the objects from the sauout list.
+#' @param glb the globals object
+#'
+#' @return a matrix of the medians across replciates for each sau of the input
+#'     variable
+#' @export
+#'
+#' @examples
+#' print("wait on data sets")
+#' # typical syntax woul dbe getmedbysau(out$sauout$matureB,out$glb)
+getmedbysau <- function(invar,glb) {
+  start <- glb$hyrs+1
+  finish <- glb$hyrs+glb$pyrs
+  nyrs <- length(start:finish)
+  nsau <- glb$nSAU
+  med <- matrix(0,nrow=nyrs,ncol=nsau,dimnames=list(glb$pyrnames,glb$saunames))
+  for (i in 1:nsau) {
+    usevar <- invar[start:finish,i,]
+    med[,i] <- apply(usevar,1,median)
+  }
+  return(med)
+} # end of getmedbysau
+
 #' @title getnas gets the numbers-at-size for all populations and the zone
 #'
 #' @description getnas extracts numbers-at-size for all populations,
@@ -712,7 +743,6 @@ getyr2maxce <- function(cpue,glb) {
     result[,i] <- apply(cpue[,i,],2,function(x) which.closest(max(x),x))
   return(result)
 } # end of getyr2maxce
-
 
 #' @title getzoneLF extracts all LF data from a zone across pops and years
 #'

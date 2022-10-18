@@ -780,8 +780,8 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE)
   plotzonedyn(rundir,scenes,zone,glbc[[1]],console=FALSE,q90=TRUE,polys=TRUE,
               intens=127)
 
-  makecompareoutput(rundir=rundir,glbc,scenes,postfixdir,openfile=TRUE,
-                    verbose=FALSE)
+  makecompareoutput(rundir=rundir,glbc,scenes,postfixdir,
+                    filesused=files[pickfiles],openfile=TRUE,verbose=FALSE)
   return(invisible(list(scenes=scenes,ans=ans)))
 } # end of do_comparison
 
@@ -865,6 +865,8 @@ doquantplot <- function(varq,varname,yrnames,scenes,q90,polys,intens=127) {
 #' @param scenes a vector of the names for each scenario
 #' @param postdir the name of the directory holding the results, also used to
 #'     name the internal webpage
+#' @param filesused a vector of the names of the scenarios that were compared,
+#'     this would usually be files[pickfiles]. Added to the home page.
 #' @param openfile should the website be opened automatically? default=TRUE
 #' @param verbose should details of producing the HTML files be written to the
 #'     console?  default=FALSE
@@ -875,14 +877,15 @@ doquantplot <- function(varq,varname,yrnames,scenes,q90,polys,intens=127) {
 #'
 #' @examples
 #' print("wait on internal data-sets")
-makecompareoutput <- function(rundir,glbc,scenes,postdir,
+makecompareoutput <- function(rundir,glbc,scenes,postdir,filesused,
                               openfile=TRUE,verbose=FALSE) {
   replist <- list(starttime=as.character(Sys.time()),
                   endtime="")
   nscene <- length(scenes)
   reps <- NULL
   for (i in 1:nscene) reps <- paste0(reps,glbc[[i]]$reps,"  ")
-  runnotes <- c("Scenario Comparisons",paste0("RunTime = ",0),
+  runnotes <- c(paste0(c("Scenarios",filesused),collapse="__"),
+                paste0("RunTime = ",0),
                 paste0("replicates = ",reps),
                 paste0("years projected = ",glbc[[1]]$pyrs),
                 paste0("Populations = ",glbc[[1]]$numpop),

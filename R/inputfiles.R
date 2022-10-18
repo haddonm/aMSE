@@ -596,6 +596,8 @@ datafiletemplate <- function(indir,filename="saudataEG.csv") {
 #'     file present in rundir containing information regarding the
 #'     run.
 #' @param verbose Should progress comments be printed to console, default=TRUE
+#' @param fisreadfun a function to read in the fissettings.csv file if a FIS
+#'     is being used.
 #'
 #' @return the control list for the run
 #' @export
@@ -607,9 +609,10 @@ datafiletemplate <- function(indir,filename="saudataEG.csv") {
 #' ctrlzonetemplate(rundir)
 #' datafiletemplate(6,rundir,filename="zone1sau2pop6.csv")
 #' ctrl <- readctrlfile(rundir)
-#' ctrl
+#' print(ctrl)
 #' }
-readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE) {
+readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
+                         fisreadfun=NULL) {
    # rundir=rundir; infile=controlfile; verbose=verbose
    filenames <- dir(rundir)
    if (length(grep(infile,filenames)) != 1)
@@ -720,6 +723,27 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE) {
       firstyear <- tail(hyrnames,1) + 1
       if (projyrs > 0) pyrnames <- firstyear:(firstyear + projyrs - 1)
    } # end of if(yrce == 0)
+   yearFIS <- NULL
+   fisindex <- NULL
+   yrfis <- getsingleNum("FISINDEX",indat)
+   if (!is.null(yrfis)) {
+     if (yrfis > 0) {
+       begin <- grep("FISINDEX",indat)
+       fisindex <- matrix(NA,nrow=yrfis,ncol=nSAU)
+       yearFIS <- numeric(yrce)
+       colnames(fisindex) <- SAUnames
+       for (i in 1:yrfis) {
+         begin <- begin + 1
+         cenum <- as.numeric(unlist(strsplit(indat[begin],",")))
+         yearFIS[i] <- cenum[1]
+         fisindex[i,] <- cenum[2:(nSAU+1)]
+       }
+       rownames(fisindex) <- yearFIS
+       begin <- grep("FISSETTINGS",indat)
+       fissettingfile <- removeEmpty(unlist(strsplit(indat[begin],",")))[2]
+       fissettings <- fisreadfun(rundir,fissettingfile)
+     }
+   } # end of !is.null(yrfis)
    lffiles <- NULL
    sizecomp <- getsingleNum("SIZECOMP",indat)
    if (sizecomp > 0) {
@@ -762,7 +786,8 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE) {
    condC <- list(histCatch=histCatch,histyr=histyr,
                  histCE=histCE,yearCE=yearCE,initdepl=initdepl,
                  compdat=compdat,recdevs=recdevs,parsin=parsin,optpars=optpars,
-                 sizecomp=sizecomp,lffiles=lffiles,poprec=NULL)
+                 sizecomp=sizecomp,lffiles=lffiles,poprec=NULL,
+                 fisindex=fisindex,yearFIS=yearFIS)
    projC <- list(projLML=projLML,projyrs=projyrs,
                  Sel=NULL,SelWt=NULL,histCE=histCE)
    outctrl <- list(runlabel,datafile,infile,reps,randomseed,randomseedP,

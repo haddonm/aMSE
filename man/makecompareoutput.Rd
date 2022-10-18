@@ -9,6 +9,7 @@ makecompareoutput(
   glbc,
   scenes,
   postdir,
+  filesused,
   openfile = TRUE,
   verbose = FALSE
 )
@@ -22,6 +23,9 @@ makecompareoutput(
 
 \item{postdir}{the name of the directory holding the results, also used to
 name the internal webpage}
+
+\item{filesused}{a vector of the names of the scenarios that were compared,
+this would usually be files[pickfiles]. Added to the home page.}
 
 \item{openfile}{should the website be opened automatically? default=TRUE}
 

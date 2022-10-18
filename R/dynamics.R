@@ -280,6 +280,9 @@ oneyear <- function(MatWt,SelWt,selyr,Me,G,qest,WtL,inNt,inH,lambda,scalece) {
 #'     exploitable biomass value from the model
 #' @param lambda the hyper-stability term from zoneC
 #' @param qest the estimated catchability from sizemod from zoneC
+#' @param fissettings an object containing settings used when calculating
+#'     indices for the FIS
+#' @param fisindex a function used to estimate the FIS index
 #'
 #' @seealso{
 #'  \link{dohistoricC}, \link{oneyearcat}, \link{oneyearrec}
@@ -292,7 +295,7 @@ oneyear <- function(MatWt,SelWt,selyr,Me,G,qest,WtL,inNt,inH,lambda,scalece) {
 #' @examples
 #' print("need to wait on built in data sets")
 oneyearcat <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
-                       lambda,qest) {
+                       lambda,qest,fissettings=NULL,fisindex=NULL) {
 #  MatWt=pop$MatWt;SelWt=pop$SelWt[,year];selyr=pop$Select[,year];Me=pop$Me;
 #  G=pop$G; scalece=pop$scalece;WtL=pop$WtL;inNt=inN[,popn];incat=popC[popn];
 #  sigce=sigce;lambda=pop$lambda;qest=pop$qest
@@ -314,6 +317,9 @@ oneyearcat <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
   Catch <- sum(WtL*Cat)/1e06
   error <-  exp(rnorm(1,mean=0,sd=sigce) - (sigce^2.0)/2.0)
   ce <- as.numeric((qest * (((scalece*avExpB) * error) ^ lambda)))
+  if (!is.null(fissettings)) {
+    fisindex(fissettings,inNt)
+  }
   vect <- c(exploitb=avExpB,midyexpB=midyexpB,matureb=MatureB,
             catch=Catch,cpue=ce)
   ans <- list(vect=vect,NaL=newNt,catchN=Cat,NumNe=NumNe)

@@ -612,7 +612,52 @@ x1 <- finalcondyeardepletion(rundir,ans[[1]]$sauout,ans[[1]]$glb,deplvar="eB",co
 x1
 
 
+# Indiv population Nt ----------------------------
 
+out <- result$ans[[1]]
+
+nas <- out$NAS
+Nt <- nas$Nt
+
+sauout <- out$sauout
+glb <- out$glb
+str1(glb)
+
+
+start <- glb$hyrs+1
+finish <- glb$hyrs+glb$pyrs
+invar <- sauout$matureB[start:finish,1,]
+
+med <- apply(invar,1,median)
+
+
+
+
+med <- getmedbysau(sauout$matureB,glb)
+
+apply(med,2,which.max)
+apply(med,2,which.min)
+
+
+med1 <- getmedbysau(result$ans[[1]]$sauout$matureB,glb)
+apply(med1,2,which.max)
+med2 <- getmedbysau(result$ans[[2]]$sauout$matureB,glb)
+apply(med2,2,which.max)
+
+sau11 <- Nt[,start:finish,28:36,]
+
+rge <- 8:glb$Nclass
+
+sc <- glb$midpts[rge]
+
+plotprep(width=9, height=5)
+parset()
+plot1(sc,sau11[rge,1,1,1])
+for (i in 2:15) lines(sc,sau11[rge,1,1,i],lwd=1,col=i)
+
+
+
+round(sau11[,1,1,1:3])
 
 
 

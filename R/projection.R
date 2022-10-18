@@ -193,6 +193,7 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 #'
 #' @examples
 #' print("wait on suitable internal data sets")
+#' # switched year and iter in the loops
 doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
                           sampleCE,sampleFIS,sampleNaS,getdata,calcpopC,
                           makehcrout,verbose=FALSE,...) {
@@ -216,9 +217,12 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
   b0 <- getvar(zoneCP,"B0") #sapply(zoneC,"[[","B0")
   exb0 <- getvar(zoneCP,"ExB0")
   hcrout <- makehcrout(glb,hsargs)
-  for (iter in 1:reps) {
-    if (verbose) if ((iter %% 25) == 0) cat(iter,"   ")
-    for (year in startyr:endyr) { # iter=1; year=startyr
+  for (year in startyr:endyr) { # iter=1; year=startyr
+ #   for (iter in 1:reps) {
+  #  if (verbose) if ((iter %% 25) == 0) cat(iter,"   ")
+    if (verbose) cat(year,"   ")
+      for (iter in 1:reps) {
+    #  for (year in startyr:endyr) { # iter=1; year=startyr
       hcrdata <- getdata(sampleCE,sampleFIS,sampleNaS,
                          sauCPUE=zoneDP$cesau[,,iter],
                          sauacatch=zoneDP$acatch[,,iter],
