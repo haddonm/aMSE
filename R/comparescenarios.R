@@ -426,19 +426,21 @@ constructTasHSout <- function(hcrfun,ce,acatch,glb,hsargs) {
 #' @examples
 #' \dontrun{
 #'   print("wait on an example")
-#'  # rundir=rundir;dyn=dyn;glbc=glbc;scenes=scenes
+#' # rundir=rundir;dyn=dyn;glbc=glbc;scenes=scenes
 #' }
 comparedynamics <- function(rundir,dyn,glbc,scenes) {
+  quantscen <- makelist(c("cpue","catch","matureB","harvestR"))
   invar <- "cpue"
   compscen <- comparevar(dyn,glbc,scenes,var=invar)
+  quantscen[[1]] <- compscen$quantscen
   filename <- filenametopath(rundir,"compare_cpue_scenes.png")
   plotscene(compscen$quantscen,glbc=glbc,var=invar,ymin=0,filen=filename,
             legloc="bottomleft",legplot=1)
   caption <- paste0("The projected CPUE dynamics for each SAU.")
   addplot(filen=filename,rundir=rundir,category="Dynamics",caption)
-
   invar <- "catch"
   compscen <- comparevar(dyn,glbc,scenes,var=invar)
+  quantscen[[2]] <- compscen$quantscen
   filename <- filenametopath(rundir,"compare_catch_scenes.png")
   plotscene(compscen$quantscen,glbc=glbc,var=invar,ymin=0,filen=filename,
             legloc="topleft",legplot=1)
@@ -447,6 +449,7 @@ comparedynamics <- function(rundir,dyn,glbc,scenes) {
 
   invar <- "matureB"
   compscen <- comparevar(dyn,glbc,scenes,var=invar)
+  quantscen[[3]] <- compscen$quantscen
   filename <- filenametopath(rundir,"compare_matureB_scenes.png")
   plotscene(compscen$quantscen,glbc=glbc,var=invar,ymin=0,filen=filename,
             legloc="topleft",legplot=1)
@@ -455,11 +458,13 @@ comparedynamics <- function(rundir,dyn,glbc,scenes) {
 
   invar <- "harvestR"
   compscen <- comparevar(dyn,glbc,scenes,var=invar)
+  quantscen[[4]] <- compscen$quantscen
   filename <- filenametopath(rundir,"compare_harvestR_scenes.png")
   plotscene(compscen$quantscen,glbc=glbc,var=invar,ymin=0,filen=filename,
             legloc="topleft",legplot=1)
   caption <- paste0("The projected harvest rate dynamics for each SAU.")
   addplot(filen=filename,rundir=rundir,category="Dynamics",caption)
+  return(quantscen)
 } # end of comparedynamics
 
 
@@ -712,7 +717,7 @@ cpueHSPM <- function(rundir,cpue,glbc,scenes,filen="",startyr=0) {
 #'   do_comparison(rundir,postfixdir,outdir,files,pickfiles=c(1,2,3))
 #' }
 do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE) {
-# rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(1,2,3,4)
+#rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(1,6)
   files2 <- files[pickfiles]
   nfile <- length(pickfiles)
   label <- vector(mode="character",length=nfile)
@@ -747,7 +752,7 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE)
   }
   if (verbose) cat("Now doing the comparisons  \n")
   setuphtml(rundir=rundir)
-  comparedynamics(rundir=rundir,dyn,glbc,scenes)
+  quantscen <- comparedynamics(rundir=rundir,dyn,glbc,scenes)
   tabulateproductivity(rundir,prods,scenes)
 
   filename <- "compare_final_HSscores.png"
@@ -782,7 +787,7 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE)
 
   makecompareoutput(rundir=rundir,glbc,scenes,postfixdir,
                     filesused=files[pickfiles],openfile=TRUE,verbose=FALSE)
-  return(invisible(list(scenes=scenes,ans=ans)))
+  return(invisible(list(scenes=scenes,ans=ans,quantscen=quantscen)))
 } # end of do_comparison
 
 #' @title doquantplot generates a plot of multiple quantile values
