@@ -669,9 +669,126 @@ nvar <- length(label)
 scenes <- names(quantscen[[1]])
 
 
+# AAV functioning------------------------------------
+
+
+# Run compare_scenarios
+# extract the catches from dyn and select one set of projections
+
+cs <- catch[["Base_Case"]][59:88,,]
+
+outmed <- plotsceneproj(rundir="",inarr=cs,glb=glbc[[1]],scene="Base_Case",
+                        filen="",label="",maxy=0,Q=90,hline=NA)
+
+
+aav <- getprojyraavc(cs,glbc[[1]])
+
+
+getaavA <- function(invect) { # invect=x
+  nyr <- length(invect)
+  totC <- sum(abs(invect),na.rm=T)
+  aac <- sum(abs(invect[2:nyr] - invect[1:(nyr-1)]))
+  aav <- 0.0
+  if (totC > 0.0) aav <- aac/totC
+  return(aav)
+}
+
+singlesauproj <- function(arr3d,sau,rn,glb,filen="",rundir="") {
+  # arr3d=cs;sau=4;rn=4;glb=glbc[[1]];filen=""
+  outaav <- numeric(rn)
+  sauname <- glb$saunames[sau]
+  reps <- glb$reps
+  dat <- arr3d[,sau,]
+  yrs <- as.numeric(rownames(dat))
+  outrep <- matrix(0,nrow=length(yrs),ncol=rn,dimnames=list(yrs,1:rn))
+  meds <- apply(dat,1,median)
+  maxy <- getmax(dat)
+  plotprep(width=9, height=5,newdev=FALSE,filename = filen,verbose=FALSE)
+  parset()
+  plot(yrs,(dat[,1]),type="l",lwd=1,col="grey",ylab="",xlab="",ylim=c(0,maxy))
+  for (i in 2:reps) lines(yrs,dat[,i],lwd=1,col="grey")
+  pickr <- trunc(runif(rn,min=1,max=(reps+1)))
+  for (i in 1:rn) {
+    outrep[,i] <- dat[,pickr[i]]
+    lines(yrs,outrep[,i],lwd=2,col=i)
+    outaav[i] <- getaavA(outrep[,i])
+  }
+  return(list(outaav=outaav,outrep=outrep,meds=meds))
+} # end of singlesauproj
+
+out <- singlesauproj(cs,sau=4,rn=10,glb=glbc[[1]])
+out$outaav
+
+
+for (i in 1:10) {
+  print(getaav(out$outrep[,i]-out$meds))
+}
+
+
+sau=6
+cs <- catch[[1]][59:88,,]
+dat <- cs[,sau,]
+yrs <- as.numeric(rownames(dat))
+y <- apply(dat,1,getaav)
+plot1(yrs,y,lwd=2,col=1)
+for (scen in 2:3) {
+  cs <- catch[[scen]][59:88,,]
+  dat <- cs[,sau,]
+  y <- apply(dat,1,getaav)
+  lines(yrs,y,lwd=2,col=scen)
+}
 
 
 
+plot1(yrs,out$outrep[,4]-out$meds)
+
+
+getmaxmedian <- function(obj,glb) {
+  nscen <- length(obj)
+  scenes <- names(obj)
+  meds <- getmedbysau(obj[[1]],glb)
+  yrs <- as.numeric(rownames(meds))
+  maxmed <- matrix(0,nrow=nscen,ncol=nsau,
+                   dimnames=list(scenes,glb$saunames))
+  maxmed[1,] <- yrs[apply(meds,2,which.max)]
+  for (scen in 2:nscen) {
+    meds <- getmedbysau(obj[[scen]],glb)
+    maxmed[scen,] <- yrs[apply(meds,2,which.max)]
+  }
+  return(maxmed)
+} # end of getmaxmedian
+
+
+getmaxmedian(catch,glbc[[1]])
+getmaxmedian(cpue,glbc[[1]])
+
+#aav,sum5,sum10 by scenario -----------
+ans <- calccatchHSPM(catch,glbc,scenes=names(catch))
+
+sapply(ans$aavc,function(x) apply(x,2,median))
+sapply(ans$sum5,function(x) apply(x,2,median))
+sapply(ans$sum10,function(x) apply(x,2,median))
+
+
+
+# doquantplot by sau----------------------------------------
+
+
+
+
+
+
+
+cpue <- scenebyvar(dyn=out$dyn,byvar="cpue",glb=out$glbc[[1]])
+
+
+cpueqnts <- sauquantbyscene(cpue,out$glbc[[1]])
+
+
+plotprep(width=9, height=5)
+parset(cex=1.1)
+doquantplot(cpueqnts[[5]],"CPUE_sau10",yrnames=out$glbc[[1]]$pyrnames,
+            scenes=out$scenes,q90=TRUE,polys=TRUE,intens=100,addleg=TRUE)
 
 
 

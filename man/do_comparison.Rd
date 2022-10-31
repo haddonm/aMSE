@@ -52,3 +52,8 @@ do_comparison provides a simplified interface for when making
   do_comparison(rundir,postfixdir,outdir,files,pickfiles=c(1,2,3))
 }
 }
+\seealso{
+{
+   \link{scenebyvar}, \link{scenebyzone}
+}
+}

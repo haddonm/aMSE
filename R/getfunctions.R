@@ -438,11 +438,11 @@ getprojyraavc <- function(catches,glb) {
 #' @export
 #'
 #' @examples
-#' # sauarr=out$sauout$zonePsau$catch;hyrs=out$glb$hyrs
-#' # pyrs=out$glb$pyrs; startyr=out$glb$hyrs
+#' # sauarr=catch[[1]];hyrs=glbc[[1]]$hyrs
+#' # pyrs=glbc[[1]]$pyrs; startyr=glbc[[1]]$hyrs
 getprojyrs <- function(sauarr,hyrs,pyrs,startyr=hyrs) {
   yrs <- dim(sauarr)[1]
-  if (yrs != hyrs + pyrs)
+  if (yrs != (hyrs + pyrs))
     stop(cat("Input error in getprojyrs, array in has incorrect dimensions \n"))
   return(sauarr[startyr:yrs,,])
 } # end of getprojyrs

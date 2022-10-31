@@ -88,7 +88,8 @@ boxbysau <- function(rundir,hspm,glbc,scenes,compvar="aavc",filen="",aavcyrs=10,
 #' }
 #'
 #' @return a list of  the aavc x sau x scene, and the sum5 and sum10 for the
-#'     same sau and scenes.
+#'     same sau and scenes. Plus the medians across all replicates for each
+#'     sau and zone for each of the three PMs.
 #' @export
 #'
 #' @examples
@@ -102,13 +103,17 @@ calccatchHSPM <- function(catch,glbc,scenes,aavcyrs=10) {
   sum10 <- makelist(scenes)
   saunames <- glbc[[1]]$saunames
   for (i in 1:nscen) {   # i = 1
-    catches[[i]] <- getprojyrs(catch[[i]],glbc[[i]]$hyrs,glbc[[i]]$pyrs,
-                             startyr=glbc[[i]]$hyrs)
+    catches[[i]] <- projectiononly(catch[[i]],glbc[[i]])
     aavc[[i]] <- getprojyraavc((catches[[i]][1:aavcyrs,,]),glbc[[i]])
     sum5[[i]] <- getprojyrC(catch[[i]],glbc[[i]],period=5)
     sum10[[i]] <- getprojyrC(catch[[i]],glbc[[i]],period=10)
   }
-  return(invisible(list(aavc=aavc,sum5=sum5,sum10=sum10)))
+  msePM <- c("aavc","sum5","sum10")
+  medians <- makelist(msePM)
+  medians[[1]] <- sapply(aavc,function(x) apply(x,2,median))
+  medians[[2]] <- sapply(sum5,function(x) apply(x,2,median))
+  medians[[3]] <- sapply(sum10,function(x) apply(x,2,median))
+  return(invisible(list(aavc=aavc,sum5=sum5,sum10=sum10,medians=medians)))
 } # end of calccatchHSPM
 
 
@@ -694,6 +699,10 @@ cpueHSPM <- function(rundir,cpue,glbc,scenes,filen="",startyr=0) {
 #' @param pickfiles a vector of indices selecting the files to be used.
 #' @param verbose should progress updates be made to the console, default=TRUE
 #'
+#' @seealso{
+#'    \link{scenebyvar}, \link{scenebyzone}
+#' }
+#'
 #' @return nothing but it does conduct a comparison of at least two scenarios
 #'     and places tables and plots into a given sub-directory
 #' @export
@@ -717,7 +726,7 @@ cpueHSPM <- function(rundir,cpue,glbc,scenes,filen="",startyr=0) {
 #'   do_comparison(rundir,postfixdir,outdir,files,pickfiles=c(1,2,3))
 #' }
 do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE) {
-#rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(1,6)
+#rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(10,11);verbose=TRUE
   files2 <- files[pickfiles]
   nfile <- length(pickfiles)
   label <- vector(mode="character",length=nfile)
@@ -763,6 +772,13 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE)
 
   tabulatefinalHSscores(rundir,meds,scenes,category="Scores")
   outcatchHSPM <- calccatchHSPM(catch,glbc,scenes,aavcyrs=10)
+  medHSPM <- outcatchHSPM$medians
+  label <- names(medHSPM)
+  for (i in 1:length(medHSPM)) {
+    filename <- paste0("proj",label[i],".csv")
+    addtable(medHSPM[[label[i]]],filen=filename,rundir=rundir,category="HSPM",
+             caption=paste0("Median ",label[i]," values by sau and scenario."))
+  }
   outtab <- catchHSPM(rundir,hspm=outcatchHSPM,glbc,scenes,
                       filen="compare_catches_boxplots.png",aavcyrs=10)
   boxbysau(rundir,hspm=outcatchHSPM,glbc,scenes,compvar="aavc",
@@ -789,6 +805,72 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE)
                     filesused=files[pickfiles],openfile=TRUE,verbose=FALSE)
   return(invisible(list(scenes=scenes,ans=ans,quantscen=quantscen)))
 } # end of do_comparison
+
+
+#' @title do_comp_outputs extracts components of the output from do_comparison
+#'
+#' @description do_comp_outputs is a helper function that extracts a number of
+#'     the more important components from each scenario into lists of their
+#'     own. It does this for 'dyn', which contains the replicate outputs from
+#'     the dynamics summarized at the sau scale (this includes Nt and catchN).
+#'     There is also 'zone', which does the same thing but at a zone scale.
+#'     There is also scenes, which contains the names of each scenario, 'prods',
+#'     which contains the productivity characteristics of each scenario, and
+#'     'scores', which contains the HS scores for each internal performance
+#'     measure.
+#'
+#' @param result the output from the do_comparison function
+#' @param projonly should only the projection years be returned? default=TRUE.
+#'
+#' @seealso{
+#'    \link{do_comparison}
+#' }
+#'
+#' @return a list of one vector of names and 7 potentially large lists. Most
+#'     importantly, popout has the dynamics at a population scale, dyn has them
+#'     at an sau scale, and zone has them at the zone scale.
+#' @export
+#'
+#' @examples
+#' print("wait on datasets")
+#' # result=result; projout=TRUE
+do_comp_outputs <- function(result,projonly=TRUE) {
+  nscen=length(result$ans)
+  scenes <- result$scenes
+  dyn <- makelist(scenes)
+  glbc <- makelist(scenes)
+  prods <- makelist(scenes)
+  scores <- makelist(scenes)
+  zone <- makelist(scenes)
+  popout <- makelist(scenes)
+  for (i in 1:nscen) { # i = 1
+    out <- result$ans[[i]]
+    glb <- out$glb
+    glbc[[i]] <- glb
+    prods[[i]] <- out$sauprod
+    scores[[i]] <- out$scores
+    if (projonly) {
+      nobj <- length(out$zoneDP)
+      objnames <- names(out$zoneDP)
+      for (obj in 1:nobj)
+        popout[[i]][[objnames[obj]]] <- projectiononly(out$zoneDP[[objnames[obj]]],glb)
+      nobj <- length(out$sauout)
+      objnames <- names(out$sauout)
+      for (obj in 1:nobj)
+        dyn[[i]][[objnames[obj]]] <- projectiononly(out$sauout[[objnames[obj]]],glb)
+      nobj <- length(out$outzone)
+      objnames <- names(out$outzone)
+      for (obj in 1:nobj)
+        zone[[i]][[objnames[obj]]] <- projectiononly(out$outzone[[objnames[obj]]],glb)
+    } else {
+      popout[[i]] <- out$zoneDP
+      dyn[[i]] <- out$sauout
+      zone[[i]] <- out$outzone
+    }
+  }
+  return(invisible(list(scenes=scenes,popout=popout,dyn=dyn,zone=zone,
+                        glbc=glbc,prods=prods,scores=scores)))
+} # end of do_comp_outputs
 
 #' @title doquantplot generates a plot of multiple quantile values
 #'
@@ -819,6 +901,8 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE)
 #' @param polys should transparent polygons be plotted = TRUE, or lines = FALSE
 #' @param intens if polys=TRUE then intens signifies the intensity of colour on
 #'     a scale of 0 - 255. 127 is about 50 percent dense.
+#' @param addleg add a legend? default=FALSE
+#' @param locate where to place legend if there is one, default='bottomright'
 #'
 #' @seealso {
 #'    \link{plotzonedyn}, \link{RGB}
@@ -829,7 +913,8 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE)
 #'
 #' @examples
 #' print("wait on datasets")
-doquantplot <- function(varq,varname,yrnames,scenes,q90,polys,intens=127) {
+doquantplot <- function(varq,varname,yrnames,scenes,q90,polys,intens=127,
+                        addleg=FALSE,locate="bottomright") {
   maxy <- getmax(varq)
   nscen <- length(scenes)
   plot(yrnames,varq[3,,1],type="l",lwd=2,col=0,xlab="",ylab=varname,
@@ -856,6 +941,9 @@ doquantplot <- function(varq,varname,yrnames,scenes,q90,polys,intens=127) {
       }
     }
   } # end of polys if
+  if (addleg) {
+    legend(locate,legend=scenes,col=1:nscen,lwd=3,bty="n",cex=1.1)
+  }
 } # end of doquantplot
 
 #' @title makecompareoutput generates HTML files when comnparing scenarios
@@ -1110,10 +1198,10 @@ plotsceneproj <- function(rundir,inarr,glb,scene,filen="",label="",
     dat <- inarr[,sau,]
     meds <- apply(dat,1,quants)
     outmed[[sau]] <- meds
-    maxy <- maxy
-    if (maxy == 0) maxy <- getmax(dat)
+    ymax <- maxy
+    if (ymax == 0) ymax <- getmax(dat)
     plot(yrs,dat[,1],type="l",lwd=1,col="grey",panel.first=grid(),
-         ylim=c(0,maxy),ylab=saunames[sau],xlab="")
+         ylim=c(0,ymax),ylab=saunames[sau],xlab="")
     for (i in 1:reps) lines(yrs,dat[,i],lwd=1,col="grey")
     if (Q > 0) {
       lines(yrs,meds["50%",],lwd=2,col=4)
@@ -1216,6 +1304,146 @@ plotzonedyn <- function(rundir,scenes,zone,glb,console=TRUE,
     addplot(filen=filen,rundir=rundir,category="zone",caption)
   }
 } # end of plotzonedyn
+
+#' @title sauquantbyscene calcualtes the quantiles for all sau and all scenarios
+#'
+#' @description sauquantbyscene takes the output from the scenebyvar function
+#'     and for each sau extracts the quantiles for the input variable for
+#'     each scenario. The output is a list nsau long each containing the five
+#'     quantiles for the variable input for each scenario ready for use by
+#'     doquantplot, or whatever other analysis is required.
+#'
+#' @param invar the output from the scenebyvar function which should be an array
+#'     of nyrs x nsau x replicates for the variale selected, be it catch, cpue,
+#'     matureB, etc.
+#' @param glb the globals object. The comparisons invovled imply that all
+#'     scenarios considered should have the same number of years and replicates.
+#'
+#' @seealso{
+#'     \link{scenebyvar}, \link{doquantplot}, \link{do_comp_outputs}
+#' }
+#'
+#' @return a list of length nsau containing the quantiles for each scenario in
+#'     each sau, for the input variable. The quantiles include 0.025, 0.05, 0.5,
+#'     0.95, and 0.975.
+#' @export
+#'
+#' @examples
+#' print("wait on data sets")
+#' # invar=cpue; glb=out$glbc[[1]]
+sauquantbyscene <- function(invar,glb) {
+  nyrs <- dim(invar[[1]])[1]
+  yrnames <- as.numeric(unlist(dimnames(invar[[1]])[1]))
+  nsau <- glb$nSAU
+  saunames <- glb$saunames
+  sauquant <- makelist(saunames)
+  nscen <- length(invar)
+  scenes <- names(invar)
+  qs <- c("2.5%","5%","50%","95%","97.5%")
+  scenquant <- array(0,dim=c(5,nyrs,nscen),dimnames=list(qs,yrnames,scenes))
+  for (sau in 1:nsau) {
+    for (i in 1:nscen) {
+      scen <- invar[[i]]
+      scenquant[,,i] <- apply(scen[,sau,],1,quants)
+    }
+    sauquant[[sau]] <- scenquant
+  }
+  return(sauquant)
+} # end of sauquantbyscene
+
+#' @title scenebyvar extracts as sau x variable x scenario from do_comparison output
+#'
+#' @description scenebyvar facilitates making comparisons between scenarios by
+#'     at the sau level by extracting individual variables from the 'dyn'
+#'     object that contains each scenarios dynamics by sau and is part of the
+#'     output from the do_comparison function.
+#'
+#' @param dyn a list of the dynamics at an sau scale for each scenario in the
+#'     comparison made within do_comparison
+#' @param byvar the variable to be extracted from the dyn object. Valid values
+#'     are matureB, exploitB, midyexpB, catch, acatch, harvestR, cpue, recruit,
+#'     deplsB, and depleB. Anything will stop the function and shed an error
+#'     message.
+#' @param glb the globals object, which shuold be the same across scenarios
+#' @param projonly should only the projection years be output, default=TRUE
+#'
+#' @seealso{
+#'    \link{do_comparison}
+#' }
+#'
+#' @return a list of the nscene projyrs x nsau x reps for the byvar values
+#' @export
+#'
+#' @examples
+#' print("wait on example data sets")
+scenebyvar <- function(dyn,byvar,glb,projonly=TRUE) {
+  knownvar <- c("matureB","exploitB","midyexpB","catch","acatch","harvestR",
+                "cpue","recruit","deplsB","depleB")
+  if (byvar %in% knownvar) {
+    nscen <- length(dyn)
+    scenes <- names(dyn)
+    varout <- makelist(scenes)
+    if (projonly) {
+      for (i in 1:nscen) varout[[i]] <- projectiononly(dyn[[i]][[byvar]],glb)
+    } else {
+      for (i in 1:nscen) varout[[i]] <- dyn[[i]][[byvar]]
+    }
+  } else {
+    cat("Unknown variable name in [scenebyvar] function \n")
+    cat("Allowed terms: ",knownvar,"\n")
+    stop()
+  }
+  return(invisible(varout))
+} # end of scenbyvar
+
+#' @title scenebyzone extracts as variable x scenario from do_comparison output
+#'
+#' @description scenebyzone facilitates making comparisons between scenarios
+#'     at the zone level by extracting individual variables from the 'zone'
+#'     object that contains each scenarios dynamics at the zone scale, where
+#'     each variable has been amalgamated across populations and sau in an
+#'     appropriate manner. cpue, for example, is catch weighted, whereas matureB
+#'     is simply summed. The zone object is part of the
+#'     output from the do_comparison function.
+#'
+#' @param zone a list of the dynamics at a zone scale for each scenario in the
+#'     comparison made within do_comparison
+#' @param byvar the variable to be extracted from the dyn object. Valid values
+#'     are matureB, exploitB, midyexpB, catch, acatch, harvestR, cpue, recruit,
+#'     deplsB, and depleB. Anything will stop the function and shed an error
+#'     message.
+#' @param glb the globals object, which should be the same across scenarios
+#' @param projonly should only the projection years be output, default=TRUE
+#'
+#' @seealso{
+#'    \link{do_comparison}
+#' }
+#'
+#' @return a list of the nscene projyrs x reps for the byvar values
+#' @export
+#'
+#' @examples
+#' print("wait on example data sets")
+scenebyzone <- function(zone,byvar,glb,projonly=TRUE) {
+  knownvar <- c("matureB","exploitB","midyexpB","catch","acatch","TAC",
+                "harvestR","cpue","recruit","deplsB","depleB")
+  if (byvar %in% knownvar) {
+    nscen <- length(zone)
+    scenes <- names(zone)
+    varout <- makelist(scenes)
+    if (projonly) {
+      projyr <- (glb$hyrs + 1):(glb$hyrs + glb$pyrs)
+      for (i in 1:nscen) varout[[i]] <- zone[[i]][[byvar]][projyr,]
+    } else {
+      for (i in 1:nscen) varout[[i]] <- zone[[i]][[byvar]]
+    }
+  } else {
+    cat("Unknown variable name in [scenebyvar] function \n")
+    cat("Allowed terms: ",knownvar,"\n")
+    stop()
+  }
+  return(invisible(varout))
+} # end of scenbyzone
 
 #' @title tabulatefinalHSscores saves and write the medina final scores to rundir
 #'

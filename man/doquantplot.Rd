@@ -4,7 +4,17 @@
 \alias{doquantplot}
 \title{doquantplot generates a plot of multiple quantile values}
 \usage{
-doquantplot(varq, varname, yrnames, scenes, q90, polys, intens = 127)
+doquantplot(
+  varq,
+  varname,
+  yrnames,
+  scenes,
+  q90,
+  polys,
+  intens = 127,
+  addleg = FALSE,
+  locate = "bottomright"
+)
 }
 \arguments{
 \item{varq}{an array of quantiles with dimensions the 5 quantiles of the
@@ -25,6 +35,10 @@ x-axis as well as the x-axis labels}
 
 \item{intens}{if polys=TRUE then intens signifies the intensity of colour on
 a scale of 0 - 255. 127 is about 50 percent dense.}
+
+\item{addleg}{add a legend? default=FALSE}
+
+\item{locate}{where to place legend if there is one, default='bottomright'}
 }
 \value{
 nothing but it does add polygons or lines to a plot

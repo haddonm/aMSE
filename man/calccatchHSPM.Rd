@@ -19,7 +19,8 @@ the default = 10}
 }
 \value{
 a list of  the aavc x sau x scene, and the sum5 and sum10 for the
-    same sau and scenes.
+    same sau and scenes. Plus the medians across all replicates for each
+    sau and zone for each of the three PMs.
 }
 \description{
 calccatchHSPM calculates all the Harvest Strategy Performance

@@ -559,6 +559,49 @@ prepareDDNt <- function(inNt,incatchN,glb) { # Nt=zoneDD$Nt; catchN=zoneDD$catch
   return(list(Nt=Nt,catchN=catchN))
 } # end of prepareDDNt
 
+#' @title projectiononly converts hyrs+pyrs_sau_reps to pyrs_sau_reps array
+#'
+#' @description projectiononly is a utility function that takes an output 3D
+#'     array from aMSE with dimensions allyears x nsau x reps and truncates it
+#'     so that only the projection years remain, pyrs x nsau x reps, to simplify
+#'     plotting and tabulating results. This can be used within both aMSE and in
+#'     do_comparison of scenarios.
+#'
+#' @param x a 2D, 3D or 4D array of dimension (hyrs + pyrs) x reps,
+#'     nyrs x nsau x reps, or Nclass x nyrs x reps
+#' @param glb the globals object. Only hyrs and pyrs are used
+#'
+#' @return an array truncated appropriately to include only the projection years
+#' @export
+#'
+#' @examples
+#' print("wait on example data sets")
+#' # x <- catch[[1]];glb <- glbc[[1]]
+projectiononly <- function(x,glb) {
+  beginP <- glb$hyrs + 1
+  endP <- glb$hyrs + glb$pyrs
+  dims <- dim(x)
+  ndim <- length(dims)
+  if (endP %in% dims) {
+    pick <- which(dims == endP)
+    if (pick == 1) {
+      if (ndim == 3) {
+        out <- x[beginP:endP,,]
+      } else {
+        out <- x[beginP:endP,]
+      }
+    }
+    if ((pick == 2) & (ndim == 3)) {
+      out <- x[,beginP:endP,]
+    }
+    if ((pick == 2) & (ndim == 4)) {
+      out <- x[,beginP:endP,,]
+    }
+  } else {
+    out <- x
+  }
+  return(out)
+} # end of projectiononly
 
 #' @title rnormz when sd=0 it returns rep(mean,n) but also uses n random numbers
 #'

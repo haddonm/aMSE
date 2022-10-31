@@ -45,10 +45,17 @@ examine its implications.
 
 # LATEST UPDATE
 
--   2022-10-18 aMSE 0.0.18 In the projections relicates across years has
-    now been changed to years across replicates to allow for inclusion
-    of FIS performance measures. Also, further comparison functions
-    included.
+-   2022-10-31 aMSE 0.0.20 added do_comp_outputs, scenebyvar,
+    scenebyzone, projectiononly, and sauquantbyscene to assist with
+    comparing scenarios.
+
+-   2022-10-26 aMSE 0.0.19 added more functions to facilitate comparing
+    scenarios.
+
+-   2022-10-18 aMSE 0.0.18 In the projections replicates across years
+    has now been changed to years across replicates to allow for
+    inclusion of FIS performance measures. Also, further comparison
+    functions included.
 
 -   2022-09-26 aMSE 0.0.17 Added finalcondyeardepletion to aid in
     comparisons.

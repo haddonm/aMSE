@@ -218,18 +218,15 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
   exb0 <- getvar(zoneCP,"ExB0")
   hcrout <- makehcrout(glb,hsargs)
   for (year in startyr:endyr) { # iter=1; year=startyr
- #   for (iter in 1:reps) {
-  #  if (verbose) if ((iter %% 25) == 0) cat(iter,"   ")
     if (verbose) cat(year,"   ")
       for (iter in 1:reps) {
-    #  for (year in startyr:endyr) { # iter=1; year=startyr
       hcrdata <- getdata(sampleCE,sampleFIS,sampleNaS,
                          sauCPUE=zoneDP$cesau[,,iter],
                          sauacatch=zoneDP$acatch[,,iter],
                          sauNAS=list(Nt=zoneDP$Nt[,,,iter],
                          catchN=zoneDP$catchN[,,,iter],
                          NumNe=zoneDP$NumNe[,,,iter]),
-                         year=year)
+                         year=year,decrement=hsargs$decrement)
       hcrout <- hcrfun(hcrdata,hsargs,saunames=glb$saunames)
       popC <- calcpopC(hcrout,exb=zoneDP$exploitB[year-1,,iter],
                        sauindex,sigmab=sigmab)
