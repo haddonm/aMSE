@@ -737,7 +737,9 @@ save_hsargs <- function(rundir,hsargs) {
   cat(names(hsargs)[1],hsargs[[1]],"\n",file=filen,append=FALSE)
   for (i in 2:length(hsargs))
     cat(names(hsargs)[i],hsargs[[i]],"\n",file=filen,append=TRUE)
-  cat("\n\n",file=filen,append=TRUE)
+  if (!("hcrname" %in% names(hsargs)))
+    cat("hcrname not in hsargs  \n",file=filen,append=TRUE)
+  cat("______________________   \n\n\n\n",file=filen,append=TRUE)
   resfile <- filenametopath(rundir,"resultTable.csv")
   cat(c(filen,"HSperf",type="txtobj",as.character(Sys.time()),
         caption="HS argument Settings "," \n"),

@@ -45,6 +45,9 @@ examine its implications.
 
 # LATEST UPDATE
 
+-   2022-11-02 aMSE 0.0.21 added changes to how do_MSE responds to
+    hsargs.
+
 -   2022-10-31 aMSE 0.0.20 added do_comp_outputs, scenebyvar,
     scenebyzone, projectiononly, and sauquantbyscene to assist with
     comparing scenarios.

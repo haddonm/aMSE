@@ -36,6 +36,8 @@ Of course, adding such a component increases the number of options that may need
 
 # LATEST UPDATE
 
+* 2022-11-02 aMSE 0.0.21 added changes to how do_MSE responds to hsargs.
+
 * 2022-10-31 aMSE 0.0.20 added do_comp_outputs, scenebyvar, scenebyzone, projectiononly, and sauquantbyscene to assist with comparing scenarios.
 
 * 2022-10-26 aMSE 0.0.19 added more functions to facilitate comparing scenarios.

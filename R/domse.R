@@ -20,7 +20,7 @@
 # wtatL = c(80,200)
 # mincount=100
 # includeNAS=FALSE
-# depensate=0
+# depensate=1
 
 
 #' @title do_MSE an encapsulating function to hold the details of a single run
@@ -223,7 +223,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   HSstats <- list(sum10=sum10,sum5=sum5)
   save(HSstats,file=paste0(rundir,"/HSstats.RData"))
   save(glb,file=paste0(rundir,"/glb.RData"))
-  save_hsargs(rundir,hsargs)
+  save_hsargs(rundir,hsargs)   # prints hsargs to HSPerfs tab
   if (verbose) cat("HSstats.RData, glb.RData, and hsargs.txt saved to rundir \n")
   plothsstats(rundir,HSstats,glb)
   addtable(hcrout$refpts,"hcrout_refpts.csv",rundir,category="HSperf",
