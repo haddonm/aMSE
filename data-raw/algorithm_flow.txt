@@ -1,23 +1,32 @@
 
 
-1. read in control.csv
-2. read population datafile
-3. generate unfished qeuilibrium zone, made up of nSAU, and numpop populations
-4. test the quality of the equilibrium in mature and exploitable biomass and recruitment
-5. reset the unfished exploitable biomass to average pre- and post- dynamics
 
-Alternates:
-  A. condition the unfished zone on historical data
-  B. deplete the unfished SAU to predetermined levels and then add variation
+modified:
+
+inputfiles.R/readctrlfile
+
+projection.R/do_projections
+
+dynamics.R/oneyearsauC
+
+altered the input to oneyearcat
+altered the calculation of recs
+
+dynamics.R/dohistoricC
 
 
-HCR
 
-gradient1 (grad1) calculation entails:
 
-* Obtain the most recent cpue series for a SAU; select the most recent two values
-* Convert the two values into proportions of the first value
-* divide the second value by the first and subtract 1: (CE2/CE1) -1 to obtain the proportional change
+
+ENVIRON, 2 , in how many years will an event occur
+yr5, 5, 0.3 , 0.999 , yr5 30 and 90 percent survival of recruits and postlarval
+yr8, 8, 0.3 , 0.999 , yr8 20 and 99 percent survival of recruits and postlarval
+
+
+
+
+
+
 
 
 

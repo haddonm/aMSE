@@ -4,7 +4,15 @@
 \alias{do_comparison}
 \title{do_comparison is a wrapper function that compares scenarios}
 \usage{
-do_comparison(rundir, postfixdir, outdir, files, pickfiles, verbose = TRUE)
+do_comparison(
+  rundir,
+  postfixdir,
+  outdir,
+  files,
+  pickfiles,
+  verbose = TRUE,
+  intensity = 100
+)
 }
 \arguments{
 \item{rundir}{the complete path to the directory into which all results and
@@ -22,6 +30,9 @@ files}
 \item{pickfiles}{a vector of indices selecting the files to be used.}
 
 \item{verbose}{should progress updates be made to the console, default=TRUE}
+
+\item{intensity}{is the density of the rgb colours used in the ribbon plots.
+the default = 100}
 }
 \value{
 nothing but it does conduct a comparison of at least two scenarios
@@ -54,6 +65,6 @@ do_comparison provides a simplified interface for when making
 }
 \seealso{
 {
-   \link{scenebyvar}, \link{scenebyzone}
+   \link{scenebyvar}, \link{scenebyzone}. \link{RGB}
 }
 }

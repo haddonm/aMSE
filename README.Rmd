@@ -36,6 +36,8 @@ Of course, adding such a component increases the number of options that may need
 
 # LATEST UPDATE
 
+* 2022-11-10 aMSE 0.0.22 now have the capacity to introduce productivity events in specific projection years. This can now be done at sau specific levels. One defines the survivorship of recruits in each selected year and also the survivorship of all post-settlement animals. No changes are needed to one's control file if this option is not being used.
+
 * 2022-11-02 aMSE 0.0.21 added changes to how do_MSE responds to hsargs.
 
 * 2022-10-31 aMSE 0.0.20 added do_comp_outputs, scenebyvar, scenebyzone, projectiononly, and sauquantbyscene to assist with comparing scenarios.

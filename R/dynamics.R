@@ -125,7 +125,8 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,sigR=1e-08,sigB=1e-08) 
     inN <- zoneDD$Nt[,year-1,]
     out <- oneyearsauC(zoneCC=zoneC,inN=inN,popC=popC,year=year,
                        Ncl=glob$Nclass,sauindex=sauindex,movem=glob$move,
-                       sigmar=sigR,sigce=1e-08,r0=r0,b0=b0,exb0=exb0,rdev=rdev)
+                       sigmar=sigR,sigce=1e-08,r0=r0,b0=b0,exb0=exb0,rdev=rdev,
+                       envyr=NULL,envsurv=NULL,envrec=NULL)
     dyn <- out$dyn
     zoneDD$exploitB[year,] <- dyn["exploitb",]
     zoneDD$midyexpB[year,] <- dyn["midyexpB",]
@@ -340,7 +341,15 @@ oneyearcat <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
 #'     are estimated after first estimating the exploitable biomass.
 #'     returning the revised zoneD, which will have had a single year
 #'     of activity included in each of its components. uses the function
-#'     imperr to introduce implementation error to the actual catches.
+#'     imperr to introduce implementation error to the actual catches. The
+#'     option now exists of including one or more years of pperturbation in
+#'     the survivorship of the recruitment level and post-larval numbers. This
+#'     is to permit heat wave and similar mortality events impacting on the
+#'     subsequent recruitment and immediate settled survivorship. To be active
+#'     envyr should be a vector or which projeciton eyars an impact will occur,
+#'     and envsurv will be a matrix with a row for each year with the proportion
+#'     of expected recruitment off the predicted stock recruitment relationship,
+#'     and the proportion survivorship of post-larval numbers-at-size).
 #'
 #' @param zoneCC the constant portion of the zone with a list of
 #'     properties for each population
@@ -360,9 +369,16 @@ oneyearcat <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
 #' @param b0 the unfished mature biomass B0, used in recruitment and depletion
 #' @param exb0 the unfished exploitable biomass used in depletion
 #' @param rdev the recruitment deviates for each SAU for the given year
+#' @param envyr if notNULL contains the projeciton years in which
+#'     perturbations in productiity will occur
+#' @param envsurv if notNULL contains post-larval survivorship for each year
+#'     in envyr this is by popultion
+#' @param envrec if notNULL contains the proportion of stock recruitment
+#'     in a given year that survives, by population
 #'
 #' @seealso{
-#'  \link{dohistoricC}, \link{oneyearcat}, \link{oneyearrec}
+#'  \link{dohistoricC}, \link{oneyearcat}, \link{oneyearrec},
+#'  \link{readctrlfile}
 #' }
 #'
 #' @return a list containing a revised dynamics list
@@ -370,24 +386,39 @@ oneyearcat <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
 #'
 #' @examples
 #' print("Wait on new data")
-#' #  zoneCC=zoneC;inN=inN;popC=popC;year=year;Ncl=glob$Nclass;sauindex=sauindex
-#' #  movem=glob$move;sigmar=1e-08;r0=r0;b0=b0;exb0=exb0;rdev=rdev;sigce=1e-08
-oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,
-                        movem,sigmar=1e-08,sigce=1e-08,r0,b0,exb0,rdev=-1) {
+#' #  zoneCC=zoneCP;inN=zoneDP$Nt[,year-1,,iter];popC=popC;year=year;
+#' #  Ncl=Nclass;sauindex=sauindex;movem=movem;sigmar=sigmar;sigce=sigce;
+#' #  r0=r0;b0=b0;exb0=exb0;rdev=-1;envyr=envyr;envsurv=survNt;envrec=proprec
+oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,movem,sigmar,
+                        sigce=1e-08,r0,b0,exb0,rdev=-1,envyr,envsurv,envrec) {
   npop <- length(popC)
   ans <- vector("list",npop)
+  if (year %in% envyr) {
+    pickeff <- which(envyr == year)
+    survNt <- envsurv[pickeff,]
+    proprec <- envrec[pickeff,]
+  }
   for (popn in 1:npop) {  # popn=1
+    survP <- 1.0
+    if (year %in% envyr) survP <- survNt[popn]
     pop <- zoneCC[[popn]]
     ans[[popn]] <- oneyearcat(MatWt=pop$MatWt,SelWt=pop$SelWt[,year],
                               selyr=pop$Select[,year],Me=pop$Me,G=pop$G,
-                              scalece=pop$scalece,WtL=pop$WtL,inNt=inN[,popn],
-                              incat=popC[popn],sigce=sigce,lambda=pop$lambda,
-                              qest=pop$qest)
+                              scalece=pop$scalece,WtL=pop$WtL,
+                              inNt=(inN[,popn] * survP),incat=popC[popn],
+                              sigce=sigce,lambda=pop$lambda,qest=pop$qest)
   }
   dyn <- sapply(ans,"[[","vect")
   steep <- getvect(zoneCC,"steeph") #sapply(zoneC,"[[","popdef")["steeph",]
-  if (rdev[1] > 0) rdev <- sautopop(rdev,sauindex)
-  recs <- oneyearrec(steep,r0,b0,dyn["matureb",],sigR=sigmar,devR=rdev)
+  if (year %in% envyr) {
+    rdev <- -1
+    sigRmod <- 10
+    recs <- oneyearrec(steep,r0,b0,dyn["matureb",],
+                       sigR=sigmar/sigRmod,devR=rdev) * proprec
+  } else {
+    if (rdev[1] > 0) rdev <- rdev[sauindex]
+    recs <- oneyearrec(steep,r0,b0,dyn["matureb",],sigR=sigmar,devR=rdev)
+  }
   recruits <- as.numeric(movem %*% recs)
   deplsB <- dyn["matureb",]/b0
   depleB <- dyn["exploitb",]/exb0 # end of year exploitB

@@ -613,7 +613,7 @@ datafiletemplate <- function(indir,filename="saudataEG.csv") {
 #' }
 readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
                          fisreadfun=NULL) {
-   # rundir=rundir; infile=controlfile; verbose=verbose
+   # rundir=rundir; infile=controlfile; verbose=TRUE; fisreadfun=NULL
    filenames <- dir(rundir)
    if (length(grep(infile,filenames)) != 1)
       stop(cat(infile," not found in ",rundir," \n"))
@@ -631,7 +631,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
      optpars <- exp(read.csv(paramfile,header=TRUE,row.names=1))
      parsin <- TRUE
    }
-   batch <- getsingleNum("batch",indat)
+   batch <- getsingleNum("batch",indat)  # deprecated
    reps <- getsingleNum("replicates",indat)
    withsigR <- getsingleNum("withsigR",indat)
    withsigB <- getsingleNum("withsigB",indat)
@@ -723,6 +723,26 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
       firstyear <- tail(hyrnames,1) + 1
       if (projyrs > 0) pyrnames <- firstyear:(firstyear + projyrs - 1)
    } # end of if(yrce == 0)
+   envimpact <- NULL  # will there be an environmental event or events?
+   environ <- getsingleNum("ENVIRON",indat)
+   if (!is.null(environ)) {
+      if (environ > 0) {
+         label <- c("eyr","proprec","propNt")
+         envimpact <- makelist(label)
+         begin <- grep("ENVIRON",indat) + 1
+         envimpact[["eyr"]] <- getConst(indat[begin],nb=environ,index=2) + hyrs
+         proprec <- matrix(0,nrow=environ,ncol=nSAU,
+                           dimnames=list(envimpact[["eyr"]],SAUnames))
+         propNt <- proprec
+         for (i in 1:environ)
+            proprec[i,] <- getConst(indat[begin+i],nb=nSAU,index=2)
+         envimpact[["proprec"]] <- proprec
+         begin <- begin + environ
+         for (i in 1:environ)
+            propNt[i,] <- getConst(indat[begin+i],nb=nSAU,index=2)
+         envimpact[["propNt"]] <- propNt
+      }
+   }  # end of use envimpact
    yearFIS <- NULL
    fisindex <- NULL
    yrfis <- getsingleNum("FISINDEX",indat)
@@ -800,7 +820,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
    globals <- list(numpop=numpop, nSAU=nSAU, midpts=midpts,Nclass=Nclass,
                    reps=reps,hyrs=hyrs,pyrs=projyrs,hyrnames=hyrnames,
                    pyrnames=pyrnames,saunames=SAUnames,SAUpop=SAUpop,
-                   larvdisp=larvdisp,indexCE=indexCE)
+                   larvdisp=larvdisp,indexCE=indexCE,envimpact=envimpact)
    totans <- list(SAUnames,SAUpop,minc,cw,larvdisp,randomseed,
                   initLML,condC,projC,globals,outctrl,catches,projyrs)
    names(totans) <- c("SAUnames","SAUpop","minc","cw","larvdisp","randomseed",

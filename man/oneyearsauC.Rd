@@ -12,12 +12,15 @@ oneyearsauC(
   Ncl,
   sauindex,
   movem,
-  sigmar = 1e-08,
+  sigmar,
   sigce = 1e-08,
   r0,
   b0,
   exb0,
-  rdev = -1
+  rdev = -1,
+  envyr,
+  envsurv,
+  envrec
 )
 }
 \arguments{
@@ -51,6 +54,15 @@ exploitable biomass, set to 1e-08 when searching for an equilibrium.}
 \item{exb0}{the unfished exploitable biomass used in depletion}
 
 \item{rdev}{the recruitment deviates for each SAU for the given year}
+
+\item{envyr}{if notNULL contains the projeciton years in which
+perturbations in productiity will occur}
+
+\item{envsurv}{if notNULL contains post-larval survivorship for each year
+in envyr this is by popultion}
+
+\item{envrec}{if notNULL contains the proportion of stock recruitment
+in a given year that survives, by population}
 }
 \value{
 a list containing a revised dynamics list
@@ -61,15 +73,25 @@ oneyearsauC conducts one year's dynamics in the simulation
     are estimated after first estimating the exploitable biomass.
     returning the revised zoneD, which will have had a single year
     of activity included in each of its components. uses the function
-    imperr to introduce implementation error to the actual catches.
+    imperr to introduce implementation error to the actual catches. The
+    option now exists of including one or more years of pperturbation in
+    the survivorship of the recruitment level and post-larval numbers. This
+    is to permit heat wave and similar mortality events impacting on the
+    subsequent recruitment and immediate settled survivorship. To be active
+    envyr should be a vector or which projeciton eyars an impact will occur,
+    and envsurv will be a matrix with a row for each year with the proportion
+    of expected recruitment off the predicted stock recruitment relationship,
+    and the proportion survivorship of post-larval numbers-at-size).
 }
 \examples{
 print("Wait on new data")
-#  zoneCC=zoneC;inN=inN;popC=popC;year=year;Ncl=glob$Nclass;sauindex=sauindex
-#  movem=glob$move;sigmar=1e-08;r0=r0;b0=b0;exb0=exb0;rdev=rdev;sigce=1e-08
+#  zoneCC=zoneCP;inN=zoneDP$Nt[,year-1,,iter];popC=popC;year=year;
+#  Ncl=Nclass;sauindex=sauindex;movem=movem;sigmar=sigmar;sigce=sigce;
+#  r0=r0;b0=b0;exb0=exb0;rdev=-1;envyr=envyr;envsurv=survNt;envrec=proprec
 }
 \seealso{
 {
- \link{dohistoricC}, \link{oneyearcat}, \link{oneyearrec}
+ \link{dohistoricC}, \link{oneyearcat}, \link{oneyearrec},
+ \link{readctrlfile}
 }
 }

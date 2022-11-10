@@ -1,5 +1,5 @@
 #
-# postfixdir <- "BCwid3"
+# postfixdir <- "EG"
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
@@ -21,6 +21,9 @@
 # mincount=100
 # includeNAS=FALSE
 # depensate=1
+# pmwtSwitch = 0
+# stablewts = c(0.4, 0.5, 0.1)
+# hcrname="mcdahcr"
 
 
 #' @title do_MSE an encapsulating function to hold the details of a single run
@@ -181,7 +184,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
     }
   }
   # do projections ------------------------------------------------------------
-  if (verbose) cat("Doing the projections \n")
+  if (verbose) cat("Preparing for the projections \n")
   outpp <- prepareprojection(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
                              calcpopC=calcpopC,zoneDD=zoneDD,
                              ctrl=ctrl,varyrs=varyrs,lastsigR = ctrl$withsigR)
@@ -189,6 +192,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   projC <- outpp$projC
   zoneCP <- outpp$zoneCP
  # Rprof()  #  ctrl$reps=25
+  if (verbose) cat("Doing the projections \n")
   outproj <- doprojections(ctrl=ctrl,zoneDP=zoneDP,zoneCP=zoneCP,glb=glb,
                            hcrfun=hcrfun,hsargs=hsargs,sampleCE=sampleCE,
                            sampleFIS=sampleFIS,sampleNaS=sampleNaS,

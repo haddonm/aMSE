@@ -8,7 +8,7 @@ sauquantbyscene(invar, glb)
 }
 \arguments{
 \item{invar}{the output from the scenebyvar function which should be an array
-of nyrs x nsau x replicates for the variale selected, be it catch, cpue,
+of nyrs x nsau x replicates for the variable selected, be it catch, cpue,
 matureB, etc.}
 
 \item{glb}{the globals object. The comparisons invovled imply that all

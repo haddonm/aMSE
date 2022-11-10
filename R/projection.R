@@ -193,7 +193,6 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 #'
 #' @examples
 #' print("wait on suitable internal data sets")
-#' # switched year and iter in the loops
 doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
                           sampleCE,sampleFIS,sampleNaS,getdata,calcpopC,
                           makehcrout,verbose=FALSE,...) {
@@ -217,6 +216,21 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
   b0 <- getvar(zoneCP,"B0") #sapply(zoneC,"[[","B0")
   exb0 <- getvar(zoneCP,"ExB0")
   hcrout <- makehcrout(glb,hsargs)
+  envyr <- NULL
+  survNt <- NULL
+  proprec <- NULL
+  if (!is.null(glb$envimpact)) {
+    envimpact <- glb$envimpact
+    envyr <- envimpact[["eyr"]]
+    neyr <- length(envyr)
+    npop <- glb$numpop
+    survNt <- matrix(0,nrow=neyr,ncol=npop,dimnames=list(envyr,1:npop))
+    proprec <- survNt
+    for (i in 1:neyr) {
+      survNt[i,] <- envimpact[["propNt"]][i,sauindex]
+      proprec[i,] <- envimpact[["proprec"]][i,sauindex]
+    }
+  }
   for (year in startyr:endyr) { # iter=1; year=startyr
     if (verbose) cat(year,"   ")
       for (iter in 1:reps) {
@@ -232,8 +246,8 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
                        sauindex,sigmab=sigmab)
       outy <- oneyearsauC(zoneCC=zoneCP,inN=zoneDP$Nt[,year-1,,iter],
                           popC=popC,year=year,Ncl=Nclass,sauindex=sauindex,
-                          movem=movem,sigmar=sigmar,sigce,
-                          r0=r0,b0=b0,exb0=exb0)
+                          movem=movem,sigmar=sigmar,sigce=sigce,r0=r0,b0=b0,
+                          exb0=exb0,envyr=envyr,envsurv=survNt,envrec=proprec)
       dyn <- outy$dyn
       saudyn <- poptosauCE(dyn["catch",],dyn["cpue",],sauindex)
       zoneDP$exploitB[year,,iter] <- dyn["exploitb",]
@@ -548,7 +562,8 @@ addrecvar <- function(zoneDD,zoneC,glob,condC,ctrl,varyrs,calcpopC,
       inN <- zoneDDR$Nt[,year-1,,iter]
       out <- oneyearsauC(zoneCC=zoneC,inN=inN,popC=popC,year=year,
                          Ncl=glob$Nclass,sauindex=sauindex,movem=glob$move,
-                         sigmar=lastsigR,r0=r0,b0=b0,exb0=exb0,rdev=condC$recdevs)
+                         sigmar=lastsigR,sigce=1e-08,r0=r0,b0=b0,exb0=exb0,
+                         rdev=condC$recdevs,envyr=NULL,envsurv=NULL)
       dyn <- out$dyn
       saudyn <- poptosauCE(dyn["catch",],dyn["cpue",],sauindex)
       zoneDDR$exploitB[year,,iter] <- dyn["exploitb",]

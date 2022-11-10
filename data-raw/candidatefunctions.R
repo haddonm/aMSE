@@ -776,19 +776,21 @@ sapply(ans$sum10,function(x) apply(x,2,median))
 
 
 
-
-
-
+out <- do_comp_outputs(result,projonly=TRUE)
 cpue <- scenebyvar(dyn=out$dyn,byvar="cpue",glb=out$glbc[[1]])
-
-
 cpueqnts <- sauquantbyscene(cpue,out$glbc[[1]])
 
+catch <- scenebyvar(dyn=out$dyn,byvar="catch",glb=out$glbc[[1]])
+catqnts <- sauquantbyscene(catch,out$glbc[[1]])
 
-plotprep(width=9, height=5)
-parset(cex=1.1)
-doquantplot(cpueqnts[[5]],"CPUE_sau10",yrnames=out$glbc[[1]]$pyrnames,
-            scenes=out$scenes,q90=TRUE,polys=TRUE,intens=100,addleg=TRUE)
+
+
+
+
+
+
+sauribbon("",scenes=out$scenes,sau=8,varqnts=catqnts,glb=out$glbc[[1]],
+          varname="Catch",console=TRUE,q90=TRUE,intens=100,addleg="bottomright")
 
 
 

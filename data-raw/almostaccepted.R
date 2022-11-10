@@ -1,49 +1,9 @@
 
 
 
-
-options("show.signif.stars"=FALSE,
-        "stringsAsFactors"=FALSE,
-        "max.print"=50000,
-        "width"=240)
-suppressPackageStartupMessages({
-  library(aMSE)
-  library(TasHS)
-  library(hutils)
-  library(hplot)
-  library(makehtml)
-  library(knitr)
-})
-dropdir <- getDBdir()
-prefixdir <- paste0(dropdir,"A_codeUse/aMSEUse/scenarios/")
-
-startime <- Sys.time()
-postfixdir <- "HS856"
-verbose <- TRUE
-rundir <- filenametopath(prefixdir,postfixdir)
-controlfile <- paste0("control",postfixdir,".csv")
-outdir <- "C:/aMSE_scenarios/M15h7L75/"
-confirmdir(rundir)
-confirmdir(outdir)
-
-
-hsargs <- list(mult=0.1,
-               wid = 4,
-               targqnt = 0.55,
-               maxtarg = c(150,150,150,150,150,150,150,150),
-               pmwts = c(0.65,0.25,0.1),
-               hcr = c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2),
-               startCE = 1992,
-               endCE = 2012)
-
-
-
-
-
-
 # naked do_MSE without producing all the plots etc
-
-postfixdir <- "HS856"
+#
+postfixdir <- "EG"
 rundir <- rundir
 controlfile=controlfile
 hsargs=hsargs
@@ -65,7 +25,50 @@ wtatL = c(80,200)
 mincount=100
 
 
-zone <- makeequilzone(rundir=rundir,ctrlfile=controlfile,doproduct=TRUE,verbose=TRUE)
+options("show.signif.stars"=FALSE,
+        "stringsAsFactors"=FALSE,
+        "max.print"=50000,
+        "width"=240)
+suppressPackageStartupMessages({
+  library(aMSE)
+  library(TasHS)
+  library(codeutils)
+  library(hplot)
+  library(makehtml)
+  library(knitr)
+})
+dropdir <- getDBdir()
+prefixdir <- paste0(dropdir,"A_codeUse/aMSEUse/hsargs/")
+
+startime <- Sys.time()
+postfixdir <- "EGenv1"
+verbose <- TRUE
+rundir <- filenametopath(prefixdir,postfixdir)
+controlfile <- paste0("control",postfixdir,".csv")
+outdir <- "C:/aMSE_scenarios/hsargs/"
+confirmdir(rundir)
+confirmdir(outdir)
+
+
+hsargs <- list(mult=0.1, # expansion factor for cpue range when calc the targqnt
+               wid = 4, # number of years in the grad4 PM
+               targqnt = 0.55, # quantile defining the cpue target
+               maxtarg = c(150,150,150,150,150,150,150,150), # max cpue Target
+               pmwts = c(0.65,0.25,0.1),  # relative weights of PMs
+               hcr = c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2), # hcr multipliers
+               startCE = 1992, # used in constant reference period HS
+               endCE = 2020,   # used in constant reference period HS
+               metRunder = 2,  # should the metarules be used. o =
+               metRover = 2,   # use metarules
+               decrement=1, # use fishery data up to the end of the time series
+               pmwtSwitch = 0,
+               stablewts = c(0.4, 0.5, 0.1),
+               hcrname="mcdahcr")
+
+
+
+
+zone <- makeequilzone(rundir=rundir,ctrlfile=controlfile,doproduct=FALSE,verbose=TRUE)
 
 # declare main objects ----------------------------------------------------
 glb <- zone$glb
@@ -86,7 +89,7 @@ if (any(condC$initdepl < 1)) {
   zoneD <- depleteSAU(zoneC,zoneD,glb,initdepl=initdepl,production)
 }
 if (verbose) cat("Conditioning on the Fishery data  \n")
-zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,condC,calcpopC=calcpopC,
+zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,condC,calcpopC=calcexpectpopC,
                       sigR=1e-08,sigB=1e-08)
 hyrs <- glb$hyrs
 popdefs <- as.data.frame(t(getlistvar(zoneC,"popdef")))
@@ -98,7 +101,7 @@ sauCt <- popNAStosau(catchN,glb)
 compdat <- condC$compdat$lfs
 if (!is.null(compdat)) {
   for (plotsau in 1:glb$nSAU) {
-    lfs <- preparesizecomp(compdat[,,plotsau],mincount=mincount)
+    lfs <- preparesizecomp(compdat[,,plotsau],mincount=120)
     yrsize <- as.numeric(colnames(lfs))
     histyr <- condC$histyr
     pickyr <- match(yrsize,histyr[,"year"])
@@ -108,8 +111,8 @@ if (!is.null(compdat)) {
 # do projections ------------------------------------------------------------
 if (verbose) cat("Doing the projections \n")
 outpp <- prepareprojection(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
-                           calcpopC=calcpopC,zoneDD=zoneDD,
-                           ctrl=ctrl,varyrs=varyrs,lastsigR = ctrl$withsigR)
+                           calcpopC=calcexpectpopC,zoneDD=zoneDD,
+                           ctrl=ctrl,varyrs=7,lastsigR = ctrl$withsigR)
 zoneDP <- outpp$zoneDP
 projC <- outpp$projC
 zoneCP <- outpp$zoneCP
@@ -130,25 +133,33 @@ movem <- glb$move
 r0 <- getvar(zoneCP,"R0") #R0 by population
 b0 <- getvar(zoneCP,"B0") #sapply(zoneC,"[[","B0")
 exb0 <- getvar(zoneCP,"ExB0")
-hcrout <- makehcrout(glb,hsargs)
-for (iter in 1:reps) {
-  if (verbose) if ((iter %% 25) == 0) cat(iter,"   ")
-  for (year in startyr:endyr) { # iter=1; year=startyr
+hcrout <- makeouthcr(glb,hsargs)
+impactyrs <- NULL
+impactsurv <- NULL
+if (!is.null(glb$envimpact)) {
+  envimpact <- glb$envimpact
+  impactyrs <- sapply(envimpact,"[[","eyr")
+  impactsurv <- cbind(sapply(envimpact,"[[","proprec"),
+                      sapply(envimpact,"[[","propNt"))
+  colnames(impactsurv) <- c("proprec","propNt")
+}
+for (year in startyr:endyr) { # iter=1; year=startyr
+  if (verbose) cat(year,"   ")
+  for (iter in 1:reps) {
     hcrdata <- getdata(sampleCE,sampleFIS,sampleNaS,
                        sauCPUE=zoneDP$cesau[,,iter],
                        sauacatch=zoneDP$acatch[,,iter],
                        sauNAS=list(Nt=zoneDP$Nt[,,,iter],
                                    catchN=zoneDP$catchN[,,,iter],
                                    NumNe=zoneDP$NumNe[,,,iter]),
-                       year=year)
+                       year=year,decrement=hsargs$decrement)
     hcrout <- hcrfun(hcrdata,hsargs,saunames=glb$saunames)
     popC <- calcpopC(hcrout,exb=zoneDP$exploitB[year-1,,iter],
                      sauindex,sigmab=sigmab)
     outy <- oneyearsauC(zoneCC=zoneCP,inN=zoneDP$Nt[,year-1,,iter],
                         popC=popC,year=year,Ncl=Nclass,sauindex=sauindex,
-                        movem=movem,sigmar=sigmar,sigce,
-                        r0=r0,b0=b0,exb0=exb0)
-    dyn <- outy$dyn
+                        movem=movem,sigmar=sigmar,sigce,r0=r0,b0=b0,
+                        exb0=exb0,envyr=impactyrs,envsurv=impactsurv)
     saudyn <- poptosauCE(dyn["catch",],dyn["cpue",],sauindex)
     zoneDP$exploitB[year,,iter] <- dyn["exploitb",]
     zoneDP$midyexpB[year,,iter] <- dyn["midyexpB",]
@@ -207,14 +218,28 @@ out <- list(tottime=tottime,projtime=projtime,starttime=starttime,glb=glb,
 
 
 
-getDBdir2 <- function() {
-  if (dir.exists("./../../../Dropbox")) {
-    prefixdir <- "./../../../Dropbox/"
-  } else {
-    prefixdir <- NULL
-    stop("No dropbox directory found \n")
-  }
-  return(prefixdir)
-}
 
-x <- getDBdir2()
+
+
+proprec <- envimpact[["proprec"]]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

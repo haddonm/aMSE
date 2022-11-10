@@ -65,7 +65,7 @@ boxbysau <- function(rundir,hspm,glbc,scenes,compvar="aavc",filen="",aavcyrs=10,
                   "sum10" = "Sum of Catches over first 10 Years")
   mtext(label,side=1,outer=TRUE,line=-0.3,cex=1.0)
   if (nchar(filen) > 0)
-    addplot(filen=filen,rundir=rundir,category="catches",caption)
+    addplot(filen=filen,rundir=rundir,category="catchBoxPlots",caption)
 } # end of boxbysau
 
 
@@ -608,13 +608,13 @@ cpueboxbysau <- function(rundir,cpue,glbc,scenes,filen="",startyr=0,maxval=0) {
   label <- "Years to Maximum Median CPUE by sau"
   mtext(label,side=1,outer=TRUE,line=-0.3,cex=1.0)
   if (nchar(filen) > 0) {
-    addplot(filen=filen2,rundir=rundir,category="cpue",caption)
+    addplot(filen=filen2,rundir=rundir,category="cpueBoxPlots",caption)
     filen3 <- unlist(strsplit(filen,".",fixed=TRUE))[1]
     filen3 <- paste0(filen3,".csv")
     filen <- filenametopath(rundir,filen3)
     write.csv(cpuebox,file=filen)
     caption <- "Years to maximum median cpue by sau from boxplots."
-    addtable(cpuebox,filen3,rundir=rundir,category="cpue",caption)
+    addtable(cpuebox,filen3,rundir=rundir,category="cpueBoxPlots",caption)
   }
   return(invisible(cpuebox))
 } # end of cpueboxbysau
@@ -677,7 +677,7 @@ cpueHSPM <- function(rundir,cpue,glbc,scenes,filen="",startyr=0) {
     boxresult[[i]] <- qsstats
   }
   if (nchar(filen) > 0)
-    addplot(filen=filen,rundir=rundir,category="cpue",caption)
+    addplot(filen=filen,rundir=rundir,category="cpueBoxPlots",caption)
   return(invisible(boxresult))
 } #end of cpueHSPM
 
@@ -698,9 +698,11 @@ cpueHSPM <- function(rundir,cpue,glbc,scenes,filen="",startyr=0) {
 #' @param files the vector of file names to be used.
 #' @param pickfiles a vector of indices selecting the files to be used.
 #' @param verbose should progress updates be made to the console, default=TRUE
+#' @param intensity is the density of the rgb colours used in the ribbon plots.
+#'     the default = 100
 #'
 #' @seealso{
-#'    \link{scenebyvar}, \link{scenebyzone}
+#'    \link{scenebyvar}, \link{scenebyzone}. \link{RGB}
 #' }
 #'
 #' @return nothing but it does conduct a comparison of at least two scenarios
@@ -725,8 +727,9 @@ cpueHSPM <- function(rundir,cpue,glbc,scenes,filen="",startyr=0) {
 #'   files=c("BC.RData","BC433.RData","BC541.RData")
 #'   do_comparison(rundir,postfixdir,outdir,files,pickfiles=c(1,2,3))
 #' }
-do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE) {
-#rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(10,11);verbose=TRUE
+do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
+                          intensity=100) {
+#rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(1,12,13,14);verbose=TRUE
   files2 <- files[pickfiles]
   nfile <- length(pickfiles)
   label <- vector(mode="character",length=nfile)
@@ -799,8 +802,23 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE)
                   label="Catch / MSY",hline=1,Q=90)
   }
   plotzonedyn(rundir,scenes,zone,glbc[[1]],console=FALSE,q90=TRUE,polys=TRUE,
-              intens=127)
-
+              intens=intensity)
+  # ribbon plots by sau and dynamic variable
+  # cpue <- scenebyvar(dyn=out$dyn,byvar="cpue",glb=out$glbc[[1]])
+  glb <- glbc[[1]]
+  catch <- scenebyvar(dyn,byvar="catch",glb=glb,projonly = TRUE)
+  catqnts <- sauquantbyscene(catch,glb)
+  nsau <- glbc[[1]]$nSAU
+  for (sau in 1:nsau)
+    sauribbon(rundir,scenes=scenes,sau=sau,varqnts=catqnts,
+              glb=glb,varname="Catch",console=FALSE,
+              q90=TRUE,intens=intensity,addleg="bottomright")
+  cpue <- scenebyvar(dyn,byvar="cpue",glb=glb,projonly = TRUE)
+  cpueqnts <- sauquantbyscene(cpue,glb)
+  for (sau in 1:nsau)
+    sauribbon(rundir,scenes=scenes,sau=sau,varqnts=cpueqnts,
+              glb=glb,varname="cpue",console=FALSE,
+              q90=TRUE,intens=intensity,addleg="bottomright")
   makecompareoutput(rundir=rundir,glbc,scenes,postfixdir,
                     filesused=files[pickfiles],openfile=TRUE,verbose=FALSE)
   return(invisible(list(scenes=scenes,ans=ans,quantscen=quantscen)))
@@ -945,6 +963,70 @@ doquantplot <- function(varq,varname,yrnames,scenes,q90,polys,intens=127,
     legend(locate,legend=scenes,col=1:nscen,lwd=3,bty="n",cex=1.1)
   }
 } # end of doquantplot
+
+#' @title doquantribbon generates a ribbon of multiple quantile values
+#'
+#' @description doquantribbon is used when trying to present a summary of multiple
+#'     scenarios applied across a sequence of years (for example in the
+#'     projection years of an MSE). It assumes that for each scenario quantiles
+#'     have been calculated for each year so that the input array if 5 x nyrs x
+#'     nscenes, where nyrs is the number of years and nscenes is the number of
+#'     scenarios. Five quantiles are assumed with values
+#'     probs=c(0.025, 0.05, 0.5, 0.95 0.975), and the option exists of plotting
+#'     either the 90th (0.05 and 0.95) or the 95th (0.025, 0.975). If the input
+#'     quantiles have different values then the 'q90' argument,if TRUE, will
+#'     reference the 2nd and 4th row and the 1st and 5th if FALSE. If polys is
+#'     TRUE then filled transparent polygons will be plotted, with colours in
+#'     the same sequence as the scenarios, alternatively, if polys=FALSE, then
+#'     lines will be plotted instead. This function is currently only used by
+#'     sauribbon.
+#'
+#' @param varq an array of quantiles with dimensions the 5 quantiles of the
+#'     variable in question (2.5, 5, 50, 95 97.5), by years, the number of
+#'     years for which quantiles are available
+#' @param varname The names of the variable being summarized, used as the
+#'     y-label on the plot
+#' @param yrnames the numeric values of the years to be plotted. Used as the
+#'     x-axis as well as the x-axis labels
+#' @param scenes the names given to the different scenarios
+#' @param q90 should the 90th or 95th quantiles be plotted, TRUE = 90th
+#' @param intens if polys=TRUE then intens signifies the intensity of colour on
+#'     a scale of 0 - 255. 127 is about 50 percent dense.
+#' @param addleg add a legend? default="bottomright"
+#'
+#' @seealso {
+#'    \link{sauribbon}, \link{RGB}
+#' }
+#'
+#' @return nothing but it does add polygonsto a plot
+#' @export
+#'
+#' @examples
+#' print("wait on datasets")
+doquantribbon <- function(varq,varname,yrnames,scenes,q90,intens=127,
+                          addleg="bottomright") {
+  maxy <- getmax(varq)
+  nscen <- length(scenes)
+  plot(yrnames,varq[3,,1],type="l",lwd=2,col=0,xlab="",ylab=varname,
+       panel.first=grid(),ylim=c(0,maxy))
+  for (i in 1:nscen) {
+    if (q90) {
+      poldat <- makepolygon(varq[2,,i],varq[4,,i],yrnames)
+      polygon(poldat,col=RGB(i,alpha=intens))
+    } else {
+      poldat <- makepolygon(varq[1,,i],varq[5,,i],yrnames)
+      polygon(poldat,col=RGB(i,alpha=intens))
+    }
+  }
+  if (nchar(addleg) > 0) {
+    if (addleg %in% c("topleft","topright","bottomleft","bottomright")) {
+      legend(addleg,legend=scenes,col=1:nscen,lwd=3,bty="n",cex=1.1)
+    } else {
+      cat("Inappropriate legend location given \n")
+    }
+  }
+} # end of doquantribbon
+
 
 #' @title makecompareoutput generates HTML files when comnparing scenarios
 #'
@@ -1314,7 +1396,7 @@ plotzonedyn <- function(rundir,scenes,zone,glb,console=TRUE,
 #'     doquantplot, or whatever other analysis is required.
 #'
 #' @param invar the output from the scenebyvar function which should be an array
-#'     of nyrs x nsau x replicates for the variale selected, be it catch, cpue,
+#'     of nyrs x nsau x replicates for the variable selected, be it catch, cpue,
 #'     matureB, etc.
 #' @param glb the globals object. The comparisons invovled imply that all
 #'     scenarios considered should have the same number of years and replicates.
@@ -1350,6 +1432,67 @@ sauquantbyscene <- function(invar,glb) {
   }
   return(sauquant)
 } # end of sauquantbyscene
+
+
+#' @title sauribbon a ribbon plot the quantiles x scenes for the input variable
+#'
+#' @description sauribbon is used to produce a ribbon plot for a given sau across
+#'     a set of scenarios for a given variable (cpue, catch, harvest rate, etc)
+#'     out of the dynamics object. After running do_comparison
+#'
+#' @param rundir the directory in which all results are held for a scenario or
+#'     comparison of scenarios
+#' @param scenes the names of the different scenarios being compared
+#' @param sau a number from 1:nsau identifying which sau's dat to plot
+#' @param varqnts the qunatiles for each scenario as output by sauquantbyscene
+#' @param glb one of the global objects from out. They should all have the
+#'     same reps and years.
+#' @param varname just the name of the variable being plotted, to make sure the
+#'     figures all have the correct labelling
+#' @param console should the plot be sent to the console or saved for use in the
+#'     web-page output? default=TRUE, set to FALSE to save it
+#' @param q90 should the 90th quantiles be plotted? default=TRUE. If FALSE then
+#'     the 95th quantiles are used.
+#' @param intens if polys=TRUE then intens signifies the intensity of colour on
+#'     a scale of 0 - 255. 127 is about 50 percent dense.
+#' @param addleg add a legend or not. If not use "", if yes use any of topleft,
+#'     topright, bottomleft, or bottomright, default = bottomright.
+#'
+#' @seealso {
+#'   \link{sauquantbyscene}, \link{doquantribbon}, \link{do_comp_outputs}
+#' }
+#'
+#' @return nothing but it does generate a plot and saves it if console=FALSE
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'  # a possible example run where scenarios 1, 13, and 14 are compared.
+#'    result <- do_comparison(rundir=rundir,postfixdir=postfixdir,outdir=outdir,
+#'                            files=files,pickfiles=c(1,13,14),verbose=TRUE)
+#'    out <- do_comp_outputs(result,projonly=TRUE)
+#'    catch <- scenebyvar(dyn=out$dyn,byvar="catch",glb=out$glbc[[1]])
+#'    sauribbon("",scenes=out$scenes,sau=8,varqnts=catqnts,glb=out$glbc[[1]],
+#'    varname="Catch",console=TRUE,q90=TRUE,intens=100,addleg="bottomright")
+#' }
+sauribbon <- function(rundir,scenes,sau,varqnts,glb,varname,
+                      console=TRUE,q90=TRUE,intens=127,addleg="bottomright") {
+  filen <- ""
+  if (!console) {
+    filename <- paste0(glb$saunames[sau],"_ribbon.png")
+    filen <- filenametopath(rundir,filename)
+    caption <- paste0(varname," ribbon plot for ",glb$saunames[sau])
+  }
+  plotprep(width=8,height=4,newdev=FALSE,filename=filen,verbose=FALSE)
+  parset(cex=1.1,margin=c(0.35,0.5,0.05,0.05))
+  label <- paste0(varname,"_",glb$saunames[sau])
+  doquantribbon(varqnts[[sau]],label,yrnames=glb$pyrnames,
+                scenes=scenes,q90=TRUE,intens=intens,addleg=addleg)
+  if (!console) {
+    addplot(filen=filen,rundir=rundir,category=varname,caption)
+  }
+} # end of sauribbon
+
 
 #' @title scenebyvar extracts as sau x variable x scenario from do_comparison output
 #'

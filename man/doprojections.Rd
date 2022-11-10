@@ -77,7 +77,6 @@ doprojections conducts the replicate model runs for
 }
 \examples{
 print("wait on suitable internal data sets")
-# switched year and iter in the loops
 }
 \seealso{
 {
