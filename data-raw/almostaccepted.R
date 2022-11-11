@@ -41,7 +41,7 @@ dropdir <- getDBdir()
 prefixdir <- paste0(dropdir,"A_codeUse/aMSEUse/hsargs/")
 
 startime <- Sys.time()
-postfixdir <- "EGenv1"
+postfixdir <- "EG"
 verbose <- TRUE
 rundir <- filenametopath(prefixdir,postfixdir)
 controlfile <- paste0("control",postfixdir,".csv")
@@ -68,7 +68,7 @@ hsargs <- list(mult=0.1, # expansion factor for cpue range when calc the targqnt
 
 
 
-zone <- makeequilzone(rundir=rundir,ctrlfile=controlfile,doproduct=FALSE,verbose=TRUE)
+zone <- makeequilzone(rundir=rundir,ctrlfile=controlfile,doproduct=TRUE,verbose=TRUE)
 
 # declare main objects ----------------------------------------------------
 glb <- zone$glb
@@ -214,20 +214,6 @@ out <- list(tottime=tottime,projtime=projtime,starttime=starttime,glb=glb,
             NAS=NAS,projC=projC,condC=condC,sauout=sauout,outzone=outzone,
             hcrout=hcrout,production=production,condout=condout,
             HSstats=HSstats,saudat=saudat,constants=constants,hsargs=hsargs)
-
-
-
-
-
-
-
-proprec <- envimpact[["proprec"]]
-
-
-
-
-
-
 
 
 

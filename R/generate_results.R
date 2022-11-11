@@ -113,9 +113,7 @@ biology_plots <- function(rundir, glb, zoneC, matL=c(30,210), Lwt=c(80,210)) {
   numcol <- length(columns)
   resultpop <- matrix(0,nrow=numrow,ncol=numpop,
                       dimnames=list(rows,columns))
- # resultpop["SAU",] <- getlistvar(zoneC,"SAU") # no total
   resultpop["B0",] <- as.numeric(getlistvar(zoneC,"B0"))
- # wtr <- (results["B0",1:numpop]/results["B0",(numpop+nSAU+1)])
   resultpop["M",] <- as.numeric(getlistvar(zoneC,"Me"))
   resultpop["R0",] <- as.numeric(getlistvar(zoneC,"R0"))
   resultpop["ExB0",] <- as.numeric(getlistvar(zoneC,"ExB0"))
@@ -128,9 +126,10 @@ biology_plots <- function(rundir, glb, zoneC, matL=c(30,210), Lwt=c(80,210)) {
   resultpop["L95",] <- popdefs["L95",]
   resultpop["AvRec",] <- round(popdefs["AvRec",])
   resultpop["steep",] <- popdefs["steeph",]
+  plotrecruitment(rundir,resultpop,glb)
   res <- as.data.frame(t(round(resultpop,3)))
   res[,"SAU"] <- getlistvar(zoneC,"SAU")
-  filen <- paste0("zonebiology.csv")
+  filen <- "zonebiology.csv"
   caption <- "Population Biological Properties."
   addtable(res,filen,rundir=rundir,category="Tables",caption)
   # histograms of Me,Growth pars, MSY
@@ -497,3 +496,97 @@ plotproductivity <- function(rundir,product,glb) {
   return(invisible(sauprod))
 } # end of plotproductivity
 
+#' @title plotrecruitment literally plots stock-recruitment relationships
+#'
+#' @description plotrecruitment plots an approximation to the summarized
+#'     stock recruitment relationship for each sau together on the same plot.
+#'     It also plots the stock-recruitment relationship for each population
+#'     within each sau, which illustrates the distribution of the recruitment
+#'     total at the sau level distributed relative to yield from the areas of
+#'     persistent production results. Finally, it tabulates the sau results.
+#'
+#' @param rundir the scenarios results directory
+#' @param resultpop a summary of the biological properties of each population
+#'     generated in the biology_plots function.
+#' @param glb the globals object
+#'
+#' @return nothing but it does save two figures and a table into rundir
+#' @export
+#'
+#' @examples
+#' print("wait on data sets")
+plotrecruitment <- function(rundir,resultpop,glb) {
+  usevar <- c("R0","B0","ExB0","MSY")
+  nvar <- length(usevar)
+  allvar=c(usevar,"steep")
+  numrow <- length(allvar)
+  nsau <- glb$nSAU
+  saunames <- glb$saunames
+  sauindex <- glb$sauindex
+  saures <- matrix(0,nrow=numrow,ncol=nsau,dimnames=list(allvar,saunames))
+  for (i in 1:nvar) {
+    saures[usevar[i],] <- tapply(resultpop[usevar[i],],sauindex,sum,na.rm=TRUE)
+  }
+  saures["steep",] <- tapply(resultpop["steep",],sauindex,mean,na.rm=TRUE)
+  filen <- "sauproductivity_properties.csv"
+  caption <- "sau Biological Properties relating to recruitment and productivity."
+  addtable(round(saures,4),filen,rundir=rundir,category="Tables",caption)
+
+  #plot each sau BH relation together
+  filen <- filenametopath(rundir,"All_sau_recruitment.png")
+  plotprep(width=8, height=4.5,filename=filen,verbose=FALSE)
+  parset(cex=0.9)
+  ymax <- getmax(saures["R0",])
+  pickmax <- which.max(saures["R0",])
+  steep <- saures["steep",pickmax]
+  R0 <- saures["R0",pickmax]
+  B0 <- saures["B0",pickmax]
+  Bsp <- seq(0,B0,length=100)
+  rec <- ((4*steep*R0*Bsp)/((1-steep)*B0+(5*steep-1)*Bsp))
+  plot(Bsp,rec,type="l",lwd=2,col=1,xlab="Spawning Biomass t",
+       ylab="Recruitment", panel.first=grid(),ylim=c(0,ymax))
+  for (sau in 1:nsau) {
+    steep <- saures["steep",sau]
+    R0 <- saures["R0",sau]
+    B0 <- saures["B0",sau]
+    rec <- ((4*steep*R0*Bsp)/((1-steep)*B0+(5*steep-1)*Bsp))
+    lines(Bsp,rec,lwd=2,col=sau)
+  }
+  legend("topleft",legend=saunames,col=1:nsau,lwd=3,bty="n")
+  caption <- paste0("The Stock-Recruitment relationships for each sau.")
+  addplot(filen,rundir=rundir,category="Recruits",caption)
+
+  filen <- filenametopath(rundir,"Each_Populations_recruitment.png")
+  plotprep(width=7, height=9,filename=filen,verbose=FALSE)
+  parset(plots=pickbound(nsau),margin=c(0.3,0.4,0.05,0.1),
+         outmargin=c(1,1,0,0), cex=0.9,byrow=FALSE)
+  for (sau in 1:nsau) {
+    pickcol <- which(sauindex == sau)
+    nextra <- length(pickcol)
+    tmp <- resultpop[,pickcol]
+    ymax <- getmax(tmp["R0",])
+    pickmax <- which.max(tmp["R0",])
+    steep <- tmp["steep",pickmax]
+    R0 <- tmp["R0",pickmax]
+    B0 <- tmp["B0",pickmax]
+    Bsp <- seq(0,B0,length=100)
+    rec <- ((4*steep*R0*Bsp)/((1-steep)*B0+(5*steep-1)*Bsp))
+    plot(Bsp,rec,type="l",lwd=1,col=0,xlab="",ylab=saunames[sau],
+         panel.first=grid(),ylim=c(0,ymax))
+    for (i in 1:nextra) {
+      steep <- tmp["steep",i]
+      R0 <- tmp["R0",i]
+      B0 <- tmp["B0",i]
+      Bsp <- seq(0,B0,length=100)
+      rec <- ((4*steep*R0*Bsp)/((1-steep)*B0+(5*steep-1)*Bsp))
+      lines(Bsp,rec,lwd=2,col=i)
+    }
+  }
+  mtext("Spawning Biomass t",side=1,outer=TRUE,cex=1.1,
+        line=-0.2)
+  mtext("Recruitment by Population",side=2,outer=TRUE,cex=1.1,
+        line=-0.1)
+  caption <- paste0("The Stock-Recruitment relationships for each ",
+                    "population in each sau.")
+  addplot(filen,rundir=rundir,category="Recruits",caption)
+} # end of plotrecruitment

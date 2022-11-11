@@ -45,6 +45,10 @@ examine its implications.
 
 # LATEST UPDATE
 
+-   2022-11-11 aMSE 0.0.23 Added a new tab = recruits, containing plots
+    of the stock recruitment relationships at an sau and at a population
+    within sau level. Added a table to the Tables tab.
+
 -   2022-11-10 aMSE 0.0.22 now have the capacity to introduce
     productivity events in specific projection years. This can now be
     done at sau specific levels. One defines the survivorship of
