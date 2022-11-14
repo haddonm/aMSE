@@ -414,7 +414,7 @@ oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,movem,sigmar,
     rdev <- -1
     sigRmod <- 10
     recs <- oneyearrec(steep,r0,b0,dyn["matureb",],
-                       sigR=sigmar/sigRmod,devR=rdev) * proprec
+                       sigR=sigmar,devR=rdev) * proprec
   } else {
     if (rdev[1] > 0) rdev <- rdev[sauindex]
     recs <- oneyearrec(steep,r0,b0,dyn["matureb",],sigR=sigmar,devR=rdev)
@@ -543,7 +543,7 @@ oneyearrec <- function(steep,R0,B0,Bsp,sigR,devR=-1,depensate=0) { #
   } else {
     epsilon <- exp(rnorm(length(Bsp),mean=0,sd=sigR) - (sigR * sigR)/2)
   }
-  if ((depensate < 0)) { # not yet implemented
+  if ((depensate > 0)) { # not yet implemented
     bcurr <- B0 * depensate
     thres <- ((4*steep*R0*bcurr)/((1-steep)*B0+(5*steep-1)*bcurr))
     rec <- ((Bsp/B0)/depensate) * thres * epsilon
