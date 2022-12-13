@@ -6,19 +6,20 @@
 \usage{
 finalscoreoutputs(
   rundir,
-  cpueHSPMs,
+  HSPMs,
   cpue,
   catches,
   glb,
   yearCE,
   hsargs,
-  verbose = TRUE
+  verbose = TRUE,
+  ...
 )
 }
 \arguments{
 \item{rundir}{the directory for a given scenario}
 
-\item{cpueHSPMs}{is a function defined in the HS package that reconstructs
+\item{HSPMs}{is a function defined in the HS package that reconstructs
 the cpue HSPM scores, and other measures ready for plotting}
 
 \item{cpue}{the projected cpue dynamics from out$sauout$zonePsau$cpue}
@@ -33,6 +34,9 @@ model, found in condC$yearCE.}
 \item{hsargs}{the list of arguments required by the HS}
 
 \item{verbose}{should updates on progress be sent to console? default=TRUE}
+
+\item{...}{required in case whatever function is pointed at HSPMs requires
+more than cpue}
 }
 \value{
 a list of two lists. The first being outHS containing all the
@@ -48,7 +52,7 @@ finalscoreoutputs is used to reconstruct the harvest strategy
 }
 \examples{
 print("wait on data sets, example soon")
-# rundir=rundir;cpueHSPMs=cpueHSPMs;cpue=sauout$cpue;
+# rundir=rundir;HSPMs=HSPMs;cpue=sauout$cpue;
 # catches=sauout$catches;glb=glb;yearCE=condC$yearCE
 # hsargs=hsargs
 }

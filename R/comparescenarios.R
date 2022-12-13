@@ -367,7 +367,7 @@ comparevar <- function(dyn,glbc,scenes,var="cpue") {
 #'     to 1992, the start of defensible cpue data.
 #' @param acatch the projected aspirational catches required by mcdahcr
 #' @param glb the global object for the given scenario  out$glb
-#' @param hsargs the hsargs used in teh scenario out$hsargs
+#' @param hsargs the hsargs used in the scenario out$hsargs
 #'
 #' @return invisibly a list of multTAC, grad1, grad4,score1, score4, scoret,
 #'     scoretot, and targrefpts. Each is a 3D array of years x sau x reps,
@@ -531,7 +531,7 @@ comparefinalscores <- function(rundir,scores,scenes,legloc="bottomright",
 #'
 #' @description cpueboxbysau is used to generate boxplots of the years taken to
 #'     reach the maximum median cpue for each sau x senario. It also provides
-#'     the summary statistics from teh boxplots for each sau.
+#'     the summary statistics from the boxplots for each sau.
 #'
 #' @param rundir the directory in which comparisons are being made. It is best
 #'     to be a separate directory form any particular scenario.
@@ -1479,7 +1479,7 @@ sauribbon <- function(rundir,scenes,sau,varqnts,glb,varname,
                       console=TRUE,q90=TRUE,intens=127,addleg="bottomright") {
   filen <- ""
   if (!console) {
-    filename <- paste0(glb$saunames[sau],"_ribbon.png")
+    filename <- paste0(glb$saunames[sau],"_",varname,"_ribbon.png")
     filen <- filenametopath(rundir,filename)
     caption <- paste0(varname," ribbon plot for ",glb$saunames[sau])
   }

@@ -56,7 +56,7 @@ prepareprojection is a high level function that restructures
     replicate projection, with zeros in the catch, cpue, and cesau arrays.
     If the repeatable projections are wanted either set _randseedP_ = 0,
     whereupon the pseudorandom numbers will proceed from those started using
-    the _randomseed_ set in teh control file. Alternatively set a new seed
+    the _randomseed_ set in the control file. Alternatively set a new seed
     into _randseedP_ (perhaps use _getseed()_), or set it to NA, which means
     it will merely run _set.seed()_, which will use the system time as a
     starting seed (hence each scenario run will differ).

@@ -421,7 +421,7 @@ getprojyraavc <- function(catches,glb) {
 #' @param sauarr the projection data summarized to the sau scale. This might be
 #'     matureB, exploitB, midyexpB, catch, acatch, harvestR, cpue, recruit,
 #'     deplsB, or depleB. CatchN and Nt need different treatment
-#' @param hyrs the number of harvested years used in teh conditioning, from
+#' @param hyrs the number of harvested years used in the conditioning, from
 #'     the global object = out$glb$hyrs
 #' @param pyrs the number of projected years used, from the global object =
 #'     out$glb$hyrs

@@ -30,7 +30,7 @@ runthreeH is used when searching numerically for an
     40 it conducts 3 * 39 years of dynamics (117 years). This is
     not exported. It uses zoneC but always it does this inside
     the environment of another function where zoneC can be found
-    Used inside dodepletion and doproduction. maxiter may need to be
+    Used inside doproduction. maxiter may need to be
     increased when we introduce a larger movement rate between populations
     for greenlip, or if the number of conditioning years are fewer than 45.
 }
@@ -40,6 +40,6 @@ print("wait on built in data sets")
 }
 \seealso{
 {
- \link{dodepletion}, \link{doproduction}
+    \link{doproduction}, \link{testequil}
 }
 }

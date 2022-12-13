@@ -16,7 +16,7 @@ to 1992, the start of defensible cpue data.}
 
 \item{glb}{the global object for the given scenario  out$glb}
 
-\item{hsargs}{the hsargs used in teh scenario out$hsargs}
+\item{hsargs}{the hsargs used in the scenario out$hsargs}
 }
 \value{
 invisibly a list of multTAC, grad1, grad4,score1, score4, scoret,

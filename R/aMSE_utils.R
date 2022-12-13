@@ -266,11 +266,8 @@ confirmdir <- function(x,make=TRUE,verbose=TRUE,ask=TRUE) {
 #' @examples
 #' \dontrun{
 #'  prefixdir <- "c:/Users/User/DropBox/A_codeUse/aMSEUse/scenarios/"
-#'  fromdir <- "M15h75"
-#'  todir <- "M15h5"
-#'  vectfiles <- c("controlM15h75.csv","saudataM15h75.csv",
-#'                   "lf_WZ90-20.csv","run_aMSE_M15h75.R","TasHS1_Tas.R")
-#'  copyto(prefixdir=prefixdir,fromdir=fromdir,todir=todir,filelist=vectfiles)
+#'  vectfiles <- c("controlM15h75.csv","saudataM15h75.csv","lf_WZ90-20.csv")
+#'  copyto(prefixdir=prefixdir,fromdir="M15h75,todir="M15h5,filelist=vectfiles)
 #' }
 copyto <- function(prefixdir,fromdir, todir, filelist,
                    makenew = TRUE,verbose=TRUE) {
@@ -465,6 +462,12 @@ poptosauCE <- function(catvect,cpuevect,sauindex) {
 #'     catch x zone by the exploitable biomass x zone. Similarly the deplsB and
 #'     depleB are the end of year matureB and exploitB divided by their
 #'     respective unfished estimated by Zone obtained using getvar(zoneC,"B0").
+#'     The cpue is a special case as combining across populations and sau
+#'     requires the values to be catch weighted rather than giving them equal
+#'     weight. So the cpue for each population is multiplied by the catch by
+#'     population divided by the total catch and the result is summed. Thus,
+#'     those contributing the greatest proportion of the catch contribute the
+#'     most ot the cpue estiamte.
 #'
 #' @param inzone one of the zone dynamics objects containing replicates, made
 #'     up of populations

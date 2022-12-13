@@ -69,7 +69,8 @@ checkmsedata <- function(intxt,rundir,verbose=TRUE) { # intxt=indat;verbose=TRUE
 #'     recdevs to improve the predicted CPUE during the historical conditioning
 #'     period. If devrec = 0.0, then the recdevs for 1980 - 2016 will be set to
 #'     values that have already conditioned the model and provides a reasonable
-#'     fit to the observed CPUE trends.
+#'     fit to the observed CPUE trends. The control file generated relates to
+#'     the Tasmanian western zone conditioning.
 #'
 #' @param indir directory in which to place the control.csv file
 #' @param filename the name for the generated ctrlfile, a character
@@ -160,6 +161,15 @@ ctrlfiletemplate <- function(indir,filename="controlEG.csv",devrec=-1) { # indir
        file=filename,append=TRUE)  # deprecated
    cat("\n",file=filename,append=TRUE)
    cat("PROJECT, 30, number of projection years for each simulation \n",
+       file=filename,append=TRUE)
+   cat("\n",file=filename,append=TRUE)
+   cat("ENVIRON, 0 , in how many years will an event occur \n",
+       file=filename,append=TRUE)
+   cat("eyr, 5, which projeciton years will have an event \n",
+       file=filename,append=TRUE)
+   cat("proprec1, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, one for each sau \n",
+       file=filename,append=TRUE)
+   cat("propNt1, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99, one for each sau \n",
        file=filename,append=TRUE)
    cat("\n\n",file=filename,append=TRUE)
    cat("PROJLML, need the same number as there are projection years \n",file=filename,
@@ -710,8 +720,8 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
    if (yrce > 0) {
       begin <- grep("CEYRS",indat)
       histCE <- matrix(NA,nrow=yrce,ncol=nSAU)
-      yearCE <- numeric(yrce)
       colnames(histCE) <- SAUnames
+      yearCE <- numeric(yrce)
       for (i in 1:yrce) {
           begin <- begin + 1
           cenum <- as.numeric(unlist(strsplit(indat[begin],",")))

@@ -30,9 +30,10 @@
 #' \dontrun{
 #'   data(zone)
 #'   glb <- zone$glb
-#'   depl <- rep(0.3,glb$nSAU)
+#'   Bzero <- zone$zoneD$matureB[1,]
+#'   depl <- rep(0.3,glb$nSAU) # set initial depletion to ~ 30 percent
 #'   zoneDD <- depleteSAU(zone$zoneC,zone$zoneD,glb,initdepl=depl,zone$product)
-#'   sum((zoneDD$matureB[1,]/sum(zoneDD$matureB[1,]))*zoneDD$deplsB[1,])
+#'   zoneDD$matureB[1,]/Bzero  # calculate depletion
 #'   mean(zoneDD$deplsB[1,])
 #'   zoneDD$deplsB[1,]
 #' }  # zoneC=zone$zoneC;zoneD=zone$zoneD;glob=zone$glb;initdepl=origdepl;product=zone$product;len=12
@@ -436,8 +437,8 @@ oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,movem,sigmar,
 #'     returning the revised zoneD, which will have had a single year
 #'     of activity included in each of its components. This uses zoneC
 #'     but always within the environment of another function in which
-#'     zoneC (as zoneC) can be found. Used in runthreeH, (and hence
-#'     dodepletion and doproduction) and in testequil.
+#'     zoneC (as zoneC) can be found. Used in runthreeH, and hence
+#'     in doproduction, and in testequil.
 #'
 #' @param zoneC the constant portion of the zone with a list of
 #'     properties for each population
@@ -702,7 +703,7 @@ restart <- function(oldzoneD,hyrs,npop,N,zero=TRUE) { # oldzoneD=zoneD; hyrs=hyr
 #'     40 it conducts 3 * 39 years of dynamics (117 years). This is
 #'     not exported. It uses zoneC but always it does this inside
 #'     the environment of another function where zoneC can be found
-#'     Used inside dodepletion and doproduction. maxiter may need to be
+#'     Used inside doproduction. maxiter may need to be
 #'     increased when we introduce a larger movement rate between populations
 #'     for greenlip, or if the number of conditioning years are fewer than 45.
 #'
@@ -716,7 +717,7 @@ restart <- function(oldzoneD,hyrs,npop,N,zero=TRUE) { # oldzoneD=zoneD; hyrs=hyr
 #' @param maxiter default=3; the number of runs through the equilibrium loop.
 #'
 #' @seealso{
-#'  \link{dodepletion}, \link{doproduction}
+#'     \link{doproduction}, \link{testequil}
 #' }
 #'
 #' @return a list containing a revised dynamics list, zoneD

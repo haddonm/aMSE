@@ -38,7 +38,8 @@ ctrlfiletemplate generates a standardized control file
     recdevs to improve the predicted CPUE during the historical conditioning
     period. If devrec = 0.0, then the recdevs for 1980 - 2016 will be set to
     values that have already conditioned the model and provides a reasonable
-    fit to the observed CPUE trends.
+    fit to the observed CPUE trends. The control file generated relates to
+    the Tasmanian western zone conditioning.
 }
 \examples{
 \dontrun{

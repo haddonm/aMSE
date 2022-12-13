@@ -37,10 +37,7 @@ copyto copies a vector of files (see examples) from one
 \examples{
 \dontrun{
  prefixdir <- "c:/Users/User/DropBox/A_codeUse/aMSEUse/scenarios/"
- fromdir <- "M15h75"
- todir <- "M15h5"
- vectfiles <- c("controlM15h75.csv","saudataM15h75.csv",
-                  "lf_WZ90-20.csv","run_aMSE_M15h75.R","TasHS1_Tas.R")
- copyto(prefixdir=prefixdir,fromdir=fromdir,todir=todir,filelist=vectfiles)
+ vectfiles <- c("controlM15h75.csv","saudataM15h75.csv","lf_WZ90-20.csv")
+ copyto(prefixdir=prefixdir,fromdir="M15h75,todir="M15h5,filelist=vectfiles)
 }
 }

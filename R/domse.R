@@ -14,7 +14,7 @@
 # verbose=TRUE
 # ndiagprojs=4
 # makehcrout=makeouthcr
-# cpueHSPMs=getcpueHS
+# HSPMs=getcpueHS
 # cutcatchN=56
 # matureL = c(70,200)
 # wtatL = c(80,200)
@@ -73,7 +73,7 @@
 #'     an object that is continually updated by the hcrfun. To avoid very
 #'     inefficient code this object (at least for Tasmania) is cycled through
 #'     the iterations.
-#' @param cpueHSPMs Another function defined in the HS package that reconstructs
+#' @param HSPMs Another function defined in the HS package that reconstructs
 #'     the cpue HSPM scores, and other measures ready for plotting
 #' @param varyrs how many years at the end of the conditioning on the fishery,
 #'     data into zoneDD, to which to add recruitment variation, default = 7,
@@ -114,7 +114,7 @@
 #' @examples
 #' print("wait on suitable data sets in data")
 do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
-                   sampleNaS,getdata,calcpopC,makeouthcr,cpueHSPMs,varyrs=7,
+                   sampleNaS,getdata,calcpopC,makeouthcr,HSPMs,varyrs=7,
                    startyr=42,verbose=FALSE,ndiagprojs=3,
                    cutcatchN=56,matureL=c(70,200),wtatL=c(80,200),mincount=100,
                    includeNAS=FALSE,depensate=0) {
@@ -232,7 +232,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   plothsstats(rundir,HSstats,glb)
   addtable(hcrout$refpts,"hcrout_refpts.csv",rundir,category="HSperf",
            caption="HCR reference points")
-  scores <- finalscoreoutputs(rundir=rundir,cpueHSPMs=cpueHSPMs,
+  scores <- finalscoreoutputs(rundir=rundir,HSPMs=HSPMs,
                               cpue=sauout$cpue,catches=sauout$catch,
                               glb=glb,yearCE=condC$yearCE,
                               hsargs=hsargs)

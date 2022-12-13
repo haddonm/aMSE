@@ -281,7 +281,7 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
 #'     final scores. Uses getcpueHS from TasHS.
 #'
 #' @param rundir the directory for a given scenario
-#' @param cpueHSPMs is a function defined in the HS package that reconstructs
+#' @param HSPMs is a function defined in the HS package that reconstructs
 #'     the cpue HSPM scores, and other measures ready for plotting
 #' @param cpue the projected cpue dynamics from out$sauout$zonePsau$cpue
 #' @param catches the project catches from out$sauout$zonePsau$catch
@@ -290,6 +290,8 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
 #'     model, found in condC$yearCE.
 #' @param hsargs the list of arguments required by the HS
 #' @param verbose should updates on progress be sent to console? default=TRUE
+#' @param ... required in case whatever function is pointed at HSPMs requires
+#'     more than cpue
 #'
 #' @return a list of two lists. The first being outHS containing all the
 #'     reconstructed HS outputs, and the second being the medians of the
@@ -298,12 +300,12 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
 #'
 #' @examples
 #' print("wait on data sets, example soon")
-#' # rundir=rundir;cpueHSPMs=cpueHSPMs;cpue=sauout$cpue;
+#' # rundir=rundir;HSPMs=HSPMs;cpue=sauout$cpue;
 #' # catches=sauout$catches;glb=glb;yearCE=condC$yearCE
 #' # hsargs=hsargs
-finalscoreoutputs <- function(rundir,cpueHSPMs,cpue,catches,glb,yearCE,hsargs,
-                              verbose=TRUE) {
-  if (!is.null(cpueHSPMs)) {
+finalscoreoutputs <- function(rundir,HSPMs,cpue,catches,glb,yearCE,hsargs,
+                              verbose=TRUE,...) {
+  if (!is.null(HSPMs)) {
     nsau <- glb$nSAU
     reps <- glb$reps
     outHS <- vector(mode="list",length=nsau)
@@ -312,9 +314,8 @@ finalscoreoutputs <- function(rundir,cpueHSPMs,cpue,catches,glb,yearCE,hsargs,
     outmed <- outHS
     if (verbose) cat("Reconstructing HS outputs  \n")
     for (sau in 1:nsau) {
-      outHS[[sau]] <- cpueHSPMs(ce=cpue,catches=catches,
-                                glb=glb,yearCE=yearCE,
-                                hsargs=hsargs,sau=sau)
+      outHS[[sau]] <- HSPMs(ce=cpue,catches=catches,glb=glb,yearCE=yearCE,
+                            hsargs=hsargs,sau=sau,...)
     }
     if (verbose) cat("Now plotting results   \n")
     for (sau in 1:nsau) {
@@ -630,7 +631,7 @@ modzoneCSel <- function(zoneC,sel,selwt,glb) {
 #'     replicate projection, with zeros in the catch, cpue, and cesau arrays.
 #'     If the repeatable projections are wanted either set _randseedP_ = 0,
 #'     whereupon the pseudorandom numbers will proceed from those started using
-#'     the _randomseed_ set in teh control file. Alternatively set a new seed
+#'     the _randomseed_ set in the control file. Alternatively set a new seed
 #'     into _randseedP_ (perhaps use _getseed()_), or set it to NA, which means
 #'     it will merely run _set.seed()_, which will use the system time as a
 #'     starting seed (hence each scenario run will differ).

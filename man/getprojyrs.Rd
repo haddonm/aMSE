@@ -11,7 +11,7 @@ getprojyrs(sauarr, hyrs, pyrs, startyr = hyrs)
 matureB, exploitB, midyexpB, catch, acatch, harvestR, cpue, recruit,
 deplsB, or depleB. CatchN and Nt need different treatment}
 
-\item{hyrs}{the number of harvested years used in teh conditioning, from
+\item{hyrs}{the number of harvested years used in the conditioning, from
 the global object = out$glb$hyrs}
 
 \item{pyrs}{the number of projected years used, from the global object =

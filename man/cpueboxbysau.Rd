@@ -34,7 +34,7 @@ a matrix of the boxplot statistics for the years to max median cpue
 \description{
 cpueboxbysau is used to generate boxplots of the years taken to
     reach the maximum median cpue for each sau x senario. It also provides
-    the summary statistics from teh boxplots for each sau.
+    the summary statistics from the boxplots for each sau.
 }
 \examples{
 print("wait on data sets")

@@ -266,7 +266,7 @@ fishery_plots <- function(rundir,glb,select,histyr,projLML, rge=50:90) {
 #' @examples
 #' print("wait on internal data-sets")
 #' # out=out;rundir=rundir;postdir=postfixdir;controlfile=controlfile;hsfile="TasHS Package"
-#' # doproject=TRUE;openfile=TRUE;verbose=FALSE
+#' # doproject=FALSE;openfile=TRUE;verbose=FALSE
 makeoutput <- function(out,rundir,postdir,controlfile,hsfile=NULL,
                        doproject=TRUE,openfile=TRUE,verbose=FALSE) {
   replist <- list(starttime=as.character(out$starttime),

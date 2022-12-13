@@ -41,9 +41,10 @@ depleteSAU resets the depletion level of the whole
 \dontrun{
   data(zone)
   glb <- zone$glb
-  depl <- rep(0.3,glb$nSAU)
+  Bzero <- zone$zoneD$matureB[1,]
+  depl <- rep(0.3,glb$nSAU) # set initial depletion to ~ 30 percent
   zoneDD <- depleteSAU(zone$zoneC,zone$zoneD,glb,initdepl=depl,zone$product)
-  sum((zoneDD$matureB[1,]/sum(zoneDD$matureB[1,]))*zoneDD$deplsB[1,])
+  zoneDD$matureB[1,]/Bzero  # calculate depletion
   mean(zoneDD$deplsB[1,])
   zoneDD$deplsB[1,]
 }  # zoneC=zone$zoneC;zoneD=zone$zoneD;glob=zone$glb;initdepl=origdepl;product=zone$product;len=12

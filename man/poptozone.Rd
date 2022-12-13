@@ -31,6 +31,12 @@ poptozone combines the dynamic results for each variable so
     catch x zone by the exploitable biomass x zone. Similarly the deplsB and
     depleB are the end of year matureB and exploitB divided by their
     respective unfished estimated by Zone obtained using getvar(zoneC,"B0").
+    The cpue is a special case as combining across populations and sau
+    requires the values to be catch weighted rather than giving them equal
+    weight. So the cpue for each population is multiplied by the catch by
+    population divided by the total catch and the result is summed. Thus,
+    those contributing the greatest proportion of the catch contribute the
+    most ot the cpue estiamte.
 }
 \examples{
 print("wait on suitable internal data sets ")
