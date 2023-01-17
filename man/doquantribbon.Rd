@@ -9,7 +9,7 @@ doquantribbon(
   varname,
   yrnames,
   scenes,
-  q90,
+  q90 = TRUE,
   intens = 127,
   addleg = "bottomright"
 )
@@ -27,15 +27,16 @@ x-axis as well as the x-axis labels}
 
 \item{scenes}{the names given to the different scenarios}
 
-\item{q90}{should the 90th or 95th quantiles be plotted, TRUE = 90th}
+\item{q90}{should the 90th or 95th quantiles be plotted, default=TRUE = 90th}
 
-\item{intens}{if polys=TRUE then intens signifies the intensity of colour on
-a scale of 0 - 255. 127 is about 50 percent dense.}
+\item{intens}{signifies the intensity of colour on a scale of 0 - 255.
+127 is about 50 percent dense.}
 
-\item{addleg}{add a legend? default="bottomright"}
+\item{addleg}{add a legend? currently can only use topleft, topright,
+bottomleft, or bottomright = default}
 }
 \value{
-nothing but it does add polygonsto a plot
+nothing but it does add polygons to a plot
 }
 \description{
 doquantribbon is used when trying to present a summary of multiple

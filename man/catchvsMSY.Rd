@@ -29,4 +29,5 @@ catchvsMSY is used when calculating the ratio of the projected
 }
 \examples{
 print("wait on data sets")
+# catch=catch;glbc=resout$glbc;prods=prods;scenes=scenes
 }

@@ -14,7 +14,8 @@ sauribbon(
   console = TRUE,
   q90 = TRUE,
   intens = 127,
-  addleg = "bottomright"
+  addleg = "bottomright",
+  defpar = TRUE
 )
 }
 \arguments{
@@ -44,6 +45,9 @@ a scale of 0 - 255. 127 is about 50 percent dense.}
 
 \item{addleg}{add a legend or not. If not use "", if yes use any of topleft,
 topright, bottomleft, or bottomright, default = bottomright.}
+
+\item{defpar}{should the formatting of the plot use the internal version
+(the default setting) or, if set = FALSE use an external definition.}
 }
 \value{
 nothing but it does generate a plot and saves it if console=FALSE

@@ -34,9 +34,9 @@ An important change from previous designs is that larval dispersal is implemente
 Of course, adding such a component increases the number of options that may need to be explored, but currently we envisage including a very low, a middle range, and a relatively high level of larval dispersal, to examine its implications.
 
 
-# LATEST UPDATE
+# LATEST UPDATES
 
-* 2022-12-14 aMSE 0.0.24 Lots of minor edits and modificaitons aimed at improving the comparison of scenarios.
+* 2022-12-14 aMSE 0.0.24 Lots of minor edits and modifications aimed at improving the comparison of scenarios.
 
 * 2022-11-11 aMSE 0.0.23 Added a new tab = recruits, containing plots of the stock recruitment relationships at an sau and at a population within sau level. Added a table to the Tables tab.
 
@@ -45,44 +45,6 @@ Of course, adding such a component increases the number of options that may need
 * 2022-11-02 aMSE 0.0.21 added changes to how do_MSE responds to hsargs.
 
 * 2022-10-31 aMSE 0.0.20 added do_comp_outputs, scenebyvar, scenebyzone, projectiononly, and sauquantbyscene to assist with comparing scenarios.
-
-* 2022-10-26 aMSE 0.0.19 added more functions to facilitate comparing scenarios.
-
-* 2022-10-18 aMSE 0.0.18 In the projections replicates across years has now been changed to years across replicates to allow for inclusion of FIS performance measures. Also, further comparison functions included.
-
-* 2022-09-26 aMSE 0.0.17 Added finalcondyeardepletion to aid in comparisons.
-
-* 2022-08-24 aMSE 0.0.16 Started to add depensation and other refinements.
-
-* 2022-08-19 aMSE 0.0.15 Added do_comparison as a wrapper function for comparing scenarios.
-
-* 2022-08-05 aMSE 0.0.14 Added more functions to assist with comparing scenarios. 
-
-* 2022-08-05 aMSE 0.0.12 Added more functions to assist with comparing scenarios. Still sorting out references to other packages.
-
-* 2022-08-01 aMSE 0.0.11 Added a bunch of functions to assist with comparing scenarios. No EWN.
-
-* 2022-07-10 aMSE 0.0.10 Switched dependency from hutils to codeutils. re-added zone1 for S21 to the data sets. No EWN.
-
-* 2022-07-10 aMSE 0.0.9 Added data sets to allow for examples and documentation to illustrate the conditioning and running of the MSE. Added adjustavrec as a function, nade a wrapper rnormz and rlnormz to enable zero variation while still using up a random number so the sequence was maintained. Ready for production work. No EWN.  
-
-* 2022-06-29 aMSE 0.0.8 Corrected a large mistake where the estimated SAU harvest rates were being biased high because the SAU's end of year exploitable biomass was being used instead of the mid-year exploitable biomass. 
-
-* 2022-06-22 aMSE 0.0.7 Now have rewritecontrolfile and rewritesaudatafile and the option to include a table of parameters from sizemod into the inputs of aMSE. Have begun development of functions to aid comparing the output from different scenarios, including tables and plots. No EWN.
-
-* 2022-06-08 aMSE 0.0.6 Have revised the ctrltemplate and datatemplate generators so that they reflect a lambda = 0.75 and correctly use the hyperstability. No EWN
-
-* 2022-06-06 aMSE 0.0.5. Have reviewed the dynamics in detail so that the outputs from the aMSE for each SAU more closely match the outputs from sizemod. The original disjunction was partly due to a faulty implementation of the inclusion of the option of hyper-stability, but that has now been amended and the operatnig model is now behaving as it should. Breaking the dynamics within each SAU into multiple sub-populations with variation also affects the equivalence between aMSE and sizemod butmostly influences the productivity rather than the recruitment dynamics and the trajectories mainly follow those from sizemod but with the cpue and biomasses being projected incorrectly. It appears (still working on a why) that by changing the productivity and sub-dividing that productivity among sub-populations, the overall recruitment levels required to mimic the dynamics in all cases appears to be less in aMSE than in sizemod. Otheriwse nothing now needs to change. One uses parameters obtained from sizemod, especially the recruitment deviates, and then apply the functions that search for more optimal values for AvRec, the unfished recruitment levles in each SAU. The fits obtained should be close to those found in sizemod. In 0.0.5 there remain issues relating to the internal data sets, which include one called 'zone', which is not designed to work with the option of hyper-stability (lambda != 1.0). Otherwise, No EWN.
-
-* 2022-05-31 aMSE 0.0.4 Added functions that assist in conditioning the operating model by optimizing the fit to CPUE and size-composition data after opimizing the AvRec values for each SAU. No EWN.
-
-* 2021-11-29 aMSE 0.0.1 Removed datadir. Started implementing hyper-stability while keeping the interface the same, so that the results from sizemod can be used.
-
-* 2021-11-23 aMSE 0.0.0.1 Added functions to simplify the optimization of AvRec relative to the CPUE data after initial parameter estimation for each SAU using the sizemod package. Also added a comparison of size-composition data to the do_condition function. Next step will be to include the optimization of the recdevs using both CPUE and size-comp data. 
-
-* 2021-11-21 aMSE 0.0.0.020 So as to use any observed size-composition data in the conditioning, a number of functions have been added to convert the predicted numbers-at-size in the catch by population into NAS x SAU. These can now be plotted against the observed NAS for each SAU and this can be either to the console or to a new tab in the webpage called 'predictedcatchN'. This work derived from the progress made with the sizemod package used to fit size-based assessment models to individual SAU. Because the MSE sub-divides each SAU into a number of populations each with somewhat different MaxDL, L95, etc, even after fitting the models, when using that data it is then necessary to refit the AvRec values, which, because of the sub-division into populations each having different biology can lead to the MSE AvRec being either smaller or larger than the estimated R0 for a SAU. Similar arguments apply to teh recruitment residuals but generally the pattern provides a reasonable fit.
-
-* 2021-10-17 aMSE 0.0.0.010 As cleanslate, within setuphtml() has been deprecated in the package makehtml, I have removed reference to it throughout aMSE. Now, to clean a directory of aMSE files use cleanrundir.
 
 
 

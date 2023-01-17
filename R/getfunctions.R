@@ -438,13 +438,12 @@ getprojyraavc <- function(catches,glb) {
 #' @export
 #'
 #' @examples
-#' # sauarr=catch[[1]];hyrs=glbc[[1]]$hyrs
-#' # pyrs=glbc[[1]]$pyrs; startyr=glbc[[1]]$hyrs
+#' # sauarr=catch[[1]];hyrs=glb$hyrs;pyrs=glb$pyrs; startyr=glb$hyrs
 getprojyrs <- function(sauarr,hyrs,pyrs,startyr=hyrs) {
   yrs <- dim(sauarr)[1]
-  if (yrs != (hyrs + pyrs))
-    stop(cat("Input error in getprojyrs, array in has incorrect dimensions \n"))
-  return(sauarr[startyr:yrs,,])
+  if (yrs == pyrs) return(sauarr)
+  if (yrs == (hyrs + pyrs)) return(sauarr[startyr:yrs,,])
+  stop(cat("Input error in getprojyrs, array in has incorrect dimensions \n"))
 } # end of getprojyrs
 
 #' @title getsingleNum find a line of text and extracts a single number

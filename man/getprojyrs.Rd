@@ -37,6 +37,5 @@ getprojyrs is used when calculating the harvest strategy
     year eg 1992 in here, it needs to be an index.
 }
 \examples{
-# sauarr=catch[[1]];hyrs=glbc[[1]]$hyrs
-# pyrs=glbc[[1]]$pyrs; startyr=glbc[[1]]$hyrs
+# sauarr=catch[[1]];hyrs=glb$hyrs;pyrs=glb$pyrs; startyr=glb$hyrs
 }

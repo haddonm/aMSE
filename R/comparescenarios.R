@@ -282,6 +282,7 @@ catchHSPM <- function(rundir,hspm,glbc,scenes,filen="",aavcyrs=10,
 #'
 #' @examples
 #' print("wait on data sets")
+#' # catch=catch;glbc=resout$glbc;prods=prods;scenes=scenes
 catchvsMSY <- function(catch,glbc,prods,scenes) {
   nscen <- length(scenes)
   cdivmsy <- makelist(scenes)
@@ -729,7 +730,8 @@ cpueHSPM <- function(rundir,cpue,glbc,scenes,filen="",startyr=0) {
 #' }
 do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
                           intensity=100) {
-#rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(1,12,13,14);verbose=TRUE
+# rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(2,3,4)
+#  verbose=TRUE; intensity=100
   files2 <- files[pickfiles]
   nfile <- length(pickfiles)
   label <- vector(mode="character",length=nfile)
@@ -821,7 +823,7 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
               q90=TRUE,intens=intensity,addleg="bottomright")
   makecompareoutput(rundir=rundir,glbc,scenes,postfixdir,
                     filesused=files[pickfiles],openfile=TRUE,verbose=FALSE)
-  return(invisible(list(scenes=scenes,ans=ans,quantscen=quantscen)))
+  return(invisible(list(scenes=scenes,ans=ans,quantscen=quantscen,dyn=dyn)))
 } # end of do_comparison
 
 
@@ -871,15 +873,15 @@ do_comp_outputs <- function(result,projonly=TRUE) {
       nobj <- length(out$zoneDP)
       objnames <- names(out$zoneDP)
       for (obj in 1:nobj)
-        popout[[i]][[objnames[obj]]] <- projectiononly(out$zoneDP[[objnames[obj]]],glb)
+        popout[[i]][[objnames[obj]]] <- projectiononly(out$zoneDP[[objnames[obj]]],glbc[[i]])
       nobj <- length(out$sauout)
       objnames <- names(out$sauout)
       for (obj in 1:nobj)
-        dyn[[i]][[objnames[obj]]] <- projectiononly(out$sauout[[objnames[obj]]],glb)
+        dyn[[i]][[objnames[obj]]] <- projectiononly(out$sauout[[objnames[obj]]],glbc[[i]])
       nobj <- length(out$outzone)
       objnames <- names(out$outzone)
       for (obj in 1:nobj)
-        zone[[i]][[objnames[obj]]] <- projectiononly(out$outzone[[objnames[obj]]],glb)
+        zone[[i]][[objnames[obj]]] <- projectiononly(out$outzone[[objnames[obj]]],glbc[[i]])
     } else {
       popout[[i]] <- out$zoneDP
       dyn[[i]] <- out$sauout
@@ -989,21 +991,22 @@ doquantplot <- function(varq,varname,yrnames,scenes,q90,polys,intens=127,
 #' @param yrnames the numeric values of the years to be plotted. Used as the
 #'     x-axis as well as the x-axis labels
 #' @param scenes the names given to the different scenarios
-#' @param q90 should the 90th or 95th quantiles be plotted, TRUE = 90th
-#' @param intens if polys=TRUE then intens signifies the intensity of colour on
-#'     a scale of 0 - 255. 127 is about 50 percent dense.
-#' @param addleg add a legend? default="bottomright"
+#' @param q90 should the 90th or 95th quantiles be plotted, default=TRUE = 90th
+#' @param intens signifies the intensity of colour on a scale of 0 - 255.
+#'     127 is about 50 percent dense.
+#' @param addleg add a legend? currently can only use topleft, topright,
+#'     bottomleft, or bottomright = default
 #'
 #' @seealso {
 #'    \link{sauribbon}, \link{RGB}
 #' }
 #'
-#' @return nothing but it does add polygonsto a plot
+#' @return nothing but it does add polygons to a plot
 #' @export
 #'
 #' @examples
 #' print("wait on datasets")
-doquantribbon <- function(varq,varname,yrnames,scenes,q90,intens=127,
+doquantribbon <- function(varq,varname,yrnames,scenes,q90=TRUE,intens=127,
                           addleg="bottomright") {
   maxy <- getmax(varq)
   nscen <- length(scenes)
@@ -1022,7 +1025,7 @@ doquantribbon <- function(varq,varname,yrnames,scenes,q90,intens=127,
     if (addleg %in% c("topleft","topright","bottomleft","bottomright")) {
       legend(addleg,legend=scenes,col=1:nscen,lwd=3,bty="n",cex=1.1)
     } else {
-      cat("Inappropriate legend location given \n")
+      cat("Inappropriate legend location given, see ?doquantribbon \n")
     }
   }
 } # end of doquantribbon
@@ -1052,6 +1055,8 @@ doquantribbon <- function(varq,varname,yrnames,scenes,q90,intens=127,
 #'
 #' @examples
 #' print("wait on internal data-sets")
+#' # rundir=rundir;glbc=glbc;scenes=scenes;postdir=postfixdir
+#' # filesused=files[c(2,3,4)];openfile=TRUE;verbose=FALSE
 makecompareoutput <- function(rundir,glbc,scenes,postdir,filesused,
                               openfile=TRUE,verbose=FALSE) {
   replist <- list(starttime=as.character(Sys.time()),
@@ -1073,6 +1078,43 @@ makecompareoutput <- function(rundir,glbc,scenes,postdir,filesused,
   if (verbose) cat("finished  \n")
 }
 
+#' @title makelistobj extracts a list of objects from a bigger list of objects
+#'
+#' @description makelistobj when making comparisons between scenarios first it
+#'     is necessary to gather information from each scenario into large lists.
+#'     For example, after running d the do_comparison function the output is
+#'     a list which includes an obj called 'ans'. This contains the output from
+#'     do_MSE for each scenario. Inside that are objects such as glb, ctrl,
+#'     zoneDP, sauout, and so on. For further analysis we need to be able to
+#'     extract copies of some of these objects into lists of their own. The
+#'     function makelistobj can do that.
+#'
+#' @param res the list object from which individual objects are wanted from each
+#'     scenario
+#' @param objname the name of the object wanted from each scenario
+#'
+#' @seealso{
+#'     \link{do_comparison}, \link{do_MSE}
+#' }
+#'
+#' @return a list of the named objects from res
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'   # see the help for do_comparison for code lines prior to the next line
+#'   result <- do_comparison(rundir,postfixdir,outdir,files,pickfiles=c(1,2,3))
+#'   glball <- makelistobj(res=result$ans,objname="glb")
+#'   ctrlall <- makelistobj(res=result$ans,objname="ctrl")
+#'   str(glball)
+#' }
+makelistobj <- function(res,objname) { # res=result$ans;objname="glb"
+  scenes <- names(res)
+  nscen <- length(scenes)
+  outlist <- makelist(scenes)
+  for (i in 1:nscen) outlist[[i]] <- res[[scenes[i]]][[objname]]
+  return(invisible(outlist))
+} # end of makelistobj
 
 #' @title plotfinalscores plots projected catches, cpue, PMs, and final score
 #'
@@ -1457,6 +1499,8 @@ sauquantbyscene <- function(invar,glb) {
 #'     a scale of 0 - 255. 127 is about 50 percent dense.
 #' @param addleg add a legend or not. If not use "", if yes use any of topleft,
 #'     topright, bottomleft, or bottomright, default = bottomright.
+#' @param defpar should the formatting of the plot use the internal version
+#'     (the default setting) or, if set = FALSE use an external definition.
 #'
 #' @seealso {
 #'   \link{sauquantbyscene}, \link{doquantribbon}, \link{do_comp_outputs}
@@ -1476,21 +1520,26 @@ sauquantbyscene <- function(invar,glb) {
 #'    varname="Catch",console=TRUE,q90=TRUE,intens=100,addleg="bottomright")
 #' }
 sauribbon <- function(rundir,scenes,sau,varqnts,glb,varname,
-                      console=TRUE,q90=TRUE,intens=127,addleg="bottomright") {
+                      console=TRUE,q90=TRUE,intens=127,addleg="bottomright",
+                      defpar=TRUE) {
   filen <- ""
   if (!console) {
     filename <- paste0(glb$saunames[sau],"_",varname,"_ribbon.png")
     filen <- filenametopath(rundir,filename)
     caption <- paste0(varname," ribbon plot for ",glb$saunames[sau])
   }
-  plotprep(width=8,height=4,newdev=FALSE,filename=filen,verbose=FALSE)
-  parset(cex=1.1,margin=c(0.35,0.5,0.05,0.05))
+  if (defpar) {
+    oldpar <- par(no.readonly=TRUE)
+    plotprep(width=8,height=4,newdev=FALSE,filename=filen,verbose=FALSE)
+    parset(cex=1.1,margin=c(0.35,0.5,0.05,0.05))
+  }
   label <- paste0(varname,"_",glb$saunames[sau])
   doquantribbon(varqnts[[sau]],label,yrnames=glb$pyrnames,
-                scenes=scenes,q90=TRUE,intens=intens,addleg=addleg)
+                scenes=scenes,q90=q90,intens=intens,addleg=addleg)
   if (!console) {
     addplot(filen=filen,rundir=rundir,category=varname,caption)
   }
+  if (defpar) return(invisible(oldpar))
 } # end of sauribbon
 
 

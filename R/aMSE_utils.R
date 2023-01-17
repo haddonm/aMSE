@@ -271,6 +271,7 @@ confirmdir <- function(x,make=TRUE,verbose=TRUE,ask=TRUE) {
 #' }
 copyto <- function(prefixdir,fromdir, todir, filelist,
                    makenew = TRUE,verbose=TRUE) {
+  if (verbose) cat("\n\n")
   fdir <- filenametopath(prefixdir,fromdir)
   if (!dir.exists(fdir)) stop(cat(fdir," does not exist!   \n\n"))
   nfile <- length(filelist)
@@ -297,7 +298,8 @@ copyto <- function(prefixdir,fromdir, todir, filelist,
     file.copy(filen, fileout, overwrite = TRUE, copy.date = TRUE)
   }
   if (verbose)
-    for (i in 1:nfile) cat(filelist[i], " has been copied to ",todir,"\n")
+    for (i in 1:nfile) cat(filelist[i], " has been copied to ",todir,
+                           " as ",newfile,"\n")
   newfilelist <- dir(tdir)  # change saudata file name in controlfile
   pickC <- grep("control",newfilelist)
   if (length(pickC) == 0)
@@ -315,7 +317,6 @@ copyto <- function(prefixdir,fromdir, todir, filelist,
   indat[pickL] <- paste0("runlabel, ",todir," , the scenario label ")
   writeLines(indat,con=filename)
   if (verbose)
-    cat("\n\n")
     cat("Be sure to change the control, data, and run files where necessary \n")
   return(tdir)
 } # end of copyto

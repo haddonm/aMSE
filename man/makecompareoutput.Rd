@@ -44,4 +44,6 @@ makecompareoutput simplifies taking the output from when
 }
 \examples{
 print("wait on internal data-sets")
+# rundir=rundir;glbc=glbc;scenes=scenes;postdir=postfixdir
+# filesused=files[c(2,3,4)];openfile=TRUE;verbose=FALSE
 }
