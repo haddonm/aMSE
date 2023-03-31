@@ -178,6 +178,8 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 #' @param makehcrout is a function from HS.R that produces an object that is
 #'     updated in each iteration by the hcrfun. If no such object is required
 #'     then have a function that returns NULL.
+#' @param fleetdyn a function that calculates the distribution of catch across
+#'     the sau and populations. Currently not needed by Tas but needed by SA
 #' @param verbose should the iterations be counted on the console?
 #' @param ... the ellipsis used in case any of the functions hcrfun, sampleCE,
 #'     sampleFIS, sampleNas, and getdata require extra arguments not included
@@ -195,7 +197,7 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 #' print("wait on suitable internal data sets")
 doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
                           sampleCE,sampleFIS,sampleNaS,getdata,calcpopC,
-                          makehcrout,verbose=FALSE,...) {
+                          makehcrout,fleetdyn,verbose=FALSE,...) {
   # ctrl=ctrl; zoneDP=zoneDP; zoneCP=zoneCP; glb=glb; hcrfun=mcdahcr; hsargs=hsargs
   # sampleCE=tasCPUE; sampleFIS=tasFIS; sampleNaS=tasNaS;  getdata=tasdata
   # calcpopC=calcexpectpopC; verbose=TRUE;makehcrout=makeouthcr
@@ -243,7 +245,10 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
                          year=year,decrement=hsargs$decrement)
       hcrout <- hcrfun(hcrdata,hsargs,saunames=glb$saunames)
       popC <- calcpopC(hcrout,exb=zoneDP$exploitB[year-1,,iter],
-                       sauindex,sigmab=sigmab)
+                       sauCPUE= zoneDP$cesau[year-1,,iter],
+                       catsau = zoneDP$catsau[year-1,,iter],
+                       fleetacatch=fleetdyn,hsargs=hsargs,glb=glb,
+                       sigmab=sigmab)
       outy <- oneyearsauC(zoneCC=zoneCP,inN=zoneDP$Nt[,year-1,,iter],
                           popC=popC,year=year,Ncl=Nclass,sauindex=sauindex,
                           movem=movem,sigmar=sigmar,sigce=sigce,r0=r0,b0=b0,
@@ -509,6 +514,9 @@ sumpops <- function(invar,sauindex,saunames) { #invar=zoneDP$matureB
 #'     which recruitment variation is to be added
 #' @param calcpopC a function that takes the output from hcrfun and generates
 #'     the actual catch per population expected in the current year.
+#' @param fleetdyn a function that calculates the distribution of catch across
+#'     the sau and populations. Currently not needed by Tas but needed by SA
+#' @param hsargs the constants used to define the workings of the hcr
 #' @param sigR the initial recruitment variation default=1e-08
 #' @param sigB the initial biomass cpuie variation default = 1e-08
 #' @param lastsigR the recruitment variation to be added to the final varyrs
@@ -520,12 +528,13 @@ sumpops <- function(invar,sauindex,saunames) { #invar=zoneDP$matureB
 #' @examples
 #' print("wait on suitable data-sets")
 addrecvar <- function(zoneDD,zoneC,glob,condC,ctrl,varyrs,calcpopC,
-                      sigR=1e-08,sigB=1e-08,lastsigR=0.3) {
+                      fleetdyn,hsargs,sigR=1e-08,sigB=1e-08,lastsigR=0.3) {
   #  zoneDD=zoneDD;zoneC=zoneC;glob=glb; calcpopC=calcpopC
   #  condC=condC;ctrl=ctrl;varyrs=7;lastsigR=lastsigR;
   #  sigR=1e-08; sigB=1e-08;
   sauindex <- glob$sauindex
   histC <- condC$histCatch
+  yrs <- condC$histyr[,"year"]
   nyrs <- glob$hyrs
   finalyr <- nyrs - varyrs
   pyrs <- glob$pyrs
@@ -558,8 +567,19 @@ addrecvar <- function(zoneDD,zoneC,glob,condC,ctrl,varyrs,calcpopC,
     for (year in (finalyr+1):nyrs) {  # year = finalyr + 1
       catchsau <- histC[year,]        # Use actual catches
       hcrout <- list(acatch=catchsau) # attention needed in other jurisdictions
-      popC <- calcpopC(hcrout,exb=zoneDDR$exploitB[year-1,,iter], # needed to
-                       sauindex,sigmab=sigB) # allocate SAU catches to populations
+      histCE <- condC$histCE
+      ceyrs <- condC$yearCE
+      catchsau <- histC[year,]
+      if (yrs[year] %in% ceyrs) {
+        pickyr <- which(yrs[year] == ceyrs)
+        cpuesau <- histCE[pickyr,]
+      } else {
+        cpuesau <- numeric(glob$nSAU)
+      }
+      popC <- calcpopC(hcrout,exb=zoneDDR$exploitB[year-1,,iter],
+                       sauCPUE=cpuesau,catsau=catchsau,
+                       fleetacatch=fleetdyn,hsargs=hsargs,
+                       glb=glob,sigmab=sigB)
       inN <- zoneDDR$Nt[,year-1,,iter]
       out <- oneyearsauC(zoneCC=zoneC,inN=inN,popC=popC,year=year,
                          Ncl=glob$Nclass,sauindex=sauindex,movem=glob$move,

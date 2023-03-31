@@ -12,6 +12,8 @@ addrecvar(
   ctrl,
   varyrs,
   calcpopC,
+  fleetdyn,
+  hsargs,
   sigR = 1e-08,
   sigB = 1e-08,
   lastsigR = 0.3
@@ -35,6 +37,11 @@ which recruitment variation is to be added}
 
 \item{calcpopC}{a function that takes the output from hcrfun and generates
 the actual catch per population expected in the current year.}
+
+\item{fleetdyn}{a function that calculates the distribution of catch across
+the sau and populations. Currently not needed by Tas but needed by SA}
+
+\item{hsargs}{the constants used to define the workings of the hcr}
 
 \item{sigR}{the initial recruitment variation default=1e-08}
 

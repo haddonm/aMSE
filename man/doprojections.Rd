@@ -17,6 +17,7 @@ doprojections(
   getdata,
   calcpopC,
   makehcrout,
+  fleetdyn,
   verbose = FALSE,
   ...
 )
@@ -56,6 +57,9 @@ the actual catch per population expected in the current year.}
 \item{makehcrout}{is a function from HS.R that produces an object that is
 updated in each iteration by the hcrfun. If no such object is required
 then have a function that returns NULL.}
+
+\item{fleetdyn}{a function that calculates the distribution of catch across
+the sau and populations. Currently not needed by Tas but needed by SA}
 
 \item{verbose}{should the iterations be counted on the console?}
 

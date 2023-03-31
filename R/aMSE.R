@@ -1,7 +1,7 @@
 
-#' @importFrom grDevices palette dev.off
+#' @importFrom grDevices palette dev.off rgb
 #' @importFrom graphics grid hist lines mtext par plot points title
-#' @importFrom graphics legend abline text layout boxplot polygon
+#' @importFrom graphics legend abline text layout boxplot polygon arrows
 #' @importFrom stats dnorm pnorm rlnorm rnorm quantile sd lm coef median
 #' @importFrom stats loess optim
 #' @importFrom utils object.size browseURL packageDescription read.csv

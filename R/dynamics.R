@@ -91,6 +91,9 @@ depleteSAU <- function(zoneC,zoneD,glob,initdepl,product,len=15) {
 #' @param condC from the zone1 object, contains historical fisheries data plus
 #' @param calcpopC a function that takes the output from hcrfun and generates
 #'     the actual catch per population expected in the current year.
+#' @param fleetdyn a function that calculates the distribution of catch across
+#'     the sau and populations. Currently not needed by Tas but needed by SA
+#' @param hsargs the constants used to define the workings of the hcr
 #' @param sigR the recruitment variation included
 #' @param sigB the variability introduced to the catches by population by
 #'     fishers not knowing the distribution of exploitable biomass exactly. What
@@ -108,10 +111,13 @@ depleteSAU <- function(zoneC,zoneD,glob,initdepl,product,len=15) {
 #' @examples
 #' print("wait on some data sets")
 #' #  zoneD,zoneC,glob=glb,condC,calcpopC=calcpopC,sigR=1e-08,sigB=1e-08
-dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,sigR=1e-08,sigB=1e-08) {
+dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,fleetdyn,hsargs,
+                        sigR=1e-08,sigB=1e-08) {
   # zoneC=zoneC; zoneDD=zoneD;glob=glb;condC=condC;calcpopC=calcexpectpopC; sigR=1e-08; sigB=1e-08;
   histC <- condC$histCatch
   yrs <- condC$histyr[,"year"]
+  histCE <- condC$histCE
+  ceyrs <- condC$yearCE
   recdevs <- condC$recdevs
   nyrs <- length(yrs)
   sauindex <- glob$sauindex
@@ -120,9 +126,21 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,sigR=1e-08,sigB=1e-08) 
   exb0 <- getvar(zoneC,"ExB0")
   for (year in 2:nyrs) {  # year=2  # ignores the initial unfished year
     catchsau <- histC[year,]
+    if (yrs[year] %in% ceyrs) {
+      pickyr <- which(yrs[year] == ceyrs)
+      cpuesau <- histCE[pickyr,]
+    } else {
+      cpuesau <- numeric(glob$nSAU)
+    }
     rdev <- recdevs[year,]
     hcrout <- list(acatch=catchsau)
-    popC <- calcpopC(hcrout,exb=zoneDD$exploitB[year-1,],sauindex,sigmab=sigB)
+    popC <- calcpopC(hcrout,exb=zoneDD$exploitB[year-1,],
+                     sauCPUE= cpuesau,
+                     catsau=catchsau,
+                     fleetacatch=fleetdyn,
+                     hsargs=hsargs,
+                     glb=glob,
+                     sigmab=sigB)
     inN <- zoneDD$Nt[,year-1,]
     out <- oneyearsauC(zoneCC=zoneC,inN=inN,popC=popC,year=year,
                        Ncl=glob$Nclass,sauindex=sauindex,movem=glob$move,
@@ -151,7 +169,8 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,sigR=1e-08,sigB=1e-08) 
 #'     catches while introducing management implementation error. Here this
 #'     error is implemented as Log-Normal errors on diver intuitions
 #'     concerning the relative abundance in each population. The error is
-#'     imposed separately on the populations in each SAU.
+#'     imposed separately on the populations in each SAU. Currently this
+#'     function not used in aMSE.
 #'
 #' @param catchsau the predicted or aspirational catch per SAU from the Harvest
 #'     control rule

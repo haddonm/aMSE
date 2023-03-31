@@ -28,7 +28,8 @@ imperr converts aspirational sau catches into population level
     catches while introducing management implementation error. Here this
     error is implemented as Log-Normal errors on diver intuitions
     concerning the relative abundance in each population. The error is
-    imposed separately on the populations in each SAU.
+    imposed separately on the populations in each SAU. Currently this
+    function not used in aMSE.
 }
 \examples{
 print("wait on suitable internal data sets")

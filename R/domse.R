@@ -15,6 +15,7 @@
 # ndiagprojs=4
 # makehcrout=makeouthcr
 # HSPMs=getcpueHS
+# fleetdyn=NULL
 # cutcatchN=56
 # matureL = c(70,200)
 # wtatL = c(80,200)
@@ -75,6 +76,8 @@
 #'     the iterations.
 #' @param HSPMs Another function defined in the HS package that reconstructs
 #'     the cpue HSPM scores, and other measures ready for plotting
+#' @param fleetdyn a function that calculates the distribution of catch across
+#'     the sau and populations. Currently not needed by Tas but needed by SA
 #' @param varyrs how many years at the end of the conditioning on the fishery,
 #'     data into zoneDD, to which to add recruitment variation, default = 7,
 #'     which suits the Tasmanian west coast. Used in prepareprojection
@@ -114,8 +117,8 @@
 #' @examples
 #' print("wait on suitable data sets in data")
 do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
-                   sampleNaS,getdata,calcpopC,makeouthcr,HSPMs,varyrs=7,
-                   startyr=42,verbose=FALSE,ndiagprojs=3,
+                   sampleNaS,getdata,calcpopC,makeouthcr,HSPMs,fleetdyn=NULL,
+                   varyrs=7,startyr=42,verbose=FALSE,ndiagprojs=3,
                    cutcatchN=56,matureL=c(70,200),wtatL=c(80,200),mincount=100,
                    includeNAS=FALSE,depensate=0) {
   # generate equilibrium zone -----------------------------------------------
@@ -145,7 +148,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   }
   if (verbose) cat("Conditioning on the Fishery data  \n")
   zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,condC,calcpopC=calcpopC,
-                        sigR=1e-08,sigB=1e-08)
+                        fleetdyn=fleetdyn,hsargs=hsargs,sigR=1e-08,sigB=1e-08)
   hyrs <- glb$hyrs
   propD <- as.data.frame(t(getzoneprops(zoneC,zoneDD,glb,year=hyrs)))
   columns <- c("B0","MSY","MSYDepl","bLML","propprot","SpBDepl","catch",
@@ -197,7 +200,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                            hcrfun=hcrfun,hsargs=hsargs,sampleCE=sampleCE,
                            sampleFIS=sampleFIS,sampleNaS=sampleNaS,
                            getdata=getdata,calcpopC=calcpopC,
-                           makehcrout=makeouthcr,verbose=TRUE)
+                           makehcrout=makeouthcr,fleetdyn=fleetdyn,verbose=TRUE)
 #  Rprof(NULL)
   if (verbose) cat("Now generating final plots and tables \n")
   zoneDP=outproj$zoneDP
@@ -219,6 +222,15 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                 histyr=condC$histyr,projLML=projC$projLML)
   historicalplots(rundir=rundir,condC=condC,glb=glb)
   NAS$catchN <- NAS$catchN[(cutcatchN:glb$Nclass),,,]
+  # generate sau phase plots
+  nSAU <- glb$nSAU
+  kobedata <- vector(mode="list",length=nSAU)
+  names(kobedata) <- glb$saunames
+  for (plotsau in 1:glb$nSAU) {
+    kobedata[[plotsau]] <- HSphaseplot(dyn=sauout,glb=glb,sau=plotsau,
+                              rundir=rundir,startyr=condC$yearCE[1],
+                              console=FALSE,targdepl=0.4,limdepl=0.2,limH=0.175)
+  }
   projtime <- Sys.time()
   tottime <- round((projtime - starttime),3)
   # calculate HS performance statistics
@@ -242,7 +254,8 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
               NAS=NAS,projC=projC,condC=condC,sauout=sauout,outzone=outzone,
               hcrout=hcrout,production=production,condout=condout,
               HSstats=HSstats,saudat=saudat,constants=constants,hsargs=hsargs,
-              sauprod=sauprod,scores=scores,zonesummary=zonesummary)
+              sauprod=sauprod,scores=scores,zonesummary=zonesummary,
+              kobedata=kobedata)
   return(out)
 } # end of do_MSE
 

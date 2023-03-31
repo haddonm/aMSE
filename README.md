@@ -45,6 +45,9 @@ examine its implications.
 
 # LATEST UPDATES
 
+- 2023-03-31 aMSE 0.0.25 Modified calcpopC througout to allow for SA’s
+  harvest strategy and fleetdynamics.
+
 - 2022-12-14 aMSE 0.0.24 Lots of minor edits and modifications aimed at
   improving the comparison of scenarios.
 

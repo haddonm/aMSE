@@ -16,6 +16,7 @@ do_MSE(
   calcpopC,
   makeouthcr,
   HSPMs,
+  fleetdyn = NULL,
   varyrs = 7,
   startyr = 42,
   verbose = FALSE,
@@ -64,6 +65,9 @@ the iterations.}
 
 \item{HSPMs}{Another function defined in the HS package that reconstructs
 the cpue HSPM scores, and other measures ready for plotting}
+
+\item{fleetdyn}{a function that calculates the distribution of catch across
+the sau and populations. Currently not needed by Tas but needed by SA}
 
 \item{varyrs}{how many years at the end of the conditioning on the fishery,
 data into zoneDD, to which to add recruitment variation, default = 7,

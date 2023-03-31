@@ -36,6 +36,8 @@ Of course, adding such a component increases the number of options that may need
 
 # LATEST UPDATES
 
+* 2023-03-31 aMSE 0.0.25 Modified calcpopC througout to allow for SA's harvest strategy and fleetdynamics.
+
 * 2022-12-14 aMSE 0.0.24 Lots of minor edits and modifications aimed at improving the comparison of scenarios.
 
 * 2022-11-11 aMSE 0.0.23 Added a new tab = recruits, containing plots of the stock recruitment relationships at an sau and at a population within sau level. Added a table to the Tables tab.
