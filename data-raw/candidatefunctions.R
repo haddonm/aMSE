@@ -860,26 +860,153 @@ plotHSphase <- function(cpue,rundir="",wid=4,fnt=7,cex=1.0,console=TRUE) {
 } # end of ploteHSphase
 
 
+#' @title HSphaseplot makes a phase plot of predicted mature depletion vs H
+#'
+#' @description HSphaseplot generates, for a single sau, a Kobe or phase plot
+#'     of the predicted harvest rate against the predicted mature biomass
+#'     depletion. It highlights the startyr of cpue conditioning (1992 in
+#'     Tasmania) the end of conditioning (usually 2020 in Tasmania), and the
+#'     final year (2050 if projected for 30 years). The default limit on harvest
+#'     rate is set at 0.175, this may not be precautionary for all sau.
+#'
+#' @param dyn a list of the dynamics for every sau. This function only requires
+#'     the mature biomass depletion and the harvest rates
+#' @param glb the globals object
+#' @param sau  which sau index (1 - 8 in Tasmania) to use?
+#' @param rundir the directory for all files and results, default=""
+#' @param startyr default = 1992. Otherwise could use condC$yearCE[1]
+#' @param console should the plot go to the console or be saved? Default=TRUE
+#' @param targdepl what target depletion is wanted, default=0.4
+#' @param limdepl what is the limit depletion reference point, default = 0.2
+#' @param limH what is the maximum H of limit fishing mortality, default = 0.2
+#' #'
+#' @return a list of the median mature biomass depletion and median harvest rate
+#'     by year invisibly, it also plots these vectors.
+#' @export
+#'
+#' @examples
+#' print("wait on a data set")
+HSphaseplot <- function(dyn,glb,sau,rundir="",startyr=1992,
+                        console=TRUE,targdepl=0.4,limdepl=0.2,limH=0.175) {
+  # dyn <- out$sauout; maxdepl=0.6; startyr=1992; glb=out$glb; console=TRUE
+  # targdepl <- 0.4; limdepl=0.2; limH <- 0.2; sau=5
+  yrs <- c(glb$hyrnames,glb$pyrnames)
+  picky <- which(yrs >= startyr)
+  condy <- which(yrs[picky] == glb$hyrnames[length(glb$hyrnames)])
+  nyrs <- length(picky)
+  depl <- dyn$deplsB[picky,sau,]
+  H <- dyn$harvestR[picky,sau,]
+  filen <- ""
+  if (!console) {
+    nfile <- paste0("PhasePlot_for_",glb$saunames[sau],".png")
+    filen <- filenametopath(rundir,nfile)
+    caption <- paste0("PhasePlot_of Harvest Rate vs Mature Biomass for ",
+                      glb$saunames[sau])
+  }
+  plotprep(width=7,height=6,filename=filen,cex=0.9,verbose=FALSE)
+  parset(cex.lab=1.25)
+  medH <- apply(H,1,median)
+  meddepl <- apply(depl,1,median)
+  ymax <- getmax(medH)
+  deplmax <- getmax(meddepl,mult=1.25)
+  plot(meddepl,medH,type="p",pch=16,xlim=c(0,deplmax),ylim=c(0,ymax),xaxs="i",yaxs="i",
+       xlab=paste0("Mature Biomass Depletion ",glb$saunames[sau]),ylab="Harvest Rate")
+  polygon(x=c(0,limdepl,limdepl,0,0),y=c(0,0,ymax,ymax,0),
+          col=rgb(255,0,0,175,maxColorValue=255))
+  polygon(x=c(limdepl,deplmax,deplmax,limdepl,limdepl),
+          y=c(ymax,ymax,limH,limH,ymax),
+          col=rgb(255,255,0,140,maxColorValue=255))
+  polygon(x=c(limdepl,targdepl,targdepl,limdepl,limdepl),y=c(limH,limH,0,0,limH),
+          col=rgb(190,255,0,130,maxColorValue=255))
+  polygon(x=c(targdepl,deplmax,deplmax,targdepl,targdepl),y=c(0,0,limH,limH,0),
+          col=rgb(0,255,0,120,maxColorValue=255))
+  abline(h=limH,lwd=2,col=1)
+  abline(v=targdepl,lwd=2,col=1)
+  arrows(x0=meddepl[1:(nyrs-1)],y0=medH[1:(nyrs-1)],x1=meddepl[2:nyrs],
+         y1=medH[2:nyrs],lwd=2,length=0.075,code=2)
+  #  points(depl[c(1,nyrs),1],H[c(1,nyrs),1],pch=16,cex=1.25)
+  points(meddepl[c(1,condy,nyrs)],medH[c(1,condy,nyrs)],pch=16,cex=3,col=c(1,6,4))
+  legend("topright",legend=c(startyr,yrs[picky[condy]],yrs[picky[length(picky)]]),
+         col=c(1,6,4),lwd=5,cex=1.5,bty="n")
+  if (!console) {
+    addplot(filen,rundir=rundir,category="phaseplot",caption)
+  }
+  return(invisible(list(mediandepl=meddepl,medianH=medH)))
+} # end of HSphaseplot
+
+
+
+glb <- out$glb
+scrs <- out$scores$outmed
+sau <- 4
+namesau <- glb$saunames[sau]
+kobdat <- cbind(scrs[[4]]$medcatch,scrs[[4]]$medg4s,scrs[[4]]$medts)
+colnames(kobdat) <- c("catch","grad4","ts")
+kobe5 <- kobdat[,2:3] - 5
+
 
 
 filen=""
 fnt=7
-nyrs <- nrow(kobe5)
-yrge <- range(as.numeric(rownames(kobe5)))
-labelx <- paste0("Zone Wide eHS CPUE Target Score - Abundance Proxy  ",
-                 yrge[1]," - ",yrge[2])
-labely <- "Zone Wide eHS CPUE Gradient Score - Fishing Mortality Proxy"
-plotprep(width=8,height=6,filename=filen,verbose=FALSE,
-         usefont=fnt)
-parset(margin = c(0.3, 0.3, 0.1, 0.1),cex=cex,cex.lab=(cex*1.1),
-       outmargin=c(1,1,0,0))
-plot(kobe5[,"wtts"],kobe5[,"wtg4s"],type="p",pch=16,xlim=c(-5,5),ylim=c(-5,5),
-     xaxs="i",yaxs="i",xlab="", xaxt="n",yaxt="n",ylab="")
-axis(side=1,at=seq(-5,5,1))
-axis(side=2,at=seq(-5,5,1))
-mtext(labelx,side=1,line=1.1,cex=1.1)
-mtext(labely,side=2,line=1.1,cex=1.1)
-points(kobe5[c(1,nyrs),"wtts"],kobe5[c(1,nyrs),"wtg4s"],pch=16,cex=3,col=c(6,4))
+cex=1.0
+
+
+eHSphaseplot <- function(console=TRUE) {
+  nyrs <- nrow(kobe5)
+  yrs <- as.numeric(rownames(kobe5))
+  yrge <- range(yrs)
+  startyr <- yrs[1]
+  labelx <- paste0("eHS CPUE Target Score - Abundance Proxy ",
+                   yrge[1]," - ",yrge[2]," for ",namesau)
+  labely <- paste0("eHS CPUE Gradient Score - Fishing Mortality Proxy for ",
+                   namesau)
+  plotprep(width=8,height=6,filename=filen,verbose=FALSE,
+           usefont=fnt)
+  parset(margin = c(0.3, 0.3, 0.1, 0.1),cex=cex,cex.lab=(cex*1.1),
+         outmargin=c(1,1,0,0))
+  plot(kobe5[,"ts"],kobe5[,"grad4"],type="p",pch=16,xlim=c(-5,5),ylim=c(5,-5),
+       xaxs="i",yaxs="i",xlab="", xaxt="n",yaxt="n",ylab="")
+  polygon(x=c(-5,0,0,-5,-5),y=c(-5,-5,0,0,-5),
+          col=rgb(255,0,0,175,maxColorValue=255))
+  polygon(x=c(-5,0,0,-5,-5),y=c(0,0,5,5,0),
+          col=rgb(255,255,0,140,maxColorValue=255))
+  polygon(x=c(0,5,5,0,0),y=c(0,0,5,5,0),
+          col=rgb(0,255,0,120,maxColorValue=255))
+  polygon(x=c(0,5,5,0,0),y=c(-5,-5,0,0,-5),
+          col=rgb(255,255,0,140,maxColorValue=255))
+  axis(side=1,at=seq(-5,5,1))
+  axis(side=2,at=seq(5,-5,-1))
+  mtext(labelx,side=1,line=1.1,cex=1.1)
+  mtext(labely,side=2,line=1.1,cex=1.1)
+  points(kobe5[,"ts"],kobe5[,"grad4"],pch=16,cex=1.0)
+  lines(kobe5[,"ts"],kobe5[,"grad4"],lwd=1,lty=2)
+  points(kobe5[c(1,nyrs),"ts"],kobe5[c(1,nyrs),"grad4"],pch=16,cex=3,col=c(6,4))
+  legend("topright",legend=c(yrs[1],yrs[nyrs]),col=c(6,4),lwd=5,cex=1.5,bty="n")
+}
+
+
+
+
+
+pdat <- read.csv("C:/Users/Malcolm/Dropbox/A_CodeUse/aMSEUse/hsargs/mult05/Production_by_sau.csv")
+
+
+pdat[2,]/pdat[1,]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

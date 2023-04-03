@@ -130,7 +130,7 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,fleetdyn,hsargs,
       pickyr <- which(yrs[year] == ceyrs)
       cpuesau <- histCE[pickyr,]
     } else {
-      cpuesau <- numeric(glob$nSAU)
+      cpuesau <- rep(NA,glob$nSAU)
     }
     rdev <- recdevs[year,]
     hcrout <- list(acatch=catchsau)

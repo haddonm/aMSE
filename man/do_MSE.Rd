@@ -26,7 +26,8 @@ do_MSE(
   wtatL = c(80, 200),
   mincount = 100,
   includeNAS = FALSE,
-  depensate = 0
+  depensate = 0,
+  kobeRP = c(0.4, 0.2, 0.15)
 )
 }
 \arguments{
@@ -103,7 +104,10 @@ they are then the final output size is greatly increased. default=FALSE}
 
 \item{depensate}{should depensation occur. If > 0, eg depensate=0.2, then
 depensation will occur when depletion is < whatever value one puts in for
-depensate. Implemented inside the function 'oneyearrec'.}
+depensate. Implemented inside the function 'oneyearrec'}
+
+\item{kobeRP}{reference points for the eHS pseudo kobe plot. A vector of the
+targdepl, default=0.4, limdepl, default=0.2, and the limH, default=0.15}
 }
 \value{
 a large list containing tottime, projtime, starttime, glb, ctrl,

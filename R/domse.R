@@ -103,7 +103,9 @@
 #'     they are then the final output size is greatly increased. default=FALSE
 #' @param depensate should depensation occur. If > 0, eg depensate=0.2, then
 #'     depensation will occur when depletion is < whatever value one puts in for
-#'     depensate. Implemented inside the function 'oneyearrec'.
+#'     depensate. Implemented inside the function 'oneyearrec'
+#' @param kobeRP reference points for the eHS pseudo kobe plot. A vector of the
+#'     targdepl, default=0.4, limdepl, default=0.2, and the limH, default=0.15
 #'
 #' @seealso{
 #'  \link{makeequilzone}, \link{dohistoricC}, \link{prepareprojection},
@@ -120,7 +122,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                    sampleNaS,getdata,calcpopC,makeouthcr,HSPMs,fleetdyn=NULL,
                    varyrs=7,startyr=42,verbose=FALSE,ndiagprojs=3,
                    cutcatchN=56,matureL=c(70,200),wtatL=c(80,200),mincount=100,
-                   includeNAS=FALSE,depensate=0) {
+                   includeNAS=FALSE,depensate=0,kobeRP=c(0.4,0.2,0.15)) {
   # generate equilibrium zone -----------------------------------------------
   starttime <- (Sys.time())
   zone <- makeequilzone(rundir,controlfile,verbose=verbose)
@@ -222,15 +224,6 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                 histyr=condC$histyr,projLML=projC$projLML)
   historicalplots(rundir=rundir,condC=condC,glb=glb)
   NAS$catchN <- NAS$catchN[(cutcatchN:glb$Nclass),,,]
-  # generate sau phase plots
-  nSAU <- glb$nSAU
-  kobedata <- vector(mode="list",length=nSAU)
-  names(kobedata) <- glb$saunames
-  for (plotsau in 1:glb$nSAU) {
-    kobedata[[plotsau]] <- HSphaseplot(dyn=sauout,glb=glb,sau=plotsau,
-                              rundir=rundir,startyr=condC$yearCE[1],
-                              console=FALSE,targdepl=0.4,limdepl=0.2,limH=0.175)
-  }
   projtime <- Sys.time()
   tottime <- round((projtime - starttime),3)
   # calculate HS performance statistics
@@ -248,6 +241,17 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                               cpue=sauout$cpue,catches=sauout$catch,
                               glb=glb,yearCE=condC$yearCE,
                               hsargs=hsargs)
+  # generate sau phase plots
+  nSAU <- glb$nSAU
+  kobedata <- vector(mode="list",length=nSAU)
+  names(kobedata) <- glb$saunames
+  for (plotsau in 1:glb$nSAU) {
+    kobedata[[plotsau]] <- HSphaseplot(dyn=sauout,glb=glb,sau=plotsau,
+                                       rundir=rundir,startyr=condC$yearCE[1],
+                                       console=FALSE,targdepl=kobeRP[1],
+                                       limdepl=kobeRP[2],limH=kobeRP[3])
+  }
+
   if (!includeNAS) NAS=NULL
   out <- list(tottime=tottime,projtime=projtime,starttime=starttime,glb=glb,
               ctrl=ctrl,zoneCP=zoneCP,zoneD=zoneD,zoneDD=zoneDD,zoneDP=zoneDP,
