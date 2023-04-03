@@ -140,7 +140,7 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,fleetdyn,hsargs,
                      fleetacatch=fleetdyn,
                      hsargs=hsargs,
                      glb=glob,
-                     sigmab=sigB)
+                     sigmab=sigB,year=year)
     inN <- zoneDD$Nt[,year-1,]
     out <- oneyearsauC(zoneCC=zoneC,inN=inN,popC=popC,year=year,
                        Ncl=glob$Nclass,sauindex=sauindex,movem=glob$move,

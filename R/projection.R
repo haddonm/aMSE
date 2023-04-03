@@ -248,7 +248,7 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
                        sauCPUE= zoneDP$cesau[year-1,,iter],
                        catsau = zoneDP$catsau[year-1,,iter],
                        fleetacatch=fleetdyn,hsargs=hsargs,glb=glb,
-                       sigmab=sigmab)
+                       sigmab=sigmab,year=year)
       outy <- oneyearsauC(zoneCC=zoneCP,inN=zoneDP$Nt[,year-1,,iter],
                           popC=popC,year=year,Ncl=Nclass,sauindex=sauindex,
                           movem=movem,sigmar=sigmar,sigce=sigce,r0=r0,b0=b0,
@@ -579,7 +579,7 @@ addrecvar <- function(zoneDD,zoneC,glob,condC,ctrl,varyrs,calcpopC,
       popC <- calcpopC(hcrout,exb=zoneDDR$exploitB[year-1,,iter],
                        sauCPUE=cpuesau,catsau=catchsau,
                        fleetacatch=fleetdyn,hsargs=hsargs,
-                       glb=glob,sigmab=sigB)
+                       glb=glob,sigmab=sigB,year=year)
       inN <- zoneDDR$Nt[,year-1,,iter]
       out <- oneyearsauC(zoneCC=zoneC,inN=inN,popC=popC,year=year,
                          Ncl=glob$Nclass,sauindex=sauindex,movem=glob$move,

@@ -155,7 +155,7 @@ for (year in startyr:endyr) { # iter=1; year=startyr
                        year=year,decrement=hsargs$decrement)
     hcrout <- hcrfun(hcrdata,hsargs,saunames=glb$saunames)
     popC <- calcpopC(hcrout,exb=zoneDP$exploitB[year-1,,iter],
-                     sauindex,sigmab=sigmab)
+                     sauindex,sigmab=sigmab,year=year)
     outy <- oneyearsauC(zoneCC=zoneCP,inN=zoneDP$Nt[,year-1,,iter],
                         popC=popC,year=year,Ncl=Nclass,sauindex=sauindex,
                         movem=movem,sigmar=sigmar,sigce,r0=r0,b0=b0,
