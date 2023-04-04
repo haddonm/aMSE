@@ -36,7 +36,9 @@ Of course, adding such a component increases the number of options that may need
 
 # LATEST UPDATES
 
-* 2023-03-31 aMSE 0.0.25 Modified calcpopC througout to allow for SA's harvest strategy and fleetdynamics.
+* 2023-04-04 aMSE 0.1.0 Added curryear to hcrfun so all HS functions should now include curryear inthier arguments. Within doprojecitons() it is set to year inside the loop. This was needed to allow the SA HS to use its fleet dynamics model and is not needed in Tasmania, but is required in the argument list.
+
+* 2023-03-31 aMSE 0.0.25 Modified calcpopC througout to allow for SA's harvest strategy and fleet dynamics.
 
 * 2022-12-14 aMSE 0.0.24 Lots of minor edits and modifications aimed at improving the comparison of scenarios.
 
