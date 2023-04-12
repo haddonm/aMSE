@@ -277,64 +277,7 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
   return(list(zoneDP=zoneDP,hcrout=hcrout))
 } # end of doprojections
 
-#' @title finalscoreoutputs generates plots of the PM scores and interactions
-#'
-#' @description finalscoreoutputs is used to reconstruct the harvest strategy
-#'     responses to the dynamics so they can be examined and understood. This
-#'     function generates plots, for each sau, of the projected catches, cpue,
-#'     gard1 scores, grad4 scores, target cpue scores, the cpue target and the
-#'     final scores. Uses getcpueHS from TasHS.
-#'
-#' @param rundir the directory for a given scenario
-#' @param HSPMs is a function defined in the HS package that reconstructs
-#'     the cpue HSPM scores, and other measures ready for plotting
-#' @param cpue the projected cpue dynamics from out$sauout$zonePsau$cpue
-#' @param catches the project catches from out$sauout$zonePsau$catch
-#' @param glb the globals object for the scenario
-#' @param yearCE the year names for the observed CPUE used to condition the
-#'     model, found in condC$yearCE.
-#' @param hsargs the list of arguments required by the HS
-#' @param verbose should updates on progress be sent to console? default=TRUE
-#' @param ... required in case whatever function is pointed at HSPMs requires
-#'     more than cpue
-#'
-#' @return a list of two lists. The first being outHS containing all the
-#'     reconstructed HS outputs, and the second being the medians of the
-#'     various scores and targetcpue.
-#' @export
-#'
-#' @examples
-#' print("wait on data sets, example soon")
-#' # rundir=rundir;HSPMs=HSPMs;cpue=sauout$cpue;
-#' # catches=sauout$catches;glb=glb;yearCE=condC$yearCE
-#' # hsargs=hsargs
-finalscoreoutputs <- function(rundir,HSPMs,cpue,catches,glb,yearCE,hsargs,
-                              verbose=TRUE,...) {
-  if (!is.null(HSPMs)) {
-    nsau <- glb$nSAU
-    reps <- glb$reps
-    outHS <- vector(mode="list",length=nsau)
-    saunames <- glb$saunames
-    names(outHS) <- saunames
-    outmed <- outHS
-    if (verbose) cat("Reconstructing HS outputs  \n")
-    for (sau in 1:nsau) {
-      outHS[[sau]] <- HSPMs(ce=cpue,catches=catches,glb=glb,yearCE=yearCE,
-                            hsargs=hsargs,sau=sau,...)
-    }
-    if (verbose) cat("Now plotting results   \n")
-    for (sau in 1:nsau) {
-      filename <- filenametopath(rundir,paste0("finalscores_",saunames[sau],".png"))
-      outmed[[sau]] <- plotfinalscores(outscores=outHS[[sau]],minprojC=0,
-                                       minprojCE=60,mintargCE=110,filen=filename)
-      caption <- paste0("The score relationships for ",saunames[sau])
-      addplot(filen=filename,rundir=rundir,category="scores",caption)
-    }
-    return(invisible(list(outHS=outHS,outmed=outmed)))
-  } else {
-    return(invisible(list(outHS=NULL,outmed=NULL)))
-  }
-} # end of finalscoreoutputs
+
 
 #' @title makezoneDP generates the container for the projection dynamics
 #'

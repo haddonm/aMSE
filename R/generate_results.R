@@ -21,7 +21,7 @@
 #' @examples
 #' args(biology_plots)
 biology_plots <- function(rundir, glb, zoneC, matL=c(30,210), Lwt=c(80,210)) {
-  # rundir=rundir; glb=glb;zoneC=zoneCP;matL=c(70,200);Lwt=c(100,210)
+  # rundir=rundir; glb=glb;zoneC=zoneC;matL=c(70,200);Lwt=c(80,200);filen=""
   mids <- glb$midpts
   numpop <- glb$numpop
   popdef <- getlistvar(zoneC,"popdef")
@@ -515,6 +515,7 @@ plotproductivity <- function(rundir,product,glb) {
 #'
 #' @examples
 #' print("wait on data sets")
+#' # rundir=rundir; resultpop=resultpop; glb=glb
 plotrecruitment <- function(rundir,resultpop,glb) {
   usevar <- c("R0","B0","ExB0","MSY")
   nvar <- length(usevar)
@@ -560,10 +561,10 @@ plotrecruitment <- function(rundir,resultpop,glb) {
   plotprep(width=7, height=9,filename=filen,verbose=FALSE)
   parset(plots=pickbound(nsau),margin=c(0.3,0.4,0.05,0.1),
          outmargin=c(1,1,0,0), cex=0.9,byrow=FALSE)
-  for (sau in 1:nsau) {
+  for (sau in 1:nsau) { # sau = 1
     pickcol <- which(sauindex == sau)
     nextra <- length(pickcol)
-    tmp <- resultpop[,pickcol]
+    tmp <- as.matrix(resultpop[,pickcol])
     ymax <- getmax(tmp["R0",])
     pickmax <- which.max(tmp["R0",])
     steep <- tmp["steep",pickmax]

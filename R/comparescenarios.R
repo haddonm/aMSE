@@ -360,7 +360,7 @@ comparevar <- function(dyn,glbc,scenes,var="cpue") {
 
 #' @title constructTasHSout remakes outputs from the hcrfun for all projections
 #'
-#' @description constructTasHSout uses the scenario's hcrfun to reconstrcut the
+#' @description constructTasHSout uses the scenario's hcrfun to reconstruct the
 #'     scores and reference points for the Tasmanian HS.
 #'
 #' @param hcrfun the same as used in do_MSE = mcdahcr from TasHS package
@@ -1116,92 +1116,6 @@ makelistobj <- function(res,objname) { # res=result$ans;objname="glb"
   return(invisible(outlist))
 } # end of makelistobj
 
-#' @title plotfinalscores plots projected catches, cpue, PMs, and final score
-#'
-#' @description plotfinalscores takes the inidivual sau output from getcpueHS
-#'     and generates a plot made up of six sub-plots of the replicates for each
-#'     sau. In sequence these plots are the projected catches, the projected
-#'     cpue, the gradient 1 scores, the gradient 4 scores, the target cpue, and
-#'     the final total score. This enables the relationships between the scores
-#'     to be examined. Only used in do_MSE
-#'
-#' @param outscores each sau's results from getcpueHS, which extracts the HS
-#'     scores and other results from the projection dynamics
-#' @param minprojC the minimum y-axis value for the projected catches
-#' @param minprojCE the minimum y-axis value for the projected cpue
-#' @param mintargCE the minimum y-axis value for the projected target cpue
-#' @param filen a filename for use if saving the output to said file,
-#'     default = '', which implies the plot goes to the console.
-#'
-#' @seealso{
-#'    \link{do_MSE}
-#' }
-#'
-#' @return invisibly a list of the median catches, cpue, targetce, finalscore,
-#'     grad1 score, grad4 score, and target cpue score.
-#' @export
-#'
-#' @examples
-#' print("wait on data sets")
-plotfinalscores <- function(outscores,minprojC=0,minprojCE=60,mintargCE=110,
-                            filen="") {
-  cpue <- outscores$cpue
-  yrs <- as.numeric(rownames(cpue))
-  reps <- ncol(cpue)
-  cetarg <- outscores$cetarg
-  catch <- outscores$catch
-  score <- outscores$finalsc
-  tyrs <- as.numeric(rownames(cetarg))
-  pickyr <- match(tyrs,yrs)
-  ymax <- getmax(catch)    # first plot catches
-  medcpue <- apply(cpue[pickyr,],1,median)
-  medtarg <- apply(cetarg,1,median)
-  medcatch <- apply(catch,1,median)
-  medsc <- apply(score,1,median)
-  plotprep(width=8, height=9,newdev=FALSE,filename=filen,verbose=FALSE)
-  parset(plots=c(7,1),margin=c(0.2,0.4,0.025,0.1))
-  plot(tyrs,catch[,1],type="l",lwd=1,col="grey",ylim=c(minprojC,ymax),
-       ylab="Projected Catch",xlab="",panel.first=grid())
-  for (i in 1:reps) lines(tyrs,catch[,i],lwd=1,col="grey")
-  lines(tyrs,medcatch,lwd=2,col=2)
-  ymax <- getmax(cpue[pickyr,])  # now plot cpue
-  plot(tyrs,cpue[pickyr,1],type="l",lwd=1,col="grey",ylim=c(minprojCE,ymax),
-       ylab="Projected CPUE",xlab="",panel.first=grid())
-  for (i in 1:reps) lines(tyrs,cpue[pickyr,i],lwd=1,col="grey")
-  lines(tyrs,medcpue,lwd=2,col=2)
-  lines(tyrs,medtarg,lwd=2,col=4)
-  g1s <- outscores$g1s  # now the grad1 score
-  medg1s <- apply(g1s,1,median)
-  plot(tyrs,g1s[,1],type="l",lwd=1,col="grey",ylim=c(0,10),
-       panel.first=grid(),ylab="Grad1 Score",xlab="")
-  for (i in 1:reps) lines(tyrs,g1s[,i],lwd=1,col="grey")
-  lines(tyrs,medg1s,lwd=2,col=2)
-  g4s <- outscores$g4s  # now the grad4 score
-  medg4s <- apply(g4s,1,median)
-  plot(tyrs,g4s[,1],type="l",lwd=1,col="grey",ylim=c(0,10),
-       panel.first=grid(),ylab="Grad4 Score",xlab="")
-  for (i in 1:reps) lines(tyrs,g4s[,i],lwd=1,col="grey")
-  lines(tyrs,medg4s,lwd=2,col=2)
-  ts <- outscores$ts  # now the target cpue score
-  medts <- apply(ts,1,median)
-  plot(tyrs,ts[,1],type="l",lwd=1,col="grey",ylim=c(0,10),
-       panel.first=grid(),ylab="Target CE Score",xlab="")
-  for (i in 1:reps) lines(tyrs,ts[,i],lwd=1,col="grey")
-  lines(tyrs,medts,lwd=2,col=2)
-  ymax <- getmax(cetarg,mult=1.01)   # now the target cpue
-  plot(tyrs,cetarg[,1],type="l",lwd=1,col="grey",ylim=c(mintargCE,ymax),
-       panel.first=grid(),ylab="Target CE",xlab="")
-  for (i in 1:reps) lines(tyrs,cetarg[,i],lwd=1,col="grey")
-  abline(h=150,lwd=2,col=2,lty=2)
-  lines(tyrs,medtarg,lwd=2,col=2)
-  ylabel <- "Final TasHS Score"  # now the final scores
-  plot(tyrs,score[,1],type="l",lwd=1,col="grey",ylim=c(0,10),yaxs="i",
-       panel.first=grid(),ylab=ylabel,xlab="")
-  for (i in 1:reps) lines(tyrs,score[,i],lwd=1,col="grey")
-  lines(tyrs,medsc,lwd=2,col=2)
-  return(invisible(list(medcatch=medcatch,medcpue=medcpue,medtarg=medtarg,
-                        medsc=medsc,medg1s=medg1s,medg4s=medg4s,medts=medts)))
-} # end of plotfinalscores
 
 #' @title plotscene literally plots up the output from comparevar
 #'

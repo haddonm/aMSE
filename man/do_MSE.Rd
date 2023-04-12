@@ -15,6 +15,7 @@ do_MSE(
   getdata,
   calcpopC,
   makeouthcr,
+  hcrscoreoutputs,
   HSPMs,
   fleetdyn = NULL,
   varyrs = 7,
@@ -63,6 +64,11 @@ per population in each SAU expected in the current year.}
 an object that is continually updated by the hcrfun. To avoid very
 inefficient code this object (at least for Tasmania) is cycled through
 the iterations.}
+
+\item{hcrscoreoutputs}{A function defined in an extra aMSE package or
+source file, that defines how the hcr scores should be dealt with. In
+Tasmania they recreated from the projections, plotted and their values
+snet out into the scores object.}
 
 \item{HSPMs}{Another function defined in the HS package that reconstructs
 the cpue HSPM scores, and other measures ready for plotting}

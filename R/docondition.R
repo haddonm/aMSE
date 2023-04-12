@@ -274,7 +274,7 @@ changeline <- function(indir, filename, linenumber, newline,verbose=FALSE) {
 #' @examples
 #' print("wait on suitable data sets in data")
 #' # rundir=rundir; controlfile=controlfile;calcpopC=calcexpectpopC
-#' # verbose=TRUE; doproduct=FALSE; dohistoric=TRUE; mincount=120
+#' # verbose=TRUE; doproduct=TRUE; dohistoric=TRUE; mincount=120
 #' # matureL=c(70,200);wtatL=c(80,200);mincount=120
 do_condition <- function(rundir,controlfile,calcpopC,
                          verbose=FALSE,doproduct=FALSE,dohistoric=TRUE,

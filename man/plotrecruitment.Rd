@@ -27,4 +27,5 @@ plotrecruitment plots an approximation to the summarized
 }
 \examples{
 print("wait on data sets")
+# rundir=rundir; resultpop=resultpop; glb=glb
 }

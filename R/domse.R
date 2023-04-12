@@ -74,6 +74,10 @@
 #'     an object that is continually updated by the hcrfun. To avoid very
 #'     inefficient code this object (at least for Tasmania) is cycled through
 #'     the iterations.
+#' @param hcrscoreoutputs A function defined in an extra aMSE package or
+#'     source file, that defines how the hcr scores should be dealt with. In
+#'     Tasmania they recreated from the projections, plotted and their values
+#'     snet out into the scores object.
 #' @param HSPMs Another function defined in the HS package that reconstructs
 #'     the cpue HSPM scores, and other measures ready for plotting
 #' @param fleetdyn a function that calculates the distribution of catch across
@@ -119,7 +123,8 @@
 #' @examples
 #' print("wait on suitable data sets in data")
 do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
-                   sampleNaS,getdata,calcpopC,makeouthcr,HSPMs,fleetdyn=NULL,
+                   sampleNaS,getdata,calcpopC,makeouthcr,hcrscoreoutputs,
+                   HSPMs,fleetdyn=NULL,
                    varyrs=7,startyr=42,verbose=FALSE,ndiagprojs=3,
                    cutcatchN=56,matureL=c(70,200),wtatL=c(80,200),mincount=100,
                    includeNAS=FALSE,depensate=0,kobeRP=c(0.4,0.2,0.15)) {
@@ -237,10 +242,9 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   plothsstats(rundir,HSstats,glb)
   addtable(hcrout$refpts,"hcrout_refpts.csv",rundir,category="HSperf",
            caption="HCR reference points")
-  scores <- finalscoreoutputs(rundir=rundir,HSPMs=HSPMs,
-                              cpue=sauout$cpue,catches=sauout$catch,
-                              glb=glb,yearCE=condC$yearCE,
-                              hsargs=hsargs)
+  scores <- hcrscoreoutputs(rundir=rundir,HSPMs=HSPMs,hcrout=hcrout,
+                            cpue=sauout$cpue,catches=sauout$catch,
+                            glb=glb,yearCE=condC$yearCE,hsargs=hsargs)
   # generate sau phase plots
   nSAU <- glb$nSAU
   kobedata <- vector(mode="list",length=nSAU)

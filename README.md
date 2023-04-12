@@ -45,6 +45,11 @@ examine its implications.
 
 # LATEST UPDATES
 
+- 2023-04-12 aMSE 0.1.1 Started generalizing the outptus from aMSE by
+  beginning to separate functions that relate to specific jurisdiction
+  outputs into a separate R package (in Tasmania it is currently called
+  aMSEExtra).
+
 - 2023-04-04 aMSE 0.1.0 Added curryear to hcrfun so all HS functions
   should now include curryear inthier arguments. Within doprojecitons()
   it is set to year inside the loop. This was needed to allow the SA HS

@@ -25,7 +25,7 @@ invisibly a list of multTAC, grad1, grad4,score1, score4, scoret,
     final year in each replicate.
 }
 \description{
-constructTasHSout uses the scenario's hcrfun to reconstrcut the
+constructTasHSout uses the scenario's hcrfun to reconstruct the
     scores and reference points for the Tasmanian HS.
 }
 \examples{
