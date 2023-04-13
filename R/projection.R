@@ -244,22 +244,23 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
                          NumNe=zoneDP$NumNe[,,,iter]),
                          year=year,decrement=hsargs$decrement)
       hcrout <- hcrfun(hcrdata,hsargs,saunames=glb$saunames,curryear=year)
-      popC <- calcpopC(hcrout,exb=zoneDP$exploitB[year-1,,iter],
+      calcpopCout <- calcpopC(hcrout,exb=zoneDP$exploitB[year-1,,iter],
                        sauCPUE= zoneDP$cesau[year-1,,iter],
                        catsau = zoneDP$catsau[year-1,,iter],
                        fleetacatch=fleetdyn,hsargs=hsargs,glb=glb,
                        sigmab=sigmab,year=year)
       outy <- oneyearsauC(zoneCC=zoneCP,inN=zoneDP$Nt[,year-1,,iter],
-                          popC=popC,year=year,Ncl=Nclass,sauindex=sauindex,
-                          movem=movem,sigmar=sigmar,sigce=sigce,r0=r0,b0=b0,
-                          exb0=exb0,envyr=envyr,envsurv=survNt,envrec=proprec)
+                          popC=calcpopCout$popC,year=year,Ncl=Nclass,
+                          sauindex=sauindex,movem=movem,sigmar=sigmar,
+                          sigce=sigce,r0=r0,b0=b0,exb0=exb0,envyr=envyr,
+                          envsurv=survNt,envrec=proprec)
       dyn <- outy$dyn
       saudyn <- poptosauCE(dyn["catch",],dyn["cpue",],sauindex)
       zoneDP$exploitB[year,,iter] <- dyn["exploitb",]
       zoneDP$midyexpB[year,,iter] <- dyn["midyexpB",]
       zoneDP$matureB[year,,iter] <- dyn["matureb",]
       zoneDP$catch[year,,iter] <- dyn["catch",]
-      zoneDP$acatch[year,,iter] <- hcrout$acatch
+      zoneDP$acatch[year,,iter] <- calcpopCout$acatch
       zoneDP$catsau[year,,iter] <- saudyn$saucatch
       zoneDP$harvestR[year,,iter] <- dyn["catch",]/dyn["midyexpB",]
       zoneDP$cpue[year,,iter] <- dyn["cpue",]
@@ -519,12 +520,12 @@ addrecvar <- function(zoneDD,zoneC,glob,condC,ctrl,varyrs,calcpopC,
       } else {
         cpuesau <- numeric(glob$nSAU)
       }
-      popC <- calcpopC(hcrout,exb=zoneDDR$exploitB[year-1,,iter],
+      calcpopCout <- calcpopC(hcrout,exb=zoneDDR$exploitB[year-1,,iter],
                        sauCPUE=cpuesau,catsau=catchsau,
                        fleetacatch=fleetdyn,hsargs=hsargs,
                        glb=glob,sigmab=sigB,year=year)
       inN <- zoneDDR$Nt[,year-1,,iter]
-      out <- oneyearsauC(zoneCC=zoneC,inN=inN,popC=popC,year=year,
+      out <- oneyearsauC(zoneCC=zoneC,inN=inN,popC=calcpopCout$popC,year=year,
                          Ncl=glob$Nclass,sauindex=sauindex,movem=glob$move,
                          sigmar=lastsigR,sigce=1e-08,r0=r0,b0=b0,exb0=exb0,
                          rdev=condC$recdevs,envyr=NULL,envsurv=NULL)
@@ -534,7 +535,7 @@ addrecvar <- function(zoneDD,zoneC,glob,condC,ctrl,varyrs,calcpopC,
       zoneDDR$midyexpB[year,,iter] <- dyn["midyexpB",]
       zoneDDR$matureB[year,,iter] <- dyn["matureb",]
       zoneDDR$catch[year,,iter] <- dyn["catch",]
-      zoneDDR$acatch[year,,iter] <- hcrout$acatch
+      zoneDDR$acatch[year,,iter] <- calcpopCout$acatch
       zoneDDR$harvestR[year,,iter] <- dyn["catch",]/out$dyn["exploitb",]
       zoneDDR$cpue[year,,iter] <- dyn["cpue",]
       zoneDDR$cesau[year,,iter] <- saudyn$saucpue

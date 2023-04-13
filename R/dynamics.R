@@ -134,7 +134,7 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,fleetdyn,hsargs,
     }
     rdev <- recdevs[year,]
     hcrout <- list(acatch=catchsau)
-    popC <- calcpopC(hcrout,exb=zoneDD$exploitB[year-1,],
+    calcpopCout <- calcpopC(hcrout,exb=zoneDD$exploitB[year-1,],
                      sauCPUE= cpuesau,
                      catsau=catchsau,
                      fleetacatch=fleetdyn,
@@ -142,7 +142,7 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,fleetdyn,hsargs,
                      glb=glob,
                      sigmab=sigB,year=year)
     inN <- zoneDD$Nt[,year-1,]
-    out <- oneyearsauC(zoneCC=zoneC,inN=inN,popC=popC,year=year,
+    out <- oneyearsauC(zoneCC=zoneC,inN=inN,popC=calcpopCout$popC,year=year,
                        Ncl=glob$Nclass,sauindex=sauindex,movem=glob$move,
                        sigmar=sigR,sigce=1e-08,r0=r0,b0=b0,exb0=exb0,rdev=rdev,
                        envyr=NULL,envsurv=NULL,envrec=NULL)

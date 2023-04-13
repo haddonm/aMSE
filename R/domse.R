@@ -3,7 +3,7 @@
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
-# hcrfun=mcdahcr
+# hcrfun=constantrefhcr
 # sampleCE=tasCPUE
 # sampleFIS=tasFIS
 # sampleNaS=tasNaS
@@ -24,7 +24,7 @@
 # depensate=1
 # pmwtSwitch = 0
 # stablewts = c(0.4, 0.5, 0.1)
-# hcrname="mcdahcr"
+# hcrname="constantrefhcr"
 
 
 #' @title do_MSE an encapsulating function to hold the details of a single run
