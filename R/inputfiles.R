@@ -753,6 +753,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
          envimpact[["propNt"]] <- propNt
       }
    }  # end of use envimpact
+   # start of FIS input section
    yearFIS <- NULL
    fisindex <- NULL
    yrfis <- getsingleNum("FISINDEX",indat)

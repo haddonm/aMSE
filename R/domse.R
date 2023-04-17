@@ -25,6 +25,8 @@
 # pmwtSwitch = 0
 # stablewts = c(0.4, 0.5, 0.1)
 # hcrname="constantrefhcr"
+# hcrscoreoutputs = extractandplotscores
+# kobeRP = c(0.4,0.2,0.15)
 
 
 #' @title do_MSE an encapsulating function to hold the details of a single run

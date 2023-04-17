@@ -45,7 +45,10 @@ examine its implications.
 
 # LATEST UPDATES
 
-- 2023-04-12 aMSE 0.1.1 Started generalizing the outptus from aMSE by
+- 2023-04-17 aMSE 0.1.2 Amended save_hsargs so it can handle data.frame
+  within hsargs.
+
+- 2023-04-12 aMSE 0.1.1 Started generalizing the outputs from aMSE by
   beginning to separate functions that relate to specific jurisdiction
   outputs into a separate R package (in Tasmania it is currently called
   aMSEExtra).

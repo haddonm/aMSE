@@ -739,10 +739,23 @@ sautopop <- function(x,sauindex) {
 save_hsargs <- function(rundir,hsargs) {
   filen <- filenametopath(rundir,"hsargs.txt")
   cat(names(hsargs)[1],hsargs[[1]],"\n",file=filen,append=FALSE)
-  for (i in 2:length(hsargs))
-    cat(names(hsargs)[i],hsargs[[i]],"\n",file=filen,append=TRUE)
-  if (!("hcrname" %in% names(hsargs)))
-    cat("hcrname not in hsargs  \n",file=filen,append=TRUE)
+  for (i in 2:length(hsargs)) #  i=15
+    if (class(hsargs[[i]]) %in% c("data.frame","list")) {
+      cat(names(hsargs)[i],"\n",file=filen,append=TRUE)
+      obj <- hsargs[[i]]
+      numrow <- nrow(obj)
+      numcol <- ncol(obj)
+      cat(colnames(obj),"\n",file=filen,append=TRUE)
+      for (j in 1:numrow) {
+        txt <- rownames(obj)[j]
+        for (k in 1:numcol) txt <- paste0(txt," ",obj[j,k])
+        cat(txt,"\n",file=filen,append=TRUE)
+      }
+    } else {
+      cat(names(hsargs)[i],hsargs[[i]],"\n",file=filen,append=TRUE)
+      if (!("hcrname" %in% names(hsargs)))
+          cat("hcrname not in hsargs  \n",file=filen,append=TRUE)
+    }
   cat("______________________   \n\n\n\n",file=filen,append=TRUE)
   resfile <- filenametopath(rundir,"resultTable.csv")
   cat(c(filen,"HSperf",type="txtobj",as.character(Sys.time()),
