@@ -805,6 +805,7 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
   }
   plotzonedyn(rundir,scenes,zone,glbc[[1]],console=FALSE,q90=TRUE,polys=TRUE,
               intens=intensity)
+  tabulatezoneprod(rundir,prods,scenes)
   # ribbon plots by sau and dynamic variable
   # cpue <- scenebyvar(dyn=out$dyn,byvar="cpue",glb=out$glbc[[1]])
   glb <- glbc[[1]]
@@ -823,7 +824,8 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
               q90=TRUE,intens=intensity,addleg="bottomright")
   makecompareoutput(rundir=rundir,glbc,scenes,postfixdir,
                     filesused=files[pickfiles],openfile=TRUE,verbose=FALSE)
-  return(invisible(list(scenes=scenes,ans=ans,quantscen=quantscen,dyn=dyn)))
+  return(invisible(list(scenes=scenes,ans=ans,quantscen=quantscen,dyn=dyn,
+                        prods=prods)))
 } # end of do_comparison
 
 
@@ -1623,4 +1625,35 @@ tabulateproductivity <- function(rundir,prods,scenes) {
   return(invisible(out))
 } # end of tabulateproductivity
 
-
+#' @title tabulateproductivity produces tables of the MSY and related statistics
+#'
+#' @description tabulateproductivity writes out csv files for each scenario
+#'     that contain the B0, Bmsy, MSY, Depmsy, and CEmsy for each sau
+#'
+#' @param rundir the full path to the directory holding the all result files
+#' @param prods the sauprod objects from each scenario in a list
+#' @param scenes a vector of the names for each scenario
+#'
+#' @return It adds a csv file to rundir (or nscenario csv files if unexpectedly
+#'     the productivity tables differ) and returns either a single identical
+#'     matrix of productivity stats, or the full list.
+#' @export
+#'
+#' @examples
+#' print("wait on data sets")
+#' # syntax tabulatezoneprod(rundir=rundir,prods=prods,scenes=result$scenes)
+tabulatezoneprod <- function(rundir,prods,scenes) {
+  nscen <- length(scenes)
+  rows <- c("B0","Bmsy","MSY","Dmsy","CEmsy")
+  out <- matrix(0,nrow=5,ncol=nscen,dimnames=list(rows,scenes))
+  for (i in 1:nscen) {
+    scenprod <- prods[[i]]
+    out[1:3,i] <- rowSums(scenprod[1:3,])
+    out[4,i] <- mean(scenprod[4,])
+    out[5,i] <- sum((scenprod[3,]/out[3,i]) * scenprod[5,i])
+  }
+  filen <- paste0("zone_productivity.csv")
+  caption <- paste0("Productivity statistics for the whole zone.")
+  addtable(out,filen,rundir=rundir,category="zone",caption)
+  return(invisible(out))
+} # end of tabulatezoneprod

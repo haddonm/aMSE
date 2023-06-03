@@ -188,12 +188,12 @@ changeline <- function(indir, filename, linenumber, newline,verbose=FALSE) {
   # indir=rundir; filename="saudataM15h5.csv"; linenumber="AvRec"; newline=chgevals
   filen <- filenametopath(indir,filename)
   dat <- readLines(filen)
-  if (class(linenumber) == "numeric") {
+  if (inherits(linenumber,"numeric")) {
     origtext <- dat[linenumber]
     dat[linenumber] <- newline
     writeLines(dat,filen)
   }
-  if (class(linenumber) == "character") { # ie the name of the variable
+  if (inherits(linenumber,"character")) { # ie the name of the variable
     pickL <- grep(linenumber,dat)[1]
     if (length(pickL) == 0)
       stop(cat(paste0(linenumber," does not appear in ",filename),"\n"))

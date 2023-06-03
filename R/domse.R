@@ -3,7 +3,7 @@
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
-# hcrfun=constantrefhcr
+# hcrfun=consthcr   #constantrefhcr
 # sampleCE=tasCPUE
 # sampleFIS=tasFIS
 # sampleNaS=tasNaS
@@ -13,7 +13,7 @@
 # startyr=38
 # verbose=TRUE
 # ndiagprojs=4
-# makehcrout=makeouthcr
+# makehcrout=makeoutconst   #makeouthcr
 # HSPMs=getcpueHS
 # fleetdyn=NULL
 # cutcatchN=56
@@ -21,12 +21,14 @@
 # wtatL = c(80,200)
 # mincount=100
 # includeNAS=FALSE
-# depensate=1
+# depensate=0
 # pmwtSwitch = 0
 # stablewts = c(0.4, 0.5, 0.1)
-# hcrname="constantrefhcr"
+# hcrname="consthcr"   #"constantrefhcr"
 # hcrscoreoutputs = extractandplotscores
 # kobeRP = c(0.4,0.2,0.15)
+
+
 
 
 #' @title do_MSE an encapsulating function to hold the details of a single run
@@ -241,7 +243,8 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   save(glb,file=paste0(rundir,"/glb.RData"))
   save_hsargs(rundir,hsargs)   # prints hsargs to HSPerfs tab
   if (verbose) cat("HSstats.RData, glb.RData, and hsargs.txt saved to rundir \n")
-  plothsstats(rundir,HSstats,glb)
+  plothsstats(rundir,HSstats,glb,average=FALSE)
+  plothsstats(rundir,HSstats,glb,average=TRUE)
   addtable(hcrout$refpts,"hcrout_refpts.csv",rundir,category="HSperf",
            caption="HCR reference points")
   scores <- hcrscoreoutputs(rundir=rundir,HSPMs=HSPMs,hcrout=hcrout,
