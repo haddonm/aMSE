@@ -4,7 +4,7 @@
 \alias{plothsstats}
 \title{plothsstats plots some HS performance statistics}
 \usage{
-plothsstats(rundir, hsstats, glb)
+plothsstats(rundir, hsstats, glb, average = FALSE)
 }
 \arguments{
 \item{rundir}{the scenario's results directory}
@@ -12,6 +12,9 @@ plothsstats(rundir, hsstats, glb)
 \item{hsstats}{the statistics about the harvest strategies performance}
 
 \item{glb}{the global constants object}
+
+\item{average}{should the histograms be of the average catch per year,
+default=FALSE, so it plots the actual sum of catches}
 }
 \value{
 nothing but it does generate two plots into rundir

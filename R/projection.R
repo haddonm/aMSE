@@ -241,8 +241,8 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
                          sauacatch=zoneDP$acatch[,,iter],
                          sauNAS=list(Nt=zoneDP$Nt[,,,iter],
                          catchN=zoneDP$catchN[,,,iter],
-                         NumNe=zoneDP$NumNe[,,,iter]),
-                         year=year,decrement=hsargs$decrement)
+                         NumNe=zoneDP$NumNe[,,,iter]), year=year,
+                        decrement=hsargs$decrement,startCE=hsargs$startCE)
       hcrout <- hcrfun(hcrdata,hsargs,saunames=glb$saunames,curryear=year)
       calcpopCout <- calcpopC(hcrout,exb=zoneDP$exploitB[year-1,,iter],
                        sauCPUE= zoneDP$cesau[year-1,,iter],

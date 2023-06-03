@@ -493,6 +493,8 @@ plotproductivity <- function(rundir,product,glb) {
   filen <- paste0("Production_by_sau.csv")
   caption <- "Productivity properties: B0, Mnsy, MSY, Dmsy, Cemsy by sau."
   addtable(sauprod,filen,rundir=rundir,category="Production",caption)
+  zoneprod <- matrix(0,nrow=5,ncol=1)
+
   return(invisible(sauprod))
 } # end of plotproductivity
 

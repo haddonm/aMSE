@@ -45,6 +45,9 @@ examine its implications.
 
 # LATEST UPDATES
 
+- 2023-06-03 aMSE 0.1.3 Modified to allow the mcdahcr and constrefhcr
+  HCR to run successfully with the conditioned SA setup.
+
 - 2023-04-17 aMSE 0.1.2 Amended save_hsargs so it can handle data.frame
   within hsargs.
 

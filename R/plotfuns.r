@@ -768,19 +768,32 @@ plothistce <- function(rundir,condC,glb,proportion=FALSE,filen="") {
 #' @param rundir the scenario's results directory
 #' @param hsstats the statistics about the harvest strategies performance
 #' @param glb the global constants object
+#' @param average should the histograms be of the average catch per year,
+#'     default=FALSE, so it plots the actual sum of catches
 #'
 #' @return nothing but it does generate two plots into rundir
 #' @export
 #'
 #' @examples
 #' print("wait on suitable in ternal data sets")
-plothsstats <- function(rundir,hsstats,glb) {
+plothsstats <- function(rundir,hsstats,glb,average=FALSE) {
   # hsstats=out$HSstats; rundir=rundir; glb=out$glb
   sum5 <- hsstats$sum5
   sum10 <- hsstats$sum10
   labelnames <- colnames(sum10)
   nsau <- glb$nSAU
-  filen <- filenametopath(rundir,"sum_5yr_proj_catches.png")
+  if (average) {
+    sum5 <- sum5/5.0
+    sum10 <- sum10/10.0
+    pngname5 <- "Mean_Annual_Catch_5yr.png"
+    pngname10 <- "Mean_Annual_Catch_10yr.png"
+    captionadd <- "mean catch across "
+  } else {
+    pngname5 <- "sum_5yr_proj_catches.png"
+    pngname10 <- "sum_10yr_proj_catches.png"
+    captionadd <- "sum of catches across "
+  }
+  filen <- filenametopath(rundir,pngname5)
  # filen=""
   plotprep(width=8,height=7,filename=filen,cex=1.0,verbose=FALSE)
   parset(plots=pickbound(ncol(sum5)))
@@ -788,11 +801,11 @@ plothsstats <- function(rundir,hsstats,glb) {
     label <- paste0("Tonnes     ",labelnames[i])
     hist(sum5[,i],breaks=20,main="",xlab=label)
   }
-  caption <- paste0("The sum of the first 5 years of he projections for each ",
-                    "SAU and the complete zone")
+  caption <- paste0("The ",captionadd,"the first 5 years of he projections",
+                    " for each SAU and the complete zone")
   addplot(filen,rundir=rundir,category="HSperf",caption)
   #now 10 years
-  filen <- filenametopath(rundir,"sum_10yr_proj_catches.png")
+  filen <- filenametopath(rundir,pngname10)
   #filen=""
   plotprep(width=8,height=7,filename=filen,cex=1.0,verbose=FALSE)
   parset(plots=pickbound(ncol(sum10)))
@@ -800,8 +813,8 @@ plothsstats <- function(rundir,hsstats,glb) {
     label <- paste0("Tonnes     ",labelnames[i])
     hist(sum10[,i],breaks=20,main="",xlab=label)
   }
-  caption <- paste0("The sum of the first 10 years of he projections for ",
-                    "each SAU and the complete zone")
+  caption <- paste0("The ",captionadd,"the first 10 years of he projections",
+                    " for each SAU and the complete zone")
   addplot(filen,rundir=rundir,category="HSperf",caption)
 } # end of plothsstats
 
