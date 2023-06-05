@@ -3,7 +3,7 @@
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
-# hcrfun=consthcr   #constantrefhcr
+# hcrfun=mcdahcr  # consthcr   #constantrefhcr
 # sampleCE=tasCPUE
 # sampleFIS=tasFIS
 # sampleNaS=tasNaS

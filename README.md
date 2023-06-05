@@ -45,6 +45,11 @@ examine its implications.
 
 # LATEST UPDATES
 
+- 2023-06-04 aMSE 0.1.4 Small modifications to generalize across
+  jurisdicitons and allow for the consthcr constant catch harvest
+  strategy; also removed irrelavent messages when plotting the phase
+  plot
+
 - 2023-06-03 aMSE 0.1.3 Modified to allow the mcdahcr and constrefhcr
   HCR to run successfully with the conditioned SA setup.
 

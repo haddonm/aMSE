@@ -51,4 +51,10 @@ HSphaseplot generates, for a single sau, a Kobe or phase plot
 }
 \examples{
 print("wait on a data set")
+# for (plotsau in 1:glb$nSAU) {
+#   kobedata[[plotsau]] <- HSphaseplot(dyn=sauout,glb=glb,sau=plotsau,
+#                                      rundir=rundir,startyr=condC$yearCE[1],
+#                                      console=FALSE,targdepl=kobeRP[1],
+#                                      limdepl=kobeRP[2],limH=kobeRP[3])
+# }
 }

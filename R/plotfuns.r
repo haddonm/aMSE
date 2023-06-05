@@ -419,10 +419,16 @@ historicalplots <- function(rundir,condC,glb,commonscale=FALSE,proportion=FALSE)
 #'
 #' @examples
 #' print("wait on a data set")
+#' # for (plotsau in 1:glb$nSAU) {
+#' #   kobedata[[plotsau]] <- HSphaseplot(dyn=sauout,glb=glb,sau=plotsau,
+#' #                                      rundir=rundir,startyr=condC$yearCE[1],
+#' #                                      console=FALSE,targdepl=kobeRP[1],
+#' #                                      limdepl=kobeRP[2],limH=kobeRP[3])
+#' # }
 HSphaseplot <- function(dyn,glb,sau,rundir="",startyr=1992,
                         console=TRUE,targdepl=0.4,limdepl=0.2,limH=0.175) {
-  # dyn <- out$sauout; maxdepl=0.6; startyr=1992; glb=out$glb; console=TRUE
-  # targdepl <- 0.4; limdepl=0.2; limH <- 0.2; sau=5
+  # dyn <- sauout; maxdepl=0.6; startyr=condC$yearCE[1]; glb=glb; console=TRUE
+  # targdepl <- 0.4; limdepl=0.2; limH <- 0.2; sau=6
   yrs <- c(glb$hyrnames,glb$pyrnames)
   picky <- which(yrs >= startyr)
   condy <- which(yrs[picky] == glb$hyrnames[length(glb$hyrnames)])
@@ -436,10 +442,10 @@ HSphaseplot <- function(dyn,glb,sau,rundir="",startyr=1992,
     caption <- paste0("PhasePlot_of Harvest Rate vs Mature Biomass for ",
                       glb$saunames[sau])
   }
-  plotprep(width=7,height=6,filename=filen,cex=0.9,verbose=FALSE)
-  parset(cex.lab=1.25)
   medH <- apply(H,1,median)
   meddepl <- apply(depl,1,median)
+  plotprep(width=7,height=6,filename=filen,cex=0.9,verbose=FALSE)
+  parset(cex.lab=1.25)
   ymax <- getmax(medH)
   deplmax <- getmax(meddepl,mult=1.25)
   plot(meddepl,medH,type="p",pch=16,xlim=c(0,deplmax),ylim=c(0,ymax),xaxs="i",yaxs="i",
@@ -455,9 +461,11 @@ HSphaseplot <- function(dyn,glb,sau,rundir="",startyr=1992,
           col=rgb(0,255,0,120,maxColorValue=255))
   abline(h=limH,lwd=2,col=1)
   abline(v=targdepl,lwd=2,col=1)
-  arrows(x0=meddepl[1:(nyrs-1)],y0=medH[1:(nyrs-1)],x1=meddepl[2:nyrs],
-         y1=medH[2:nyrs],lwd=2,length=0.075,code=2)
-  #  points(depl[c(1,nyrs),1],H[c(1,nyrs),1],pch=16,cex=1.25)
+  suppressWarnings(arrows(x0=meddepl[1:(nyrs-1)],y0=medH[1:(nyrs-1)],
+                         x1=meddepl[2:nyrs],y1=medH[2:nyrs],lwd=2,
+                         length=0.075,code=2))
+  #  when H values repeatedly zero one gets zero length arrows and a warning
+  # this is no9t a problem so it is suppressed.
   points(meddepl[c(1,condy,nyrs)],medH[c(1,condy,nyrs)],pch=16,cex=3,col=c(1,6,4))
   legend("topright",legend=c(startyr,yrs[picky[condy]],yrs[picky[length(picky)]]),
          col=c(1,6,4),lwd=5,cex=1.5,bty="n")

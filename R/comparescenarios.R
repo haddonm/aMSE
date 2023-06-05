@@ -226,6 +226,7 @@ catchHSPM <- function(rundir,hspm,glbc,scenes,filen="",aavcyrs=10,
   aavc <- hspm$aavc
   sum5 <- hspm$sum5
   sum10 <- hspm$sum10
+  nsau <- glbc[[1]]$nSAU
   label <- NULL
   for (i in 1:nscen) label <- c(label,paste0(scenes[i],"_",c("aavc","sum5","sum10")))
   boxresult <- vector(mode="list",length=(3 * nscen))
@@ -243,10 +244,10 @@ catchHSPM <- function(rundir,hspm,glbc,scenes,filen="",aavcyrs=10,
     boxresult[[count]] <- boxplot(aavc[[i]],ylim=c(0,maxvals[1]),yaxs="i",
                                   ylab="Average Annual Catch Variation")
     count <- count + 1
-    boxresult[[count]] <- boxplot(sum5[[i]][,1:8],ylim=c(0,maxvals[2]),yaxs="i",
+    boxresult[[count]] <- boxplot(sum5[[i]][,1:nsau],ylim=c(0,maxvals[2]),yaxs="i",
                                   ylab="sum first 5 years catch")
     count <- count + 1
-    boxresult[[count]] <- boxplot(sum10[[i]][,1:8],ylim=c(0,maxvals[3]),yaxs="i",
+    boxresult[[count]] <- boxplot(sum10[[i]][,1:nsau],ylim=c(0,maxvals[3]),yaxs="i",
                                   ylab="sum first 10 years catch")
     mtext(scenes[i],side=1,outer=FALSE,cex=1,line=1.75)
   }
@@ -730,7 +731,7 @@ cpueHSPM <- function(rundir,cpue,glbc,scenes,filen="",startyr=0) {
 #' }
 do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
                           intensity=100) {
-# rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(2,3,4)
+# rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(1,2)
 #  verbose=TRUE; intensity=100
   files2 <- files[pickfiles]
   nfile <- length(pickfiles)
