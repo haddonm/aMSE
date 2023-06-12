@@ -18,6 +18,7 @@ do_MSE(
   hcrscoreoutputs,
   HSPMs,
   fleetdyn = NULL,
+  interimout = "",
   varyrs = 7,
   startyr = 42,
   verbose = FALSE,
@@ -75,6 +76,14 @@ the cpue HSPM scores, and other measures ready for plotting}
 
 \item{fleetdyn}{a function that calculates the distribution of catch across
 the sau and populations. Currently not needed by Tas but needed by SA}
+
+\item{interimout}{should results be saved after projections have finished?
+the default="", which means nothing is saved if no risk of crashing in
+subsequent analyses. But if trying new stuff which may waste lots of time
+if the projections need to be repeated, the set interimout = c(outdir,
+postfixdir), which should be defined in the run_aMSE you are using,
+and that will save the main objects needed for later analysis in the
+directory used to save final results. The ordering of}
 
 \item{varyrs}{how many years at the end of the conditioning on the fishery,
 data into zoneDD, to which to add recruitment variation, default = 7,

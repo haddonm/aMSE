@@ -217,14 +217,23 @@ out <- list(tottime=tottime,projtime=projtime,starttime=starttime,glb=glb,
 
 
 
+plotconditioning(zoneDD=zoneDD,glb=glb,zoneC=zoneCP,
+                 histCE=condC$histCE,histCatch=condC$histCatch,rundir=rundir,
+                 recdevs=condC$recdevs,console=TRUE)
 
 
+addccf <- function(condC,sau) {
+  label <- "Correlation"
+  cedat <- condC$histCE[,sau]
+  cpuedat <- cedat[which(cedat > 0)]
+  pickC <- which(condC$histyr %in% as.numeric(names(cpuedat)))
+  catdat <- condC$histCatch[pickC,sau]
+  ccfout <- ccf(x=catdat,y=cpuedat,type="correlation",
+                ylab=label,plot=TRUE,xlab="Lag Years")
+} # end of plotccf
 
 
-
-
-
-
+addccf(condC,sau=1)
 
 
 

@@ -1,4 +1,4 @@
-#
+# Tas context -----------------
 # postfixdir <- "EG"
 # rundir <- rundir
 # controlfile=controlfile
@@ -28,7 +28,38 @@
 # hcrscoreoutputs = extractandplotscores
 # kobeRP = c(0.4,0.2,0.15)
 
-
+# SA context -------------
+# rundir=rundir
+# controlfile=controlfile
+# hsargs=hsargs
+# hcrfun=SA_HS
+# sampleCE=saCPUE
+# sampleFIS=saFIS
+# sampleNaS=saNaS
+# getdata=sadata
+# calcpopC=sacalcexpectpopC
+# makeouthcr=samakeouthcr
+# makehcrout=makeouthcr
+# hcrscoreoutputs = saextractandplotscores
+# HSPMs=sagetHSscores
+# fleetdyn = safleetdyn
+# varyrs=7
+# startyr=38
+# verbose=TRUE
+# ndiagprojs=3
+# cutcatchN=56
+# matureL=c(40,170)
+# wtatL=c(50,200)
+# mincount=120
+# includeNAS = TRUE
+# depensate=0
+# kobeRP=c(0.4,0.2,0.15)
+# hcrfun=SA_HS
+# sampleCE=saCPUE
+# sampleFIS=saFIS
+# sampleNaS=saNaS
+# getdata=sadata
+#
 
 
 #' @title do_MSE an encapsulating function to hold the details of a single run
@@ -86,6 +117,13 @@
 #'     the cpue HSPM scores, and other measures ready for plotting
 #' @param fleetdyn a function that calculates the distribution of catch across
 #'     the sau and populations. Currently not needed by Tas but needed by SA
+#' @param interimout should results be saved after projections have finished?
+#'     the default="", which means nothing is saved if no risk of crashing in
+#'     subsequent analyses. But if trying new stuff which may waste lots of time
+#'     if the projections need to be repeated, the set interimout = c(outdir,
+#'     postfixdir), which should be defined in the run_aMSE you are using,
+#'     and that will save the main objects needed for later analysis in the
+#'     directory used to save final results. The ordering of
 #' @param varyrs how many years at the end of the conditioning on the fishery,
 #'     data into zoneDD, to which to add recruitment variation, default = 7,
 #'     which suits the Tasmanian west coast. Used in prepareprojection
@@ -128,7 +166,7 @@
 #' print("wait on suitable data sets in data")
 do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                    sampleNaS,getdata,calcpopC,makeouthcr,hcrscoreoutputs,
-                   HSPMs,fleetdyn=NULL,
+                   HSPMs,fleetdyn=NULL,interimout="",
                    varyrs=7,startyr=42,verbose=FALSE,ndiagprojs=3,
                    cutcatchN=56,matureL=c(70,200),wtatL=c(80,200),mincount=100,
                    includeNAS=FALSE,depensate=0,kobeRP=c(0.4,0.2,0.15)) {
@@ -139,14 +177,14 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   # declare main objects ----------------------------------------------------
   glb <- zone$glb
   ctrl <- zone$ctrl
-  zone1 <- zone$zone1
-  projC <- zone$zone1$projC
-  condC <- zone$zone1$condC
   zoneC <- zone$zoneC
   zoneD <- zone$zoneD
-  production <- zone$product
+  zone1 <- zone$zone1
   saudat <- zone$saudat
   constants <- zone$constants
+  production <- zone$product
+  projC <- zone$zone1$projC
+  condC <- zone$zone1$condC
   # save some equil results -------------------------------------------------
   biology_plots(rundir, glb, zoneC, matL=matureL,Lwt=wtatL)
   sauprod <- plotproductivity(rundir,production,glb)
@@ -179,7 +217,9 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   popdefs[,"SAU"] <- glb$sauname[glb$sauindex]  #so SAU can be txt
   addtable(popdefs,"popdefs.csv",rundir,category="zoneDD",
            caption="Population vs Operating model parameter definitions")
-  condout <- plotconditioning(zoneDD,glb,zoneC,condC$histCE,rundir,condC$recdevs)
+  condout <- plotconditioning(zoneDD,glb,zoneC,condC$histCE,
+                              histCatch=condC$histCatch,rundir,
+                              condC$recdevs,console=FALSE)
   saurecdevs(condC$recdevs,glb,rundir,filen="saurecdevs.png")
   # plot predicted size-comp of catch vs observed size-comps
   catchN <- zoneDD$catchN
@@ -212,12 +252,24 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                            sampleFIS=sampleFIS,sampleNaS=sampleNaS,
                            getdata=getdata,calcpopC=calcpopC,
                            makehcrout=makeouthcr,fleetdyn=fleetdyn,verbose=TRUE)
+
 #  Rprof(NULL)
   if (verbose) cat("Now generating final plots and tables \n")
   zoneDP=outproj$zoneDP
   hcrout <- outproj$hcrout; #str(hcrout)
   NAS <- list(Nt=zoneDP$Nt,catchN=zoneDP$catchN)
-  zoneDP <- zoneDP[-c(17,16,15)]
+  zoneDP <- zoneDP[-c(17,16,15)]  # This removes the Nt etc from zoneDP
+  if (length(interimout) == 2) {
+    outfile <- filenametopath(interimout[1],paste0("temp",interimout[2],".Rdata"))
+    if (includeNAS) {
+      postprojout <- list(zoneCP=zoneCP,hcrout=hcrout,zoneDP=zoneDP,glb=glb,
+                         ctrl=ctrl,condC=condC,constants=constants,NAS=NAS)
+    } else {
+      postprojout <- list(zoneCP=zoneCP,hcrout=hcrout,zoneDP=zoneDP,glb=glb,
+                         ctrl=ctrl,condC=condC,constants=constants)
+    }
+    save(postprojout,file=outfile)
+  }
  # histCE <- condC$histCE
   B0 <- getvar(zoneC,"B0")
   ExB0 <- getvar(zoneC,"ExB0")

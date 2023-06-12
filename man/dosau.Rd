@@ -4,7 +4,7 @@
 \alias{dosau}
 \title{dosau plots the conditioning history for the dynamics}
 \usage{
-dosau(inzone, glb, picksau, histCE, yrnames, recdev)
+dosau(inzone, glb, picksau, histCE, histCatch, yrnames, recdev)
 }
 \arguments{
 \item{inzone}{the conditioned zone (zoneDD) after it has been converted to
@@ -15,6 +15,8 @@ sau scale by using getsauzone}
 \item{picksau}{which sau should be plotted}
 
 \item{histCE}{the historical cpue series from condC}
+
+\item{histCatch}{the historical catch series from condC}
 
 \item{yrnames}{the years of historical catches eg 1973:2019}
 

@@ -45,8 +45,15 @@ examine its implications.
 
 # LATEST UPDATES
 
+- 2023-06-11 aMSE 0.1.5 Modified the condition plot and fixed up a few
+  places where numbers were hard wired into the software. Introduced a
+  new option to save output following projections (just in case of
+  experiments with subsequent analyses crash - I’m looking at you SA).
+  Now one can set interimout =c(outdir,postfixdir) and that should save
+  a tempout into your outdir directory. See the help for do_MSE.
+
 - 2023-06-04 aMSE 0.1.4 Small modifications to generalize across
-  jurisdicitons and allow for the consthcr constant catch harvest
+  jurisdictions and allow for the consthcr constant catch harvest
   strategy; also removed irrelavent messages when plotting the phase
   plot
 

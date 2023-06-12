@@ -168,6 +168,7 @@ diagnosticsproj <- function(zonePsau,glb,rundir,nrep=3) {
 #' @param glb the global constants object
 #' @param picksau which sau should be plotted
 #' @param histCE the historical cpue series from condC
+#' @param histCatch the historical catch series from condC
 #' @param yrnames the years of historical catches eg 1973:2019
 #' @param recdev the recdevs for a single SAU
 #'
@@ -176,7 +177,7 @@ diagnosticsproj <- function(zonePsau,glb,rundir,nrep=3) {
 #'
 #' @examples
 #' print("wait on suitable data-sets")
-dosau <- function(inzone,glb,picksau,histCE,yrnames,recdev) {
+dosau <- function(inzone,glb,picksau,histCE,histCatch,yrnames,recdev) {
   # inzone=sauZone;glb=glb;picksau=sau;histCE=histCE;yrnames=glb$hyrnames; recdev=recdevs[,sau]
   hce <- TRUE
   if (is.null(histCE)) {
@@ -188,14 +189,15 @@ dosau <- function(inzone,glb,picksau,histCE,yrnames,recdev) {
   saunames <- glb$saunames #as.numeric(glb$saunames)
   saunum <- 1:glb$nSAU
   indexsau <- which(saunum == picksau)
-  label=c("deplsB","cpue","matB","catch","harvestR","depleB","recruit")
-  nvar <- length(label) + 1 # an an extra 1 for the recdevs
+  label=c("deplsB","cpue","matB","catch","harvestR","depleB",
+          "recruit")
+  nvar <- length(label) + 2 # add an extra 1 for the recdevs
   doplots=pickbound(nvar)
   matB <- inzone$matB
   nyrs <- dim(matB)[1]
   parset(plots=doplots,margin=c(0.3,0.4,0.05,0.05),outmargin=c(1,0,1,0),
          byrow=FALSE)
-  for (invar in 1:(nvar-1)) {  #  invar=2
+  for (invar in 1:(nvar-2)) {  #  invar=2
     dvar <- inzone[[label[invar]]][,indexsau]
     ymax <- getmax(dvar)
     plot(yrnames,dvar,type="l",lwd=2,col=4,panel.first=grid(),yaxs="i",
@@ -219,6 +221,15 @@ dosau <- function(inzone,glb,picksau,histCE,yrnames,recdev) {
        ylab="recdevs",ylim=c(0,ymax),xlab="",cex=1.0)
   abline(h=1.0,col=2,lwd=1)
   mtext(paste0("Years ",glb$saunames[picksau]),side=1,outer=TRUE,cex=1.1,line=-0.1)
+  # now plot the CPUE vs Catch
+  histyr <- as.numeric(rownames(histCatch))
+  label <- "Correlation"
+  cedat <- histCE[,indexsau]
+  cpuedat <- cedat[which(cedat > 0)]
+  pickC <- which(histyr %in% as.numeric(names(cpuedat)))
+  catdat <- histCatch[pickC,indexsau]
+  ccfout <- ccf(x=catdat,y=cpuedat,type="correlation",
+                ylab=label,plot=TRUE,xlab="Lag Years")
 } # end of dosau
 
 #' @title dosauplot generates the plot of the chosen variable for each sau
@@ -639,17 +650,20 @@ plotCNt <- function(Nt,glb,vline=NULL,start=3) {
 #' @param zoneDD the conditioned dynamic zone object
 #' @param glb the global constants object
 #' @param zoneC the constant zone object
-#' @param histCE the historical CPUE matrix
+#' @param histCE the historical CPUE matrix for all sau
+#' @param histCatch the historical catch matrix for all sau
 #' @param rundir the rundir for the given scenario
 #' @param recdevs the recruitment deviates from the control file, condC
+#' @param console should the plot go to the console or a file, default=TRUE
 #'
 #' @return the sau scale zone dynamics, invisibly
 #' @export
 #'
 #' @examples
 #' print("wait on suitable data sets")
-plotconditioning <- function(zoneDD,glb,zoneC,histCE,rundir,recdevs) {
-  # zoneDD=zoneDD;glb=glb;zoneC=zoneC;histCE=condC$histCE;rundir=rundir;recdevs=condC$recdevs
+plotconditioning <- function(zoneDD,glb,zoneC,histCE,histCatch,rundir,
+                             recdevs,console=TRUE) {
+  # zoneDD=zoneDD;glb=glb;zoneC=zoneCP;histCE=condC$histCE;rundir=rundir;recdevs=condC$recdevs
   sauindex <- glb$sauindex
   popB0 <- getlistvar(zoneC,"B0")
   B0 <- tapply(popB0,sauindex,sum)
@@ -659,13 +673,19 @@ plotconditioning <- function(zoneDD,glb,zoneC,histCE,rundir,recdevs) {
   allsau <- 1:glb$nSAU #
   snames <- glb$saunames
   yrnames <- glb$hyrnames
-  ssq <- compareCPUE(histCE,sauZone$cpue,glb,rundir,filen="compareCPUE.png")
-  for (sau in allsau) {  #  sau=allsau[1]; filen=""
-    filen <- filenametopath(rundir,paste0(snames[sau],"_conditioned.png"))
-    plotprep(width=8,height=9,newdev=TRUE,filename=filen,cex=0.9,verbose=FALSE)
-    dosau(sauZone,glb,picksau=sau,histCE=histCE,yrnames=glb$hyrnames,recdevs[,sau])
-    caption <- "Dynamics during conditioning on the fishery."
-    addplot(filen,rundir=rundir,category="condition",caption)
+  filen <- ""
+  if (!console) filen <- "compareCPUE.png"
+  ssq <- compareCPUE(histCE,sauZone$cpue,glb,rundir,filen=filen)
+  for (sau in allsau) {  #  sau=allsau[1]; filen="";  sau=allsau[1]
+    filen="" #filen <- filenametopath(rundir,paste0(snames[sau],"_conditioned.png"))
+    if (!console) {
+      filen <- filenametopath(rundir,paste0(snames[sau],"_conditioned.png"))
+      caption <- "Dynamics during conditioning on the fishery."
+    }
+    plotprep(width=9,height=9,newdev=TRUE,filename=filen,cex=0.9,verbose=FALSE)
+    dosau(sauZone,glb,picksau=sau,histCE=histCE,histCatch=histCatch,
+          yrnames=glb$hyrnames,recdevs[,sau])
+    if (!console) addplot(filen,rundir=rundir,category="condition",caption)
   }
   return(invisible(list(sauZone=sauZone,ssq=ssq)))
 } # end plotconditioning.
