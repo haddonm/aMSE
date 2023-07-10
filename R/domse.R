@@ -1,9 +1,9 @@
 # Tas context -----------------
-# postfixdir <- "EG"
+# postfixdir <- "BCconstref"
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
-# hcrfun=mcdahcr  # consthcr   #constantrefhcr
+# hcrfun=constantrefhcr  #mcdahcr  # consthcr   #constantrefhcr
 # sampleCE=tasCPUE
 # sampleFIS=tasFIS
 # sampleNaS=tasNaS
@@ -24,9 +24,10 @@
 # depensate=0
 # pmwtSwitch = 0
 # stablewts = c(0.4, 0.5, 0.1)
-# hcrname="consthcr"   #"constantrefhcr"
+# hcrname="constantrefhcr"   #"consthcr"
 # hcrscoreoutputs = extractandplotscores
 # kobeRP = c(0.4,0.2,0.15)
+# interimout=""
 
 # SA context -------------
 # rundir=rundir

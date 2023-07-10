@@ -1,0 +1,388 @@
+---
+title: "Using aMSE"
+author: "Malcolm Haddon, ..."
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Using aMSE}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
+
+options(knitr.kable.NA = "",
+        knitr.table.format = "pandoc",
+        knitr.graphics.rel_path=FALSE)
+
+options("show.signif.stars"=FALSE,
+        "stringsAsFactors"=FALSE,
+        "max.print"=50000,
+        "width"=240)
+
+suppressPackageStartupMessages({
+library(aMSE)
+library(TasHS)
+library(codeutils)
+library(hplot)
+library(knitr)
+library(makehtml)
+library(captioner)
+library(png)
+})
+
+tab_nums <- captioner(prefix = "Table")
+fig_nums <- captioner(prefix = "Figure")
+
+dbdir <- getDBdir()
+ddir <- pathtopath(dbdir,"/A_CodeUse/aMSEDoc/") 
+prefixdir <- pathtopath(dbdir,"/A_CodeUse/aMSEUse/scenarios/")
+
+
+```
+
+#####
+
+# Using the aMSE Software
+
+## A Worked Example
+
+Rather than continue with theoretical considerations we will now begin working through an example _MSE_ run in some detail so that users may deal more with the actions that need to happen in practice and fewer abstract notions. During the development of the __aMSE__ R package the Tasmanian western zone was conditioned on both biological and fisheries data to provide for further development and testing of the software. The summary data required are now included as default settings in the _ctrlfiletemplate()_ and _datafiletemplate()_ functions. In addition, we can also use the _data(lfs)_ internal data-set and the function _rewritecompdata()_ to generate the size-composition data required. In this chapter, we will use these functions to produce a working example scenario that will provide an overview of what is needed to use the software and what to expect to come out of it when run. It is recommended that the help for each function and data-set mentioned in this documentation be read for a fuller understanding of what is going on (e.g. after running _library(aMSE)_, typing _?rewritecompdata_, or whatever function name of interest, into the RStudio console - see the chapter _A Non-Introduction to R_ in Haddon, 2021 for details about examining R code within a package). 
+
+### Requirements to Run aMSE
+
+Before running the example, it is, of course, necessary to install the required R packages containing the software used. The following description will continue under the assumption that the user will be using RStudio (see https://posit.co/). If some other development environment is being used then it will be assumed that the user will be able to adapt the following to their own system.
+
+It is necessary to install the following R packages (and their dependencies). 
+
+The first three can be downloaded from CRAN in the usual way. In RStudio, use the Packages tab and type their names in the Packages box
+
+* __rmarkdown__ required for the vignettes within __aMSE__.
+* __knitr__ required for the vignettes and for the _kable_ function that is used in the output _.html_ files to generate readable tables.
+* __captioner__ required for generating figure and table numbers in the vignettes.
+
+Four packages specific to __aMSE__ are required for all jurisdictions (__aMSE__, __codeutils__, __hplot__, and __makehtml__). These R packages are some of the outputs from FRDC project 2019-118, although in the latter three cases are based upon earlier versions that had already been developed for other uses. In addition, a fifth user-supplied package (or R-source file) is needed, which contains functions implementing the Harvest Strategy for the jurisdiction of interest (see the _JurisdictionHS_Requirements_ chapter), here we will use the __TasHS__ package. The four __AMSE__ related R packages are available through either installation or cloning from the GitHub account at _https://www.github.com/haddonm_, or they can be installed from the build source files (ending in tar.gz) located in the directory: _dropbox/National_abalone_MSE/aMSE_files_.  the __TasHS__ package is only required if the user is intending to use or explore the Tasmanian harvest strategy.
+
+* __aMSE__ the primary package for running the _MSE_, it contains the functions and some data-sets that drive the _MSE_ code-base.
+* __codeutils__ a package containing (surprise) an array of utility functions used especially when reading files, parsing text when reading in files, and so on.
+* __hplot__ a package containing functions written in base R to assist with plotting various types of specialized graphics that __aMSE__ uses.
+* __makehtml__ a package used to automatically generate the HTML and CSS files that make up the summary internal web-page for displaying the many results from single scenarios using the MSE and, similarly, when comparing scenarios.
+
+If installing from the R source files one would need to have copies of the latest versions of (where the version number is at least that shown or larger, which would imply more recent):
+
+* _aMSE_0.0.18.tar.gz_, 
+* _codeutils_0.0.3.tar.gz_,
+* _hplot_0.0.3.tar.gz_, 
+* _makehtml_0.0.5.tar.gz_, and, if using the Tasmanian HS,
+* _TasHS_0.0.11.tar.gz_. 
+
+
+In RStudio, under the Packages tab one first presses the <Install> button and then uses the install from option box that pops up (each users library location will likely differ):
+
+<br>
+
+```{r  echo=FALSE, fig.width = 4 }
+suppressWarnings(require(knitr))
+filen <- "/A_CodeUse/aMSEDoc/figures/install_tar.gz_file.png"
+dropdir <- getDBdir()
+suppressWarnings(include_graphics(pathtopath(dropdir,filen)))
+
+```
+
+`r fig_nums("UM1", caption=" The Install Packages interface from RStudio. The dropdown arrow is used to select 'Package Archive File (.zip; .tar.gz)', and then you browse to point the box at the required source file.")`
+
+<br>
+
+## Running aMSE
+
+### Organise Scenario Results
+
+The number of possible scenarios it is possible to generate in a relatively short time is very large so, to facilitate making comparisons as simple as possible, it is best to be organized about how to save the results for each scenario. The sub-directory name and path for all the input files and the results that follow for a given scenario is named in the code as the _rundir_ (for hopefully obvious reasons). For example, in the text below we will introduce what will be termed the 'EG' (as in example). So the _rundir_ would be the generic path leading to all the scenario sub-directories combined with _EG/_, the actual scenario in this case. The scenario name _EG/_ is known as the _postfixdir_, while the generic path to all scenario sub-directories is the _prefixdir_. On the computer in which this example is being developed the _prefixdir_ is, in fact, _paste0(getDBdir(),"A_CodeUse/aMSEUse/scenarios/")_ (note that the R _/_ sub-divider can, as usual, be replaced by _\\_ if that is preferred; the _getDBdir()_ function finds the path to the DropBox directory, if you wish to use a different _prefixdir_ then define it however you wish).
+
+Graphically, this can all be represented, as an example, so that the _prefixdir_ would be:
+
+..DropBox/A_CodeUse/aMSEUse/scenarios
+
+and sub-directories below that might be:
+
+..scenarios/EG
+..scenarios/EG150_22
+..scenarios/EG150_25
+..scenarios/EG150_28
+..
+
+which indicates four sub-directories where EG is the example basecase (with natural mortality 0.15, steepness 0.5, and the hyperstability lambda = 0.75). The 150_22 is where the LML is increase to 150 from 2022, similarly 150_25 and 150_28 are where the LML is increased to 150 in 2025 and 2028 as alternatives. These could then be compared to determine which had the most positive effects and the least negative ones. When dealing with Windows machines a useless shortcut is to realize the classical "~" used by Unix and Linux systems, refers to the users "Documents" directory. Thus, on my own computer _path.expand("~")_ gives rise to "C:/Users/Malcolm/Documents".
+
+### A Possible Workflow
+
+Once the R packages are installed then a potential work flow might begin with these seven steps (see the R code chunks below the steps for code details):
+
+
+1.  For each scenario to be considered, select or create a directory somewhere in your own system that will become the _rundir_ within which the control file and the data files are placed (and all the results will end up). The directory path pointing to the difference scenarios is termed the _prefixdir_, which in the example to follow will be _C:/Users/Malcolm/Dropbox/A_CodeUse/aMSEUse/scenarios/_, but obviously a user will need to set up their own directory structure. One then identifies a _postfixdir_, which is appended to the _prefixdir_ to form the _rundir_, so here will will have a _postfixdir_ = _EG/_. If one then uses the function _confirmdir()_, it either confirms that the _rundir_ exists or it asks whether you would want to create it, after which it creates that sub-directory ready for your work (again, read the functions help for more options; if the 'ask' argument is set FALSE then it will just create a missing directory without asking, so check your spelling first). In the text below there are example R-code blocks which can also be found in the associated file. You will find such a directory, called _EG_, in the _Dropox/National_abalone_MSE/aMSE_files/scenarios_ directory. You could copy that to the location of your choice. In it you will also see a file called _run_aMSE.R_, which contains the code as described across the code blocks below. Once the user has edited the directory names they could use that to run the _MSE_ when the time comes. This file can be kept anywhere convenient (I keep it in the ‘scenarios’ or _prefixdir_ sub-directory and modify which subdirectory it points to for different scenarios. 
+
+2. Generate a draft control file for a scenario using the __aMSE__ function _ctrlfiletemplate()_ (the default control file name is _controlEG.csv_). As it stands this sets up a system of 8 _SAU_ with _56_ populations distributed among them (as in the Tasmanian western fishery _MSE_). In the _EG_ subdirectory (_rundir_) this is called _controlEG.csv_ (= Base Case of natural mortality = 0.15, steepness = 0.7, lambda = 0.75, 8 sau with a total of 56 populations). 
+
+3. If necessary, edit the .csv file created by _ctrlfileTemplate()_ to match the conditioning data available for the fishery being simulation tested (here we will leave it as-is but further details of each component in control file are given in the _The Input Files and Conditioning the MSE_ chapters).
+
+4. Generate a draft data file of the number of stock assessment areas (termed _sau_ in the R code) to be simulated using the __aMSE__ function _datafileTemplate()_, being sure that the data file name matches that pointed to in the control file (see the code blocks below, but the default data file name is _saudataEG.csv_, as described in the default control file).
+
+5. If necessary, edit the .csv file created by _datafileTemplate()_ to match the conditioning data available for the fishery being simulation tested (here, again, we will leave it as-is but, once again, further details are given in the _The Input Files and Conditioning_the_MSE_ chapters). Descriptions of each entry in the control and data files are given in the _The_Input_Files_ documentation.
+
+5a. A second data file of size-composition data is required if the user wants to compare the predicted size-composition of catches against those observed during the operating model conditioning. Here, such a file is generated using one of the internal data-sets to produce a file called _lf_WZ90-20.csv_, implying length frequency data from the western zone for years 1990 to 2020 (again this file can be found in _EG_ in the _Dropox/National_abalone_MSE/aMSE_files/scenarios_ directory).
+
+6. From this point there is a choice of running either the _do_condition()_  or the _do_MSE()_ function. The first reads in the control and data files, generates the equilibrium, unfished simulated zone and then conditions the operating model on any available fishery data (catches, indices of abundance, size-composition data). It then tabulates and plots up the conditioned result to enable the success of conditioning on a real fishery to be determined This is used when adjusting the conditioning of the model to a fishery. The _do_MSE()_ function does all that the _do_condition()_ function does, but then also conducts the projections under control of the harvest strategy whose definition is contained in the __TasHS__ R package. Before running _do_MSE()_ for the first time in a new fishery it is best to run _do_condition()_ repeatedly so that the conditioning can be adjusted prior to making more formal MSE scenario runs for later comparisons. Here we can forego that step as the template files reflect a pre-conditioned base-case scenario for the western zone blacklip fishery in Tasmania.
+
+7. Finally, one uses the _makeoutput()_ function, which plots and tabulates the results into the defined _rundir_ and has the option of opening the internal web-page ready for inspection. The R objects output by _do_MSE()_ can be very large (~1.8Gb for 250 replicates if the _includeNAS_ argument is set = TRUE) so it is best to save that to a fast hard drive which is not synced to a cloud somewhere (ie NOT DropBox, and absolutely not to a shared DropBox folder, or at least not one shared with me). However, a run of 250 replicates currently takes about 3.5 minutes (on a Dell XPS15 with only a 10th generation I9 processor) so repeating scenarios is not overly onerous. But comparisons are best done with saved results.
+
+This whole process sounds more complex than it is in practice as will be seen in the code chunks below.
+
+## Each Step of the Workflow
+
+
+### The Setup
+
+As usual, if a user is unfamiliar with a function then use _?function-name_ to get help on what it does and what its arguments are. Alternatively, just type _function-name_ in the console (with no following brackets) and the function's code will be printed to the console for inspection, or try _args(function_name)_ for just a listing of the arguments.
+
+First one sets up R options (if desired), calls the required libraries, and sets up the directory information:
+
+
+```{r "setup", echo=TRUE }
+options("show.signif.stars"=FALSE, # some R options that I find can help
+        "stringsAsFactors"=FALSE,  # the default in R4
+        "max.print"=50000,
+        "width"=240)
+suppressPackageStartupMessages({  # declare libraries -------------
+  # this is the minimum, others can be added if desired
+  library(aMSE)
+  library(TasHS)     # obviously only if using the Tasmanian HS
+  library(codeutils) 
+  library(hplot)
+  library(makehtml)
+  library(knitr)
+}) 
+#   OBVIOUSLY you should modify the rundir to suit your own setup!!!
+dropdir <- getDBdir()
+prefixdir <- pathtopath(dropdir,"/A_codeUse/aMSEUse/scenarios/")
+startime <- Sys.time() # to document the time taken
+postfixdir <- "EG"     # a descriptive name for the rundir 
+verbose <- TRUE        # send messages to the console about the run progress
+rundir <- path.expand(filenametopath(prefixdir,postfixdir)) # define rundir
+# path.expand clarifies and abbreviated paths used
+controlfile <- paste0("control",postfixdir,".csv") # match control file name
+outdir <- "C:/aMSE_scenarios/EG/"   # storage on a non-cloud hard-drive
+confirmdir(rundir,ask=FALSE)   # make it if it does not exist
+confirmdir(outdir,ask=FALSE)   # to be interactive needs ask = TRUE
+```
+
+In this vignette, within the function 'makeoutput()' we have set the _openfile_ argument = FALSE, which means it will not automatically open the generated website. To see this you will need to go into the _rundir_ and, in this scenario, search for EG.html and double click that to open it in your default browser. Examine each of the seven tabs opened in the browser to see the contents. The _condition_ tab illustrates the match between the observed cpue and that predicted by the operating model, while the _predictedcatchN_ tab illustrates the match between the observed size-composition of the catches and the predicted values. It is clear that those _sau_ with small sample sizes of size-composition data only have a relatively poor model fit.
+
+Each of these tabs are repeated when running the _do_MSE()_ function so more detailed descriptions of each tab will be given in the next section where the _MSE_ will be run using the default Tasmanian harvest strategy. Note that the main page is named 'EG', which reflects the fact that each scenario page is named after the _postfixdir_.
+
+## Running do_MSE
+
+Once conditioning the model has been completed to the degree desired one can run a series of projections with the simulated abalone _zone's_ management being determined by the harvest strategy as implemented in  __TasHS__ (see the discussion concerning the spectrum of options relating to conditioning operating models and how that related to the specific objectives of the simulation testing being undertaken).
+
+If one keeps an Explorer window open looking at _rundir_, the addition of different files can be watched in real time. The _MSE_ can be run using the following code::
+
+
+<br>
+
+The _rundir_ and _controlfile_ were defined earlier, the remaining 19 arguments are new and are described in the help page for _do_MSE()_ (?do_MSE).
+
+_verbose_ is a flag to determine whether or not to have updates on progress sent to the console. This can be helpful during development.
+
+When you run this little bit of code, in fact it will be doing rather a lot of work, even though in this instance it is only running 100 replicates (more normally do 250 or 500). Apart from the results contained in the multiple .png files (plots), .csv files (tables), and currently, three .RData files, all the results can be found in the _out_ object associated with the _do_MSE()_ statement.
+
+
+Many of these objects are lists and so one might use `str1` or `str2` to examine their structure and contents, but this has been done for you in the _R_Object_Structure_of_Output_ section of the documentation (though you could/should still try it yourself). The plots and tables produced so far are only a start. Any number of further plots and tables can be produced from what is already there but especially when alternative scenarios are compared. So, knowing the object structure of what comes out is extremely helpful. 
+
+Most of the analyses we can see are conducted at best at the _sau_ level (though with the GPS data it is also possible to do some analyses at the _population_ level!). So the main objects for initial study would be the _sauout_, _NAS_, _outzone_, and even the _zoneDP_ objects (population level dynamics). See the _R_Object_Structure_of_Output_ section for more details.
+
+You should run the _dir(rundir)_ to see how many files have been created by the MSE ready for use.
+
+We can now construct the internal web-page to display results:
+
+Obviously, this is a multi-faceted summary of what has been done. It includes the pages from _do_condition_ plus many more. If you ran _makeoutput_ with the argument _openfile=FALSE_ then the web-page will not open but the .HTML and CSS files will still be generated inside _rundir_. To open the web-site manually, open _rundir_ and double-click on _EG.html_ (or _scenario.html_, whatever 'scenario' happens to be called). Each scenario takes the name of the control file used.
+
+<br>
+
+Of course, the intent of the _MSE_ software is to allow for making comparisons between alternative harvest strategy scenarios. For this it is necessary to save the _out_ objects (which, without the NAS object are hundreds of mega-bytes and with the NAS object can be giga-bytes). Because of their size it is best to store these on a local and fast hard drive so that when making comparisons the separate _out_ object for each scenario can be examined and the outcomes compared. Here we illustrate the required R code but do not run it unless you want the results for later. Examples of comparisons will be made later in the documentation.
+
+### Home Page
+
+The _Home_ tab contains lines of information concerning the particular scenario run of the _MSE_. This information includes the directories used, the files used, some details of the run (number of replicates, years projected, number of _populations_ and _sau_) but especially the randomseed used when generating the different _populations_ within the _sau_. If that randomseed, which is set in the controlfile, is altered one would expect the complete conditioning to be different as many of the properties of each population would change slightly. What this number does is ensure that the same simulated zone is generated each time a scenario is run. 
+
+<br>
+
+```{r ,"make_full_webpage", echo=FALSE }
+dropdir <- getDBdir()
+filen <- "/A_CodeUse/aMSEUse/documentation/figures/homepage_aMSERun.png"
+suppressWarnings(include_graphics(pathtopath(dropdir,filen)))
+
+```
+
+`r fig_nums("UM2", caption=" The home page of the internal web-site generated from the results of the do_MSE R function from aMSE.  Of course, your own will differ from this in the details but all the tabs should be there.")`
+
+<br>
+
+
+In the following pages are a wide variety of results and outputs but, of course, any number of extra, additional, or alternative plots and tables could be included on each page.  Each figure and table caption contains the name of the .png or csv file from which it is produced should the figure or table be needed for any other purpose. Clicking on any figure will enlarge it for ease of examination (use the return arrow at top left in the browser to return to the original page).
+
+
+<br>
+
+```{r  echo=FALSE, fig.width = 4 }
+suppressWarnings(require(knitr))
+DBdir <- getDBdir()
+filen <- "/A_CodeUse/aMSEUse/Documentation/Figures/topleft_return_arrow.png"
+suppressWarnings(include_graphics(pathtopath(DBdir,filen)))
+```
+
+`r fig_nums("UM2a", caption=" A view of a browser page where a particular figure has been enlarged by clicking on it (here most of it is obscured to the right). Use the highlighted arrow to return to the ordinary scale view.")`
+
+<br>
+
+
+### Biology Page
+
+This contains plots of the maturity-at-length curves, weight-at-size curves, and emergence-at-size curves for each population in each SAU.
+
+The eight histograms of biological properties illustrate the variation for each population's values for natural mortality, _M_, the _MaxDL_, _L95_ and _L50_ growth parameters. There are also histograms of each population's MSY, steepness, and the biological LML (size-at-maturity plus two years' growth. Finally, _AvRec_, the unfished recruitment, are also variable, but this is a reflection of the fact that in each _sau_ only a proportion of the total _sau_ _AvRec_ is allocated to each population. There is almost no random variation in the _AvRec_ values as the standard deviation is set to 1e-05 in each case (because the _AvRec_ value is fitted within __sizemod__. 
+
+### Tables Page
+
+Currently, this holds only two tables, the first being the productivity properties of each _sau_ (_B0_, +MSY_, etc), and the second being the tabulated contents of _zonebiology.csv_. This represents the various actual values for an array of biologically important variables (including those plotted as histograms on the Biology page), all by _population_. These derived from adding random variation to the input constants
+
+### Recruits Page
+
+This holds two plots. The first is a representation of the stock recruitment relationship for each _sau_, all on one plot. This illustrates how different each _sau_ is in terms of productivity. The second plot includes a plot of the stock-recruitment relationships of each population within each _sau_, which illustrates the variation apparent in the defined populations. Each plot has its own y-axis scale so care is needed with the interpretation.
+
+### Production Page
+
+Has a plot of the production curve relative to expected CPUE for each _sau_, including estimates of the _MSY_ and the predicted CPUE at _MSY_. The second plot is of the productivity curves for the whole zone. This more complex plot could be generated for each _sau_ as desired using the _production_ array (try _str1(out$production)_).
+
+Finally, there is a small 5 x number-of-sau matrix of $B0$, $B_{MSY}$, $MSY$, $D_{MSY}$ (depletion at _MSY_), and $CE_{MSY}$ (predicted cpue at  $B_{MSY}$) for each sau. This has extra information to the first table in the _Tables_ page.
+
+### NumSize Page
+
+This remains in need of further development. It includes a single plot containing the expected equilibrium, unfished numbers-at-size for the whole _zone_, and a second plot illustrating the numbers-at-size for each _population_ (with 56 populations this is a jumbled mess, which illustrates the variation but little else). A plot of each population by _sau_ might be more informative.
+
+
+### zoneDD Page
+
+Selecting the _zoneDD_ tab leads to a page with a figure made up of histograms of some of the major properties of the 56 populations and then four large tables. As with any web page on Windows, pressing  'ctrl +' increases the size of the contents and 'ctrl -' decreases the size. With the figures, one can click on them and they enlarge automatically, at top left is the back arrow that will return one to the broader view (__`r fig_nums("UM2a",display="cite")`__). 
+
+The top table shows the contents of the _propertyDD.csv_ file now found in _rundir_. These are the conditioned emergent properties of each population in the zone. Beneath that is a table of the last ten years of harvest rates during the conditioning for each population from the _final_harvestR.csv_ file. Very high values in any _SAU_ or population indicate a potentially poor fit. In this case there are some values in the first three populations (sau6) above 0.4 in years V2, V4 and V5, but _sau6_ to _sau8_ are difficult _sau_ to fit a model to. Below that, is the table of _saudat.csv_, which contains the data read in from the _saudataEG.csv_ file for reference. Finally, below that, _popdefs.csv_, which contains the specific parameter values produced for various properties of each _population_.   
+
+### condition Page
+
+With 8 _SAU_ this contains 12 plots and two tables. 
+<br>
+
+```{r  echo=FALSE, dpi=300}
+suppressWarnings(knitr::include_graphics(pathtopath(rundir,"/compareCPUE.png")))
+
+```
+
+`r fig_nums("UM3", caption=" The top plot from the condition page of the internal web-page generated from the results of the do_condition and do_MSE R functions from aMSE. The values beside the SAU names are the simple sum-of-squared differences between the observed and predicted values.")`
+
+<br>
+
+
+An example of the individual _SAU_ plots is given for _SAU_ 10.
+
+
+<br>
+
+```{r  echo=FALSE, dpi=300 }
+suppressWarnings(knitr::include_graphics(pathtopath(rundir,"/SAU10_conditioned.png")))
+
+```
+
+`r fig_nums("UM4", caption=" The SAU plot illustrating the dynamics of the combined populations within SAU 10. This, and plots for all other SAU are to be found in the 'condition' tab.")`
+
+<br>
+
+
+The match between the observed and predicted values, as illustrated in __`r fig_nums("UM3",display="cite")`__ appear very good, although sau8 is clearly a complex situation for any model to fit.
+
+<br>
+
+The first plot compares the observed CPUE, from the historical time series input in the control file, with those predicted by the operating model after biological conditioning, and fitting the data using the R package __sizemod__. If you click on the plot in the web-page with your mouse, it will expand to become easier to read the details. Return to the main page using the left arrow at the top of your browser (__`r fig_nums("UM2a",display="cite")`__). 
+
+Below the comparison of CPUE plot there are 8 plots, one for each _sau_, illustrating the trajectory of the mature biomass depletion level, the catch through time, the cpue (with the observed values in green), the implied annual harvest rate, the mature biomass (in tonnes), and the implied recruitment level (prior to 1982 and post 2014 are deterministically taken from the stock recruitment curve).
+
+Below the plots for each _sau_ is a summary plot of each recruitment trace used to simplify looking for correlated recruitment events predicted by the model. It is important to remember that the recruitment deviates produced by __sizemod__ and reproduced in __aMSE__ are estimates and not observed data. Nevertheless, it is possible to see repeating patterns of positive and negative recruitment levels between _sau_. For example, _sau10_ to _sau13_ all show a decline prior to 2010 followed by a rise, although the exact timing appears to differ by a year or so between some _sau_. _sau6_ and _sau13_ only have recruitment deviates from 1990 to 2014 because they were only formed in 2000 when zonation was introduced.
+
+The final plot is a histogram of the depletion in the final year of conditioning. This illustrates the effectiveness of including recruitment variation when preparing for the projections (which was set in _do_MSE()_ using the _varyrs=7_ argument). This figure is then complemented by a table of the quantiles of that final year's depletion level.
+
+### predictedcatchN
+
+Illustrates the fit to the observed numbers-at-size in the catch obtained during the conditioning. The quality of fit is very much affected by the number of observations involved. These plots are for data at the _sau_ scale so they integrate across however many populations are deemed to make up the _sau_'s dynamics. Given this is the case, the fit in some cases is remarkably good, for example, in _sau11_ to _sau13_, the last plots on the page, the fits to the later samples where sample sizes are large are excellent. _sau6_ has the least data and generates the worst fit to size-composition data.
+
+### projSAU Page
+
+This page illustrates the effect of the harvest strategy on the dynamics of each _sau_. There are seven plots, the first being for the predicted CPUE by _sau_, then the predicted actual catch and aspirational catch (the first, not surprisingly, being more variable than the second because that is one source of variation added in the _MSE_), then comes the mature biomass followed by the exploitable biomass (very similar and currently reflective of the CPUE trends). Finally, comes the predicted recruitment trend and the last plot is of the predicted annual harvest rate.
+
+The variation present is apparent in all plots, which also have the median value of replicates (blue line) and the 90th quantile bounds as fine red lines. These should illustrate how much uncertainty there is in such abalone simulations.
+
+
+### DiagProj Page
+
+Currently contains three plots designed to characterize some of the variability of the projections and to ensure that the expected dynamics are behaving in a manner akin to the real fishery. 
+
+The first plot is of the differences between the actual _SAU_ catches and the aspiration _SAU_ catches, while useful this plot needs improvement to denote the proportional error in each _SAU_. Within the current Tasmanian HS when actual catches begin to approach 120 percent of the aspirational catch then that _sau_ is closed to further commercial fishing. This acts to limit the variation now possible. This can be used to 'tune' the _withsigB_ value that is used to control how precisely the fleet dynamics adheres to the aspirational catches derived from the harvest strategy. If _withsigB_ was set extremely small then the variation included in how much catch was taken from each _sau_ and each _population_ would also be small. The _calcpopC()_ function, which estimated the aspirational catches (and TAC) is defined in __TasHS__. The algorithm underlying the dynamics is described and explained in the documentation to __TasHS__. The fleet dynamics essentially describes how the divers interact with the harvest strategy and hence needs to be part of the input functions as part of the HS package or R source file. 
+
+The second plot is a comparison of a limited number of randomly selected trajectories showing the actual catches by _SAU_, as solid lines, and the related aspirational catches as dotted lines. This plot functions to show that the fleet dynamics model is behaving in a realistic manner but also to illustrate whether the expected variation in catches by _sau_ are plausibly realistic. In fact, they are far less variable than during the history of the fishery (see the _fishery_ tab) but this is a reflection of the meta-rules that control the deviation from the aspirational catches, that were only introduced in 2019. The number of lines plotted is determined by the _ndiagprojs=4_ argument within the _do_MSE()_ function's argument list. With four lines, this is readable but if this is set too large the plot becomes too busy and loses any value for diagnostics, even when magnified.
+
+The third and final plot is of the same number of individual CPUE trajectories for each _sau_. Again, its purpose is to determine whether the variation in the predicted CPUE trends appear realistic for the fishery concerned.
+
+
+### zonescale Page
+
+Like the projSAU page, this contains seven plots of the same set of plots as seen in the projSAU page, but of _zone_ scale dynamics. The projected values for each _population_ within each _SAU_ have all been combined at the _zone_ scale (catch weighted where required, see the help for the function _?poptozone_). The plots include total catch, the TAC (essentially the same plots in Tasmania), CPUE, and mature biomass depletion level, mature biomass (mirrors the depletion plot), annual harvest rate, and annual recruitment.
+
+Of course, the _zone_ scale dynamics obscure the variation observed at the _SAU_ level and even more so at the _population_ level. Nevertheless, they provide a useful summary view of projected events.
+
+The page ends with a table containing the median values of each of the plotted variables.
+
+
+### Fishery Page
+
+This page was intended to illustrate the historical fishery data. It currently contains a plot of the selectivity curves relating to all LML that occurred during the historical conditioning period and through the projection period. Then a plot of the individual catches by _sau_, which illustrates the remarkable variation in historical catches that have occurred with some extraordinary changes between individual years. Some _sau_ exhibit halving and doubling of catches in the space of two years. Even the final zone-wide sub-plot exhibits some large changes between years, although this calmed down a good deal at least at the zone scale once quota zones were introduced in 2000.
+
+The final plot is of the cpue observed in each _sau_. Note the truncation of the time-series in sau6 and sau13, which occurs because the introduction of zonation in the year 2000 split these _sau_ across different zones.
+
+
+### HSperf  Page
+
+This page currently holds a listing of the arguments used by the harvest strategy (_hsargs_) and plots of the sum of total catches by _sau_ at 5-years and at 10-years.  The _hsargs_ listing is simply a double check that the values used are what was wanted. 
+
+The final table is an example from a single replicate of what target cpue is achieved through the projections for each _sau_. It is the case that sau6 to sau10 invariably breach the 150kg/hr imposed maximum, while sau11 - sau13 all achieve a somewhat lower target, with the more easterly _sau_ having lower targets. 
+
+It is expected that these tables and plots will differ for each harvest strategy examined.
+
+
+### scores
+
+The _scores_ page illustrates the HS statistics for each _sau_. Each plot depicts the projected catch and cpue, and the scores for the grad1, grad4, and targetCPUE performance measures (PM). Finally it provides the targetCPUE and the final total score from the harvest control rule. 
+
+These plots enable the user to determine which fishery PM contributed most influence on the catches and when.
+
+The red lines, in each case are the median values. This is aimed mostly at the Tasmanian HS but will be amended to provide suitable insights once the SA HS has been fully developed.
+
+Once again, the illustrated plots relate to the Tasmanian harvest strategy and its variants. Differing plots will be required to be relevant for different jurisdictions.
+
+
+
+
+
+
+

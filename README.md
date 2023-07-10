@@ -45,6 +45,15 @@ examine its implications.
 
 # LATEST UPDATES
 
+- 2023-07-10 aMSE 0.1.6 Modified TasHS and aMSE so that instead of using
+  hsargs$startCE and hsargs$endCE to define a vector of reference years
+  when using the constantrefhcr in Tasmania, one should now use a
+  hsargs\$refperiodCE which should be a vector of years describing the
+  constant reference period to be used (assuming one is using the
+  constantrefhcr). Within TasHS there is also a checkhsargs() function
+  which provides a brief check of the hsargs being used (strictly that
+  is still under development).
+
 - 2023-06-11 aMSE 0.1.5 Modified the condition plot and fixed up a few
   places where numbers were hard wired into the software. Introduced a
   new option to save output following projections (just in case of

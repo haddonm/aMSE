@@ -4,7 +4,7 @@
 \alias{ctrlfiletemplate}
 \title{ctrlfiletemplate generates a template input control file}
 \usage{
-ctrlfiletemplate(indir, filename = "controlEG.csv", devrec = -1)
+ctrlfiletemplate(indir, filename = "controlEG.csv", devrec = 0)
 }
 \arguments{
 \item{indir}{directory in which to place the control.csv file}

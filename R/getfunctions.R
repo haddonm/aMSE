@@ -664,7 +664,9 @@ getunFished <- function(zoneC,zoneD,glb) {  # inzone=zone
 #' @return a numpop vector of the invar constants from zoneC
 #' @export
 #'
-#' @seealso getlistvar
+#' @seealso{
+#'  \link{getlistvar}
+#' }
 #'
 #' @examples
 #' data(zone)

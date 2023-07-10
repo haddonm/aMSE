@@ -324,8 +324,8 @@ do_condition <- function(rundir,controlfile,calcpopC,
   addtable(t(popdefs),"popdefs.csv",rundir,category="zoneDD",
            caption="Population vs Operating model parameter definitions")
   if (dohistoric)
-    condout <- plotconditioning(zoneDD,glb,zoneC,condC$histCE,rundir,
-                                condC$recdevs)
+    condout <- plotconditioning(zoneDD,glb,zoneC,condC$histCE,condC$histCatch,
+                                rundir,recdevs=condC$recdevs,console=FALSE)
     # plot predicted size-comp of catch vs observed size-comps
   if (!is.null(condC$compdat)) {
     catchN <- zoneDD$catchN

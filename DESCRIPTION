@@ -1,9 +1,13 @@
 Package: aMSE
 Type: Package
 Title: A Framework for Abalone Management Strategy Evaluation
-Version: 0.1.5
-Date: 2023-06-11
-Authors@R: person("Malcolm", "Haddon", email = "malcolm.haddon@gmail.com", role = c("aut", "cre"))
+Version: 0.1.6
+Date: 2023-07-10
+Authors@R: person(given="Malcolm",
+                  family="Haddon", 
+                  email = "malcolm.haddon@gmail.com", 
+                  role = c("aut", "cre"),
+                  comment=c(ORCID="0000-0001-6971-7585"))
 Maintainer: Malcolm Haddon <malcolm.haddon@gmail.com>
 Description: aMSE provides a formal framework for conducting management strategy 
     evaluation for abalone stocks (although, in principle, such analyses for any 

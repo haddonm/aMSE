@@ -100,7 +100,7 @@ checkmsedata <- function(intxt,rundir,verbose=TRUE) { # intxt=indat;verbose=TRUE
 #'  zone1 <- readctrlfile(yourdir,"controlEG.csv")
 #'  str(zone1,max.level=1)
 #' }
-ctrlfiletemplate <- function(indir,filename="controlEG.csv",devrec=-1) { # indir=rundir; filename="control2.csv"
+ctrlfiletemplate <- function(indir,filename="controlEG.csv",devrec=0.0) { # indir=rundir; filename="controlEG.csv"; devrec=0.0
    if (!(devrec %in% c(-1,0.0,1.0)))
       stop("devrec must be either -1, 0.0, or 1 in ctrlfiletemplate  \n")
    filename <- filenametopath(indir,filename)

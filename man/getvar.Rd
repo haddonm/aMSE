@@ -27,5 +27,7 @@ getvar(zoneC,"MSY")
 getvar(zoneC,"B0")
 }
 \seealso{
-getlistvar
+{
+ \link{getlistvar}
+}
 }

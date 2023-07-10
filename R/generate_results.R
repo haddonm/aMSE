@@ -280,7 +280,7 @@ makeoutput <- function(out,rundir,postdir,controlfile,hsfile=NULL,
 
   make_html(replist = replist,  rundir = rundir,
             controlfile=controlfile, datafile=out$ctrl$datafile, hsfile=hsfile,
-            width = 500, openfile = TRUE,  runnotes = runnotes,
+            width = 500, openfile = openfile,  runnotes = runnotes,
             verbose = verbose, packagename = "aMSE",  htmlname = postdir)
   if (verbose) cat("finished  \n")
 } # makeoutput
