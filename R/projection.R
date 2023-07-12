@@ -233,13 +233,8 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
       proprec[i,] <- envimpact[["proprec"]][i,sauindex]
     }
   }
-  if (length(hsargs$refperiodCE) > 0) {
-    beginCE <- hsargs$refperiodCE[1]
-    } else {
-    beginCE <- hsargs$startCE
-  }
   for (year in startyr:endyr) { # iter=1; year=startyr
-    if (verbose) cat(year,"   ")
+    if (verbose) cat(year," ")
       for (iter in 1:reps) {
       hcrdata <- getdata(sampleCE,sampleFIS,sampleNaS,
                          sauCPUE=zoneDP$cesau[,,iter],
@@ -247,7 +242,7 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
                          sauNAS=list(Nt=zoneDP$Nt[,,,iter],
                          catchN=zoneDP$catchN[,,,iter],
                          NumNe=zoneDP$NumNe[,,,iter]),year=year,
-                         startCE=beginCE,decrement=hsargs$decrement)
+                         startCE=hsargs$startCE,decrement=hsargs$decrement)
       hcrout <- hcrfun(hcrdata,hsargs,saunames=glb$saunames,curryear=year)
       calcpopCout <- calcpopC(hcrout,exb=zoneDP$exploitB[year-1,,iter],
                        sauCPUE= zoneDP$cesau[year-1,,iter],

@@ -2,8 +2,22 @@
 
 See the ReadMe for the latest few events
 
-* 2022-10-26 aMSE 0.0.19 added more functions to facilitate comparing scenarios.
+aMSE v0.0.19 (Release date: 2022-10-26)
+==============
 
+Changes:
+
+* added more functions to facilitate comparing scenarios.
+
+
+aMSE v0.0.18 (Release date: 2022-10-18)
+==============
+
+Changes:
+
+* In the projections replicates across years has now been changed to years across replicates to allow for inclusion of FIS performance measures. Also, further comparison functions included.
+
+* 2022-10-26 aMSE 0.0.19 
 * 2022-10-18 aMSE 0.0.18 In the projections replicates across years has now been changed to years across replicates to allow for inclusion of FIS performance measures. Also, further comparison functions included.
 
 * 2022-09-26 aMSE 0.0.17 Added finalcondyeardepletion to aid in comparisons.
