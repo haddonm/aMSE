@@ -14,8 +14,8 @@ do_MSE(
   sampleNaS,
   getdata,
   calcpopC,
-  makeouthcr,
   hcrscoreoutputs,
+  makeouthcr,
   HSPMs,
   fleetdyn = NULL,
   interimout = "",
@@ -61,15 +61,14 @@ and combines it into an hcrdata object ready for the hcrfun}
 aspirational catch x SAU or TAC x zone) and generates the actual catch
 per population in each SAU expected in the current year.}
 
-\item{makeouthcr}{Another JurisdictionHS.R function that generates (or not)
-an object that is continually updated by the hcrfun. To avoid very
-inefficient code this object (at least for Tasmania) is cycled through
-the iterations.}
-
 \item{hcrscoreoutputs}{A function defined in an extra aMSE package or
 source file, that defines how the hcr scores should be dealt with. In
 Tasmania they recreated from the projections, plotted and their values
-snet out into the scores object.}
+sent out into the scores object.}
+
+\item{makeouthcr}{Another JurisdictionHS.R function that generates (or not)
+an object that is continually updated by the hcrfun. The intent is that
+it will contain all the HS score values..}
 
 \item{HSPMs}{Another function defined in the HS package that reconstructs
 the cpue HSPM scores, and other measures ready for plotting}

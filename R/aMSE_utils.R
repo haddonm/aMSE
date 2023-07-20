@@ -740,7 +740,7 @@ save_hsargs <- function(rundir,hsargs) {
   filen <- filenametopath(rundir,"hsargs.txt")
   cat(names(hsargs)[1],hsargs[[1]],"\n",file=filen,append=FALSE)
   for (i in 2:length(hsargs)) #  i=15
-    if (class(hsargs[[i]]) %in% c("data.frame","list")) {
+    if (inherits(hsargs[[i]],what = c("matrix","data.frame","list"))) {
       cat(names(hsargs)[i],"\n",file=filen,append=TRUE)
       obj <- hsargs[[i]]
       numrow <- nrow(obj)

@@ -146,6 +146,9 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
   return(res)
 } # end of calcsau
 
+# removed just after calcpopC
+
+
 #' @title doprojections conducts the replicate model runs for Tasmania
 #'
 #' @description doprojections conducts the replicate model runs for
@@ -190,7 +193,7 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 #' }
 #'
 #' @return a list containing the full dynamics across all years zoneDP, and the
-#'     final output from the HCR as hcrout
+#'     final output from the HCR as hcrout and outhcr
 #' @export
 #'
 #' @examples
@@ -198,9 +201,9 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
                           sampleCE,sampleFIS,sampleNaS,getdata,calcpopC,
                           makehcrout,fleetdyn,verbose=FALSE,...) {
-  # ctrl=ctrl; zoneDP=zoneDP; zoneCP=zoneCP; glb=glb; hcrfun=mcdahcr; hsargs=hsargs
+  # ctrl=ctrl; zoneDP=zoneDP; zoneCP=zoneCP; glb=glb; hcrfun=hcrfun; hsargs=hsargs
   # sampleCE=tasCPUE; sampleFIS=tasFIS; sampleNaS=tasNaS;  getdata=tasdata
-  # calcpopC=calcexpectpopC; verbose=TRUE;makehcrout=makeouthcr
+  # calcpopC=calcexpectpopC; verbose=TRUE; fleetdyn=NULL;makehcrout=makeouthcr
   reps <- ctrl$reps
   sigmar <- ctrl$withsigR
   sigmab <- ctrl$withsigB
@@ -211,13 +214,13 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
   endyr <- hyrs + pyrs
   sauindex <- glb$sauindex
   saunames <- glb$saunames
+  nsau <- glb$nSAU
   yrnames <- c(glb$hyrnames,glb$pyrnames)
   Nclass <- glb$Nclass
   movem <- glb$move
   r0 <- getvar(zoneCP,"R0") #R0 by population
   b0 <- getvar(zoneCP,"B0") #sapply(zoneC,"[[","B0")
   exb0 <- getvar(zoneCP,"ExB0")
-  hcrout <- makehcrout(glb,hsargs)
   envyr <- NULL
   survNt <- NULL
   proprec <- NULL
@@ -233,6 +236,7 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
       proprec[i,] <- envimpact[["proprec"]][i,sauindex]
     }
   }
+  outhcr <- makehcrout(glb,hsargs)
   for (year in startyr:endyr) { # iter=1; year=startyr
     if (verbose) cat(year," ")
       for (iter in 1:reps) {
@@ -243,7 +247,9 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
                          catchN=zoneDP$catchN[,,,iter],
                          NumNe=zoneDP$NumNe[,,,iter]),year=year,
                          startCE=hsargs$startCE,decrement=hsargs$decrement)
-      hcrout <- hcrfun(hcrdata,hsargs,saunames=glb$saunames,curryear=year)
+      hcrout <- hcrfun(hcrdata,hsargs,glb=glb,curryear=year,outhcr=outhcr,
+                       iter=iter)
+      outhcr <- hcrout$outhcr  # needed so it can be updated each iteration
       calcpopCout <- calcpopC(hcrout,exb=zoneDP$exploitB[year-1,,iter],
                        sauCPUE= zoneDP$cesau[year-1,,iter],
                        catsau = zoneDP$catsau[year-1,,iter],
@@ -275,10 +281,8 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
     } # year loop
   }   # iter loop
   cat("\n")
-  return(list(zoneDP=zoneDP,hcrout=hcrout))
+  return(list(zoneDP=zoneDP,outhcr=outhcr,hcrout=hcrout))
 } # end of doprojections
-
-
 
 #' @title makezoneDP generates the container for the projection dynamics
 #'

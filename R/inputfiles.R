@@ -1,8 +1,6 @@
 
 # hutils::listFunctions("C:/Users/User/Dropbox/A_code/aMSE/R/inputfiles.R")
 
-
-
 #' @title checkmsedata contains some tests of the input MSE saudata file
 #'
 #' @param intxt the data file from readLines used in readsaudatafile

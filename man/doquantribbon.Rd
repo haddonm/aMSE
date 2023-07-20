@@ -11,7 +11,8 @@ doquantribbon(
   scenes,
   q90 = TRUE,
   intens = 127,
-  addleg = "bottomright"
+  addleg = "bottomright",
+  addmedian = 0
 )
 }
 \arguments{
@@ -34,6 +35,9 @@ x-axis as well as the x-axis labels}
 
 \item{addleg}{add a legend? currently can only use topleft, topright,
 bottomleft, or bottomright = default}
+
+\item{addmedian}{should a solid line depicting the median for each scenario
+be included on each polygon. default = FALSE}
 }
 \value{
 nothing but it does add polygons to a plot

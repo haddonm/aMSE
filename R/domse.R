@@ -1,9 +1,9 @@
 # Tas context -----------------
-# postfixdir <- "BCconstref"
+# postfixdir <- "BCbrief"
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
-# hcrfun=constantrefhcr  #mcdahcr  # consthcr   #constantrefhcr
+# hcrfun=mcdahcr   #constantrefhcr  #  # consthcr   #constantrefhcr
 # sampleCE=tasCPUE
 # sampleFIS=tasFIS
 # sampleNaS=tasNaS
@@ -13,7 +13,7 @@
 # startyr=38
 # verbose=TRUE
 # ndiagprojs=4
-# makehcrout=makeoutconst   #makeouthcr
+# makeouthcr=makeouthcr   #makeoutconst - only used with consthcr
 # HSPMs=getcpueHS
 # fleetdyn=NULL
 # cutcatchN=56
@@ -24,7 +24,7 @@
 # depensate=0
 # pmwtSwitch = 0
 # stablewts = c(0.4, 0.5, 0.1)
-# hcrname="constantrefhcr"   #"consthcr"
+# hcrname="mcdahcr"     # "constantrefhcr"   #"consthcr"
 # hcrscoreoutputs = extractandplotscores
 # kobeRP = c(0.4,0.2,0.15)
 # interimout=""
@@ -39,8 +39,7 @@
 # sampleNaS=saNaS
 # getdata=sadata
 # calcpopC=sacalcexpectpopC
-# makeouthcr=samakeouthcr
-# makehcrout=makeouthcr
+# makeouthcr=makeouthcr
 # hcrscoreoutputs = saextractandplotscores
 # HSPMs=sagetHSscores
 # fleetdyn = safleetdyn
@@ -61,6 +60,10 @@
 # sampleNaS=saNaS
 # getdata=sadata
 #
+
+# removed just after calcpopC:
+
+
 
 
 #' @title do_MSE an encapsulating function to hold the details of a single run
@@ -106,14 +109,13 @@
 #' @param calcpopC a function that takes the output from hcrfun (either the
 #'     aspirational catch x SAU or TAC x zone) and generates the actual catch
 #'     per population in each SAU expected in the current year.
-#' @param makeouthcr Another JurisdictionHS.R function that generates (or not)
-#'     an object that is continually updated by the hcrfun. To avoid very
-#'     inefficient code this object (at least for Tasmania) is cycled through
-#'     the iterations.
 #' @param hcrscoreoutputs A function defined in an extra aMSE package or
 #'     source file, that defines how the hcr scores should be dealt with. In
 #'     Tasmania they recreated from the projections, plotted and their values
-#'     snet out into the scores object.
+#'     sent out into the scores object.
+#' @param makeouthcr Another JurisdictionHS.R function that generates (or not)
+#'     an object that is continually updated by the hcrfun. The intent is that
+#'     it will contain all the HS score values..
 #' @param HSPMs Another function defined in the HS package that reconstructs
 #'     the cpue HSPM scores, and other measures ready for plotting
 #' @param fleetdyn a function that calculates the distribution of catch across
@@ -166,7 +168,7 @@
 #' @examples
 #' print("wait on suitable data sets in data")
 do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
-                   sampleNaS,getdata,calcpopC,makeouthcr,hcrscoreoutputs,
+                   sampleNaS,getdata,calcpopC,hcrscoreoutputs,makeouthcr,
                    HSPMs,fleetdyn=NULL,interimout="",
                    varyrs=7,startyr=42,verbose=FALSE,ndiagprojs=3,
                    cutcatchN=56,matureL=c(70,200),wtatL=c(80,200),mincount=100,
@@ -253,11 +255,10 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                            sampleFIS=sampleFIS,sampleNaS=sampleNaS,
                            getdata=getdata,calcpopC=calcpopC,
                            makehcrout=makeouthcr,fleetdyn=fleetdyn,verbose=TRUE)
-
-#  Rprof(NULL)
   if (verbose) cat("Now generating final plots and tables \n")
   zoneDP=outproj$zoneDP
-  hcrout <- outproj$hcrout; #str(hcrout)
+  hcrout <- outproj$hcrout
+  outhcr <- outproj$outhcr
   NAS <- list(Nt=zoneDP$Nt,catchN=zoneDP$catchN)
   zoneDP <- zoneDP[-c(17,16,15)]  # This removes the Nt etc from zoneDP
   if (length(interimout) == 2) {
@@ -271,7 +272,6 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
     }
     save(postprojout,file=outfile)
   }
- # histCE <- condC$histCE
   B0 <- getvar(zoneC,"B0")
   ExB0 <- getvar(zoneC,"ExB0")
   sauout <- sauplots(zoneDP,NAS,glb,rundir,B0,ExB0,
@@ -300,9 +300,9 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   plothsstats(rundir,HSstats,glb,average=TRUE)
   addtable(hcrout$refpts,"hcrout_refpts.csv",rundir,category="HSperf",
            caption="HCR reference points")
-  scores <- hcrscoreoutputs(rundir=rundir,HSPMs=HSPMs,hcrout=hcrout,
-                            cpue=sauout$cpue,catches=sauout$catch,
-                            glb=glb,yearCE=condC$yearCE,hsargs=hsargs)
+  # scores <- hcrscoreoutputs(rundir=rundir,HSPMs=HSPMs,hcrout=hcrout,
+  #                           cpue=sauout$cpue,catches=sauout$catch,
+  #                           glb=glb,yearCE=condC$yearCE,hsargs=hsargs)
   # generate sau phase plots
   nSAU <- glb$nSAU
   kobedata <- vector(mode="list",length=nSAU)
@@ -313,15 +313,14 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                                        console=FALSE,targdepl=kobeRP[1],
                                        limdepl=kobeRP[2],limH=kobeRP[3])
   }
-
   if (!includeNAS) NAS=NULL
   out <- list(tottime=tottime,projtime=projtime,starttime=starttime,glb=glb,
               ctrl=ctrl,zoneCP=zoneCP,zoneD=zoneD,zoneDD=zoneDD,zoneDP=zoneDP,
               NAS=NAS,projC=projC,condC=condC,sauout=sauout,outzone=outzone,
-              hcrout=hcrout,production=production,condout=condout,
+              production=production,condout=condout,
               HSstats=HSstats,saudat=saudat,constants=constants,hsargs=hsargs,
-              sauprod=sauprod,scores=scores,zonesummary=zonesummary,
-              kobedata=kobedata)
+              sauprod=sauprod,zonesummary=zonesummary,
+              kobedata=kobedata,outhcr=outhcr)
   return(out)
 } # end of do_MSE
 

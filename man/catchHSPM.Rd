@@ -47,6 +47,8 @@ catchHSPM is used to generate boxplots of the aavc, the sum5,
 }
 \examples{
 print("wait on data sets")
+# rundir=rundir;hspm=outcatchHSPM;glbc=glbc;scenes=scenes
+# filen="compare_catches_boxplots.png";aavcyrs=10
 }
 \seealso{
 {

@@ -769,186 +769,390 @@ sapply(ans$aavc,function(x) apply(x,2,median))
 sapply(ans$sum5,function(x) apply(x,2,median))
 sapply(ans$sum10,function(x) apply(x,2,median))
 
+# Expanded do_comparison-----------------------
 
 
-# catch weighted scores by zone----------------------------------------
+rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(5,6)
+verbose=TRUE; intensity=100
 
-getcatch <- function(outmed) {
-  # outmed <- out$scores$outmed
-  sau <- names(outmed)
-  nsau <- length(sau)
-  nyrs <- length(outmed[[1]]$medcatch)
-  yrnames <- names(outmed[[1]]$medcatch)
-  medcat <- matrix(0,nrow=nyrs,ncol=nsau,dimnames=list(yrnames,sau))
-  medg4s <- medts <- medcat
-  for (i in 1:nsau) {
-    medcat[,i] <- outmed[[i]]$medcatch
-    medg4s[,i] <- outmed[[i]]$medg4s
-    medts[,i] <- outmed[[i]]$medts
-  }
-  pmedcat <- proportions(medcat,margin=1)
-  wtts <- medts * pmedcat
-  wtg4s <- medg4s * pmedcat
-  ans <- cbind(wtts=rowSums(wtts),wtg4s=rowSums(wtg4s))
-  return(ans)
+files2 <- files[pickfiles]
+nfile <- length(pickfiles)
+label <- vector(mode="character",length=nfile)
+for (i in 1:nfile) label[i] <- unlist(strsplit(files2[i],".",fixed=TRUE))[1]
+ans <- makelist(label) # vector(mode="list",length=nfile)
+dyn <- makelist(label) # vector(mode="list",length=nfile)
+glbc <- makelist(label) # vector(mode="list",length=nfile)
+prods <- makelist(label) # vector(mode="list",length=nfile)
+scenes <- vector(mode="character",length=nfile)
+scores <- makelist(label) # vector(mode="list",length=nfile)
+zone <- makelist(label)
+for (i in 1:nfile) { # i = 1
+  filename <- paste0(outdir,files2[i])
+  if (verbose)
+    cat("Loading ",files2[i]," which may take time, be patient  \n")
+  out <- NULL # so the function knows an 'out' exists
+  load(filename)
+  ans[[i]] <- out
+  dyn[[i]] <- out$sauout
+  glbc[[i]] <- out$glb
+  prods[[i]] <- out$sauprod
+  scenes[i] <- out$ctrl$runlabel
+  scores[[i]] <- out$scores
+  zone[[i]] <- out$outzone
 }
+nscenes <- length(scenes)
+catch <- makelist(scenes)
+cpue <- makelist(scenes)
+for (i in 1:nscenes) {
+  catch[[i]] <- dyn[[i]]$catch
+  cpue[[i]] <- dyn[[i]]$cpue
+}
+if (verbose) cat("Now doing the comparisons  \n")
+setuphtml(rundir=rundir)
+quantscen <- comparedynamics(rundir=rundir,dyn,glbc,scenes)
+tabulateproductivity(rundir,prods,scenes)
 
-kobe <- getcatch(out$scores$outmed)
+filename <- "compare_final_HSscores.png"
+meds <- comparefinalscores(rundir,scores,scenes,legloc="bottomright",
+                           filen=filename,category="Scores")
+addplot(filen=filename,rundir=rundir,category="Scores",
+        caption="The HS final scores for each sau.")
 
-#' @title plotHSphase generates a phase plot of CPUE Target vs Gradient scores
+tabulatefinalHSscores(rundir,meds,scenes,category="Scores")
+outcatchHSPM <- calccatchHSPM(catch,glbc,scenes,aavcyrs=10)
+medHSPM <- outcatchHSPM$medians
+label <- names(medHSPM)
+for (i in 1:length(medHSPM)) {
+  filename <- paste0("proj",label[i],".csv")
+  addtable(medHSPM[[label[i]]],filen=filename,rundir=rundir,category="HSPM",
+           caption=paste0("Median ",label[i]," values by sau and scenario."))
+}
+outtab <- catchHSPM(rundir,hspm=outcatchHSPM,glbc,scenes,
+                    filen="compare_catches_boxplots.png",aavcyrs=10)
+boxbysau(rundir,hspm=outcatchHSPM,glbc,scenes,compvar="aavc",
+         filen="sau_aavc_boxplots.png",aavcyrs=10,maxval=0.4)
+boxbysau(rundir,hspm=outcatchHSPM,glbc,scenes,compvar="sum5",
+         filen="sau_sum5_boxplots.png",aavcyrs=10,maxval=0) #
+boxbysau(rundir,hspm=outcatchHSPM,glbc,scenes,compvar="sum10",
+         filen="sau_sum10_boxplots.png",aavcyrs=10,maxval=0) #
+catchbpstats(rundir,outtab)
+cpueHSPM(rundir,cpue,glbc,scenes=scenes,filen="sau_maxce_boxplots.png")
+outcpue <- cpueboxbysau(rundir,cpue,glbc,scenes,filen="sau_maxceyr_box.png",
+                        startyr=0,maxval=0)
+cdivmsy <- catchvsMSY(catch,glbc,prods,scenes)
+nscen <- length(scenes)
+for (i in 1:nscen) {
+  plotsceneproj(rundir,cdivmsy[[i]],glbc[[i]],scenes[i],
+                filen=paste0("Catch_div_MSY_",scenes[i],".png"),
+                label="Catch / MSY",hline=1,Q=90)
+}
+plotzonedyn(rundir,scenes,zone,glbc[[1]],console=FALSE,q90=TRUE,polys=TRUE,
+            intens=intensity)
+tabulatezoneprod(rundir,prods,scenes)
+# ribbon plots by sau and dynamic variable
+# cpue <- scenebyvar(dyn=out$dyn,byvar="cpue",glb=out$glbc[[1]])
+glb <- glbc[[1]]
+catch <- scenebyvar(dyn,byvar="catch",glb=glb,projonly = TRUE)
+catqnts <- sauquantbyscene(catch,glb)
+nsau <- glbc[[1]]$nSAU
+for (sau in 1:nsau)
+  sauribbon(rundir,scenes=scenes,sau=sau,varqnts=catqnts,
+            glb=glb,varname="Catch",console=FALSE,
+            q90=TRUE,intens=intensity,addleg="bottomright")
+cpue <- scenebyvar(dyn,byvar="cpue",glb=glb,projonly = TRUE)
+cpueqnts <- sauquantbyscene(cpue,glb)
+for (sau in 1:nsau)
+  sauribbon(rundir,scenes=scenes,sau=sau,varqnts=cpueqnts,
+            glb=glb,varname="cpue",console=FALSE,
+            q90=TRUE,intens=intensity,addleg="bottomright")
+makecompareoutput(rundir=rundir,glbc,scenes,postfixdir,
+                  filesused=files[pickfiles],openfile=TRUE,verbose=FALSE)
+
+
+
+yrs <- 1990:2020
+nyrs <- length(yrs)
+deplsB <- 0.01 + 0.00015*yrs * 0.15 + rnorm(nyrs,mean=0.1,sd=0.01)
+reps <- 100
+# generate a matrix with years in the rows.
+deplsB <- matrix(0,nrow=nyrs,ncol=reps,dimnames=list(yrs,1:reps))
+for (i in 1:reps)
+  deplsB[,i] <- seq(0.1,0.4,length=nyrs) + rnorm(nyrs,mean=0.1,sd=0.04)
+plotprep(width=8, height=3.5)
+plot1(yrs,deplsB[,1])
+
+
+#' @title trajectoryplot generates a plot comparing replicate trajectories
 #'
-#' @description The empirical Tasmanian harvest strategy uses different CPUE
-#'     statistics to produce scores that represent different facets of CPUE.
-#'     Plotting the score for the CPUE gradient measure against the CPUE target
-#'     measure is used as a proxy for a phase plot of fishing mortality against
-#'     mature biomass. Strictly, statistics relating to CPUE are concerned with
-#'     the exploitable biomass, which, because of the LML, cam be markedly
-#'     different from the spawning biomass. Nevertheless, trend in one tend to
-#'     be similar to trends in the other.
+#' @description trajectoryplot fulfils a common task with is to compare groups
+#'     of trajectories generated in simulations having multiple scenarios.\
+#'     Thus, one might have generated the mature biomass depletion for two
+#'     or more scenarios across a selection of years, each with a large number
+#'     of replicates. Such data is expected to be contained in a list of lists
+#'     with each of the top level lists being one of the scenarios. Each of
+#'     those lists is expected to be made up of multiple components. Hence one
+#'     might have a list called 'dyn' containing lists for two scenarios 'meta'
+#'     and 'refp'. Both 'meta' and 'refp' constitute a list of 'matureB',
+#'     'exploitB', 'catch', 'cpue', 'deplsB', etc. Where each of those is a
+#'     three dimensional array of 1:nyr years, 1:nsau spatial unuts, and 1:N
+#'     replicates.
 #'
-#' @param cpue a vector of cpue data either predicted or observed.
-#' @param rundir the directory for all files and results, default=""
-#' @param wid default=4 the number of years used on getgrad4 from TasHS
-#' @param fnt default = 7 = times bold.
-#' @param cex default font size = 1.0
-#' @param console should the plot go to the console or be saved? Default=TRUE
+#' @param x a vector of years to be used as the x-axis
+#' @param y A matrix of years by whatever variable is to be plotted.
 #'
-#' @return nothing but it does plot a graph
+#' @return
 #' @export
 #'
 #' @examples
-#' print("wait on a data set")
-plotHSphase <- function(cpue,rundir="",wid=4,fnt=7,cex=1.0,console=TRUE) {
-  g4 <- getgrad4(cpue)
-  sc4 <- getscore(g4)
-  g1 <- getgrad1(cpue)
-  sc1 <- getscore(g1)
-  ts <- targscore(cpue)$scores
-  pickp <- which(sc4 > 0)
-  years <- as.numeric(names(cpue[pickp]))
-  cedat <- cbind(sc1[pickp],sc4[pickp],ts[pickp])
-  rownames(cedat) <- years
-  colnames(cedat) <- c("grad1",'grad4','cetarg')
-  n <- nrow(cedat)
-  ts <- cedat[,"cetarg"]
-  sc4 <- cedat[,"grad4"]-5
-  yrge <- range(years)
-  if (console) { filen <- "" } else {
-    filen <- filenametopath(rundir,"eHS_phase_summary.png")
+#' yrs <- 1990:2020
+#' nyrs <- length(yrs)
+#' reps=100
+#' deplsB <- matrix(0,nrow=nyrs,ncol=reps,dimnames=list(yrs,1:reps))
+#' for (i in 1:reps)
+#'   deplsB[,i] <- seq(0.1,0.4,length=nyrs) + rnorm(nyrs,mean=0.1,sd=0.04)
+#' # x=
+trajectoryplot <- function(x,y,varname="",fnt=7,cex=1.0,addmedian=TRUE,bounds=90,
+                           distyr=NULL,distvar=NULL) {
+  if ((length(distyr) > 0) & (length(distvar) > 0))
+      warning(cat("Both distyr and distvar in trajectoryplot have values. \n"))
+  if (length(distyr) > 0) layout(rbind(c(1,1,1),c(2,3,4)),heights=c(3,2))
+  if (length(distvar) > 0) layout(rbind(c(1,1),c(2,3)),heights=c(3,2))
+#  x=yrs;y=deplsB;fnt=7;cex=1.0;addmedian=TRUE;varname="depletion";bounds=90;distvar=c(0.3,0.45)
+  maxy <- getmax(y)
+  plot(x,y[,1],type="l",lwd=1,col="grey",ylim=c(0,maxy),font=fnt,cex=cex,
+       ylab=varname,xlab="")
+  for (i in 2:reps) lines(x,y[,i],lwd=1,col="grey")
+  medy <- apply(y,1,quants)
+  if (addmedian) lines(x,medy[3,],lwd=3,col=2)
+  if ((addmedian) & bounds > 0) {
+    if (bounds == 90) {
+      lines(x,medy[2,],lwd=2,col=2)
+      lines(x,medy[4,],lwd=2,col=2)
+    } else {
+      lines(x,medy[1,],lwd=2,col=2)
+      lines(x,medy[5,],lwd=2,col=2)
+    }
   }
-  plotprep(width=7,height=4.5,newdev=FALSE,filename=filen,verbose=FALSE,
-           usefont=fnt)
-  parset(margin = c(0.45, 0.45, 0.1, 0.1),cex=cex,cex.lab=(cex*1.1))
-  plot(ts,sc4,type="p",pch=16,xlim=c(0,10),ylim=c(5,-5),xaxs="i",yaxs="i",
-       xlab=paste0("eHS CPUE Target Score - Abundance Proxy  ",
-                   yrge[1]," - ",yrge[2]), xaxt="n",yaxt="n",
-       ylab="eHS CPUE Gradient Score - Fishing Mortality Proxy")
-  axis(side=1,at=0:10)
-  axis(side=2,at=seq(5,-5,-1))
-  polygon(x=c(0,1,1,0,0),y=c(0,0,-5,-5,0),col=rgb(255,0,0,175,maxColorValue=255))
-  polygon(x=c(1,10,10,1,1),y=c(0,0,-5,-5,0),col=rgb(255,255,0,170,maxColorValue=255))
-  polygon(x=c(0,1,1,0,0),y=c(5,5,0,0,5),col=rgb(255,255,0,175,maxColorValue=255))
-  polygon(x=c(1,10,10,1,1),y=c(5,5,0,0,5),col=rgb(0,255,0,120,maxColorValue=255))
-  abline(v=c(1,5),lwd=2,lty=c(1,2))
-  abline(h=0,lwd=2)
-  points(ts,sc4,pch=16,cex=1.5)
-  arrows(x0=ts[1:(n-1)],y0=sc4[1:(n-1)],x1=ts[2:n],y1=sc4[2:n],lwd=2,length=0.15)
-  if (!console) {
-    caption <- "eHS Phase plot of CPUE Gradient vs CPUE Target."
-    addplot(filen,rundir,category="fishery",caption=caption)
+  if (!is.null(distyr)) {
+    abline(v=yrs[distyr],lwd=2,col=1)
+    for (i in 1:length(distyr)) {
+      label <- paste0(varname," in ",yrs[distyr[i]])
+      hist(y[distyr[i],],main="",xlab=label,ylab="Proportion",freq=FALSE,
+           col="grey")
+      lines(density(y[distyr[i],]),lwd=2,col=4)
+    }
   }
-} # end of ploteHSphase
+  if (!is.null(distvar)) {
+    abline(h=distvar,lwd=2,col=1)
+    for (i in 1:length(distvar)) {
+      label <- paste0("First Year ",varname," at ",distvar[i])
+      varyrs <- apply(y,2,function(x) which(x >= distvar[i])[1])
+      inthist(yrs[varyrs],xlab=label,ylab="frequency")
+    }
+  }
+} # end of trajectoryplot
+
+
+plotprep(width=9,height=6)
+trajectoryplot(yrs,deplsB,varname="depletion",fnt=2,addmedian=TRUE,bounds=90,
+               distvar=c(0.3,0.45),cex=1.0)
+
+dvar <- numeric(reps)
+for (i in 1:reps) dvar[i] <- which(deplsB[,i] >= distvar[1])[1]
+
+inthist(yrs[dvar])
+i=1
+
+yearCE=condC$yearCE
+
+extractandplotscores <- function(rundir,HSPMs,hcrout,cpue,catches,glb,yearCE,
+                                 hsargs,verbose=TRUE,...) {
+  rundir=rundir;HSPMs=HSPMs;hcrout=hcrout;
+  cpue=sauout$cpue;catches=sauout$catch
+  glb=glb;yearCE=condC$yearCE;hsargs=hsargs
+
+
+  if ((!is.null(HSPMs)) & (inherits(hsargs,"list"))) {
+    nsau <- glb$nSAU
+    reps <- glb$reps
+    outHS <- vector(mode="list",length=nsau)
+    saunames <- glb$saunames
+    names(outHS) <- saunames
+    outmed <- outHS
+    if (verbose) cat("Reconstructing HS outputs  \n")
+    for (sau in 1:nsau) {
+      outHS[[sau]] <- HSPMs(ce=cpue,catches=catches,glb=glb,yearCE=yearCE,
+                            hsargs=hsargs,sau=sau)
+    }
+    if (verbose) cat("Now plotting results   \n")
+    for (sau in 1:nsau) {
+      filename <- filenametopath(rundir,paste0("finalscores_",saunames[sau],".png"))
+      outmed[[sau]] <- plotfinalscores(outscores=outHS[[sau]],minprojC=0,
+                                       minprojCE=0,mintargCE=0,filen=filename)
+      caption <- paste0("The score relationships for ",saunames[sau])
+      addplot(filen=filename,rundir=rundir,category="scores",caption)
+    }
+    return(invisible(list(outHS=outHS,outmed=outmed)))
+  } else {
+    return(invisible(list(outHS=NULL,outmed=NULL)))
+  }
+} # end of extractandplotscores
+
+#' @title plotfinalscores plots projected catches, cpue, PMs, and final score
+#'
+#' @description plotfinalscores takes the inidivual sau output from getcpueHS
+#'     and generates a plot made up of six sub-plots of the replicates for each
+#'     sau. In sequence these plots are the projected catches, the projected
+#'     cpue, the gradient 1 scores, the gradient 4 scores, the target cpue, and
+#'     the final total score. This enables the relationships between the scores
+#'     to be examined. Only used in do_MSE
+#'
+#' @param outscores each sau's results from getcpueHS, which extracts the HS
+#'     scores and other results from the projection dynamics
+#' @param minprojC the minimum y-axis value for the projected catches
+#' @param minprojCE the minimum y-axis value for the projected cpue
+#' @param mintargCE the minimum y-axis value for the projected target cpue
+#' @param filen a filename for use if saving the output to said file,
+#'     default = '', which implies the plot goes to the console.
+#'
+#' @seealso{
+#'    \link{extractandplotscores}
+#' }
+#'
+#' @return invisibly a list of the median catches, cpue, targetce, finalscore,
+#'     grad1 score, grad4 score, and target cpue score.
+#' @export
+#'
+#' @examples
+#' print("wait on data sets")
+plotfinalscores <- function(outscores,minprojC=0,minprojCE=0,mintargCE=0,
+                            filen="") {
+  outscores=outHS[[6]];minprojC=0
+  minprojCE=0;mintargCE=0;filen=""
+
+  cpue <- outscores$cpue
+  yrs <- as.numeric(rownames(cpue))
+  reps <- ncol(cpue)
+  cetarg <- outscores$cetarg
+  catch <- outscores$catch
+  score <- outscores$finalsc
+  tyrs <- as.numeric(rownames(cetarg))
+  pickyr <- match(tyrs,yrs)
+  ymax <- getmax(catch)    # first plot catches
+  medcpue <- apply(cpue[pickyr,],1,median)
+  medtarg <- apply(cetarg,1,median)
+  medcatch <- apply(catch,1,median)
+  medsc <- apply(score,1,median)
+  plotprep(width=8, height=9,newdev=FALSE,filename=filen,verbose=FALSE)
+  parset(plots=c(7,1),margin=c(0.2,0.4,0.025,0.1))
+  plot(tyrs,catch[,1],type="l",lwd=1,col="grey",ylim=c(minprojC,ymax),
+       ylab="Projected Catch",xlab="",panel.first=grid())
+  for (i in 1:reps) lines(tyrs,catch[,i],lwd=1,col="grey")
+  lines(tyrs,medcatch,lwd=2,col=2)
+  ymax <- getmax(cpue[pickyr,])  # max for  plot cpue
+  ymin <- getmin(cpue[pickyr,])  # min for  plot cpue
+  plot(tyrs,cpue[pickyr,1],type="l",lwd=1,col="grey",ylim=c(ymin,ymax),
+       ylab="Projected CPUE",xlab="",panel.first=grid())
+  for (i in 1:reps) lines(tyrs,cpue[pickyr,i],lwd=1,col="grey")
+  lines(tyrs,medcpue,lwd=2,col=2)
+  lines(tyrs,medtarg,lwd=2,col=4)
+  g1s <- outscores$g1s  # now the grad1 score
+  medg1s <- apply(g1s,1,median)
+  plot(tyrs,g1s[,1],type="l",lwd=1,col="grey",ylim=c(0,10),
+       panel.first=grid(),ylab="Grad1 Score",xlab="")
+  for (i in 1:reps) lines(tyrs,g1s[,i],lwd=1,col="grey")
+  lines(tyrs,medg1s,lwd=2,col=2)
+  g4s <- outscores$g4s  # now the grad4 score
+  medg4s <- apply(g4s,1,median)
+  plot(tyrs,g4s[,1],type="l",lwd=1,col="grey",ylim=c(0,10),
+       panel.first=grid(),ylab="Grad4 Score",xlab="")
+  for (i in 1:reps) lines(tyrs,g4s[,i],lwd=1,col="grey")
+  lines(tyrs,medg4s,lwd=2,col=2)
+  targsc <- outscores$targsc  # now the target cpue score
+  medts <- apply(targsc,1,median)
+  plot(tyrs,targsc[,1],type="l",lwd=1,col="grey",ylim=c(0,10),
+       panel.first=grid(),ylab="Target CE Score",xlab="")
+  for (i in 1:reps) lines(tyrs,targsc[,i],lwd=1,col="grey")
+  lines(tyrs,medts,lwd=2,col=2)
+  ymax <- getmax(cetarg,mult=1.01)   # now the target cpue
+  ymin <- getmin(cetarg,mult=1.01)   # now the target cpue
+  plot(tyrs,cetarg[,1],type="l",lwd=1,col="grey",ylim=c(ymin,ymax),
+       panel.first=grid(),ylab="Target CE",xlab="")
+  if (ncol(cetarg) > 1) for (i in 1:reps) lines(tyrs,cetarg[,i],lwd=1,col="grey")
+  abline(h=150,lwd=2,col=2,lty=2)
+  lines(tyrs,medtarg,lwd=2,col=2)
+  ylabel <- "Final TasHS Score"  # now the final scores
+  plot(tyrs,score[,1],type="l",lwd=1,col="grey",ylim=c(0,10),yaxs="i",
+       panel.first=grid(),ylab=ylabel,xlab="")
+  for (i in 1:reps) lines(tyrs,score[,i],lwd=1,col="grey")
+  lines(tyrs,medsc,lwd=2,col=2)
+  return(invisible(list(medcatch=medcatch,medcpue=medcpue,medtarg=medtarg,
+                        medsc=medsc,medg1s=medg1s,medg4s=medg4s,medts=medts)))
+} # end of plotfinalscores
 
 
 
-glb <- out$glb
-scrs <- out$scores$outmed
-sau <- 4
-namesau <- glb$saunames[sau]
-kobdat <- cbind(scrs[[4]]$medcatch,scrs[[4]]$medg4s,scrs[[4]]$medts)
-colnames(kobdat) <- c("catch","grad4","ts")
-kobe5 <- kobdat[,2:3] - 5
-
-
-
-filen=""
-fnt=7
-cex=1.0
-
-
-eHSphaseplot <- function(console=TRUE) {
-  nyrs <- nrow(kobe5)
-  yrs <- as.numeric(rownames(kobe5))
-  yrge <- range(yrs)
-  startyr <- yrs[1]
-  labelx <- paste0("eHS CPUE Target Score - Abundance Proxy ",
-                   yrge[1]," - ",yrge[2]," for ",namesau)
-  labely <- paste0("eHS CPUE Gradient Score - Fishing Mortality Proxy for ",
-                   namesau)
-  plotprep(width=8,height=6,filename=filen,verbose=FALSE,
-           usefont=fnt)
-  parset(margin = c(0.3, 0.3, 0.1, 0.1),cex=cex,cex.lab=(cex*1.1),
-         outmargin=c(1,1,0,0))
-  plot(kobe5[,"ts"],kobe5[,"grad4"],type="p",pch=16,xlim=c(-5,5),ylim=c(5,-5),
-       xaxs="i",yaxs="i",xlab="", xaxt="n",yaxt="n",ylab="")
-  polygon(x=c(-5,0,0,-5,-5),y=c(-5,-5,0,0,-5),
-          col=rgb(255,0,0,175,maxColorValue=255))
-  polygon(x=c(-5,0,0,-5,-5),y=c(0,0,5,5,0),
-          col=rgb(255,255,0,140,maxColorValue=255))
-  polygon(x=c(0,5,5,0,0),y=c(0,0,5,5,0),
-          col=rgb(0,255,0,120,maxColorValue=255))
-  polygon(x=c(0,5,5,0,0),y=c(-5,-5,0,0,-5),
-          col=rgb(255,255,0,140,maxColorValue=255))
-  axis(side=1,at=seq(-5,5,1))
-  axis(side=2,at=seq(5,-5,-1))
-  mtext(labelx,side=1,line=1.1,cex=1.1)
-  mtext(labely,side=2,line=1.1,cex=1.1)
-  points(kobe5[,"ts"],kobe5[,"grad4"],pch=16,cex=1.0)
-  lines(kobe5[,"ts"],kobe5[,"grad4"],lwd=1,lty=2)
-  points(kobe5[c(1,nyrs),"ts"],kobe5[c(1,nyrs),"grad4"],pch=16,cex=3,col=c(6,4))
-  legend("topright",legend=c(yrs[1],yrs[nyrs]),col=c(6,4),lwd=5,cex=1.5,bty="n")
-}
-
-
-
-
-
-pdat <- read.csv("C:/Users/Malcolm/Dropbox/A_CodeUse/aMSEUse/hsargs/mult05/Production_by_sau.csv")
-
-
-pdat[2,]/pdat[1,]
-
-
-
-
-filen <- "/A_CodeUse/aMSEDoc/figures/install_tar.gz_file.png"
-dropdir <- paste0(getDBdir(),"/")
-pathtopath(path1=dropdir,path2=filen)
-
-filen <- "/A_CodeUse/aMSEDoc/figures/install_tar.gz_file.png"
-dropdir <- getDBdir()
-pathtopath(path1=dropdir,path2=filen)
-
-filen <- "A_CodeUse/aMSEDoc/figures/install_tar.gz_file.png"
-dropdir <- getDBdir()
-pathtopath(path1=dropdir,path2=filen)
-
-
-filen <- "\\A_CodeUse\\aMSEDoc\\figures\\install_tar.gz_file.png"
-dropdir <- "c:\\Users\\Malcolm\\DropBox\\"
-pathtopath(path1=dropdir,path2=filen)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+getcpueHS <- function(ce,catches,glb,yearCE,hsargs,sau) {
+  # ce=out$sauout$cpue;catches=out$sauout$catch;glb=out$glb;yearCE=out$condC$yearCE;hsargs=hsargs;sau=6
+  reps <- glb$reps
+  nsau <- glb$nSAU
+  totyrs <- glb$hyrs + glb$pyrs
+  pickyr <- match(yearCE,glb$hyrnames)
+  nhyr <- length(pickyr)
+  cpue <- ce[(pickyr[1]:totyrs),sau,]
+  catch <- catches[pickyr[nhyr]:totyrs,sau,]
+  yrs <- as.numeric(rownames(cpue))
+  nyrs <- length(yrs)
+  scoreyr <- match(hsargs$startCE,yrs)
+  cetarg <- matrix(0,nrow=(glb$pyrs+1),ncol=reps,
+                   dimnames=list(yrs[nhyr:nyrs],1:reps))
+  qnt <- hsargs$targqnt
+  width <- hsargs$wid
+  mult <- hsargs$mult
+  maxtarg <- hsargs$maxtarg[sau]
+  rown <- 0
+  for (targyr in nhyr:nyrs) {  # targyr=nhyr
+    rown <- rown + 1
+    cetarg[rown,] <- apply(cpue[1:targyr,],2,quantile,probs=qnt)
+    pickT <- which(cetarg[rown,] > maxtarg)
+    if (length(pickT) > 0) cetarg[rown,pickT] <- maxtarg
+  }
+  #  tmp <- apply(cpue[((nhyr-1):nyrs),],2,getgrad1)
+  tmp <- apply(cpue[(scoreyr:nyrs),],2,getgrad1)
+  tmp2 <- apply(tmp,2,getscore,mult=mult)
+  g1s <- tmp2[1:nrow(tmp2),]; rownames(g1s) <- yrs[scoreyr:nyrs]
+  tmp <- apply(cpue[((scoreyr-width+1):nyrs),],2,getgrad4,wid=width)
+  tmp2 <- apply(tmp,2,getscore,mult=mult)
+  g4s <- tmp2[width:nrow(tmp2),]; rownames(g4s) <- yrs[scoreyr:nyrs]
+  if (hsargs$hcrname == "mcdahcr") {
+    getts <- function(x) targscore(x,qnt=qnt,mult=mult,maxtarg=maxtarg)$scores
+    targsc <- apply(cpue[(scoreyr:nyrs),],2,getts);
+    rownames(targsc) <- yrs[scoreyr:nyrs]
+  }
+  if (hsargs$hcrname == "constantrefhcr") {
+    cpueyrs <- as.numeric(dimnames(ce)[[1]])
+    if (inherits(hsargs$refperiodCE, "matrix")) { # allow for missing years
+      refperiod <- hsargs$refperiodCE
+    } else {
+      refyrs <- hsargs$startCE:hsargs$endCE
+      refperiod <- matrix(0,nrow=nsau,ncol=length(refyrs),
+                          dimnames=list(glb$saunames,refyrs))
+      for (i in 1:nsau) refperiod[i,] <- refyrs
+    }
+    pickceyrs <- match(refperiod[sau,],cpueyrs)
+    arrce <- ce[pickceyrs,sau,1]
+    actualtarg <- quantile(arrce,probs=hsargs$targqnt,na.rm=TRUE)
+    getts <- function(x) targscoreconstref(x,actualtarg,mult=mult,maxtarg=maxtarg)$scores
+    targsc <- apply(cpue[(scoreyr:nyrs),],2,getts)
+    rownames(targsc) <- yrs[scoreyr:nyrs]
+    cetarg <- as.matrix(rep(actualtarg,(glb$pyrs+1)))
+    rownames(cetarg) <- yrs[nscoreyrhyr:nyrs]
+  }
+  pmwts <- hsargs$pmwts
+  finalsc <- (targsc * pmwts[1]) + (g4s * pmwts[2]) + (g1s * pmwts[3])
+  index <- floor(finalsc) + 1 # add one to pick correct hcr[index]
+  catchmult <- index
+  for (i in 1:reps) catchmult[,i] <- hsargs$hcr[index[,i]]
+  return(list(cpue=cpue,catch=catch,cetarg=cetarg,g1s=g1s,g4s=g4s,targsc=targsc,
+              finalsc=finalsc,index=index,catchmult=catchmult))
+} # end of getcpueHS

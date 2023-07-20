@@ -220,6 +220,8 @@ catchbpstats <- function(rundir,outtab) {
 #'
 #' @examples
 #' print("wait on data sets")
+#' # rundir=rundir;hspm=outcatchHSPM;glbc=glbc;scenes=scenes
+#' # filen="compare_catches_boxplots.png";aavcyrs=10
 catchHSPM <- function(rundir,hspm,glbc,scenes,filen="",aavcyrs=10,
                       maxvals=c(0.25,750,1500)) {
   nscen <- length(scenes)
@@ -239,15 +241,19 @@ catchHSPM <- function(rundir,hspm,glbc,scenes,filen="",aavcyrs=10,
   plotprep(width=9, height=9,newdev=FALSE,filename = filen,verbose=FALSE)
   parset(plots=c(3,2),margin=c(0.4,0.4,0.05,0.1),outmargin=c(1,0,0,0),byrow=FALSE)
   count <- 0
+  maxval <- numeric(nscen)
   for (i in 1:nscen) { # i = 1
     count <- count + 1
-    boxresult[[count]] <- boxplot(aavc[[i]],ylim=c(0,maxvals[1]),yaxs="i",
+    for (j in 1:nscen) maxval[j] <- getmax(aavc[[j]])
+    boxresult[[count]] <- boxplot(aavc[[i]],ylim=c(0,max(maxval)),yaxs="i",
                                   ylab="Average Annual Catch Variation")
     count <- count + 1
-    boxresult[[count]] <- boxplot(sum5[[i]][,1:nsau],ylim=c(0,maxvals[2]),yaxs="i",
+    for (j in 1:nscen) maxval[j] <- getmax(sum5[[j]][,1:nsau])
+    boxresult[[count]] <- boxplot(sum5[[i]][,1:nsau],ylim=c(0,max(maxval)),yaxs="i",
                                   ylab="sum first 5 years catch")
     count <- count + 1
-    boxresult[[count]] <- boxplot(sum10[[i]][,1:nsau],ylim=c(0,maxvals[3]),yaxs="i",
+    for (j in 1:nscen) maxval[j] <- getmax(sum10[[j]][,1:nsau])
+    boxresult[[count]] <- boxplot(sum10[[i]][,1:nsau],ylim=c(0,max(maxval)),yaxs="i",
                                   ylab="sum first 10 years catch")
     mtext(scenes[i],side=1,outer=FALSE,cex=1,line=1.75)
   }
@@ -502,9 +508,11 @@ comparedynamics <- function(rundir,dyn,glbc,scenes) {
 comparefinalscores <- function(rundir,scores,scenes,legloc="bottomright",
                                filen="",category="Tables") {
   #   scores=scores;scenes=scenes;legloc="bottomleft"; filen="";
+  # rundir=rundir;scores=scores;scenes=scenes;legloc="bottomright"
+  # filen=filename;category="Scores"
   nmed <- length(scores)
   meds <- vector(mode="list",length=nmed)
-  for (i in 1:nmed) {
+  for (i in 1:nmed) { # i=2
     tmp <- scores[[i]]$outmed
     meds[[i]] <-  sapply(tmp,"[[","medsc")
   }
@@ -670,7 +678,7 @@ cpueHSPM <- function(rundir,cpue,glbc,scenes,filen="",startyr=0) {
     ce <- getprojyrs(cpue[[i]],glb$hyrs,glb$pyrs,startyr=beginyr)
     maxceyr <- getyr2maxce(ce,glb)
     qs <- boxplot(maxceyr,ylim=c(0,max(maxceyr)+2),yaxs="i",
-                  ylab="Years to maximum CPUE")
+                  ylab="Years to maximum CPUE",xlab=scenes[i])
     mtext(scenes[i],side=1,outer=FALSE,cex=1,line=1.75)
     qsstats <- qs$stats
     colnames(qsstats) <- glb$saunames
@@ -731,7 +739,7 @@ cpueHSPM <- function(rundir,cpue,glbc,scenes,filen="",startyr=0) {
 #' }
 do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
                           intensity=100) {
-# rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(1,2)
+# rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(4,5)
 #  verbose=TRUE; intensity=100
   files2 <- files[pickfiles]
   nfile <- length(pickfiles)
@@ -794,7 +802,7 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
   boxbysau(rundir,hspm=outcatchHSPM,glbc,scenes,compvar="sum10",
            filen="sau_sum10_boxplots.png",aavcyrs=10,maxval=0) #
   catchbpstats(rundir,outtab)
-  cpueHSPM(rundir,cpue,glbc,scenes,filen="sau_maxce_boxplots.png")
+  cpueHSPM(rundir,cpue,glbc,scenes=scenes,filen="sau_maxce_boxplots.png")
   outcpue <- cpueboxbysau(rundir,cpue,glbc,scenes,filen="sau_maxceyr_box.png",
                           startyr=0,maxval=0)
   cdivmsy <- catchvsMSY(catch,glbc,prods,scenes)
@@ -999,6 +1007,8 @@ doquantplot <- function(varq,varname,yrnames,scenes,q90,polys,intens=127,
 #'     127 is about 50 percent dense.
 #' @param addleg add a legend? currently can only use topleft, topright,
 #'     bottomleft, or bottomright = default
+#' @param addmedian should a solid line depicting the median for each scenario
+#'     be included on each polygon. default = FALSE
 #'
 #' @seealso {
 #'    \link{sauribbon}, \link{RGB}
@@ -1010,7 +1020,7 @@ doquantplot <- function(varq,varname,yrnames,scenes,q90,polys,intens=127,
 #' @examples
 #' print("wait on datasets")
 doquantribbon <- function(varq,varname,yrnames,scenes,q90=TRUE,intens=127,
-                          addleg="bottomright") {
+                          addleg="bottomright",addmedian=0) {
   maxy <- getmax(varq)
   nscen <- length(scenes)
   plot(yrnames,varq[3,,1],type="l",lwd=2,col=0,xlab="",ylab=varname,
@@ -1019,9 +1029,11 @@ doquantribbon <- function(varq,varname,yrnames,scenes,q90=TRUE,intens=127,
     if (q90) {
       poldat <- makepolygon(varq[2,,i],varq[4,,i],yrnames)
       polygon(poldat,col=RGB(i,alpha=intens))
+      if (addmedian > 0) lines(yrnames,varq[3,,i],lwd=addmedian,col=i)
     } else {
       poldat <- makepolygon(varq[1,,i],varq[5,,i],yrnames)
       polygon(poldat,col=RGB(i,alpha=intens))
+      if (addmedian > 0) lines(yrnames,varq[3,,i],lwd=addmedian,col=i)
     }
   }
   if (nchar(addleg) > 0) {
@@ -1416,6 +1428,7 @@ sauquantbyscene <- function(invar,glb) {
 #'     a scale of 0 - 255. 127 is about 50 percent dense.
 #' @param addleg add a legend or not. If not use "", if yes use any of topleft,
 #'     topright, bottomleft, or bottomright, default = bottomright.
+#' @param addmedian should each polygon also have its median plotted as a line.
 #' @param defpar should the formatting of the plot use the internal version
 #'     (the default setting) or, if set = FALSE use an external definition.
 #'
@@ -1438,7 +1451,7 @@ sauquantbyscene <- function(invar,glb) {
 #' }
 sauribbon <- function(rundir,scenes,sau,varqnts,glb,varname,
                       console=TRUE,q90=TRUE,intens=127,addleg="bottomright",
-                      defpar=TRUE) {
+                      addmedian=3,defpar=TRUE) {
   filen <- ""
   if (!console) {
     filename <- paste0(glb$saunames[sau],"_",varname,"_ribbon.png")
@@ -1451,8 +1464,8 @@ sauribbon <- function(rundir,scenes,sau,varqnts,glb,varname,
     parset(cex=1.1,margin=c(0.35,0.5,0.05,0.05))
   }
   label <- paste0(varname,"_",glb$saunames[sau])
-  doquantribbon(varqnts[[sau]],label,yrnames=glb$pyrnames,
-                scenes=scenes,q90=q90,intens=intens,addleg=addleg)
+  doquantribbon(varqnts[[sau]],label,yrnames=glb$pyrnames,scenes=scenes,
+                q90=q90,intens=intens,addleg=addleg,addmedian=addmedian)
   if (!console) {
     addplot(filen=filen,rundir=rundir,category=varname,caption)
   }

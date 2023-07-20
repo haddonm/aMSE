@@ -45,6 +45,10 @@ examine its implications.
 
 # LATEST UPDATES
 
+- 2023-07-20 aMSE 0.1.7 Implemented the use of incremental updates of HS
+  scores in a jurisdiction generic manner. Added a meta-rule flagging
+  system.
+
 - 2023-07-10 aMSE 0.1.6 Modified TasHS and aMSE so that instead of using
   hsargs$startCE and hsargs$endCE to define a vector of reference years
   when using the constantrefhcr in Tasmania, one should now use a

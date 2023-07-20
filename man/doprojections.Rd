@@ -69,7 +69,7 @@ in the default named collection}
 }
 \value{
 a list containing the full dynamics across all years zoneDP, and the
-    final output from the HCR as hcrout
+    final output from the HCR as hcrout and outhcr
 }
 \description{
 doprojections conducts the replicate model runs for
