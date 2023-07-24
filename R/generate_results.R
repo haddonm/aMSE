@@ -344,18 +344,23 @@ numbersatsize <- function(rundir, glb, zoneD, ssc=5) {
 #' @param rundir the results directory
 #' @param product the productivity 3-D array
 #' @param glb the globals list
+#' @param hsargs the maximum CPUE target input is inside hsargs. This is
+#'     compared with the range of CPUE found across the produciton curve to
+#'     ensure that the target is not attempting to achieve the impossible. If
+#'     there is no maxtarg, this implies no comparison and no adding to the plot
 #'
 #' @return It produces five png files into rundir and returns sauprod, a matrix
-#'     of B0, Bmsy, MSY, Depletionmsy, and CEmsy for each sau
+#'     of B0, Bmsy, MSY, Depletion-msy, and CEmsy for each sau
 #' @export
 #'
 #' @examples
 #' print("this will be quite long when I get to it")
-plotproductivity <- function(rundir,product,glb) {
-  # rundir=rundir; product=production;glb=glb
+plotproductivity <- function(rundir,product,glb,hsargs) {
+  # rundir=rundir; product=production;glb=glb; hsargs=hsargs
+  maxtarg <- hsargs$maxtarg
   xval <- findmsy(product)
   numpop <- glb$numpop
-  if (numpop <= 16) {
+  if (numpop <= 16) { # otherwise too much detail to see. Ok for SA not TAS
   # Yield vs Spawning biomass
     filen <- filenametopath(rundir,"production_SpB.png")
     plotprod(product,xname="MatB",xlab="Spawning Biomass t",
@@ -423,11 +428,19 @@ plotproductivity <- function(rundir,product,glb) {
   parset(plots=pickbound(nsau),margin=c(0.3,0.3,0.05,0.05),outmargin=c(1,1,0,0))
   for (i in 1:nsau) { # i=1
     ymax <- getmax(sauyield[,i])
+    if (!is.null(maxtarg)) {
+      xmax <- getmax(c(saucpue[2:nh,i],maxtarg[i]))
+      xmin <- getmin(c(saucpue[2:nh,i],maxtarg[i]))
+    } else {
+      xmax <- getmax(saucpue[2:nh,i])
+      xmin <- getmin(saucpue[2:nh,i])
+    }
     pick <- which.max(sauyield[,i])
     msyce <- saucpue[pick,i]
     plot(saucpue[2:nh,i],sauyield[2:nh,i],type="l",lwd=2,xlab="",ylab="",
-         panel.first=grid(),ylim=c(0,ymax),yaxs="i")
+         panel.first=grid(),ylim=c(0,ymax),yaxs="i",xlim=c(xmin,xmax))
     abline(v=msyce,col=2,lwd=2)
+    if (!is.null(maxtarg)) abline(v=maxtarg[i],lwd=2,col=4)
     msylab <- paste0("MSY = ",round(sauyield[pick,i],1))
     text(0.7*max(saucpue[,i]),0.92*ymax,msylab,cex=1.2,pos=4)
     text(0.8*max(saucpue[,i]),0.75*ymax,label[i],cex=1.5,pos=4)
@@ -441,7 +454,9 @@ plotproductivity <- function(rundir,product,glb) {
         line=-0.2)
   caption <- paste0("The equilibrium production vs CPUE for each SAU. The red ",
                     "vertical lines and related number represent the expected",
-                    "CPUE when biomass is at Bmsy.")
+                    "CPUE when biomass is at Bmsy. ")
+  if (!is.null(maxtarg)) caption <- paste0(caption,"The blue vertical line is ",
+                                           "the maxtarg for that SAU.")
   addplot(filen,rundir=rundir,category="Production",caption)
   # Now do total production
   yield <- rowSums(product[,"Catch",])

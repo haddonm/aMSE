@@ -23,9 +23,10 @@ will be placed. This is used as the name of the website generated to
 display the results}
 
 \item{outdir}{the full path to the directory holding all the required .RData
-files}
+files. If set to '' then files is assumed to include the full path}
 
-\item{files}{the vector of file names to be used.}
+\item{files}{the vector of RData file names to be used. If outdir set to ''
+then files is assumed to include the full path as well as the file name}
 
 \item{pickfiles}{a vector of indices selecting the files to be used.}
 
@@ -58,7 +59,9 @@ do_comparison provides a simplified interface for when making
   prefixdir <- paste0(dropdir,"A_codeUse/aMSEUse/scenarios/")
   postfixdir <- "BC_compare"
   rundir <- filenametopath(prefixdir,postfixdir)
-  # normally one would use code to select the files
+  # normally one would use code to select the files, outdir is used if all
+  # RData files ar ein one directory, otherwise set outdir='' and files
+  # shgould contain the full paths as well as the filenames
   files=c("BC.RData","BC433.RData","BC541.RData")
   do_comparison(rundir,postfixdir,outdir,files,pickfiles=c(1,2,3))
 }

@@ -13,9 +13,7 @@
 # startyr=38
 # verbose=TRUE
 # ndiagprojs=4
-# makeouthcr=makeouthcr   #makeoutconst - only used with consthcr
-# HSPMs=getcpueHS
-# fleetdyn=NULL
+# makeouthcr=makeouthcr   #makeoutconst - only used with consthcr# fleetdyn=NULL
 # cutcatchN=56
 # matureL = c(70,200)
 # wtatL = c(80,200)
@@ -25,7 +23,6 @@
 # pmwtSwitch = 0
 # stablewts = c(0.4, 0.5, 0.1)
 # hcrname="mcdahcr"     # "constantrefhcr"   #"consthcr"
-# hcrscoreoutputs = extractandplotscores
 # kobeRP = c(0.4,0.2,0.15)
 # interimout=""
 
@@ -41,7 +38,6 @@
 # calcpopC=sacalcexpectpopC
 # makeouthcr=makeouthcr
 # hcrscoreoutputs = saextractandplotscores
-# HSPMs=sagetHSscores
 # fleetdyn = safleetdyn
 # varyrs=7
 # startyr=38
@@ -109,15 +105,9 @@
 #' @param calcpopC a function that takes the output from hcrfun (either the
 #'     aspirational catch x SAU or TAC x zone) and generates the actual catch
 #'     per population in each SAU expected in the current year.
-#' @param hcrscoreoutputs A function defined in an extra aMSE package or
-#'     source file, that defines how the hcr scores should be dealt with. In
-#'     Tasmania they recreated from the projections, plotted and their values
-#'     sent out into the scores object.
 #' @param makeouthcr Another JurisdictionHS.R function that generates (or not)
 #'     an object that is continually updated by the hcrfun. The intent is that
 #'     it will contain all the HS score values..
-#' @param HSPMs Another function defined in the HS package that reconstructs
-#'     the cpue HSPM scores, and other measures ready for plotting
 #' @param fleetdyn a function that calculates the distribution of catch across
 #'     the sau and populations. Currently not needed by Tas but needed by SA
 #' @param interimout should results be saved after projections have finished?
@@ -168,8 +158,8 @@
 #' @examples
 #' print("wait on suitable data sets in data")
 do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
-                   sampleNaS,getdata,calcpopC,hcrscoreoutputs,makeouthcr,
-                   HSPMs,fleetdyn=NULL,interimout="",
+                   sampleNaS,getdata,calcpopC,makeouthcr,fleetdyn=NULL,
+                   interimout="",
                    varyrs=7,startyr=42,verbose=FALSE,ndiagprojs=3,
                    cutcatchN=56,matureL=c(70,200),wtatL=c(80,200),mincount=100,
                    includeNAS=FALSE,depensate=0,kobeRP=c(0.4,0.2,0.15)) {
@@ -190,7 +180,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   condC <- zone$zone1$condC
   # save some equil results -------------------------------------------------
   biology_plots(rundir, glb, zoneC, matL=matureL,Lwt=wtatL)
-  sauprod <- plotproductivity(rundir,production,glb)
+  sauprod <- plotproductivity(rundir,production,glb,hsargs)
   numbersatsize(rundir, glb, zoneD)
   #Condition on Fishery -----------------------------------------------------
   if (any(condC$initdepl < 1)) {
@@ -300,9 +290,20 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   plothsstats(rundir,HSstats,glb,average=TRUE)
   addtable(hcrout$refpts,"hcrout_refpts.csv",rundir,category="HSperf",
            caption="HCR reference points")
-  # scores <- hcrscoreoutputs(rundir=rundir,HSPMs=HSPMs,hcrout=hcrout,
-  #                           cpue=sauout$cpue,catches=sauout$catch,
-  #                           glb=glb,yearCE=condC$yearCE,hsargs=hsargs)
+  # plot the scores
+  for (sau in 1:glb$nSAU) {
+    filen <- paste0("HS_Score_plots_",glb$saunames[sau],".png")
+    filename <- pathtopath(rundir,filen)
+    caption <- paste0("Harvest strategy scores and outputs for ",
+                      glb$saunames[sau])
+    scoremed <- plotfinalscores(outhcr,zoneDP,sau,filen=filename)
+    addplot(filen,rundir=rundir,category="scores",caption)
+    filen <- paste0("HS_Mult_MetaFlag_plots_",glb$saunames[sau],".png")
+    filename <- pathtopath(rundir,filen)
+    caption <- paste0("catchmult and meta flags for ",glb$saunames[sau])
+    plotmultandflags(outhcr,zoneDP,sau,filen=filename)
+    addplot(filen,rundir=rundir,category="scores",caption)
+  }
   # generate sau phase plots
   nSAU <- glb$nSAU
   kobedata <- vector(mode="list",length=nSAU)
@@ -320,7 +321,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
               production=production,condout=condout,
               HSstats=HSstats,saudat=saudat,constants=constants,hsargs=hsargs,
               sauprod=sauprod,zonesummary=zonesummary,
-              kobedata=kobedata,outhcr=outhcr)
+              kobedata=kobedata,outhcr=outhcr,scoremed=scoremed)
   return(out)
 } # end of do_MSE
 

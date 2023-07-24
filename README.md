@@ -45,6 +45,9 @@ examine its implications.
 
 # LATEST UPDATES
 
+- 2023-07-24 aMSE 0.1.8 Revised use of TasHS and of comparescenarios,
+  meta-rule flagging now working correctly.
+
 - 2023-07-20 aMSE 0.1.7 Implemented the use of incremental updates of HS
   scores in a jurisdiction generic manner. Added a meta-rule flagging
   system.

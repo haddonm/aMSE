@@ -36,6 +36,8 @@ Of course, adding such a component increases the number of options that may need
 
 # LATEST UPDATES
 
+* 2023-07-24 aMSE 0.1.8 Revised use of TasHS and of comparescenarios, meta-rule flagging now working correctly. 
+
 * 2023-07-20 aMSE 0.1.7 Implemented the use of incremental updates of HS scores in a jurisdiction generic manner. Added a meta-rule flagging system.
 
 * 2023-07-10 aMSE 0.1.6 Modified TasHS and aMSE so that instead of using hsargs$startCE and hsargs$endCE to define a vector of reference years when using the constantrefhcr in Tasmania, one should now use a hsargs$refperiodCE which should be a vector of years describing the constant reference period to be used (assuming one is using the constantrefhcr). Within TasHS there is also a checkhsargs() function which provides a brief check of the hsargs being used (strictly that is still under development).

@@ -512,12 +512,20 @@ comparefinalscores <- function(rundir,scores,scenes,legloc="bottomright",
   # filen=filename;category="Scores"
   nmed <- length(scores)
   meds <- vector(mode="list",length=nmed)
+  indim <- dim(scores[[1]]$finalsc)
+  dimlabel <- dimnames(scores[[1]]$finalsc)
+  nyrs <- indim[1]
+  yrnames <- dimlabel[[1]]
+  nsau <- indim[2]
+  saunames <- dimlabel[[2]]
   for (i in 1:nmed) { # i=2
-    tmp <- scores[[i]]$outmed
-    meds[[i]] <-  sapply(tmp,"[[","medsc")
+    medfsc <- matrix(0,nrow=nyrs,ncol=nsau,dimnames=list(yrnames,saunames))
+    tmp <- scores[[i]]$finalsc
+    for (sau in 1:nsau) {
+      medfsc[,sau] <- apply(tmp[,sau,],1,median)
+    }
+    meds[[i]] <-  medfsc
   }
-  saunames <- colnames(meds[[1]])
-  nsau <- length(saunames)
   makeplot <- function(meds,sau,scenes,legloc) {
     nmed <- length(meds)
     yrs <- as.numeric(rownames(meds[[1]]))
@@ -704,8 +712,9 @@ cpueHSPM <- function(rundir,cpue,glbc,scenes,filen="",startyr=0) {
 #'     will be placed. This is used as the name of the website generated to
 #'     display the results
 #' @param outdir the full path to the directory holding all the required .RData
-#'     files
-#' @param files the vector of file names to be used.
+#'     files. If set to '' then files is assumed to include the full path
+#' @param files the vector of RData file names to be used. If outdir set to ''
+#'     then files is assumed to include the full path as well as the file name
 #' @param pickfiles a vector of indices selecting the files to be used.
 #' @param verbose should progress updates be made to the console, default=TRUE
 #' @param intensity is the density of the rgb colours used in the ribbon plots.
@@ -733,13 +742,15 @@ cpueHSPM <- function(rundir,cpue,glbc,scenes,filen="",startyr=0) {
 #'   prefixdir <- paste0(dropdir,"A_codeUse/aMSEUse/scenarios/")
 #'   postfixdir <- "BC_compare"
 #'   rundir <- filenametopath(prefixdir,postfixdir)
-#'   # normally one would use code to select the files
+#'   # normally one would use code to select the files, outdir is used if all
+#'   # RData files ar ein one directory, otherwise set outdir='' and files
+#'   # shgould contain the full paths as well as the filenames
 #'   files=c("BC.RData","BC433.RData","BC541.RData")
 #'   do_comparison(rundir,postfixdir,outdir,files,pickfiles=c(1,2,3))
 #' }
 do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
                           intensity=100) {
-# rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(4,5)
+# rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(2,5)
 #  verbose=TRUE; intensity=100
   files2 <- files[pickfiles]
   nfile <- length(pickfiles)
@@ -753,7 +764,11 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
   scores <- makelist(label) # vector(mode="list",length=nfile)
   zone <- makelist(label)
   for (i in 1:nfile) { # i = 1
-    filename <- paste0(outdir,files2[i])
+    if (nchar(outdir) == 0) {
+      filename <- files2[i]
+    } else {
+      filename <- pathtopath(outdir,files2[i])
+    }
     if (verbose)
       cat("Loading ",files2[i]," which may take time, be patient  \n")
     out <- NULL # so the function knows an 'out' exists
@@ -763,7 +778,7 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
     glbc[[i]] <- out$glb
     prods[[i]] <- out$sauprod
     scenes[i] <- out$ctrl$runlabel
-    scores[[i]] <- out$scores
+    scores[[i]] <- out$outhcr
     zone[[i]] <- out$outzone
   }
   nscenes <- length(scenes)
