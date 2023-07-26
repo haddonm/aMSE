@@ -11,6 +11,7 @@ HSphaseplot(
   rundir = "",
   startyr = 1992,
   console = TRUE,
+  setpar = TRUE,
   targdepl = 0.4,
   limdepl = 0.2,
   limH = 0.175
@@ -29,6 +30,10 @@ the mature biomass depletion and the harvest rates}
 \item{startyr}{default = 1992. Otherwise could use condC$yearCE[1]}
 
 \item{console}{should the plot go to the console or be saved? Default=TRUE}
+
+\item{setpar}{if this is a stand-alone plot setting this TRUE will define a
+plot size and set the par values. If the plot is to be part of a
+multiple plot then setpar should be FALSE. default=TRUE}
 
 \item{targdepl}{what target depletion is wanted, default=0.4}
 
@@ -50,11 +55,13 @@ HSphaseplot generates, for a single sau, a Kobe or phase plot
     rate is set at 0.175, this may not be precautionary for all sau.
 }
 \examples{
-print("wait on a data set")
-# for (plotsau in 1:glb$nSAU) {
-#   kobedata[[plotsau]] <- HSphaseplot(dyn=sauout,glb=glb,sau=plotsau,
-#                                      rundir=rundir,startyr=condC$yearCE[1],
-#                                      console=FALSE,targdepl=kobeRP[1],
-#                                      limdepl=kobeRP[2],limH=kobeRP[3])
-# }
+/dontrun{
+ print("wait on a data set")
+ for (plotsau in 1:glb$nSAU) {
+   HSphaseplot(dyn=sauout,glb=glb,sau=plotsau,
+               rundir=rundir,startyr=condC$yearCE[1],
+               console=FALSE,targdepl=kobeRP[1],
+               limdepl=kobeRP[2],limH=kobeRP[3])
+ }
+}
 }

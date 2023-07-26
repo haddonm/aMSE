@@ -536,7 +536,7 @@ comparefinalscores <- function(rundir,scores,scenes,legloc="bottomright",
   }
   if (nchar(filen) > 0) filen <- filenametopath(rundir,filen)
   plotprep(width=8, height=9,newdev=FALSE,filename=filen,verbose=FALSE)
-  parset(plots=c(4,2),margin=c(0.25,0.4,0.05,0.1),byrow=FALSE,
+  parset(plots=pickbound(nsau),margin=c(0.25,0.4,0.05,0.1),byrow=FALSE,
          outmargin=c(0,1,0,0))
   for (i in 1:nsau) {
     makeplot(meds=meds,sau=saunames[i],scenes=scenes,legloc=legloc)
@@ -846,6 +846,19 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
     sauribbon(rundir,scenes=scenes,sau=sau,varqnts=cpueqnts,
               glb=glb,varname="cpue",console=FALSE,
               q90=TRUE,intens=intensity,addleg="bottomright")
+  deplsB <- scenebyvar(dyn,byvar="deplsB",glb=glb,projonly=TRUE)
+  deplsBqnts <- sauquantbyscene(deplsB,glb)
+  for (sau in 1:nsau)
+    sauribbon(rundir,scenes=scenes,sau=sau,varqnts=deplsBqnts,
+              glb=glb,varname="deplsB",console=FALSE,
+              q90=TRUE,intens=intensity,addleg="bottomright")
+  depleB <- scenebyvar(dyn,byvar="depleB",glb=glb,projonly=TRUE)
+  depleBqnts <- sauquantbyscene(depleB,glb)
+  for (sau in 1:nsau)
+    sauribbon(rundir,scenes=scenes,sau=sau,varqnts=deplsBqnts,
+              glb=glb,varname="depleB",console=FALSE,
+              q90=TRUE,intens=intensity,addleg="bottomright")
+
   makecompareoutput(rundir=rundir,glbc,scenes,postfixdir,
                     filesused=files[pickfiles],openfile=TRUE,verbose=FALSE)
   return(invisible(list(scenes=scenes,ans=ans,quantscen=quantscen,dyn=dyn,

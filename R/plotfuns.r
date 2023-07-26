@@ -420,6 +420,9 @@ historicalplots <- function(rundir,condC,glb,commonscale=FALSE,proportion=FALSE)
 #' @param rundir the directory for all files and results, default=""
 #' @param startyr default = 1992. Otherwise could use condC$yearCE[1]
 #' @param console should the plot go to the console or be saved? Default=TRUE
+#' @param setpar if this is a stand-alone plot setting this TRUE will define a
+#'     plot size and set the par values. If the plot is to be part of a
+#'     multiple plot then setpar should be FALSE. default=TRUE
 #' @param targdepl what target depletion is wanted, default=0.4
 #' @param limdepl what is the limit depletion reference point, default = 0.2
 #' @param limH what is the maximum H of limit fishing mortality, default = 0.2
@@ -429,17 +432,19 @@ historicalplots <- function(rundir,condC,glb,commonscale=FALSE,proportion=FALSE)
 #' @export
 #'
 #' @examples
-#' print("wait on a data set")
-#' # for (plotsau in 1:glb$nSAU) {
-#' #   kobedata[[plotsau]] <- HSphaseplot(dyn=sauout,glb=glb,sau=plotsau,
-#' #                                      rundir=rundir,startyr=condC$yearCE[1],
-#' #                                      console=FALSE,targdepl=kobeRP[1],
-#' #                                      limdepl=kobeRP[2],limH=kobeRP[3])
-#' # }
-HSphaseplot <- function(dyn,glb,sau,rundir="",startyr=1992,
-                        console=TRUE,targdepl=0.4,limdepl=0.2,limH=0.175) {
+#' /dontrun{
+#'  print("wait on a data set")
+#'  for (plotsau in 1:glb$nSAU) {
+#'    HSphaseplot(dyn=sauout,glb=glb,sau=plotsau,
+#'                rundir=rundir,startyr=condC$yearCE[1],
+#'                console=FALSE,targdepl=kobeRP[1],
+#'                limdepl=kobeRP[2],limH=kobeRP[3])
+#'  }
+#' }
+HSphaseplot <- function(dyn,glb,sau,rundir="",startyr=1992,console=TRUE,
+                        setpar=TRUE,targdepl=0.4,limdepl=0.2,limH=0.175) {
   # dyn <- sauout; maxdepl=0.6; startyr=condC$yearCE[1]; glb=glb; console=TRUE
-  # targdepl <- 0.4; limdepl=0.2; limH <- 0.2; sau=6
+  # targdepl <- kobeRP[1]; limdepl=kobeRP[2]; limH <-kobeRP[3]; sau=6; outhcr=outhcr
   yrs <- c(glb$hyrnames,glb$pyrnames)
   picky <- which(yrs >= startyr)
   condy <- which(yrs[picky] == glb$hyrnames[length(glb$hyrnames)])
@@ -447,7 +452,7 @@ HSphaseplot <- function(dyn,glb,sau,rundir="",startyr=1992,
   depl <- dyn$deplsB[picky,sau,]
   H <- dyn$harvestR[picky,sau,]
   filen <- ""
-  if (!console) {
+  if ((!console) & (setpar)) {
     nfile <- paste0("PhasePlot_for_",glb$saunames[sau],".png")
     filen <- filenametopath(rundir,nfile)
     caption <- paste0("PhasePlot_of Harvest Rate vs Mature Biomass for ",
@@ -455,32 +460,24 @@ HSphaseplot <- function(dyn,glb,sau,rundir="",startyr=1992,
   }
   medH <- apply(H,1,median)
   meddepl <- apply(depl,1,median)
-  plotprep(width=7,height=6,filename=filen,cex=0.9,verbose=FALSE)
-  parset(cex.lab=1.25)
-  ymax <- getmax(medH)
-  deplmax <- getmax(meddepl,mult=1.25)
-  plot(meddepl,medH,type="p",pch=16,xlim=c(0,deplmax),ylim=c(0,ymax),xaxs="i",yaxs="i",
+  if (setpar) {
+    plotprep(width=7,height=6,filename=filen,cex=0.9,verbose=FALSE)
+    parset(cex.lab=1.25)
+  }
+  maxH <- getmax(medH)
+  maxdepl <- getmax(meddepl,mult=1.25)
+  plot(meddepl,medH,type="p",pch=16,xlim=c(0,maxdepl),ylim=c(0,maxH),xaxs="i",yaxs="i",
        xlab=paste0("Mature Biomass Depletion ",glb$saunames[sau]),ylab="Harvest Rate")
-  polygon(x=c(0,limdepl,limdepl,0,0),y=c(0,0,ymax,ymax,0),
-          col=rgb(255,0,0,175,maxColorValue=255))
-  polygon(x=c(limdepl,deplmax,deplmax,limdepl,limdepl),
-          y=c(ymax,ymax,limH,limH,ymax),
-          col=rgb(255,255,0,140,maxColorValue=255))
-  polygon(x=c(limdepl,targdepl,targdepl,limdepl,limdepl),y=c(limH,limH,0,0,limH),
-          col=rgb(190,255,0,130,maxColorValue=255))
-  polygon(x=c(targdepl,deplmax,deplmax,targdepl,targdepl),y=c(0,0,limH,limH,0),
-          col=rgb(0,255,0,120,maxColorValue=255))
-  abline(h=limH,lwd=2,col=1)
-  abline(v=targdepl,lwd=2,col=1)
+  phaseplotpolygons(maxy=maxH,maxx=maxdepl,targx=targdepl,limx=limdepl,limy=limH)
   suppressWarnings(arrows(x0=meddepl[1:(nyrs-1)],y0=medH[1:(nyrs-1)],
-                         x1=meddepl[2:nyrs],y1=medH[2:nyrs],lwd=2,
-                         length=0.075,code=2))
-  #  when H values repeatedly zero one gets zero length arrows and a warning
-  # this is no9t a problem so it is suppressed.
+                          x1=meddepl[2:nyrs],y1=medH[2:nyrs],lwd=2,
+                          length=0.075,code=2))
+  # when H values repeatedly zero one gets zero length arrows and a warning
+  # this is not a problem so it is suppressed.
   points(meddepl[c(1,condy,nyrs)],medH[c(1,condy,nyrs)],pch=16,cex=3,col=c(1,6,4))
   legend("topright",legend=c(startyr,yrs[picky[condy]],yrs[picky[length(picky)]]),
          col=c(1,6,4),lwd=5,cex=1.5,bty="n")
-  if (!console) {
+  if ((!console) & (setpar)) {
     addplot(filen,rundir=rundir,category="phaseplot",caption)
   }
   return(invisible(list(mediandepl=meddepl,medianH=medH)))
@@ -597,6 +594,54 @@ onezoneplot <- function(invar,rundir,glb,CIprobs,varname,startyr,addfile=TRUE) {
   return(invisible(CI))
 } # end of onezoneplot
 
+#' @title phaseplotpolygons sets up the colour blocks for phase plots
+#'
+#' @description phaseplotpolygons is used to put together coloured phase plots
+#'     a common example of which would be kobe plots. This function assumes that
+#'     a plot has already been defined as well as the maximum x and y values.
+#'     In a standard kobe plot y would relate to fishing mortality or harvest
+#'     rate, and x would relate to biomass or depletion. If plotting a kobe plot
+#'     then the target and limit depletion are important as is the limit harvest
+#'     rate. This function only generates the coloured blocks it is for use
+#'     within other functions
+#'
+#' @param maxy the upper bound on the y-axis
+#' @param maxx the upper bound on the x-axis
+#' @param targx the target reference point depletion or biomass
+#' @param limx the limit reference point depletion or biomass
+#' @param limy the limit reference point for fishing mortality or harvest rate
+#'
+#' @return nothing but it does add to a plot
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # illustrating a form of use
+#'  medH <- apply(H,1,median)
+#'  meddepl <- apply(depl,1,median)
+#'  plotprep(width=7,height=6,filename=filen,cex=0.9,verbose=FALSE)
+#'  parset(cex.lab=1.25)
+#'  maxH <- getmax(medH)
+#'  maxdepl <- getmax(meddepl,mult=1.25)
+#'  plot(meddepl,medH,type="p",pch=16,xlim=c(0,maxdepl),ylim=c(0,maxH),xaxs="i",
+#'       yaxs="i",xlab=paste0("Mature Biomass Depletion ",glb$saunames[sau]),
+#'       ylab="Harvest Rate")
+#'  phaseplotpolygons(maxH=maxH,maxdepl=maxdepl,targdepl=targdepl,
+#'                    limdepl=limdepl,limH=limH)
+#' }
+phaseplotpolygons <- function(maxy,maxx=1.0,targx=0.4,limx=0.2,limy=0.175) {
+  polygon(x=c(0,limx,limx,0,0),y=c(0,0,maxy,maxy,0),
+          col=rgb(255,0,0,175,maxColorValue=255))
+  polygon(x=c(limx,maxx,maxx,limx,limx),
+          y=c(maxy,maxy,limy,limy,maxy),
+          col=rgb(255,255,0,140,maxColorValue=255))
+  polygon(x=c(limx,targx,targx,limx,limx),y=c(limy,limy,0,0,limy),
+          col=rgb(190,255,0,130,maxColorValue=255))
+  polygon(x=c(targx,maxx,maxx,targx,targx),y=c(0,0,limy,limy,0),
+          col=rgb(0,255,0,120,maxColorValue=255))
+  abline(h=limy,lwd=2,col=1)
+  abline(v=targx,lwd=2,col=1)
+} # end of phaseplotpolygons
 
 #' @title plotCNt plots the historical conditioning Nt or catchN for all years
 #'
@@ -1359,4 +1404,147 @@ saurecdevs <- function(recdevs,glb,rundir,filen="") {
   }
 } # end of compareCPUE
 
+#' @title tasphaseplot generates a Tasmanian proxy phase (kobe) plot
+#'
+#' @description tasphaseplot generates a Tasmanian proxy phase (kobe) plot. This
+#'     means it uses the gradient 4 scores as a proxy for the harvest rate and
+#'     the target CPUE score as a proxy for the biomass depletion level. The
+#'     scores rank from 0 - 10. The target CPUE score behaves appropriately in
+#'     that high scores = things are good low scores things are bad, but the
+#'     gradient 4 score is the reverse. So, the scores are reversed 10 - score
+#'     and the axis labels adjusted accordingly. Thus, original high g4 scores
+#'     indicate lower harvest rates while low g4 scores indicate high harvest
+#'     rates. 10 - g4s reverses this trend and to indicate the change we use
+#'     a scale from 5 - minus 5 with a limit refernece point at 0.
+#'
+#' @param proxyB the target CPUE score from outhcr. This is a 3D matrix so the
+#'     median across replicates is used.
+#' @param proxyH the gradient 4 score from outhcr. This is a 3D matrix so the
+#'     median across replicates is used. The plot is of 10 - median(proxyH)
+#' @param glb the globals object - just for the saunames
+#' @param sau which sau is being plotted. For the western zone this is 1 - 8
+#' @param rundir the rundir for the scenario where the plot will be stored if
+#'     console = FALSE
+#' @param console plot to the console or save the plot. default=TRUE
+#' @param fnt what font to use, default = 7 bold times roman. This option is here
+#'     because, for some reason, many people prefer to use fnt=2, which is some
+#'     pale sans-serif difficult to read horror. But we must recognize that
+#'     tastes differ, though really we should encourage people to be more
+#'     considerate.
+#' @param setpar if this is a stand-alone plot setting this TRUE will define a
+#'     plot size and set the par values. If the plot is to be part of a
+#'     multiple plot then setpar should be FALSE. default=TRUE
+#'
+#' @return a list of the median mature biomass depletion proxy and median
+#'     harvest rate proxy by year, invisibly, it also plots these vectors.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # eample syntax
+#' tasphaseplot(proxyB=outhcr$g4s,proxyH=outhcr$targsc,glb=glb,sau=6,
+#'              rundir="",console=TRUE,fnt=7)
+#' }
+tasphaseplot <- function(proxyB,proxyH,glb,sau,rundir="",console=TRUE,fnt=7,
+                         setpar=TRUE){
+  # proxyH=outhcr$g4s; proxyB=outhcr$targsc; glb=glb; sau=sau;console=console; fnt=7
+  # setpar=FALSE;
+  targdepl <- 5
+  limdepl <- 1
+  limH <- 5
+  yrs <- as.numeric(rownames(proxyH[,,1]))
+  nyrs <- length(yrs)
+  filen <- ""
+  if ((!console) & (setpar)) {
+    nfile <- paste0("Tasmanian_PhasePlot_for_",glb$saunames[sau],".png")
+    filen <- pathtopath(rundir,nfile)
+    caption <- paste0("Tasmanian PhasePlot_of Harvest Rate vs Mature Biomass for ",
+                      glb$saunames[sau])
+  }
+  medH <- apply(proxyH[,sau,],1,median)
+  usemedH <- 10 - medH # because a high score = low H so re3versal is needed
+  meddepl <- apply(proxyB[,sau,],1,median)
+  if (setpar) {
+    plotprep(width=7,height=6,filename=filen,cex=0.9,verbose=FALSE)
+    parset(cex.lab=1.25,margin=c(0.45,0.45,0.1,0.1),font=fnt)
+  }
+  maxH <- maxdepl <- 10
+  labelx <- "eHS mean CPUE Target score ~ Abundance proxy for "
+  labely <- "eHS (10 - CPUE_Gradient_4_Score) ~ Fishing Mortality proxy "
+  plot(meddepl,usemedH,type="p",pch=16,xlim=c(0,10),ylim=c(0,10),xaxs="i",
+       yaxs="i",xlab=paste0(labelx,glb$saunames[sau]),ylab=labely,yaxt="n")
+  axis(side=2,at=seq(0,10,1),labels=seq(5,-5,-1)) # to match Craig's version
+  phaseplotpolygons(maxy=maxH,maxx=maxdepl,targx=targdepl,limx=limdepl,limy=limH)
+  suppressWarnings(arrows(x0=meddepl[1:(nyrs-1)],y0=(usemedH[1:(nyrs-1)]),
+                          x1=meddepl[2:nyrs],y1=(usemedH[2:nyrs]),lwd=2,
+                          length=0.075,code=2))
+  #  when H values repeatedly zero one gets zero length arrows and a warning
+  # this is no9t a problem so it is suppressed.
+  points(meddepl[c(1,nyrs)],usemedH[c(1,nyrs)],pch=16,cex=3,col=c(6,4))
+  legend("topright",legend=c(yrs[1],yrs[nyrs]),
+         col=c(6,4),lwd=5,cex=1.5,bty="n")
+  if ((!console) & (setpar)) {
+    addplot(filen,rundir=rundir,category="phaseplot",caption)
+  }
+  return(invisible(list(mediandepl=meddepl,medianH=medH)))
+} # end of tasphaseplot
+
+#' @title twophaseplots generates a formal kobe plot plus a Tasmanian proxy plot
+#'
+#' @description twophaseplot generates a combination of the formal kobe plot of
+#'     the predicted biomass depletion level against the predicted harvest rate,
+#'     along with a Tasmanian proxy plot of the target CPUE score (proxy for
+#'     biomass depletion) against the gradient 4 CPUE score (proxy for harvest
+#'     rate).
+#'
+#' @param dyn a list of the dynamics for every sau. This function only requires
+#'     the mature biomass depletion and the harvest rates
+#' @param glb the globals object
+#' @param outhcr the scores object from the hcr containing the targsc and g4s
+#' @param sau which sau is to be plotted
+#' @param kobeRP reference points for the eHS pseudo kobe plot. A vector of the
+#'     targdepl, default=0.4, limdepl, default=0.2, and the limH, default=0.15
+#' @param rundir the directory for all files and results, default=""
+#' @param startyr default = 1992. Otherwise could use condC$yearCE[1]
+#' @param console should the plot go to the console or be saved? Default=TRUE
+#' @param fnt what font to use, default = 7 bold times roman. This option is here
+#'     because, for some reason, many people prefer to use fnt=2, which is some
+#'     pale sans-serif difficult to read horror. But we must recognize that
+#'     tastes differ, though really we should encourage people to be more
+#'     considerate.
+#'
+#' @return nothing but it does plot a graph containing two kobe plots
+#' @export
+#'
+#' @examples
+#' print("wait on data")
+twophaseplots <- function(dyn,glb,outhcr,sau,kobeRP,rundir="",startyr=1992,
+                          console=TRUE,fnt=7) {
+# dyn=sauout;glb=glb;outhcr=outhcr;sau=1;kobeRP=kobeRP;rundir=rundir;startyr=1992
+# console=FALSE;fnt=7
+  filen <- ""
+  if (!console) {
+    nfile <- paste0("PhasePlots_for_",glb$saunames[sau],".png")
+    filen <- pathtopath(rundir,nfile)
+    caption <- paste0("PhasePlot_of Harvest Rate vs Mature Biomass for ",
+                      glb$saunames[sau]," with a Tasmanian proxy phaseplot")
+  }
+  if (is.null(outhcr$targsc)) {
+    plotprep(width=7,height=6,filename=filen,cex=0.9,verbose=FALSE)
+    parset(plots=c(1,1),cex.lab=1.25,margin=c(0.45,0.45,0.1,0.1))
+  } else {
+    plotprep(width=12,height=6,filename=filen,cex=0.9,verbose=FALSE)
+    parset(plots=c(1,2),cex.lab=1.25,margin=c(0.45,0.45,0.1,0.1))
+  }
+  HSphaseplot(dyn=dyn,glb=glb,sau=sau,rundir=rundir,
+              startyr=startyr,console=console,setpar=FALSE,
+              targdepl=kobeRP[1],limdepl=kobeRP[2],limH=kobeRP[3])
+  if (!is.null(outhcr$targsc)) {
+    tasphaseplot(proxyB=outhcr$targsc,proxyH=outhcr$g4s,glb=glb,sau=sau,
+                 rundir=rundir,console=console,setpar=FALSE,fnt=fnt)
+  }
+  if (!console) {
+    addplot(filen,rundir=rundir,category="phaseplot",caption)
+  }
+} # end of twophaseplots
 

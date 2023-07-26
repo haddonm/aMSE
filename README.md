@@ -45,6 +45,9 @@ examine its implications.
 
 # LATEST UPDATES
 
+- 2023-07-26 aMSE 0.1.9 Added tasphaseplots to the kobe plots for
+  comparison.
+
 - 2023-07-24 aMSE 0.1.8 Revised use of TasHS and of comparescenarios,
   meta-rule flagging now working correctly.
 

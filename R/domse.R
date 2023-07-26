@@ -1,9 +1,9 @@
 # Tas context -----------------
-# postfixdir <- "BCbrief"
+# postfixdir <- "BCmeta"
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
-# hcrfun=mcdahcr   #constantrefhcr  #  # consthcr   #constantrefhcr
+# hcrfun=mcdahcr  #mcdahcr   #  # consthcr   #constantrefhcr
 # sampleCE=tasCPUE
 # sampleFIS=tasFIS
 # sampleNaS=tasNaS
@@ -22,7 +22,7 @@
 # depensate=0
 # pmwtSwitch = 0
 # stablewts = c(0.4, 0.5, 0.1)
-# hcrname="mcdahcr"     # "constantrefhcr"   #"consthcr"
+# hcrname="mcdahcr"  #"constantrefhcr"  #"mcdahcr"     #    #"consthcr"
 # kobeRP = c(0.4,0.2,0.15)
 # interimout=""
 
@@ -309,10 +309,15 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   kobedata <- vector(mode="list",length=nSAU)
   names(kobedata) <- glb$saunames
   for (plotsau in 1:glb$nSAU) {
-    kobedata[[plotsau]] <- HSphaseplot(dyn=sauout,glb=glb,sau=plotsau,
-                                       rundir=rundir,startyr=condC$yearCE[1],
-                                       console=FALSE,targdepl=kobeRP[1],
-                                       limdepl=kobeRP[2],limH=kobeRP[3])
+    twophaseplots(dyn=sauout,glb=glb,outhcr=outhcr,sau=plotsau,kobeRP=kobeRP,
+                  rundir=rundir,startyr=condC$yearCE[1],console=FALSE,fnt=7)
+    # kobedata[[plotsau]] <- HSphaseplot(dyn=sauout,glb=glb,sau=plotsau,
+    #                                    rundir=rundir,startyr=condC$yearCE[1],
+    #                                    console=FALSE,setpar=TRUE,
+    #                                    targdepl=kobeRP[1],limdepl=kobeRP[2],
+    #                                    limH=kobeRP[3])
+    # tasphaseplot(proxyB=outhcr$targsc,proxyH=outhcr$g4s,glb=glb,sau=plotsau,
+    #              rundir=rundir,console=FALSE,fnt=7,setpar=TRUE)
   }
   if (!includeNAS) NAS=NULL
   out <- list(tottime=tottime,projtime=projtime,starttime=starttime,glb=glb,

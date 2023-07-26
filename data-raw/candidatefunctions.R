@@ -969,8 +969,19 @@ yearCE=condC$yearCE
 
 
 
+twophaseplots(dyn=sauout,glb=glb,outhcr=outhcr,sau=6,kobeRP=kobeRP,rundir="",
+             startyr=condC$yearCE[1],console=TRUE,fnt=7)
 
 
+
+HSphaseplot(dyn=sauout,glb=glb,sau=plotsau,
+           rundir=rundir,
+           startyr=condC$yearCE[1],
+           console=TRUE,setpar=TRUE,targdepl=kobeRP[1],
+           limdepl=kobeRP[2],limH=kobeRP[3])
+
+tasphaseplot(proxyB=outhcr$targsc,proxyH=outhcr$g4s,glb=glb,sau=6,rundir="",
+             console=TRUE,fnt=7,setpar=TRUE)
 
 
 
