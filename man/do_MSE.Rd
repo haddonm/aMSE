@@ -16,6 +16,8 @@ do_MSE(
   calcpopC,
   makeouthcr,
   fleetdyn = NULL,
+  scoreplot,
+  plotmultflags,
   interimout = "",
   varyrs = 7,
   startyr = 42,
@@ -65,6 +67,16 @@ it will contain all the HS score values..}
 
 \item{fleetdyn}{a function that calculates the distribution of catch across
 the sau and populations. Currently not needed by Tas but needed by SA}
+
+\item{scoreplot}{the function that plots the hcr scores and final scores. In
+Tas = plotfinalscores, in SA = SAplotfinalscores. If more inputs than
+outhcr, zoneDP, sau, and filen=filename are needed then define your own
+function using the ellipsis at the end of the argument list.}
+
+\item{plotmultflags}{the function that plots the TAC/acatch multipliers, and
+meta rule flags. In Tas = plotmultandflags. If more inputs than
+outhcr, zoneDP, sau, and filen=filename are needed then define your own
+function using the ellipsis at the end of the argument list.}
 
 \item{interimout}{should results be saved after projections have finished?
 the default="", which means nothing is saved if no risk of crashing in
