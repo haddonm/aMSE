@@ -1301,8 +1301,6 @@ sauplots <- function(zoneDP,NAS,glb,rundir,B0,ExB0,startyr,addCI=TRUE,
   label <-  c("cpue","catch","acatch","matureB","exploitB","recruit","harvestR")
   finalcondyeardepletion(rundir,sauzone=zonePsau,glb,deplvar="sB",console=FALSE)
   finalcondyeardepletion(rundir,sauzone=zonePsau,glb,deplvar="eB",console=FALSE)
-#  out <- vector("list",length(label))
-#  names(out) <- label
   #CPUE
   filen <- filenametopath(rundir,"proj_cpue_SAU.png")  # filen=""
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
@@ -1310,7 +1308,6 @@ sauplots <- function(zoneDP,NAS,glb,rundir,B0,ExB0,startyr,addCI=TRUE,
                   startyr=startyr,addCI=TRUE,histCE=histCE)
   caption <- "The CPUE projections for each SAU."
   addplot(filen,rundir=rundir,category=tabcat,caption)
- # out[["cpue"]] <- CI
   #Catches
   filen <- filenametopath(rundir,"proj_catch_SAU.png")
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
@@ -1318,7 +1315,6 @@ sauplots <- function(zoneDP,NAS,glb,rundir,B0,ExB0,startyr,addCI=TRUE,
                   startyr=startyr,addCI=TRUE,histCE=NULL)
   caption <- "The catch projections for each SAU."
   addplot(filen,rundir=rundir,category=tabcat,caption)
-#  out[["catch"]] <- CI
   #Aspirational catches
   filen <- filenametopath(rundir,"proj_aspcatch_SAU.png")
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
@@ -1327,7 +1323,6 @@ sauplots <- function(zoneDP,NAS,glb,rundir,B0,ExB0,startyr,addCI=TRUE,
   caption <- paste0("The Aspirational catch projections for each SAU. Catches ",
                     "prior to HS are actual catches.")
   addplot(filen,rundir=rundir,category=tabcat,caption)
- # out[["acatch"]] <- CI
   #MatureBiomass
   filen <- filenametopath(rundir,"proj_matureB_SAU.png")
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
@@ -1335,7 +1330,6 @@ sauplots <- function(zoneDP,NAS,glb,rundir,B0,ExB0,startyr,addCI=TRUE,
                   startyr=startyr,addCI=TRUE,histCE=NULL)
   caption <- "The mature biomass projections for each SAU."
   addplot(filen,rundir=rundir,category=tabcat,caption)
- #  out[["matureB"]] <- CI
   #exploitable biomass
   filen <- filenametopath(rundir,"proj_exploitB_SAU.png")
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
@@ -1343,7 +1337,6 @@ sauplots <- function(zoneDP,NAS,glb,rundir,B0,ExB0,startyr,addCI=TRUE,
                   startyr=startyr,addCI=TRUE,histCE=NULL)
   caption <- "The exploitable biomass projections for each SAU."
   addplot(filen,rundir=rundir,category=tabcat,caption)
- # out[["exploitB"]] <- CI
   #recruitment
   filen <- filenametopath(rundir,"proj_recruit_SAU.png")
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
@@ -1351,14 +1344,13 @@ sauplots <- function(zoneDP,NAS,glb,rundir,B0,ExB0,startyr,addCI=TRUE,
                   startyr=startyr,addCI=TRUE,histCE=NULL)
   caption <- "The recruitment projections for each SAU."
   addplot(filen,rundir=rundir,category=tabcat,caption)
- # out[["recruit"]] <- CI
+ # harvest rate
   filen <- filenametopath(rundir,"proj_harvestR_SAU.png")
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
   CI <- dosauplot("harvestR",zonePsau[["harvestR"]],glb,
                   startyr=startyr,addCI=TRUE,histCE=NULL)
   caption <- "The Harvest Rate projections for each SAU."
   addplot(filen,rundir=rundir,category=tabcat,caption)
- # out[["harvestR"]] <- CI
   return(invisible(zonePsau))
 }# end of sauplots
 

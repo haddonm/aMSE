@@ -110,6 +110,14 @@
 #'     it will contain all the HS score values..
 #' @param fleetdyn a function that calculates the distribution of catch across
 #'     the sau and populations. Currently not needed by Tas but needed by SA
+#' @param scoreplot the function that plots the hcr scores and final scores. In
+#'     Tas = plotfinalscores, in SA = SAplotfinalscores. If more inputs than
+#'     outhcr, zoneDP, sau, and filen=filename are needed then define your own
+#'     function using the ellipsis at the end of the argument list.
+#' @param plotmultflags the function that plots the TAC/acatch multipliers, and
+#'     meta rule flags. In Tas = plotmultandflags. If more inputs than
+#'     outhcr, zoneDP, sau, and filen=filename are needed then define your own
+#'     function using the ellipsis at the end of the argument list.
 #' @param interimout should results be saved after projections have finished?
 #'     the default="", which means nothing is saved if no risk of crashing in
 #'     subsequent analyses. But if trying new stuff which may waste lots of time
@@ -159,7 +167,7 @@
 #' print("wait on suitable data sets in data")
 do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                    sampleNaS,getdata,calcpopC,makeouthcr,fleetdyn=NULL,
-                   interimout="",
+                   scoreplot,plotmultflags,interimout="",
                    varyrs=7,startyr=42,verbose=FALSE,ndiagprojs=3,
                    cutcatchN=56,matureL=c(70,200),wtatL=c(80,200),mincount=100,
                    includeNAS=FALSE,depensate=0,kobeRP=c(0.4,0.2,0.15)) {
@@ -296,12 +304,12 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
     filename <- pathtopath(rundir,filen)
     caption <- paste0("Harvest strategy scores and outputs for ",
                       glb$saunames[sau])
-    scoremed <- plotfinalscores(outhcr,zoneDP,sau,filen=filename)
+    scoremed <- scoreplot(outhcr,zoneDP,sau,filen=filename)
     addplot(filen,rundir=rundir,category="scores",caption)
     filen <- paste0("HS_Mult_MetaFlag_plots_",glb$saunames[sau],".png")
     filename <- pathtopath(rundir,filen)
     caption <- paste0("catchmult and meta flags for ",glb$saunames[sau])
-    plotmultandflags(outhcr,zoneDP,sau,filen=filename)
+    plotmultflags(outhcr,zoneDP,sau,filen=filename)
     addplot(filen,rundir=rundir,category="scores",caption)
   }
   # generate sau phase plots
