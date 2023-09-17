@@ -21,8 +21,8 @@
 #'
 #' @examples
 #' print("wait on suitable internal data sets")
-#' # sauZone=out$condout$sauZone; saucpue=sauZone$cpue; filen="";histCE=out$condC$histCE
-#' # glb=out$glb;obscol=2
+#' # sauZone=out$condout$sauZone; saucpue=sauZone$cpue; filen="";
+#' # histCE=out$condC$histCE;  glb=out$glb;obscol=2
 compareCPUE <- function(histCE,saucpue,glb,rundir,filen="",obscol=2) {
   if (nchar(filen) > 0) filen <- filenametopath(rundir,filen)
   nsau <- glb$nSAU
@@ -432,7 +432,7 @@ historicalplots <- function(rundir,condC,glb,commonscale=FALSE,proportion=FALSE)
 #' @export
 #'
 #' @examples
-#' /dontrun{
+#' \dontrun{
 #'  print("wait on a data set")
 #'  for (plotsau in 1:glb$nSAU) {
 #'    HSphaseplot(dyn=sauout,glb=glb,sau=plotsau,
@@ -1239,6 +1239,92 @@ plotzonesau <- function(zonetot,saudat,saunames,label,labelsau,side=3,
     mtext(saunames[i],side=side,outer=FALSE,line = -1.1,cex=1.0)
   }
 } # end of plotzonesau
+
+#' @title predsizecomp plots size-composition for each replicate in a subset of years
+#'
+#' @description predsizecomp generates plots the size composition data for a
+#'     subset of the projection years (determined by the interval argument).
+#'     All plots omit the first five size classes so that the post-settlement
+#'     spikes do not obscure the rest of the plots. The minSL (minimum shell
+#'     length argument) determines the left-most size in the plots to allow for
+#'     details to be made clearer.
+#'
+#' @param sau which sau to plot, the index number not its name, in TAS western
+#'     zone this would be between 1 : 8
+#' @param NSC the numbers-at-size matrix from sauout, either Nt or catchN
+#' @param glb the globals object
+#' @param minSL the minimum shell length to be plotted. This constrains each
+#'     plot so that details can be clearer. default=10mm which implies all
+#'     sizes above the post-larval sizes.
+#' @param interval default=5 which selects the year just before projections and
+#'     then the data for every interval years along the projection period. The
+#'     years selected always includes the last year of projection and the year
+#'     before projections started.
+#' @param prop default=TRUE. Should proportions be plotted or actual numbers
+#' @param console should the plot go to the console or will it be saved
+#' @param rundir the directory into which all results are placed. default="" but
+#'     generally this would = rundir
+#' @param omit default = 5. how many size classes should be omitted from the
+#'     start of each compositions plot. The default = 5 which in Tasmania,
+#'     which has 2mm size classes starting at 2mm, this omits all animals less
+#'     than 10mm.
+#'
+#' @return Nothing but it does plot a graph.
+#' @export
+#'
+#' @examples
+#' print("wait on suitable data")
+predsizecomp <- function(sau,NSC,glb,minSL=10,interval=5,prop=TRUE,
+                         console=TRUE,rundir="",omit=5) {
+  Nclass <- glb$Nclass
+  pickSC <- (omit+1):Nclass
+  if (minSL > 0) {
+    pickS <- which(glb$midpts >= minSL)
+    pickSC <- pickS[1]:Nclass  # which size classses
+  }
+  pickyrs <- seq(glb$hyrs,(glb$hyrs+glb$pyrs),interval)  # which years
+  yrnames <- c(glb$hyrnames,glb$pyrnames)
+  picknames <- yrnames[pickyrs]
+  numyrs <- length(pickyrs)
+  medyrs <- matrix(0,nrow=Nclass,ncol=numyrs,dimnames=list(glb$midpts,picknames))
+  sauNt <- NSC[,pickyrs,sau,]
+  reps <- glb$reps
+  shlength <- as.numeric(dimnames(sauNt)[[1]])
+  filen <- ""
+  if (!console) {
+    if (sum(sauNt[1:40,1,1]) > 1) label="Stock_" else label = "Catch_"
+    nfile <- paste0(label,"Size_Composition_for_",glb$saunames[sau],".png")
+    filen <- pathtopath(rundir,nfile)
+    caption <- paste0(label,"size-composition for ",glb$saunames[sau])
+  }
+  plotprep(width=8,height=9,filename=filen,cex=0.9,verbose=FALSE)
+  parset(plots=pickbound(numyrs+1),margin=c(0.25,0.45,0.1,0.1),byrow=FALSE,
+         outmargin=c(1.5,1,0,0))
+  for (i in 1:numyrs) {  # i=1
+    psauNt <- sauNt[,i,]
+    if (prop) psauNt <- proportions(x=psauNt,margin=2)
+    qts <- apply(psauNt,1,quants)
+    medyrs[,i] <- qts[3,]
+    maxy <- max(psauNt[pickSC,])*1.025
+    plot(shlength[pickSC],psauNt[pickSC,1],type="l",lwd=1,col="grey",xlab="",
+         ylim=c(0,maxy),ylab=picknames[i],panel.first=grid())
+    for (j in 2:reps) lines(shlength[pickSC],psauNt[pickSC,j],lwd=1,col="grey")
+    lines(shlength[pickSC],qts[3,pickSC],lwd=2,col="red")
+  }
+  maxy <- getmax(medyrs[pickSC,])
+  plot(shlength[pickSC],medyrs[pickSC,1],type="l",lwd=2,col=1,xlab="",
+       ylim=c(0,maxy),ylab="Medians",panel.first=grid())
+  for (j in 2:numyrs) lines(shlength[pickSC],medyrs[pickSC,j],lwd=2,col=j)
+  legend("topright",legend=picknames,col=1:numyrs,lwd=3,bty="n",cex=0.9)
+  mtext(paste0("Shell Length (mm)      ",glb$saunames[sau]),side=1,line=-0.1,
+        outer=TRUE,cex=1.2)
+  label <- "Frequency"
+  if (prop) label <- "Proportion"
+  mtext(label,side=2,line=-0.2,outer=TRUE,cex=1.2)
+  if (!console) {
+    addplot(filen,rundir=rundir,category="NumSize",caption)
+  }
+} # end of predsizecomp
 
 #' @title preparesizecomp strips out empty columns and identifies samples
 #'

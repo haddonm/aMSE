@@ -1,5 +1,5 @@
 # Tas context -----------------
-# postfixdir <- "BCmeta"
+# postfixdir <- "BCslot"
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
@@ -14,6 +14,8 @@
 # verbose=TRUE
 # ndiagprojs=4
 # makeouthcr=makeouthcr   #makeoutconst - only used with consthcr# fleetdyn=NULL
+# plotmultflags=plotmultandflags
+# scoreplot = plotfinalscores
 # cutcatchN=56
 # matureL = c(70,200)
 # wtatL = c(80,200)
@@ -25,6 +27,9 @@
 # hcrname="mcdahcr"  #"constantrefhcr"  #"mcdahcr"     #    #"consthcr"
 # kobeRP = c(0.4,0.2,0.15)
 # interimout=""
+# nasInterval=5
+# minsizecomp=c(100,135)
+
 
 # SA context -------------
 # rundir=rundir
@@ -39,6 +44,7 @@
 # makeouthcr=makeouthcr
 # hcrscoreoutputs = saextractandplotscores
 # fleetdyn = safleetdyn
+# scoreplot = plotfinalscores
 # varyrs=7
 # startyr=38
 # verbose=TRUE
@@ -121,10 +127,10 @@
 #' @param interimout should results be saved after projections have finished?
 #'     the default="", which means nothing is saved if no risk of crashing in
 #'     subsequent analyses. But if trying new stuff which may waste lots of time
-#'     if the projections need to be repeated, the set interimout = c(outdir,
+#'     if the projections need to be repeated, then set interimout = c(outdir,
 #'     postfixdir), which should be defined in the run_aMSE you are using,
 #'     and that will save the main objects needed for later analysis in the
-#'     directory used to save final results. The ordering of
+#'     directory used to save final results.
 #' @param varyrs how many years at the end of the conditioning on the fishery,
 #'     data into zoneDD, to which to add recruitment variation, default = 7,
 #'     which suits the Tasmanian west coast. Used in prepareprojection
@@ -153,6 +159,14 @@
 #'     depensate. Implemented inside the function 'oneyearrec'
 #' @param kobeRP reference points for the eHS pseudo kobe plot. A vector of the
 #'     targdepl, default=0.4, limdepl, default=0.2, and the limH, default=0.15
+#' @param nasInterval default = 5, which selects the year just before
+#'     projections and then the size-composition data for every such interval
+#'     in years along the projection period. The years selected always include
+#'     the last year of projection and the year just before projections started.
+#' @param minsizecomp a vector of two values, hte first being the minimum size-
+#'     class to be used when plotting the predicted size-composition of the
+#'     stock, and the second being the minimum size-class when plotting the
+#'     numbers-at-size in the catch. The default=c(100,135)
 #'
 #' @seealso{
 #'  \link{makeequilzone}, \link{dohistoricC}, \link{prepareprojection},
@@ -167,10 +181,11 @@
 #' print("wait on suitable data sets in data")
 do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                    sampleNaS,getdata,calcpopC,makeouthcr,fleetdyn=NULL,
-                   scoreplot,plotmultflags,interimout="",
-                   varyrs=7,startyr=42,verbose=FALSE,ndiagprojs=3,
-                   cutcatchN=56,matureL=c(70,200),wtatL=c(80,200),mincount=100,
-                   includeNAS=FALSE,depensate=0,kobeRP=c(0.4,0.2,0.15)) {
+                   scoreplot,plotmultflags,interimout="",varyrs=7,startyr=42,
+                   verbose=FALSE,ndiagprojs=3,cutcatchN=56,matureL=c(70,200),
+                   wtatL=c(80,200),mincount=100,includeNAS=FALSE,
+                   depensate=0,kobeRP=c(0.4,0.2,0.15),nasInterval=5,
+                   minsizecomp=c(100,135)) {
   # generate equilibrium zone -----------------------------------------------
   starttime <- (Sys.time())
   zone <- makeequilzone(rundir,controlfile,verbose=verbose)
@@ -189,6 +204,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   # save some equil results -------------------------------------------------
   biology_plots(rundir, glb, zoneC, matL=matureL,Lwt=wtatL)
   sauprod <- plotproductivity(rundir,production,glb,hsargs)
+  hsargs$saumsy <- sauprod[3,]
   numbersatsize(rundir, glb, zoneD)
   #Condition on Fishery -----------------------------------------------------
   if (any(condC$initdepl < 1)) {
@@ -247,7 +263,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   projC <- outpp$projC
   zoneCP <- outpp$zoneCP
  # Rprof()  #  ctrl$reps=25
-  if (verbose) cat("Doing the projections \n")
+  if (verbose) cat("Doing projections \n")
   outproj <- doprojections(ctrl=ctrl,zoneDP=zoneDP,zoneCP=zoneCP,glb=glb,
                            hcrfun=hcrfun,hsargs=hsargs,sampleCE=sampleCE,
                            sampleFIS=sampleFIS,sampleNaS=sampleNaS,
@@ -269,31 +285,44 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                          ctrl=ctrl,condC=condC,constants=constants)
     }
     save(postprojout,file=outfile)
+    if (verbose) cat("Interim output file saved \n")
   }
   B0 <- getvar(zoneC,"B0")
   ExB0 <- getvar(zoneC,"ExB0")
+  if (verbose) cat("Starting the sau related plots \n")
   sauout <- sauplots(zoneDP,NAS,glb,rundir,B0,ExB0,
                      startyr=startyr,addCI=TRUE,histCE=condC$histCE)
+  sauNAS <- list(Nt=sauout$Nt,catchN=sauout$catchN)
+  sauout <- sauout[-c(12,11)]  # This removes the Nt and catchN from sauout
+  if (verbose) cat("Finished all sau plots \n")
+  for (sau in 1:glb$nSAU) # sau=1
+     predsizecomp(sau=sau, NSC=sauNAS$Nt, glb=glb, minSL=minsizecomp[1],
+                  interval=nasInterval,prop=TRUE,console=FALSE,rundir=rundir)
+  for (sau in 1:glb$nSAU)
+     predsizecomp(sau=sau, NSC=sauNAS$catchN, glb=glb, minSL=minsizecomp[2],
+                  interval=nasInterval,prop=TRUE,console=FALSE,rundir=rundir)
+  if (verbose) cat("Finished plotting size-composition data \n")
   diagnosticsproj(sauout,glb,rundir,nrep=ndiagprojs)
   outzone <- poptozone(zoneDP,NAS,glb,
                        B0=sum(getvar(zoneC,"B0")),
                        ExB0=sum(getvar(zoneC,"ExB0")))
   zonesummary <- plotZone(outzone,rundir,glb,startyr=startyr,
                           CIprobs=c(0.05,0.5,0.95),addfile=TRUE)
-  fishery_plots(rundir=rundir,glb=glb,select=zoneCP[[1]]$Select,
-                histyr=condC$histyr,projLML=projC$projLML)
+  if (verbose) cat("Plotting fishery information \n")
+  outfish <- fishery_plots(rundir=rundir,glb=glb,select=zoneCP[[1]]$Select,
+                           histyr=condC$histyr,projLML=projC$projLML)
   historicalplots(rundir=rundir,condC=condC,glb=glb)
   NAS$catchN <- NAS$catchN[(cutcatchN:glb$Nclass),,,]
   projtime <- Sys.time()
   tottime <- round((projtime - starttime),3)
-  # calculate HS performance statistics
   sum5 <- getprojyrC(catsau=zoneDP$catsau,glb=glb,period=5)
   sum10 <- getprojyrC(catsau=zoneDP$catsau,glb=glb)
   HSstats <- list(sum10=sum10,sum5=sum5)
-  save(HSstats,file=paste0(rundir,"/HSstats.RData"))
-  save(glb,file=paste0(rundir,"/glb.RData"))
+  #save(HSstats,file=paste0(rundir,"/HSstats.RData"))
+  #save(glb,file=paste0(rundir,"/glb.RData"))
   save_hsargs(rundir,hsargs)   # prints hsargs to HSPerfs tab
-  if (verbose) cat("HSstats.RData, glb.RData, and hsargs.txt saved to rundir \n")
+  if (verbose) cat("hsargs.txt saved to rundir \n")
+  if (verbose) cat("plotting HS performance statistics \n")
   plothsstats(rundir,HSstats,glb,average=FALSE)
   plothsstats(rundir,HSstats,glb,average=TRUE)
   addtable(hcrout$refpts,"hcrout_refpts.csv",rundir,category="HSperf",
@@ -319,14 +348,9 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   for (plotsau in 1:glb$nSAU) {
     twophaseplots(dyn=sauout,glb=glb,outhcr=outhcr,sau=plotsau,kobeRP=kobeRP,
                   rundir=rundir,startyr=condC$yearCE[1],console=FALSE,fnt=7)
-    # kobedata[[plotsau]] <- HSphaseplot(dyn=sauout,glb=glb,sau=plotsau,
-    #                                    rundir=rundir,startyr=condC$yearCE[1],
-    #                                    console=FALSE,setpar=TRUE,
-    #                                    targdepl=kobeRP[1],limdepl=kobeRP[2],
-    #                                    limH=kobeRP[3])
-    # tasphaseplot(proxyB=outhcr$targsc,proxyH=outhcr$g4s,glb=glb,sau=plotsau,
-    #              rundir=rundir,console=FALSE,fnt=7,setpar=TRUE)
   }
+
+
   if (!includeNAS) NAS=NULL
   out <- list(tottime=tottime,projtime=projtime,starttime=starttime,glb=glb,
               ctrl=ctrl,zoneCP=zoneCP,zoneD=zoneD,zoneDD=zoneDD,zoneDP=zoneDP,

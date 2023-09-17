@@ -867,6 +867,64 @@ sumpop2sau <- function(invect,sauindex) {
   return(tapply(invect,sauindex,sum,na.rm=TRUE))
 } # end of sumpop2sau
 
+#' @title uniquepairs identifies unique combinations of two columns in a matrix
+#'
+#' @description uniquepairs identifies unique combinations of two columns in a
+#'     matrix. This can be used to identify unique pairs of parameters that
+#'     are used to define things like selectivity. In aMSE this is used when
+#'     implementing a slot selectivity so that one needs to identify all years
+#'     in which a change to the LML structure occurs. This can include a
+#'     change in the LML and or the maximum allowable size = MAL
+#'
+#' @param x the projLML matrix or any minimum two column matrix
+#' @param col1 the column number of the first variable
+#' @param col2 the column number of the second variable
+#'
+#' @return invisibly a list of the number of unique pairs, a matrix of all
+#'     possible pairs, the row indices of each of the unique pairs in the
+#'     matrix, and the names of all possible combinations
+#' @export
+#'
+#' @examples
+#' lmls <- c(145,210,145,210,145,210,145,210,145,185,150,185,150,185,
+#'           150,185,150,185,150,185)
+#' projL <- matrix(lmls,nrow=10,ncol=2,dimnames=list(1:10,c("LML","Max")),
+#'                 byrow=TRUE)
+#' outp <- uniquepairs(x=projL,col1=1,col2=2)
+#' outp
+#'   # x=lmlall;col1=1;col2=2
+uniquepairs <- function(x,col1=1,col2=2) {
+  uc1 <- unique(x[,col1])
+  uc2 <- unique(x[,col2])
+  n1 <- length(uc1)
+  n2 <- length(uc2)
+  ncomb <- n1*n2
+  combin <- matrix(0,nrow=ncomb,ncol=2)
+  pcomb <- 1
+  for (i in 1:n1) {
+    for (j in 1:n2) {
+      combin[pcomb,1] <- uc1[i]
+      combin[pcomb,2] <- uc2[j]
+      pcomb <- pcomb + 1
+    }
+  }
+  yrlist <- vector(mode="list",length=ncomb)
+  combnames <-  paste(combin[,1],combin[,2],sep="_")
+  realcomb <- NULL
+  for (i in 1:ncomb) {
+    tmp <- which((x[,1] == combin[i,1]) & (x[,2] == combin[i,2]))
+    if (length(tmp > 0)) {
+      yrlist[[i]] <- tmp
+      realcomb <- c(realcomb,i)
+    } else {
+      yrlist[[i]] <- 0
+    }
+  }
+  names(yrlist) <- combnames
+  return(invisible(list(realcomb=realcomb,combin=combin,yrlist=yrlist,
+                        combnames=combnames)))
+} # end of uniquepairs
+
 #' @title zonetosau translates the zonexpop objects to zonexsau objects
 #'
 #' @description zonetosau combines the dynamic results for each variable so

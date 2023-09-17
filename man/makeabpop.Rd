@@ -15,7 +15,7 @@ popdefs, which is produced by definepops}
 the zone data file}
 
 \item{projLML}{the LML expected in the projection years 2 - Nyrs;
-a vector obtained from the zonedatafile}
+a vector obtained from the controlfile}
 }
 \value{
 a list of numpop lists of 19 objects as detailed above.

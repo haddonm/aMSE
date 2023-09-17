@@ -1,4 +1,28 @@
 
+Nt=sauout$Nt; catchN=sauout$catchN;padding=5;prop=TRUE;minSL=90;sau=1;
+ console=TRUE;omit=5;legal=TRUE
+
+
+# Sizecomp in projections --------------------------------------
+
+
+
+
+
+
+
+#min(outfish$yrlml)
+
+predsizecomp(sau=5, NSC=sauout$Nt, glb=glb, minSL=70,interval=5,
+             prop=FALSE,console=TRUE)
+
+
+
+
+
+
+
+
 
 # plot all first years and all last years
 start <- 3

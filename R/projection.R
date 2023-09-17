@@ -364,20 +364,16 @@ modprojC <- function(zoneC,glob,projC) { # zoneC=zone$zoneC; glob=glb; projC=zon
                    dimnames=list(midpts,glob$SAUnum,1:projyrs))
   projSelWt <- array(0,dim=c(glob$Nclass,numpop,projyrs),
                    dimnames=list(midpts,glob$SAUnum,1:projyrs))
-  pLML <- projC$projLML
-  diffLML <- unique(pLML)
-  nLML <- length(diffLML)
-  for (iLML in 1:nLML) { # iLML = 1
-    pickyr <- which(pLML %in% diffLML[iLML])
-    nyr <- length(pickyr)
-    for (yr in 1:nyr) {
-      for (pop in 1:numpop) { #  yr=1; pop=1
-        selL50 <- popdefs["SelP1",pop]
-        selL95 <- popdefs["SelP2",pop]
-        projSel[,pop,pickyr[yr]] <- logistic((pLML[pickyr[yr]] + selL50),
-                                             selL95,midpts)
-        projSelWt[,pop,pickyr[yr]] <- projSel[,pop,pickyr[yr]] * zoneC[[pop]]$WtL
-      }
+  pLML <- projC$projLML[,"LML"]
+  mLML <- projC$projLML[,"Max"]
+  nLML <- length(pLML)
+  if (nLML != projyrs) stop(cat("Only ",nLML,"projLML instead of ",projyrs,"\n"))
+  for (pop in 1:numpop) { #  yr=1; pop=1
+    selL50 <- popdefs["SelP1",pop]
+    selL95 <- popdefs["SelP2",pop]
+    for (yr in 1:projyrs) {
+      projSel[,pop,yr] <- logistic((pLML[yr] + selL50),selL95,midpts,maxLML=mLML[yr])
+      projSelWt[,pop,yr] <- projSel[,pop,yr] * zoneC[[pop]]$WtL
     }
   }
   projC$Sel <- projSel
@@ -582,6 +578,7 @@ modzoneCSel <- function(zoneC,sel,selwt,glb) {
   }
   return(zoneC)
 } # end of modzoneCSel
+
 
 #' @title prepareprojection high level function that sets up a projection
 #'

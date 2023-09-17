@@ -29,7 +29,9 @@ do_MSE(
   mincount = 100,
   includeNAS = FALSE,
   depensate = 0,
-  kobeRP = c(0.4, 0.2, 0.15)
+  kobeRP = c(0.4, 0.2, 0.15),
+  nasInterval = 5,
+  minsizecomp = c(100, 135)
 )
 }
 \arguments{
@@ -81,10 +83,10 @@ function using the ellipsis at the end of the argument list.}
 \item{interimout}{should results be saved after projections have finished?
 the default="", which means nothing is saved if no risk of crashing in
 subsequent analyses. But if trying new stuff which may waste lots of time
-if the projections need to be repeated, the set interimout = c(outdir,
+if the projections need to be repeated, then set interimout = c(outdir,
 postfixdir), which should be defined in the run_aMSE you are using,
 and that will save the main objects needed for later analysis in the
-directory used to save final results. The ordering of}
+directory used to save final results.}
 
 \item{varyrs}{how many years at the end of the conditioning on the fishery,
 data into zoneDD, to which to add recruitment variation, default = 7,
@@ -124,6 +126,16 @@ depensate. Implemented inside the function 'oneyearrec'}
 
 \item{kobeRP}{reference points for the eHS pseudo kobe plot. A vector of the
 targdepl, default=0.4, limdepl, default=0.2, and the limH, default=0.15}
+
+\item{nasInterval}{default = 5, which selects the year just before
+projections and then the size-composition data for every such interval
+in years along the projection period. The years selected always include
+the last year of projection and the year just before projections started.}
+
+\item{minsizecomp}{a vector of two values, hte first being the minimum size-
+class to be used when plotting the predicted size-composition of the
+stock, and the second being the minimum size-class when plotting the
+numbers-at-size in the catch. The default=c(100,135)}
 }
 \value{
 a large list containing tottime, projtime, starttime, glb, ctrl,

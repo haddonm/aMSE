@@ -4,7 +4,7 @@
 \alias{logistic}
 \title{logistic a Logistic selectivity function}
 \usage{
-logistic(inL50, delta, lens, knifeedge = 0)
+logistic(inL50, delta, lens, knifeedge = 0, maxLML = 0)
 }
 \arguments{
 \item{inL50}{is the length at 50 percent selection}
@@ -18,6 +18,8 @@ will be calculated}
 \item{knifeedge}{defaults to 0. If knifeedge is set to a particular
 length then the selectivity less than the value of knifeedge is set
 to zero.}
+
+\item{maxLML}{default = 0. The parameter is to allow for a slot selectivity}
 }
 \value{
 A vector of length(lens) containing the predicted selectivity at
@@ -37,7 +39,7 @@ logistic a logistic selectivity function. This uses the
     sets all values to zero at and below the value of knifeedge but leaves
     any curve above that value as it is. Hence this is not strict knife-edge
     selectivity. However, it does provide a selectivity curve that reflects
-    the selectivity of a diver led fleet workingon abalone.
+    the selectivity of a diver led fleet working on abalone.
 }
 \examples{
 \dontrun{
@@ -46,5 +48,6 @@ delta <- 8.0
 lens <- seq(2,210,2)
 select <- logistic(inL50,delta,lens)
 select <- logistic(inL50,delta,lens,knifeedge=105)
+select <- logistic(inL50,delta,lens,maxLML=185)
 }
 }

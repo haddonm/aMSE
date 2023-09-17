@@ -4,7 +4,7 @@
 \alias{fishery_plots}
 \title{fishery_plots generates a set of plots relating to the fishery properties}
 \usage{
-fishery_plots(rundir, glb, select, histyr, projLML, rge = 50:90)
+fishery_plots(rundir, glb, select, histyr, projLML, rge = 55:105)
 }
 \arguments{
 \item{rundir}{the rundir for the particular scenario}

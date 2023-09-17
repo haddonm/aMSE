@@ -659,12 +659,13 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
    minc <-  getsingleNum("minc",indat) # minimum size class
    cw    <- getsingleNum("cw",indat) # class width
    Nclass <- getsingleNum("Nclass",indat) # number of classes
-   midpts <- seq(minc,minc+((Nclass-1)*cw),2)
+   midpts <- seq(minc,minc+((Nclass-1)*cw),cw)
    larvdisp <- getsingleNum("larvdisp",indat)
    randomseed <- getsingleNum("randomseed",indat)
    randomseedP <- getsingleNum("randomseedP",indat)
    initLML <- getsingleNum("initLML",indat)
    projyrs <- getsingleNum("PROJECT",indat)
+   gauntlet <- getsingleNum("SLOTFISHERY",indat)
    rows <- c("runlabel","datafile","bysau","replicates","withsigR","withsigB",
              "withsigCE","nSAU","SAUpop","SAUnames","initdepl","minc","cw",
              "Nclass","larvdisp","randomseed","randomseedP","initLML",
@@ -688,13 +689,28 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
    yearCE <- NULL
    compdat=NULL
    indexCE <- NULL
+   maxsize <- cw * Nclass
    if (projyrs > 0) {
-      projLML <- numeric(projyrs)
-      from <- grep("PROJLML",indat)
-      for (i in 1:projyrs) {
+     projLML <- matrix(0,nrow=projyrs,ncol=2,
+                         dimnames=list(c(1:projyrs),c("LML","Max")))
+     if (gauntlet) {
+       from <- grep("PROJLML",indat)
+       for (i in 1:projyrs) { # i = 1
          from <- from + 1
-         projLML[i] <- getConst(indat[from],1)
-      }
+         tmp <- removeEmpty(unlist(strsplit(indat[from],",")))
+         if (length(tmp >= 3) & !is.na(suppressWarnings(as.numeric(tmp[3])))) {
+           projLML[i,] <- getConst(indat[from],2,2)
+         } else {
+           projLML[i,] <- c(getConst(indat[from],nb=1,index=2),maxsize)
+         }
+       }
+     } else {
+       from <- grep("PROJLML",indat)
+       for (i in 1:projyrs) {
+         from <- from + 1
+         projLML[i,] <- c(getConst(indat[from],nb=1,index=2),maxsize)
+       }
+     }
    } # end of projyrs if test
    catches <- getsingleNum("CATCHES",indat)
    if (catches > 0) {

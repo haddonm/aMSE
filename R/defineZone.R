@@ -392,7 +392,7 @@ findmsy <- function(product) {  # product=production
 #'     sets all values to zero at and below the value of knifeedge but leaves
 #'     any curve above that value as it is. Hence this is not strict knife-edge
 #'     selectivity. However, it does provide a selectivity curve that reflects
-#'     the selectivity of a diver led fleet workingon abalone.
+#'     the selectivity of a diver led fleet working on abalone.
 #'
 #' @param inL50 is the length at 50 percent selection
 #' @param delta is the difference between the 95 percent selection and
@@ -402,6 +402,8 @@ findmsy <- function(product) {  # product=production
 #' @param knifeedge defaults to 0. If knifeedge is set to a particular
 #'     length then the selectivity less than the value of knifeedge is set
 #'     to zero.
+#' @param maxLML default = 0. The parameter is to allow for a slot selectivity
+#'
 #' @return A vector of length(lens) containing the predicted selectivity at
 #'    length values
 #' @export
@@ -413,12 +415,17 @@ findmsy <- function(product) {  # product=production
 #' lens <- seq(2,210,2)
 #' select <- logistic(inL50,delta,lens)
 #' select <- logistic(inL50,delta,lens,knifeedge=105)
+#' select <- logistic(inL50,delta,lens,maxLML=185)
 #' }
-logistic <- function(inL50,delta,lens,knifeedge=0) {
+logistic <- function(inL50,delta,lens,knifeedge=0,maxLML=0) {
    ans <- 1/(1+exp(-log(19.0)*(lens-inL50)/(delta)))
    if (knifeedge > 0) {
       pick <- which(lens < knifeedge)
       if (length(pick) > 0) ans[pick] <- 0.0
+   }
+   if (maxLML > 0) {
+     pick <- which(lens > maxLML)
+     if (length(pick) > 0) ans[pick] <- 0.0
    }
    return(ans)
 } # end of logistic
@@ -442,7 +449,7 @@ logistic <- function(inL50,delta,lens,knifeedge=0) {
 #' @param midpts the center values of the size classes dervied from
 #'     the zone data file
 #' @param projLML the LML expected in the projection years 2 - Nyrs;
-#'     a vector obtained from the zonedatafile
+#'     a vector obtained from the controlfile
 #'
 #' @return a list of numpop lists of 19 objects as detailed above.
 #' @export
@@ -517,7 +524,7 @@ makeabpop <- function(popparam,midpts,projLML) {
 #' @examples
 #' print("wait on datafiles")
 makeequilzone <- function(rundir,ctrlfile="control.csv",doproduct=TRUE,verbose=TRUE) {
- #  rundir=rundir;ctrlfile=controlfile;doproduct=TRUE; verbose=TRUE
+ #  rundir=rundir;ctrlfile=controlfile;doproduct=FALSE; verbose=TRUE
   zone1 <- readctrlfile(rundir,infile=ctrlfile,verbose=verbose)
   ctrl <- zone1$ctrl
   glb <- zone1$globals     # glb without the movement matrix

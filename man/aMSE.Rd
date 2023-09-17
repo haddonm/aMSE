@@ -3,6 +3,7 @@
 \docType{package}
 \name{aMSE}
 \alias{aMSE}
+\alias{aMSE-package}
 \title{aMSE functions for Conditioning and Running an Invertebrate MSE}
 \description{
 The aMSE package provides functions to facilitate
@@ -52,3 +53,16 @@ Haddon, M., Mundy, C., and D. Tarbath (2008) Using an
     FRDC Final Report 2011/028. CSIRO Oceans and Atmosphere and
     Fisheries Research Development Corporation. Hobart 182 p
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/haddonm/aMSE}
+  \item Report bugs at \url{https://github.com/haddonm/aMSE/issues}
+}
+
+}
+\author{
+\strong{Maintainer}: Malcolm Haddon \email{malcolm.haddon@gmail.com} (\href{https://orcid.org/0000-0001-6971-7585}{ORCID})
+
+}
+\keyword{internal}

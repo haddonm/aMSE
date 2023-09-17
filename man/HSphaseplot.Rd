@@ -55,7 +55,7 @@ HSphaseplot generates, for a single sau, a Kobe or phase plot
     rate is set at 0.175, this may not be precautionary for all sau.
 }
 \examples{
-/dontrun{
+\dontrun{
  print("wait on a data set")
  for (plotsau in 1:glb$nSAU) {
    HSphaseplot(dyn=sauout,glb=glb,sau=plotsau,

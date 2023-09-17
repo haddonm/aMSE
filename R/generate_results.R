@@ -210,21 +210,36 @@ compzoneN <- function(unfN,curN,glb,yr,depl,ssc=5,LML=0,rundir="") {
 #'
 #' @examples
 #' print("wait on suitable internal data sets")
-fishery_plots <- function(rundir,glb,select,histyr,projLML, rge=50:90) {
+fishery_plots <- function(rundir,glb,select,histyr,projLML, rge=55:105) {
+  # rundir=rundir;glb=glb;select=zoneCP[[1]]$Select;histyr=condC$histyr;
+  # projLML=projC$projLML; rge=55:105
   mids <- glb$midpts
-  lml <- as.numeric(c(histyr[,"histLML"],projLML))
-  values <- unique(lml)
-  nsel <- length(values)
-  selyrs <- numeric(nsel)
-  pickcol <- numeric(nsel)
-  yrnames <- cbind(lml,as.numeric(c(glb$hyrnames,glb$pyrnames)))
-  for (i in 1:nsel) {  #  i=2
-    pick <- which(yrnames[,1] == values[i])
-    pickcol[i] <- pick[1]
-    selyrs[i] <- yrnames[pick[1],2]
+  maxlml <-
+  lml <- cbind(as.numeric(histyr[,"histLML"]),
+               rep(tail(mids,1),length(glb$hyrnames)))
+  colnames(lml) <- c("LML","Max")
+  lmlall <- rbind(lml,projLML)
+  allyrs <- c(glb$hyrnames,glb$pyrnames)
+  rownames(lmlall) <- allyrs
+  outyrs <- uniquepairs(lmlall,col1=1,col2=2)
+  realcomb <- outyrs$realcomb
+#  nsel <- length(realcomb)
+  combnames <- outyrs$combnames[realcomb]
+  ncomb <- length(combnames)
+  yrlist <- outyrs$yrlist
+  selyrs <- numeric(ncomb)
+  yrnames <- numeric(ncomb)
+  yrlml <- numeric(ncomb)
+  picksel <- 0
+  for (i in 1:ncomb) { # i = 1
+    yrcomb <- yrlist[[combnames[i]]]
+#    if (!is.null(yrcomb)) {
+    selyrs[i] <- yrcomb[1]
+    yrnames[i] <- allyrs[yrcomb[1]]
+    yrlml[i] <- lmlall[yrcomb[1],1]
+ #   }
   }
-  # selyrs; pickcol
-  selplot <- select[,pickcol]
+  selplot <- select[,selyrs]
   rownames(selplot) <- mids
   filen <- filenametopath(rundir,"fishery_Selectivity_through_time.png")
   plotprep(width=7,height=4,newdev=FALSE,filename=filen,cex=0.9,
@@ -232,14 +247,14 @@ fishery_plots <- function(rundir,glb,select,histyr,projLML, rge=50:90) {
   parset(cex=1.0)
   plot(mids[rge],selplot[rge,1],type="l",lwd=2,col=1,panel.first=grid(),
        xlab="Shell Length (mm)",ylab="Selectivity")
-  for (i in 2:nsel) lines(mids[rge],selplot[rge,i],lwd=2,col=i)
-  legend("right",legend=paste0("lml ",values," ",selyrs),col=c(1:nsel),lwd=3,
+  for (i in 2:ncomb) lines(mids[rge],selplot[rge,i],lwd=2,col=i)
+  legend("right",legend=paste0("lml ",yrlml," ",yrnames),col=c(1:ncomb),lwd=3,
          bty="n",cex=1.2)
   caption <- paste0("The selectivity vs length through the years of the Dynamics.",
                       "The years after the LML value are the first year in the data",
                       " in which that LML is expressed.")
   addplot(filen,rundir=rundir,category="Fishery",caption)
-  return(invisible(selplot))
+  return(invisible(list(select=selplot,yrlml=yrlml,yrnames=yrnames)))
 } # end of fishery_plots
 
 #' @title makeoutput take the output from do_MSE and generates the HTML files
@@ -265,8 +280,8 @@ fishery_plots <- function(rundir,glb,select,histyr,projLML, rge=50:90) {
 #'
 #' @examples
 #' print("wait on internal data-sets")
-#' # out=out;rundir=rundir;postdir=postfixdir;controlfile=controlfile;hsfile="TasHS Package"
-#' # doproject=FALSE;openfile=TRUE;verbose=FALSE
+#' # out=out;rundir=rundir;postdir=postfixdir;controlfile=controlfile;
+#' # hsfile="TasHS Package"; doproject=FALSE;openfile=TRUE;verbose=FALSE
 makeoutput <- function(out,rundir,postdir,controlfile,hsfile=NULL,
                        doproject=TRUE,openfile=TRUE,verbose=FALSE) {
   replist <- list(starttime=as.character(out$starttime),

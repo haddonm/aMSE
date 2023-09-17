@@ -145,8 +145,9 @@ getaav <- function(invect) { # invect=x
 #'   txtline <- "MaxDL , 32,32,32"
 #'   getConst(txtline,nb=3,index=2)
 getConst <- function(inline,nb,index=2) { # parses lines containing numbers
+#  inline=indat[c(from+1)];nb=2;index=2
   ans <- numeric(nb)
-  tmp <- unlist(strsplit(inline,","))
+  tmp <- removeEmpty(unlist(strsplit(inline,",")))
   if (length(tmp) < (nb+(index-1)))
     warning(paste("possible problem with data",tmp[1],
                   "missing comma?",sep=" "),"\n")
