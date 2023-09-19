@@ -157,6 +157,8 @@ ctrlfiletemplate <- function(indir,filename="controlEG.csv",devrec=0.0) { # indi
    cat("\n",file=filename,append=TRUE)
    cat("initLML, 140, initial LML for the unfished zone if no historical catches used \n",
        file=filename,append=TRUE)  # deprecated
+   cat("SLOTFISHERY, 0, should a slot size limit range be used instead of LML \n",
+       file=filename,append=TRUE)
    cat("\n",file=filename,append=TRUE)
    cat("PROJECT, 30, number of projection years for each simulation \n",
        file=filename,append=TRUE)
@@ -666,6 +668,9 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
    initLML <- getsingleNum("initLML",indat)
    projyrs <- getsingleNum("PROJECT",indat)
    gauntlet <- getsingleNum("SLOTFISHERY",indat)
+   if (!is.null(gauntlet)) {
+     if (gauntlet == 0) gauntlet <- NULL
+   }
    rows <- c("runlabel","datafile","bysau","replicates","withsigR","withsigB",
              "withsigCE","nSAU","SAUpop","SAUnames","initdepl","minc","cw",
              "Nclass","larvdisp","randomseed","randomseedP","initLML",
@@ -693,7 +698,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
    if (projyrs > 0) {
      projLML <- matrix(0,nrow=projyrs,ncol=2,
                          dimnames=list(c(1:projyrs),c("LML","Max")))
-     if (gauntlet) {
+     if (!is.null(gauntlet)) {
        from <- grep("PROJLML",indat)
        for (i in 1:projyrs) { # i = 1
          from <- from + 1
