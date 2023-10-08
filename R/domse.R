@@ -1,5 +1,5 @@
 # Tas context -----------------
-# postfixdir <- "BCslot"
+# postfixdir <- "BC"
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
@@ -252,7 +252,10 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
       plotsizecomp(rundir=rundir,incomp=lfs,SAU=glb$saunames[plotsau],lml=LML,
                    catchN=sauCt[,,plotsau],start=NA,proportion=TRUE,
                    console=FALSE)
+
     }
+    saucompdata(allcomp=compdat,glb=glb,horizline=5,console=FALSE,rundir=rundir,
+                ylabel="Size-Composition of Catches",tabname="OrigComp")
   }
   # do projections ------------------------------------------------------------
   if (verbose) cat("Preparing for the projections \n")

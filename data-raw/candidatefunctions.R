@@ -1008,6 +1008,103 @@ tasphaseplot(proxyB=outhcr$targsc,proxyH=outhcr$g4s,glb=glb,sau=6,rundir="",
              console=TRUE,fnt=7,setpar=TRUE)
 
 
+# plotcompdat --------------------------------------
+
+options("show.signif.stars"=FALSE,
+        "stringsAsFactors"=FALSE,
+        "max.print"=50000,
+        "width"=240)
+suppressPackageStartupMessages({
+  library(aMSE)
+  library(TasHS)
+  library(codeutils)
+  library(hplot)
+  library(makehtml)
+  library(knitr)
+})
+dropdir <- getDBdir()
+prefixdir <- pathtopath(dropdir,"/A_codeUse/aMSEUse/hsargs/")
+
+postfixdir <- "BC"
+verbose <- TRUE
+rundir <- path.expand(filenametopath(prefixdir,postfixdir)) # #"mult05"
+controlfile <- paste0("control",postfixdir,".csv")
+outdir <- "C:/aMSE_scenarios/BC/"
+confirmdir(rundir,ask=FALSE)
+confirmdir(outdir,ask=FALSE)
+
+
+# current Tas HS
+hsargs <- list(mult=0.1, # expansion factor for cpue range when calc the targqnt
+               wid = 4, # number of years in the grad4 PM
+               targqnt = 0.55, # quantile defining the cpue target
+               maxtarg = c(150,150,150,150,150,150,150,150), # max cpue Target
+               pmwts = c(0.65,0.25,0.1),  # relative weights of PMs
+               hcr = c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2), # hcr multipliers
+               startCE = 2000,
+               endCE = 2019,
+               metRunder = 0,  # should the metarules be used. o =
+               metRover = 0,   # use metarules
+               decrement=1, # use fishery data up to the end of the time series
+               pmwtSwitch = 0, # number of years after reaching the targCE to
+               stablewts = c(0.4, 0.5, 0.1), # replace pmwts with stablewts
+               hcrname="mcdahcr",     # the name of the HCR used
+               printmat=NULL)
+
+# refperiodCE = 2000:2019, # use a vector of years instead
+
+checkhsargs(hsargs)
+
+hcrfun=mcdahcr  #constantrefhcr,    #   #
+sampleCE=tasCPUE;sampleFIS=tasFIS;sampleNaS=tasNaS
+getdata=tasdata;calcpopC=calcexpectpopC;makeouthcr=makeouthcr
+fleetdyn=NULL;scoreplot=plotfinalscores
+plotmultflags=plotmultandflags;interimout=""
+varyrs=7;startyr=38;verbose=TRUE;ndiagprojs=4;cutcatchN=56
+matureL=c(40,170);wtatL=c(50,200);mincount=120
+includeNAS = FALSE;depensate=0;kobeRP=c(0.4,0.2,0.15)
+nasInterval=5;minsizecomp=c(100,135)  # A NEW LINE
+
+
+  # generate equilibrium zone -----------------------------------------------
+  starttime <- (Sys.time())
+  zone <- makeequilzone(rundir,controlfile,verbose=verbose)
+  equiltime <- (Sys.time()); if (verbose) print(equiltime - starttime)
+  # declare main objects ----------------------------------------------------
+  glb <- zone$glb
+  ctrl <- zone$ctrl
+  zoneC <- zone$zoneC
+  zoneD <- zone$zoneD
+  zone1 <- zone$zone1
+  saudat <- zone$saudat
+  constants <- zone$constants
+  production <- zone$product
+  projC <- zone$zone1$projC
+  condC <- zone$zone1$condC
+
+
+
+saunames <- glb$saunames
+
+compdat <- condC$compdat$lfs
+
+sau <- 4
+
+
+
+saucompdata(allcomp=compdat, glb=glb, horizline = NULL,console = TRUE,
+            rundir = "",barcol = "red",bordercol = "black",
+            ylabel = "",tabname = "")
+
+
+
+
+
+
+
+
+
+
 
 
 
