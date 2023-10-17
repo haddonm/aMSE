@@ -1097,12 +1097,11 @@ saucompdata(allcomp=compdat, glb=glb, horizline = NULL,console = TRUE,
             ylabel = "",tabname = "")
 
 
+# population expB + median --------------------------
+rundir=rundir;sau=4;popvar=zoneDP$catch;glb=glb;console=TRUE
 
-
-
-
-
-
+poplevelplot(rundir=rundir,sau=7,popvar=zoneDP$cpue,glb=glb,
+             label="CPUE",console=TRUE)
 
 
 

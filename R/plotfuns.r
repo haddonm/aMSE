@@ -1240,6 +1240,85 @@ plotzonesau <- function(zonetot,saudat,saunames,label,labelsau,side=3,
   }
 } # end of plotzonesau
 
+#' @title poplevelplot generates population x replicate trajectory plots
+#'
+#' @description poplevelplot is used to produce population level plots of an
+#'     input variable derived from zoneDP. It produces a single plot for a given
+#'     sau which depicts each population's replicate trajectories, all in grey.
+#'     However, medians of the variable through each year are calculated and
+#'     plotted in distinct colours for each population up to a maximum of 12
+#'     populations per sau. If more than 12 then the population index 1:npop is
+#'     used. These plots should be considered as a partial diagnostic for how
+#'     well the implied fleet dynamics is distributing catch among an sau's
+#'     populations. The trajectories are plotted from the last year of
+#'     conditioning to the last year of projections.
+#'
+#' @param rundir the scenario's directory for datafiles and results
+#' @param sau which sau is to be worked on. In Tas = 1:8 in the west
+#' @param popvar which 3D array population variable is to be used. This will be
+#'     generally derived from zoneDP, eg zoneDP$catch or zoneDP$depleB
+#' @param glb the globals object used for sauindex, saunames, hyrs, and reps
+#' @param label the sau name will be added to this label for the y-axis, this
+#'     should be simple, such as 'catch' or have words connected by hyphens or
+#'     underscores as it will also be added to the filename.
+#' @param console should the plot go to the console or be saved into rundir.
+#'     default=TRUE = to the console
+#'
+#' @return invisibly the population medians
+#' @export
+#'
+#' @examples
+#' print("poplevelplot(rundir=rundir,sau=7,popvar=zoneDP$catch,glb=glb,")
+#' print("label='Catch',console=TRUE")
+poplevelplot <- function(rundir,sau,popvar,glb,label="",console=TRUE) {
+  popcol <- c("red","#FF7790","orange","yellow","#80FE90","green","cyan",
+              "#0080FF","blue","#8000FF","magenta","#FF0080")
+  sauindex <- glb$sauindex
+  saunames <- glb$saunames
+  nyrs <- length(dimnames(popvar)[[1]])
+  saudepl <- popvar[glb$hyrs:nyrs,(sauindex == sau),]
+  popnums <-  as.numeric(dimnames(saudepl)[[2]])
+  npop <- length(popnums)
+  reps <- glb$reps
+  if (console) {
+    filen <- ""
+  } else {
+    nfile <- paste0("Pop_Trajs_and_Medians_for_",label,"_",saunames[sau],".png")
+    filen <- pathtopath(rundir,nfile)
+    caption <- paste0(saunames[sau]," trajectories for each population ",
+                      "x replicates of ",label)
+  }
+  yrs <- as.numeric(dimnames(saudepl)[[1]])
+  numyrs <- length(yrs)
+  maxy <- getmax(saudepl)
+  label <- paste0(saunames[sau],"  ",label)
+  plotprep(width=9,height=4.5,newdev=TRUE,filename=filen,cex=0.9,verbose=FALSE)
+  parset()
+  plot(yrs,saudepl[,1,1],type="l",lwd=1,col="grey",ylim=c(0,maxy),
+       panel.first=grid(),xlab="",ylab=label)
+  for (iter in 1:reps) {
+    for (pop in 1:npop) {
+      lines(yrs,saudepl[,pop,iter],lwd=1,col="grey")
+    }
+  }
+  meds <- matrix(0,nrow=numyrs,ncol=npop,dimnames=list(yrs,popnums))
+  if (npop > 12) {
+    outcol <- 1:npop
+  } else {
+    outcol <- popcol
+  }
+  for (pop in 1:npop) {
+    meds[,pop] <- apply(saudepl[,pop,],1,median)
+
+    lines(yrs,meds[,pop],lwd=3,col=outcol[pop])
+  }
+  legend("topleft",legend=popnums,col=c(popcol[1:npop]),lwd=4,bty="n",cex=1)
+  if (!console) {
+    addplot(filen,rundir=rundir,category="poplevelplots",caption)
+  }
+  return(invisible(meds))
+} # end of poplevelplot
+
 #' @title predsizecomp plots size-composition for each replicate in a subset of years
 #'
 #' @description predsizecomp generates plots the size composition data for a

@@ -331,7 +331,8 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   addtable(hcrout$refpts,"hcrout_refpts.csv",rundir,category="HSperf",
            caption="HCR reference points")
   # plot the scores
-  for (sau in 1:glb$nSAU) {
+  nSAU <- glb$nSAU
+  for (sau in 1:nSAU) {
     filen <- paste0("HS_Score_plots_",glb$saunames[sau],".png")
     filename <- pathtopath(rundir,filen)
     caption <- paste0("Harvest strategy scores and outputs for ",
@@ -344,16 +345,26 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
     plotmultflags(outhcr,zoneDP,sau,filen=filename)
     addplot(filen,rundir=rundir,category="scores",caption)
   }
+  # generate population plots
+  popmedcatch <- vector(mode="list",length=nSAU)
+  names(popmedcatch) <- glb$saunames
+  popmedcpue <- vector(mode="list",length=nSAU)
+  names(popmedcpue) <- glb$saunames
+  for (sau in 1:nSAU) {
+    saumed <- poplevelplot(rundir=rundir,sau=sau,popvar=zoneDP$catch,glb=glb,
+                 label="Catch",console=FALSE)
+    popmedcatch[[sau]] <- saumed
+    saumed <- poplevelplot(rundir=rundir,sau=sau,popvar=zoneDP$cpue,glb=glb,
+                           label="CPUE",console=FALSE)
+    popmedcpue[[sau]] <- saumed
+  }
   # generate sau phase plots
-  nSAU <- glb$nSAU
   kobedata <- vector(mode="list",length=nSAU)
   names(kobedata) <- glb$saunames
   for (plotsau in 1:glb$nSAU) {
     twophaseplots(dyn=sauout,glb=glb,outhcr=outhcr,sau=plotsau,kobeRP=kobeRP,
                   rundir=rundir,startyr=condC$yearCE[1],console=FALSE,fnt=7)
   }
-
-
   if (!includeNAS) NAS=NULL
   out <- list(tottime=tottime,projtime=projtime,starttime=starttime,glb=glb,
               ctrl=ctrl,zoneCP=zoneCP,zoneD=zoneD,zoneDD=zoneDD,zoneDP=zoneDP,
@@ -361,7 +372,8 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
               production=production,condout=condout,
               HSstats=HSstats,saudat=saudat,constants=constants,hsargs=hsargs,
               sauprod=sauprod,zonesummary=zonesummary,
-              kobedata=kobedata,outhcr=outhcr,scoremed=scoremed)
+              kobedata=kobedata,outhcr=outhcr,scoremed=scoremed,
+              popmedcatch=popmedcatch,popmedcpue=popmedcpue)
   return(out)
 } # end of do_MSE
 

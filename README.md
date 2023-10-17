@@ -45,6 +45,11 @@ examine its implications.
 
 # LATEST UPDATES
 
+- 2023-10-17 aMSE 0.1.13 added poplevelplot() plots to the output. So
+  far this includes catches and cpue. Population level plots can give
+  insight into the effectiveness of the fleet dynamics and whether each
+  population is being exploited.
+
 - 2023-08-01 aMSE 0.1.10 Added scoreplots and plotmultflags into the
   arguments for do_MSE rather than requiring the functions be called
   plotfinalscores() and plotmultandflags(), so any name can be given to
