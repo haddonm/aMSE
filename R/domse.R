@@ -342,14 +342,17 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
     filen <- paste0("HS_Mult_MetaFlag_plots_",glb$saunames[sau],".png")
     filename <- pathtopath(rundir,filen)
     caption <- paste0("catchmult and meta flags for ",glb$saunames[sau])
-    plotmultflags(outhcr,zoneDP,sau,filen=filename)
+    plotmultflags(outhcr=outhcr,sauans=sauout,sau=sau,filen=filename)
     addplot(filen,rundir=rundir,category="scores",caption)
   }
   # generate population plots
+  if (verbose) cat("plotting Population level dynamics \n")
   popmedcatch <- vector(mode="list",length=nSAU)
   names(popmedcatch) <- glb$saunames
   popmedcpue <- vector(mode="list",length=nSAU)
   names(popmedcpue) <- glb$saunames
+  popmeddepleB <- vector(mode="list",length=nSAU)
+  names(popmeddepleB) <- glb$saunames
   for (sau in 1:nSAU) {
     saumed <- poplevelplot(rundir=rundir,sau=sau,popvar=zoneDP$catch,glb=glb,
                  label="Catch",console=FALSE)
@@ -357,6 +360,9 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
     saumed <- poplevelplot(rundir=rundir,sau=sau,popvar=zoneDP$cpue,glb=glb,
                            label="CPUE",console=FALSE)
     popmedcpue[[sau]] <- saumed
+    saumed <- poplevelplot(rundir=rundir,sau=sau,popvar=zoneDP$depleB,glb=glb,
+                           label="Depletion_ExpB",console=FALSE)
+    popmeddepleB[[sau]] <- saumed
   }
   # generate sau phase plots
   kobedata <- vector(mode="list",length=nSAU)
@@ -373,7 +379,8 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
               HSstats=HSstats,saudat=saudat,constants=constants,hsargs=hsargs,
               sauprod=sauprod,zonesummary=zonesummary,
               kobedata=kobedata,outhcr=outhcr,scoremed=scoremed,
-              popmedcatch=popmedcatch,popmedcpue=popmedcpue)
+              popmedcatch=popmedcatch,popmedcpue=popmedcpue,
+              popmeddepleB=popmeddepleB)
   return(out)
 } # end of do_MSE
 

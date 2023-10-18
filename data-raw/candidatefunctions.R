@@ -1107,5 +1107,7 @@ poplevelplot(rundir=rundir,sau=7,popvar=zoneDP$cpue,glb=glb,
 
 
 
+load(file=paste0(outdir,postfixdir,".RData"))
+list2env(out,envir=.GlobalEnv)
 
 

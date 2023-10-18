@@ -38,6 +38,8 @@ Of course, adding such a component increases the number of options that may need
 
 * 2023-10-17 aMSE 0.1.13 added poplevelplot() plots to the output. So far this includes catches and cpue. Population level plots can give insight into the effectiveness of the fleet dynamics and whether each population is being exploited.
 
+* 2023-10-18 aMSE 0.1.14 A catch-up event where I have added some population level plots, I have fixed up the use of plotmultflags so that the exploitable biomass depletion plots really are at the sau level bu changing the input expected.
+
 * 2023-08-01 aMSE 0.1.10 Added scoreplots and plotmultflags into the arguments for do_MSE rather than requiring the functions be called plotfinalscores() and plotmultandflags(), so any name can be given to them.
 
 * 2023-07-26 aMSE 0.1.9 Added tasphaseplots to the kobe plots for comparison.
