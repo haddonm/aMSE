@@ -163,10 +163,15 @@
 #'     projections and then the size-composition data for every such interval
 #'     in years along the projection period. The years selected always include
 #'     the last year of projection and the year just before projections started.
-#' @param minsizecomp a vector of two values, hte first being the minimum size-
+#' @param minsizecomp a vector of two values, the first being the minimum size-
 #'     class to be used when plotting the predicted size-composition of the
 #'     stock, and the second being the minimum size-class when plotting the
 #'     numbers-at-size in the catch. The default=c(100,135)
+#' @param uplimH defines the upper limit of harvest rate used when estimating
+#'     the productivity (also important when initial depletion is not 1.0). The
+#'     default = 0.4
+#' @param incH defines the interval between H steps when estimating productivity
+#'     default = 0.005
 #'
 #' @seealso{
 #'  \link{makeequilzone}, \link{dohistoricC}, \link{prepareprojection},
@@ -185,10 +190,11 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                    verbose=FALSE,ndiagprojs=3,cutcatchN=56,matureL=c(70,200),
                    wtatL=c(80,200),mincount=100,includeNAS=FALSE,
                    depensate=0,kobeRP=c(0.4,0.2,0.15),nasInterval=5,
-                   minsizecomp=c(100,135)) {
+                   minsizecomp=c(100,135),uplimH=0.4,incH=0.005) {
   # generate equilibrium zone -----------------------------------------------
   starttime <- (Sys.time())
-  zone <- makeequilzone(rundir,controlfile,verbose=verbose)
+  zone <- makeequilzone(rundir,controlfile,doproduct=TRUE,uplimH=uplimH,
+                        incH=incH,verbose=verbose)
   equiltime <- (Sys.time()); if (verbose) print(equiltime - starttime)
   # declare main objects ----------------------------------------------------
   glb <- zone$glb

@@ -31,7 +31,9 @@ do_MSE(
   depensate = 0,
   kobeRP = c(0.4, 0.2, 0.15),
   nasInterval = 5,
-  minsizecomp = c(100, 135)
+  minsizecomp = c(100, 135),
+  uplimH = 0.4,
+  incH = 0.005
 )
 }
 \arguments{
@@ -132,10 +134,17 @@ projections and then the size-composition data for every such interval
 in years along the projection period. The years selected always include
 the last year of projection and the year just before projections started.}
 
-\item{minsizecomp}{a vector of two values, hte first being the minimum size-
+\item{minsizecomp}{a vector of two values, the first being the minimum size-
 class to be used when plotting the predicted size-composition of the
 stock, and the second being the minimum size-class when plotting the
 numbers-at-size in the catch. The default=c(100,135)}
+
+\item{uplimH}{defines the upper limit of harvest rate used when estimating
+the productivity (also important when initial depletion is not 1.0). The
+default = 0.4}
+
+\item{incH}{defines the interval between H steps when estimating productivity
+default = 0.005}
 }
 \value{
 a large list containing tottime, projtime, starttime, glb, ctrl,

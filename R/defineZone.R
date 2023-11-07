@@ -516,6 +516,11 @@ makeabpop <- function(popparam,midpts,projLML) {
 #'     numpop populations
 #' @param doproduct boolean, should the productivity calculations be made
 #'     during the conditioning. Set to FALSE conditionOM
+#' @param uplimH defines the upper limit of harvest used when estimating the
+#'     productivity (also important when initial depletion is not 1.0). The
+#'     default = 0.4
+#' @param incH defines the interval between H steps when estimating productivity
+#'     default = 0.005
 #' @param verbose Should progress comments be printed to console, default=TRUE
 #'
 #' @return a list of zoneC, zoneD, glb, constants, saudat,product, ctrl, and zone1
@@ -523,7 +528,8 @@ makeabpop <- function(popparam,midpts,projLML) {
 #'
 #' @examples
 #' print("wait on datafiles")
-makeequilzone <- function(rundir,ctrlfile="control.csv",doproduct=TRUE,verbose=TRUE) {
+makeequilzone <- function(rundir,ctrlfile="control.csv",doproduct=TRUE,
+                          uplimH=0.4,incH=0.005,verbose=TRUE) {
  #  rundir=rundir;ctrlfile=controlfile;doproduct=FALSE; verbose=TRUE
   zone1 <- readctrlfile(rundir,infile=ctrlfile,verbose=verbose)
   ctrl <- zone1$ctrl
@@ -543,7 +549,8 @@ makeequilzone <- function(rundir,ctrlfile="control.csv",doproduct=TRUE,verbose=T
     saudat <- constants
   }
   if (verbose) cat("Files read, now making zone \n")
-  out <- setupzone(constants,zone1,doproduct,verbose=verbose) # make operating model
+  out <- setupzone(constants,zone1,doproduct,uplim=uplimH,inc=incH,
+                   verbose=verbose) # make operating model
   zoneC <- out$zoneC
   zoneD <- out$zoneD
   glb <- out$glb             # glb now has the movement matrix
@@ -1101,7 +1108,9 @@ setupzone <- function(constants,zone1,doproduct,uplim=0.4,inc=0.005,verbose=TRUE
   zoneD <- ans$zoneD  # zone dynamics
   product <- NULL
   if (doproduct) {
-    if (verbose) cat("Now estimating population productivity \n")
+    if (verbose)
+      cat("Now estimating population productivity between H ",inc," and ",
+          uplim, "\n")
     # adds productivity, and MSY, MSYdepl to zoneC if doproduct=TRUE
     ans <- modzoneC(zoneC=zoneC,zoneD=zoneD,glob=glb,uplim=uplim,inc=inc)
     zoneC <- ans$zoneC  # zone constants
@@ -1118,16 +1127,16 @@ setupzone <- function(constants,zone1,doproduct,uplim=0.4,inc=0.005,verbose=TRUE
 #'     and a vector of initial lengths or mid-points of size classes STM
 #'     generates a square transition matrix with the probabilities of
 #'     growing from each initial size into the same or larger sizes.
-#'     Negative growth is disallowed. All columns in the matrix sunm to one.
+#'     Negative growth is disallowed. All columns in the matrix sum to one.
 #' @param p a vector of four parameters in the following order
 #'     MaxDL the maximum growth increment of the inverse logistic,
 #'     L50 the initial length at which the inflexion of the growth
 #'     increment curve occurs, L95 - the initial length that defines the
 #'     95th percentile of the growth increments, SigMax - the maximum
-#'     standard deviaiton of the normal distribution used to describe the
+#'     standard deviation of the normal distribution used to describe the
 #'     spread of each distribution of growth increments
 #' @param mids a vector of initial lengths which also define the width of
-#'     each size class thus, mids from 2 - 210 woul dimply 2mm size
+#'     each size class thus, mids from 2 - 210 would imply 2mm size
 #'     classes 1 - 3 = 2, 3 - 5 = 4, etc
 #' @return A square matrix with dimension =the length of the mids vector
 #' @export

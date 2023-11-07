@@ -45,6 +45,13 @@ examine its implications.
 
 # LATEST UPDATES
 
+- 2023-11-07 aMSE 0.1.15 Generalized the estimation of productivity to
+  allow for alternative values of the starting H and upper limit to H to
+  be applied to the dynamics while searching for the productivity
+  curves. The production matrix is also used by dodepletion, so uplimH
+  values \> 0.4 were required (by SA). Only a small cahnge is now
+  required in do_MSE, see the respective help.
+
 - 2023-10-17 aMSE 0.1.13 added poplevelplot() plots to the output. So
   far this includes catches and cpue. Population level plots can give
   insight into the effectiveness of the fleet dynamics and whether each

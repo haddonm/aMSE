@@ -12,11 +12,11 @@ MaxDL the maximum growth increment of the inverse logistic,
 L50 the initial length at which the inflexion of the growth
 increment curve occurs, L95 - the initial length that defines the
 95th percentile of the growth increments, SigMax - the maximum
-standard deviaiton of the normal distribution used to describe the
+standard deviation of the normal distribution used to describe the
 spread of each distribution of growth increments}
 
 \item{mids}{a vector of initial lengths which also define the width of
-each size class thus, mids from 2 - 210 woul dimply 2mm size
+each size class thus, mids from 2 - 210 would imply 2mm size
 classes 1 - 3 = 2, 3 - 5 = 4, etc}
 }
 \value{
@@ -27,7 +27,7 @@ STM With the input of the four parameters inside a vector,
     and a vector of initial lengths or mid-points of size classes STM
     generates a square transition matrix with the probabilities of
     growing from each initial size into the same or larger sizes.
-    Negative growth is disallowed. All columns in the matrix sunm to one.
+    Negative growth is disallowed. All columns in the matrix sum to one.
 }
 \examples{
  param <- c(25.0,120.0,170.0,4.0)

@@ -36,6 +36,8 @@ Of course, adding such a component increases the number of options that may need
 
 # LATEST UPDATES
 
+* 2023-11-07 aMSE 0.1.15 Generalized the estimation of productivity to allow for alternative values of the starting H and upper limit to H to be applied to the dynamics while searching for the productivity curves. The production matrix is also used by dodepletion, so uplimH values > 0.4 were required (by SA). Only a small cahnge is now required in do_MSE, see the respective help.
+
 * 2023-10-17 aMSE 0.1.13 added poplevelplot() plots to the output. So far this includes catches and cpue. Population level plots can give insight into the effectiveness of the fleet dynamics and whether each population is being exploited.
 
 * 2023-10-18 aMSE 0.1.14 A catch-up event where I have added some population level plots, I have fixed up the use of plotmultflags so that the exploitable biomass depletion plots really are at the sau level bu changing the input expected.

@@ -8,7 +8,7 @@
 #' @importFrom utils write.table write.csv head tail winDialog
 #' @importFrom codeutils getmax getmin removeEmpty splitDate which.closest
 #' @importFrom codeutils digitsbyrow outfit %ni% quants makelist pathtopath
-#' @importFrom hplot parset plotprep pickbound RGB makepolygon
+#' @importFrom hplot parset plotprep pickbound RGB makepolygon saucompdata
 #' @importFrom makehtml addplot addtable dirExists filenametopath
 #' @importFrom makehtml getextension htmltable logfilename make_html pathend
 #' @importFrom makehtml pathtype setuphtml write_css write_head
