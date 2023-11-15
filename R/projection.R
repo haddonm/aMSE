@@ -238,7 +238,7 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
   }
   outhcr <- makehcrout(glb,hsargs)
   for (year in startyr:endyr) { # iter=1; year=startyr
-    if (verbose) cat(year," ")
+    if (verbose) cat(yrnames[year]," ")
       for (iter in 1:reps) {
       hcrdata <- getdata(sampleCE,sampleFIS,sampleNaS,
                          sauCPUE=zoneDP$cesau[,,iter],

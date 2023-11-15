@@ -11,7 +11,8 @@ do_comparison(
   files,
   pickfiles,
   verbose = TRUE,
-  intensity = 100
+  intensity = 100,
+  zero = FALSE
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ then files is assumed to include the full path as well as the file name}
 
 \item{intensity}{is the density of the rgb colours used in the ribbon plots.
 the default = 100}
+
+\item{zero}{should the phase plots have an origin at zero, default=FALSE}
 }
 \value{
 nothing but it does conduct a comparison of at least two scenarios
