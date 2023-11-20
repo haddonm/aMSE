@@ -74,11 +74,11 @@ oneyearsauC conducts one year's dynamics in the simulation
     returning the revised zoneD, which will have had a single year
     of activity included in each of its components. uses the function
     imperr to introduce implementation error to the actual catches. The
-    option now exists of including one or more years of pperturbation in
+    option now exists of including one or more years of perturbation in
     the survivorship of the recruitment level and post-larval numbers. This
     is to permit heat wave and similar mortality events impacting on the
     subsequent recruitment and immediate settled survivorship. To be active
-    envyr should be a vector or which projeciton eyars an impact will occur,
+    envyr should be a vector or which projection years an impact will occur,
     and envsurv will be a matrix with a row for each year with the proportion
     of expected recruitment off the predicted stock recruitment relationship,
     and the proportion survivorship of post-larval numbers-at-size).

@@ -10,7 +10,7 @@ finalcondyeardepletion(rundir, sauzone, glb, deplvar = "sB", console = TRUE)
 \item{rundir}{the scenario's directory}
 
 \item{sauzone}{the output from zonetosau, found in sauplots. This is
-the projeciton results summarized into their respective sau rather than
+the projection results summarized into their respective sau rather than
 the individual populations}
 
 \item{glb}{the globals object}

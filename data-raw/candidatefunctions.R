@@ -93,11 +93,19 @@ cbind(dep6,cdep6)
 
 
 
+cols <- c("#FF0000","#FF8000","#FFFF00","#80FF00","#00FF00","#00FF80","#00FFFF",
+          "#0080FF","#0000FF","#8000FF","#FF00FF","#FF0080")
+
+popcol <- c("red","#FF7790","orange","yellow","#80FE90","green","cyan",
+            "#0080FF","blue","#8000FF","magenta","#FF0080")
 
 
+plotprep(width=10,height=5)
+parset()
+plot(1:100,rep(1,100),type="l",lwd=2,col=popcol[1],ylim=c(0,13))
+for (i in 2:12) lines(1:100, rep(i,100),lwd=2,col=popcol[i])
+for (i in 1:12)  lines(1:100, rep((i+0.2),100),lwd=2,col=cols[i])
 
-
-}
 
 
 

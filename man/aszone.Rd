@@ -7,8 +7,8 @@
 aszone(sauzone, zoneCP)
 }
 \arguments{
-\item{sauzone}{the output from the applyharvest strategy function, a large
-list of arrays or results}
+\item{sauzone}{the output from the apply harvest strategy function for each
+jurisdiction, a large list of arrays or results}
 
 \item{zoneCP}{the constant part of the projection zone}
 }

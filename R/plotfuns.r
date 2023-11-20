@@ -116,8 +116,6 @@ diagnosticsproj <- function(zonePsau,glb,rundir,nrep=3) {
     } # end of actual catches
     addplot(filen,rundir=rundir,category="DiagProj",caption)
   } # end of internal function plotvar
-  #  zonePsau=sauout$zonePsau; filen=""
-#  nsau <- glb$nSAU
   saunames <- glb$saunames
   # plot catch residuals
   catch <- zonePsau$catch
@@ -314,7 +312,7 @@ dosauplot <- function(ylabel,postrep,glb,startyr,addCI=FALSE,
 #'
 #' @param rundir the scenario's directory
 #' @param sauzone the output from zonetosau, found in sauplots. This is
-#'     the projeciton results summarized into their respective sau rather than
+#'     the projection results summarized into their respective sau rather than
 #'     the individual populations
 #' @param glb the globals object
 #' @param deplvar which depletion variable to use, either 'sB' or 'eB' are the
@@ -896,7 +894,7 @@ plothsstats <- function(rundir,hsstats,glb,average=FALSE) {
 #' @description plotNt accepts size-composition data (either the population Nt,
 #'     of the catchN), and plots the replicate size-distributions for each SAU.
 #'     It then puts the first year's size-distribution on top and if the medcol
-#'     that defines the colour of hte mdeian of the replicates is different
+#'     that defines the colour of the median of the replicates is different
 #'     from 0 (not plotted) then it plots the median as well. A contrasting
 #'     colour choice is 4 = Blue.
 #'

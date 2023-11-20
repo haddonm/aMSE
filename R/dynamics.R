@@ -110,10 +110,10 @@ depleteSAU <- function(zoneC,zoneD,glob,initdepl,product,len=15) {
 #'
 #' @examples
 #' print("wait on some data sets")
-#' #  zoneD,zoneC,glob=glb,condC,calcpopC=calcpopC,sigR=1e-08,sigB=1e-08
+#' # dohistoric(zoneDD=zoneD,zoneC=zoneC,glob=glb,condC=condC,calcpopC=calcexpectpopC,
+#' #            fleetdyn=NULL,hsargs=hsargs,sigR=1e-08,sigB=1e-08)
 dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,fleetdyn,hsargs,
                         sigR=1e-08,sigB=1e-08) {
-  # zoneC=zoneC; zoneDD=zoneD;glob=glb;condC=condC;calcpopC=calcexpectpopC; sigR=1e-08; sigB=1e-08;
   histC <- condC$histCatch
   yrs <- condC$histyr[,"year"]
   histCE <- condC$histCE
@@ -187,8 +187,9 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,fleetdyn,hsargs,
 #'
 #' @examples
 #' print("wait on suitable internal data sets")
+#' # imperr(catchsau=acatch,exb=zoneDD$exploitB[endyr,],sauindex=glb$sauindex,
+#' #        sigmab=0.1)
 imperr <- function(catchsau,exb,sauindex,sigmab=1e-08) {
-  # exb=zoneDD$exploitB[endyr,]; suaindex=glb$sauindex; sigmaB=0.1; catchsau=acatch
   TAC <- sum(catchsau,na.rm=TRUE)
   totexb <- sum(exb,na.rm=TRUE)
   npop <- length(exb)
@@ -264,7 +265,7 @@ oneyear <- function(MatWt,SelWt,selyr,Me,G,qest,WtL,inNt,inH,lambda,scalece) {
 
 #' @title oneyearcat one year's catch dynamics for one abpop
 #'
-#' @description oneyear does one year's dynamics for one input
+#' @description oneyearcat does one year's dynamics for one input
 #'     population. Where the fishing is based on a given catch per
 #'     population, which would be determined by any harvest control
 #'     rule. It is used to step through populations of a zone.
@@ -315,11 +316,12 @@ oneyear <- function(MatWt,SelWt,selyr,Me,G,qest,WtL,inNt,inH,lambda,scalece) {
 #'
 #' @examples
 #' print("need to wait on built in data sets")
+#' # oneyearcat(MatWt=pop$MatWt,SelWt=pop$SelWt[,year],selyr=pop$Select[,year],
+#' #            Me=pop$Me,G=pop$G,scalece=pop$scalece,WtL=pop$WtL,inNt=inN[,popn],
+#' #            incat=popC[popn],sigce=sigce,lambda=pop$lambda,qest=pop$qest,
+#' #            fissettings=NULL,fisindex=NULL)
 oneyearcat <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
                        lambda,qest,fissettings=NULL,fisindex=NULL) {
-#  MatWt=pop$MatWt;SelWt=pop$SelWt[,year];selyr=pop$Select[,year];Me=pop$Me;
-#  G=pop$G; scalece=pop$scalece;WtL=pop$WtL;inNt=inN[,popn];incat=popC[popn];
-#  sigce=sigce;lambda=pop$lambda;qest=pop$qest
   MatWt <- MatWt/1e06
   SelectWt <- SelWt/1e06
   Nclass <- length(selyr)
@@ -347,12 +349,6 @@ oneyearcat <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
   return(ans)
 } # End of oneyearcat
 
-# lambda <- glb$lambda   # if lambda = 1 mult = 1, if Lambda=0.65 mult=15.46
-# mult <- 2500.0*exp(-7.824046*lambda) # empirically determined for TAS
-# qest <- epin["qest"]   #exp(mean(log(cpue[pickce]/expB[pickce])))
-# predce <- qest * mult * (expB ^ lambda)
-
-
 
 #' @title oneyearsauC conducts one year's dynamics using catch not harvest
 #'
@@ -362,11 +358,11 @@ oneyearcat <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
 #'     returning the revised zoneD, which will have had a single year
 #'     of activity included in each of its components. uses the function
 #'     imperr to introduce implementation error to the actual catches. The
-#'     option now exists of including one or more years of pperturbation in
+#'     option now exists of including one or more years of perturbation in
 #'     the survivorship of the recruitment level and post-larval numbers. This
 #'     is to permit heat wave and similar mortality events impacting on the
 #'     subsequent recruitment and immediate settled survivorship. To be active
-#'     envyr should be a vector or which projeciton eyars an impact will occur,
+#'     envyr should be a vector or which projection years an impact will occur,
 #'     and envsurv will be a matrix with a row for each year with the proportion
 #'     of expected recruitment off the predicted stock recruitment relationship,
 #'     and the proportion survivorship of post-larval numbers-at-size).
@@ -509,14 +505,14 @@ oneyearD <- function(zoneC,zoneD,inHt,year,sigmar,Ncl,npop,movem) {
   zoneD$deplsB[year,] <- zoneD$matureB[year,]/b0
   zoneD$depleB[year,] <- zoneD$exploitB[year,]/getvar(zoneC,"ExB0")
   return(zoneD)
-} # end of oneyearD   round(zoneD$Nt[,year,])
+} # end of oneyearD
 
 
 #' @title oneyearrec calculates the Beverton-Holt recruitment
 #'
 #' @description oneyearrec calculates the Beverton-Holt recruitment for the
 #'    input populations in a single year; parameterized with steepness,
-#'    R0, and B0. To drop variation to insignificant levels set sigmar-1-08. To
+#'    R0, and B0. To drop variation to insignificant levels set sigmar=1-08. To
 #'    allow for inclusion of recruitment deviates, which can be required to
 #'    explain high catches when stock biomass would otherwise be low, we have
 #'    introduced the devR argument. As the deviates are all multiplicative and
@@ -538,7 +534,7 @@ oneyearD <- function(zoneC,zoneD,inHt,year,sigmar,Ncl,npop,movem) {
 #'     levels from 0.2B0 will lead to a linear decline in recruitment down to
 #'     zero rather than the B-H curve that normally occurs. any recruitment
 #'     deviates continue to be applied. Conditioning the model would need to be
-#'     done with depesation turned on in sizemod as well.
+#'     done with depensation turned on in sizemod as well.
 #'
 #' @seealso{
 #'  \link{oneyearsauC}, \link{oneyearcat}, \link{dohistoricC}
@@ -621,7 +617,7 @@ oneyrgrowth <- function(inpop,startsize=2) {
 #'     after the equilibrium zone (zoneD) has had the historical catches
 #'     applied.
 #' @param glb the globals object. Needed for the sauindex and various array
-#'     dimnesion labels.
+#'     dimension labels.
 #'
 #' @seealso{
 #'  \link{preparesizecomp}, \link{plotsizecomp}

@@ -12,7 +12,7 @@ after the equilibrium zone (zoneD) has had the historical catches
 applied.}
 
 \item{glb}{the globals object. Needed for the sauindex and various array
-dimnesion labels.}
+dimension labels.}
 }
 \value{
 An Nclass x nyrs x nsau array of numbers-at-size data

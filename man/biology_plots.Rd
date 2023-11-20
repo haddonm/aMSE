@@ -17,14 +17,14 @@ biology_plots(rundir, glb, zoneC, matL = c(30, 210), Lwt = c(80, 210))
 for use in the maturity-at-length plots}
 
 \item{Lwt}{a vector of two containing the left and right hand size classes
-for use in the wight-atlength plots}
+for use in the weight-at-length plots}
 }
 \value{
 invisibly returns the biological properties of the populations
 }
 \description{
 biology_plots generates the yield vs spawning biomass,
-    weight-at-lenght, and emergence plots for all populations. In
+    weight-at-length, and emergence plots for all populations. In
     addition, it also tabulates the biological properties of each
     population and SAU and the total zone. This is only called in
     do_MSE.

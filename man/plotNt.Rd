@@ -25,7 +25,7 @@ invisibly the matrix of median values, Nclass x nsau
 plotNt accepts size-composition data (either the population Nt,
     of the catchN), and plots the replicate size-distributions for each SAU.
     It then puts the first year's size-distribution on top and if the medcol
-    that defines the colour of hte mdeian of the replicates is different
+    that defines the colour of the median of the replicates is different
     from 0 (not plotted) then it plots the median as well. A contrasting
     colour choice is 4 = Blue.
 }

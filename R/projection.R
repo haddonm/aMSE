@@ -45,8 +45,8 @@ asSAU <- function(projzone,sauindex,saunames,b0,exb0) {
 #'     values and then summing each set of SAU for each year and iteration.
 #'     appears to be redundant
 #'
-#' @param sauzone the output from the applyharvest strategy function, a large
-#'     list of arrays or results
+#' @param sauzone the output from the apply harvest strategy function for each
+#'     jurisdiction, a large list of arrays or results
 #' @param zoneCP the constant part of the projection zone
 #'
 #' @return a list of 8 nyrs x reps matrices, summarizing the fishery outputs at

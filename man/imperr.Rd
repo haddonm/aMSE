@@ -33,4 +33,6 @@ imperr converts aspirational sau catches into population level
 }
 \examples{
 print("wait on suitable internal data sets")
+# imperr(catchsau=acatch,exb=zoneDD$exploitB[endyr,],sauindex=glb$sauindex,
+#        sigmab=0.1)
 }

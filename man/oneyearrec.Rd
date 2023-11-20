@@ -28,7 +28,7 @@ which means no depensation. If one puts, say, 0.2, here then biomass
 levels from 0.2B0 will lead to a linear decline in recruitment down to
 zero rather than the B-H curve that normally occurs. any recruitment
 deviates continue to be applied. Conditioning the model would need to be
-done with depesation turned on in sizemod as well.}
+done with depensation turned on in sizemod as well.}
 }
 \value{
 an absolute number of recruits from a given spawning biomass
@@ -36,7 +36,7 @@ an absolute number of recruits from a given spawning biomass
 \description{
 oneyearrec calculates the Beverton-Holt recruitment for the
    input populations in a single year; parameterized with steepness,
-   R0, and B0. To drop variation to insignificant levels set sigmar-1-08. To
+   R0, and B0. To drop variation to insignificant levels set sigmar=1-08. To
    allow for inclusion of recruitment deviates, which can be required to
    explain high catches when stock biomass would otherwise be low, we have
    introduced the devR argument. As the deviates are all multiplicative and

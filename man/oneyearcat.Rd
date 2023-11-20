@@ -64,7 +64,7 @@ a list containing a vector of ExploitB, MatureB, Catch, and ce, and
     a matrix NaL containing Nt and CatchN used to update a pop in yr + 1
 }
 \description{
-oneyear does one year's dynamics for one input
+oneyearcat does one year's dynamics for one input
     population. Where the fishing is based on a given catch per
     population, which would be determined by any harvest control
     rule. It is used to step through populations of a zone.
@@ -83,6 +83,10 @@ oneyear does one year's dynamics for one input
 }
 \examples{
 print("need to wait on built in data sets")
+# oneyearcat(MatWt=pop$MatWt,SelWt=pop$SelWt[,year],selyr=pop$Select[,year],
+#            Me=pop$Me,G=pop$G,scalece=pop$scalece,WtL=pop$WtL,inNt=inN[,popn],
+#            incat=popC[popn],sigce=sigce,lambda=pop$lambda,qest=pop$qest,
+#            fissettings=NULL,fisindex=NULL)
 }
 \seealso{
 {
