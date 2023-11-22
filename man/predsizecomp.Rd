@@ -46,7 +46,9 @@ which has 2mm size classes starting at 2mm, this omits all animals less
 than 10mm.}
 }
 \value{
-Nothing but it does plot a graph.
+the outcome which is OK if all replicates OK, but names the last year
+    group to have problems in its replicates if any hit zero catch, and it
+    plots a graph.
 }
 \description{
 predsizecomp generates plots the size composition data for a
@@ -58,4 +60,6 @@ predsizecomp generates plots the size composition data for a
 }
 \examples{
 print("wait on suitable data")
+# sau=1;NSC=sauNAS$catchN; glb=glb; minSL=minsizecomp[2];omit=5
+# interval=nasInterval;prop=TRUE;console=TRUE;rundir=rundir
 }

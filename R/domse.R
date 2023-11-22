@@ -63,7 +63,38 @@
 # getdata=sadata
 #
 
-# removed just after calcpopC:
+# VIC HS hsargs
+# rundir=rundir
+# controlfile=controlfile
+# hsargs=hsargs
+# hcrfun=Vic_HS
+# sampleCE=vicCPUE
+# sampleFIS=vicFIS
+# sampleNaS=vicNaS
+# getdata=vicdata
+# calcpopC=viccalcexpectpopC
+# makeouthcr=vicmakeouthcr
+# #hcrscoreoutputs = saextractandplotscores,
+# #HSPMs=sagetHSscores,
+# fleetdyn = NULL
+# scoreplot=vicplotfinalscores2
+# plotmultflags=vicplotmultandflags
+# interimout=c(outdir,postfixdir)
+# varyrs=7
+# startyr=38
+# verbose=TRUE
+# ndiagprojs=3
+# cutcatchN=56
+# matureL=c(40,170)
+# wtatL=c(50,200)
+# mincount=120
+# includeNAS = TRUE
+# depensate=0
+# kobeRP=c(0.4,0.2,0.15)
+# nasInterval=5
+# minsizecomp=c(100,135)
+# uplimH=0.6
+# incH=0.01
 
 
 
@@ -249,7 +280,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   sauCt <- popNAStosau(catchN,glb)
   compdat <- condC$compdat$lfs
   if (!is.null(compdat)) {
-    for (plotsau in 1:glb$nSAU) {
+    for (plotsau in 1:glb$nSAU) { # plotsau=1
       lfs <- preparesizecomp(compdat[,,plotsau],mincount=mincount)
       yrsize <- as.numeric(colnames(lfs))
       histyr <- condC$histyr
@@ -305,11 +336,12 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   sauout <- sauout[-c(12,11)]  # This removes the Nt and catchN from sauout
   if (verbose) cat("Finished all sau plots \n")
   for (sau in 1:glb$nSAU) # sau=1
-     predsizecomp(sau=sau, NSC=sauNAS$Nt, glb=glb, minSL=minsizecomp[1],
-                  interval=nasInterval,prop=TRUE,console=FALSE,rundir=rundir)
+    predsizecomp(sau=sau, NSC=sauNAS$Nt, glb=glb, minSL=minsizecomp[1],
+                 interval=nasInterval,prop=TRUE,console=FALSE,rundir=rundir)
   for (sau in 1:glb$nSAU)
-     predsizecomp(sau=sau, NSC=sauNAS$catchN, glb=glb, minSL=minsizecomp[2],
-                  interval=nasInterval,prop=TRUE,console=FALSE,rundir=rundir)
+    prob <- predsizecomp(sau=sau, NSC=sauNAS$catchN, glb=glb, minSL=minsizecomp[2],
+                         interval=nasInterval,prop=TRUE,console=FALSE,rundir=rundir)
+  if ((verbose) & (prob != "OK")) cat(prob,"\n")
   if (verbose) cat("Finished plotting size-composition data \n")
   diagnosticsproj(sauout,glb,rundir,nrep=ndiagprojs)
   outzone <- poptozone(zoneDP,NAS,glb,

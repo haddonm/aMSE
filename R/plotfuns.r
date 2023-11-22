@@ -1346,13 +1346,18 @@ poplevelplot <- function(rundir,sau,popvar,glb,label="",console=TRUE) {
 #'     which has 2mm size classes starting at 2mm, this omits all animals less
 #'     than 10mm.
 #'
-#' @return Nothing but it does plot a graph.
+#' @return the outcome which is OK if all replicates OK, but names the last year
+#'     group to have problems in its replicates if any hit zero catch, and it
+#'     plots a graph.
 #' @export
 #'
 #' @examples
 #' print("wait on suitable data")
+#' # sau=1;NSC=sauNAS$catchN; glb=glb; minSL=minsizecomp[2];omit=5
+#' # interval=nasInterval;prop=TRUE;console=TRUE;rundir=rundir
 predsizecomp <- function(sau,NSC,glb,minSL=10,interval=5,prop=TRUE,
                          console=TRUE,rundir="",omit=5) {
+  outcome <- "OK"
   Nclass <- glb$Nclass
   pickSC <- (omit+1):Nclass
   if (minSL > 0) {
@@ -1377,16 +1382,26 @@ predsizecomp <- function(sau,NSC,glb,minSL=10,interval=5,prop=TRUE,
   plotprep(width=8,height=9,filename=filen,cex=0.9,verbose=FALSE)
   parset(plots=pickbound(numyrs+1),margin=c(0.25,0.45,0.1,0.1),byrow=FALSE,
          outmargin=c(1.5,1,0,0))
-  for (i in 1:numyrs) {  # i=1
-    psauNt <- sauNt[,i,]
-    if (prop) psauNt <- proportions(x=psauNt,margin=2)
-    qts <- apply(psauNt,1,quants)
-    medyrs[,i] <- qts[3,]
-    maxy <- max(psauNt[pickSC,])*1.025
-    plot(shlength[pickSC],psauNt[pickSC,1],type="l",lwd=1,col="grey",xlab="",
-         ylim=c(0,maxy),ylab=picknames[i],panel.first=grid())
-    for (j in 2:reps) lines(shlength[pickSC],psauNt[pickSC,j],lwd=1,col="grey")
-    lines(shlength[pickSC],qts[3,pickSC],lwd=2,col="red")
+  for (i in 1:numyrs) {  # i=5
+      yrsauNt <- psauNt <- sauNt[,i,]
+      if (prop) {
+        reptotal <- colSums(yrsauNt)
+        pickrep <- which(reptotal > 0)
+        if (length(pickrep) < length(reptotal)) {
+          reptotal[-pickrep] <- 1
+          nreps <- length(reptotal) - length(pickrep)
+          outcome <- paste0(nreps," Replicates in year group ",i," were zero")
+        }
+        for (rp in 1:reps) psauNt[,rp] <- yrsauNt[,rp]/reptotal[rp]
+       # psauNt[-pickrep] <- 0
+      }
+      qts <- apply(psauNt,1,quants)
+      medyrs[,i] <- qts[3,]
+      maxy <- max(psauNt[pickSC,])*1.025
+      plot(shlength[pickSC],psauNt[pickSC,1],type="l",lwd=1,col="grey",xlab="",
+           ylim=c(0,maxy),ylab=picknames[i],panel.first=grid())
+      for (j in 2:reps) lines(shlength[pickSC],psauNt[pickSC,j],lwd=1,col="grey")
+      lines(shlength[pickSC],qts[3,pickSC],lwd=2,col="red")
   }
   maxy <- getmax(medyrs[pickSC,])
   plot(shlength[pickSC],medyrs[pickSC,1],type="l",lwd=2,col=1,xlab="",
@@ -1401,6 +1416,7 @@ predsizecomp <- function(sau,NSC,glb,minSL=10,interval=5,prop=TRUE,
   if (!console) {
     addplot(filen,rundir=rundir,category="NumSize",caption)
   }
+  return(invisible(outcome))
 } # end of predsizecomp
 
 #' @title preparesizecomp strips out empty columns and identifies samples
