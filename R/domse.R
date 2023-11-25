@@ -226,7 +226,10 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   starttime <- (Sys.time())
   zone <- makeequilzone(rundir,controlfile,doproduct=TRUE,uplimH=uplimH,
                         incH=incH,verbose=verbose)
-  equiltime <- (Sys.time()); if (verbose) print(equiltime - starttime)
+  if (verbose) {
+    incrtime1 <- Sys.time(); timeinc <- incrtime1 - starttime
+    cat("makeequilzone ",timeinc,attr(timeinc,"units"),"\n")
+  }
   # declare main objects ----------------------------------------------------
   glb <- zone$glb
   ctrl <- zone$ctrl
@@ -252,6 +255,11 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   if (verbose) cat("Conditioning on the Fishery data  \n")
   zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,condC,calcpopC=calcpopC,
                         fleetdyn=fleetdyn,hsargs=hsargs,sigR=1e-08,sigB=1e-08)
+
+  if (verbose) {
+    incrtime2 <- Sys.time(); timeinc <- incrtime2 - incrtime1
+    cat("dohistoricC ",timeinc,attr(timeinc,"units"),"\n")
+  }
   hyrs <- glb$hyrs
   propD <- as.data.frame(t(getzoneprops(zoneC,zoneDD,glb,year=hyrs)))
   columns <- c("B0","MSY","MSYDepl","bLML","propprot","SpBDepl","catch",
@@ -274,6 +282,10 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   condout <- plotconditioning(zoneDD,glb,zoneC,condC$histCE,
                               histCatch=condC$histCatch,rundir,
                               condC$recdevs,console=FALSE)
+  if (verbose) {
+    incrtime1 <- Sys.time(); timeinc <- incrtime1 - incrtime2
+    cat("Conditioning plots completed ",timeinc,attr(timeinc,"units") ,"\n")
+  }
   saurecdevs(condC$recdevs,glb,rundir,filen="saurecdevs.png")
   # plot predicted size-comp of catch vs observed size-comps
   catchN <- zoneDD$catchN
@@ -289,7 +301,6 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
       plotsizecomp(rundir=rundir,incomp=lfs,SAU=glb$saunames[plotsau],lml=LML,
                    catchN=sauCt[,,plotsau],start=NA,proportion=TRUE,
                    console=FALSE)
-
     }
     saucompdata(allcomp=compdat,glb=glb,horizline=5,console=FALSE,rundir=rundir,
                 ylabel="Size-Composition of Catches",tabname="OrigComp")
@@ -302,6 +313,10 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   zoneDP <- outpp$zoneDP
   projC <- outpp$projC
   zoneCP <- outpp$zoneCP
+  if (verbose) {
+    incrtime2 <- Sys.time(); timeinc <- incrtime2 - incrtime1
+    cat("Projection preparation completed ",timeinc,attr(timeinc,"units"),"\n")
+  }
  # Rprof()  #  ctrl$reps=25
   if (verbose) cat("Doing projections \n")
   outproj <- doprojections(ctrl=ctrl,zoneDP=zoneDP,zoneCP=zoneCP,glb=glb,
@@ -309,7 +324,11 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                            sampleFIS=sampleFIS,sampleNaS=sampleNaS,
                            getdata=getdata,calcpopC=calcpopC,
                            makehcrout=makeouthcr,fleetdyn=fleetdyn,verbose=TRUE)
-  if (verbose) cat("Now generating final plots and tables \n")
+  if (verbose) {
+    incrtime1 <- Sys.time(); timeinc <- incrtime1 - incrtime2
+    cat("All projections finished ",timeinc,attr(timeinc,"units") ,"\n")
+    cat("Now generating final plots and tables \n")
+  }
   zoneDP=outproj$zoneDP
   hcrout <- outproj$hcrout
   outhcr <- outproj$outhcr
@@ -334,7 +353,10 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                      startyr=startyr,addCI=TRUE,histCE=condC$histCE)
   sauNAS <- list(Nt=sauout$Nt,catchN=sauout$catchN)
   sauout <- sauout[-c(12,11)]  # This removes the Nt and catchN from sauout
-  if (verbose) cat("Finished all sau plots \n")
+  if (verbose) {
+    incrtime2 <- Sys.time(); timeinc <- incrtime2 - incrtime1
+    cat("Finished all sau plots ",timeinc,attr(timeinc,"units"),"\n")
+  }
   for (sau in 1:glb$nSAU) # sau=1
     predsizecomp(sau=sau, NSC=sauNAS$Nt, glb=glb, minSL=minsizecomp[1],
                  interval=nasInterval,prop=TRUE,console=FALSE,rundir=rundir)
@@ -342,7 +364,10 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
     prob <- predsizecomp(sau=sau, NSC=sauNAS$catchN, glb=glb, minSL=minsizecomp[2],
                          interval=nasInterval,prop=TRUE,console=FALSE,rundir=rundir)
   if ((verbose) & (prob != "OK")) cat(prob,"\n")
-  if (verbose) cat("Finished plotting size-composition data \n")
+  if (verbose) {
+    incrtime1 <- Sys.time(); timeinc <- incrtime1 - incrtime2
+    cat("Finished size-composition plots",timeinc,attr(timeinc,"units"),"\n")
+  }
   diagnosticsproj(sauout,glb,rundir,nrep=ndiagprojs)
   outzone <- poptozone(zoneDP,NAS,glb,
                        B0=sum(getvar(zoneC,"B0")),
@@ -402,6 +427,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                            label="Depletion_ExpB",console=FALSE)
     popmeddepleB[[sau]] <- saumed
   }
+
   # generate sau phase plots
   kobedata <- vector(mode="list",length=nSAU)
   names(kobedata) <- glb$saunames
@@ -409,8 +435,12 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
     twophaseplots(dyn=sauout,glb=glb,outhcr=outhcr,sau=plotsau,kobeRP=kobeRP,
                   rundir=rundir,startyr=condC$yearCE[1],console=FALSE,fnt=7)
   }
+  if (verbose) {
+    incrtime2 <- Sys.time(); timeinc <- incrtime2 - incrtime1
+    cat("All plots and tables completed ",timeinc,attr(timeinc,"units"),"\n")
+  }
   if (!includeNAS) NAS=NULL
-  out <- list(tottime=tottime,projtime=projtime,starttime=starttime,glb=glb,
+  out <- list(tottime=tottime,runtime=projtime,starttime=starttime,glb=glb,
               ctrl=ctrl,zoneCP=zoneCP,zoneD=zoneD,zoneDD=zoneDD,zoneDP=zoneDP,
               NAS=NAS,projC=projC,condC=condC,sauout=sauout,outzone=outzone,
               production=production,condout=condout,

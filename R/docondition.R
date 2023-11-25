@@ -349,12 +349,12 @@ do_condition <- function(rundir,controlfile,calcpopC,
   }
   condtime <- Sys.time()
   tottime <- round((condtime - starttime),3)
-  times <- list(tottime=tottime,condtime=condtime,starttime=starttime)
-  out <- list(times=times,glb=glb,ctrl=ctrl,zoneC=zoneC,zoneD=zoneD,zoneDD=zoneDD,
+  out <- list(tottime=tottime,runtime=condtime,starttime=starttime,glb=glb,
+              ctrl=ctrl,zoneC=zoneC,zoneD=zoneD,zoneDD=zoneDD,
               condC=condC,condout=condout,projC=projC,production=production,
               saudat=zone$saudat,constants=zone$constants)
   return(out)
-} # end of do_condition
+} # end of do_condition tottime=tottime,projtime=projtime,starttime=starttime
 
 #' @title getCPUEssq calculates ssq between historical and conditioned cpue
 #'
