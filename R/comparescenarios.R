@@ -751,7 +751,7 @@ cpueHSPM <- function(rundir,cpue,glbc,scenes,filen="",startyr=0) {
 #' }
 do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
                           intensity=100,zero=FALSE) {
-# rundir=rundir;postfixdir=postfixdir;outdir="";files=fullfiles;pickfiles=c(1,4)
+# rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(2,3,4)
 #  verbose=TRUE; intensity=100
   files2 <- files[pickfiles]
   nfile <- length(pickfiles)

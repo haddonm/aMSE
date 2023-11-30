@@ -13,7 +13,9 @@ do_condition(
   dohistoric = TRUE,
   matureL = c(70, 200),
   wtatL = c(80, 200),
-  mincount = 100
+  mincount = 100,
+  uplimH = 0.4,
+  incH = 0.005
 )
 }
 \arguments{
@@ -41,6 +43,13 @@ bounds on the biology weight-at-Length plots}
 
 \item{mincount}{determines the minimum sample size for a size-composition
 sample to be included in plots and analyses. Default = 100}
+
+\item{uplimH}{defines the upper limit of harvest rate used when estimating
+the productivity (also important when initial depletion is not 1.0). The
+default = 0.4}
+
+\item{incH}{defines the interval between H steps when estimating productivity
+default = 0.005}
 }
 \value{
 a large list containing tottime, projtime, starttime, glb, ctrl,

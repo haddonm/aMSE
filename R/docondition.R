@@ -261,6 +261,11 @@ changeline <- function(indir, filename, linenumber, newline,verbose=FALSE) {
 #'     bounds on the biology weight-at-Length plots
 #' @param mincount determines the minimum sample size for a size-composition
 #'     sample to be included in plots and analyses. Default = 100
+#' @param uplimH defines the upper limit of harvest rate used when estimating
+#'     the productivity (also important when initial depletion is not 1.0). The
+#'     default = 0.4
+#' @param incH defines the interval between H steps when estimating productivity
+#'     default = 0.005
 #'
 #' @seealso{
 #'  \link{makeequilzone}, \link{dohistoricC}, \link{prepareprojection},
@@ -278,10 +283,11 @@ changeline <- function(indir, filename, linenumber, newline,verbose=FALSE) {
 #' # matureL=c(70,200);wtatL=c(80,200);mincount=120
 do_condition <- function(rundir,controlfile,calcpopC,
                          verbose=FALSE,doproduct=FALSE,dohistoric=TRUE,
-                         matureL=c(70,200),wtatL=c(80,200),mincount=100) {
+                         matureL=c(70,200),wtatL=c(80,200),mincount=100,
+                         uplimH=0.4,incH=0.005) {
   starttime <- Sys.time()
-  zone <- makeequilzone(rundir,controlfile,doproduct=doproduct,
-                        verbose=verbose)
+  zone <- makeequilzone(rundir,controlfile,doproduct=doproduct,uplimH=uplimH,
+                        incH=incH,verbose=verbose)
   equiltime <- (Sys.time()); if (verbose) print(equiltime - starttime)
   # declare main objects
   glb <- zone$glb
