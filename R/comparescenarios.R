@@ -751,7 +751,7 @@ cpueHSPM <- function(rundir,cpue,glbc,scenes,filen="",startyr=0) {
 #' }
 do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
                           intensity=100,zero=FALSE) {
-# rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(2,3,4)
+# rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(11,12)
 #  verbose=TRUE; intensity=100
   files2 <- files[pickfiles]
   nfile <- length(pickfiles)
@@ -856,7 +856,7 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
   depleB <- scenebyvar(dyn,byvar="depleB",glb=glb,projonly=TRUE)
   depleBqnts <- sauquantbyscene(depleB,glb)
   for (sau in 1:nsau)
-    sauribbon(rundir,scenes=scenes,sau=sau,varqnts=deplsBqnts,
+    sauribbon(rundir,scenes=scenes,sau=sau,varqnts=depleBqnts,
               glb=glb,varname="depleB",console=FALSE,
               q90=TRUE,intens=intensity,addleg="bottomright")
   plotallphaseplots(rundir=rundir,dyn=dyn,glb=glb,scenes=scenes,width=9,
