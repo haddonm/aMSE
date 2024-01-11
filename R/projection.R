@@ -243,6 +243,7 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
       hcrdata <- getdata(sampleCE,sampleFIS,sampleNaS,
                          sauCPUE=zoneDP$cesau[,,iter],
                          sauacatch=zoneDP$acatch[,,iter],  # add year in here
+                         saucatch=zoneDP$catch[,,iter],
                          sauNAS=list(Nt=zoneDP$Nt[,,,iter],
                          catchN=zoneDP$catchN[,,,iter],
                          NumNe=zoneDP$NumNe[,,,iter]),year=year,
