@@ -521,8 +521,12 @@ comparefinalscores <- function(rundir,scores,scenes,legloc="bottomright",
   for (i in 1:nmed) { # i=2
     medfsc <- matrix(0,nrow=nyrs,ncol=nsau,dimnames=list(yrnames,saunames))
     tmp <- scores[[i]]$finalsc
-    for (sau in 1:nsau) {
-      medfsc[,sau] <- apply(tmp[,sau,],1,median)
+    if (is.null(tmp)) { #do what when tmp == null
+      scenes[i] <- paste0(scenes[i]," No Final Score")
+    } else {
+      for (sau in 1:nsau) {
+        medfsc[,sau] <- apply(tmp[,sau,],1,median)
+      }
     }
     meds[[i]] <-  medfsc
   }
