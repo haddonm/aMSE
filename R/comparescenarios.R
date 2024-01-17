@@ -1354,6 +1354,7 @@ plotallphaseplots <- function(rundir,dyn,glb,scenes,width=9,height=10,
   acatch <- getcompout(dyn=dyn,glb=glb,scenes=scenes,pickvar="acatch")
   catch <- getcompout(dyn=dyn,glb=glb,scenes=scenes,pickvar="catch")
   deplsB <- getcompout(dyn=dyn,glb=glb,scenes=scenes,pickvar="deplsB")
+  depleB <- getcompout(dyn=dyn,glb=glb,scenes=scenes,pickvar="depleB")
   cpue <- getcompout(dyn=dyn,glb=glb,scenes=scenes,pickvar="cpue")
   harvestR <- getcompout(dyn=dyn,glb=glb,scenes=scenes,pickvar="harvestR")
   fileout <- plotdynphase(xlist=matureB,ylist=acatch,scenes=scenes,glb=glb,
@@ -1394,6 +1395,20 @@ plotallphaseplots <- function(rundir,dyn,glb,scenes,width=9,height=10,
   fileout <- plotdynphase(xlist=exploitB,ylist=catch,scenes=scenes,glb=glb,
                           rundir=rundir,xlab="Exploitable Biomass",
                           ylab="Actual Catch",legloc=legloc,
+                          console=FALSE,width=width,height=height,fnt=fnt,
+                          pntcex=pntcex,zero=zero)
+  addplot(filen=fileout$filen,rundir=rundir,category="phaseplots",
+          caption=fileout$caption)
+  fileout <- plotdynphase(xlist=catch,ylist=depleB,scenes=scenes,glb=glb,
+                          rundir=rundir,xlab="Actual Catches (t)",
+                          ylab="Exploitable Biomass Depletion",legloc=legloc,
+                          console=FALSE,width=width,height=height,fnt=fnt,
+                          pntcex=pntcex,zero=zero)
+  addplot(filen=fileout$filen,rundir=rundir,category="phaseplots",
+          caption=fileout$caption)
+  fileout <- plotdynphase(xlist=catch,ylist=deplsB,scenes=scenes,glb=glb,
+                          rundir=rundir,xlab="Actual Catches (t)",
+                          ylab="Mature Biomass Depletion",legloc=legloc,
                           console=FALSE,width=width,height=height,fnt=fnt,
                           pntcex=pntcex,zero=zero)
   addplot(filen=fileout$filen,rundir=rundir,category="phaseplots",
