@@ -199,47 +199,6 @@ checksizecompdata <- function(rundir,controlfile,verbose=TRUE) {
   if (verbose) cat("finished  \n")
 } # end of checksizecompdata
 
-#' @title confirmdir checks to see if a directory exists and makes it if not
-#'
-#' @description confirmdir enables one to be sure a selected directory exists.
-#'     If it has not been created then confirmdir will create it if it does not
-#'     already exist. This is useful when defining output directories on the
-#'     hard drive where large objects may be stored.
-#'
-#' @param x the directory to be checked and created if necessary
-#' @param make should the directory be created if it does not already exist?
-#'     default=TRUE
-#' @param verbose should responses be sent to the console? default=TRUE
-#' @param ask should confirmdir ask whether to create the directory or not?
-#'    default = TRUE. Set to FALSE if running a script rather than working
-#'    interactively.
-#'
-#' @return nothing but it can create a directory
-#' @export
-#'
-#' @examples
-#' x <- tempdir()
-#' confirmdir(x)
-confirmdir <- function(x,make=TRUE,verbose=TRUE,ask=TRUE) {
-  if (dir.exists(x)) {
-    if (verbose) cat(x," already exists  \n")
-  } else {
-    if (verbose) cat(x," did not exist  \n")
-    if (make) {
-      if (ask) {
-        label <- paste0("Create directory: ",x," [Y, y, N, n]: ")
-        goahead <- readline(prompt=label)
-      } else {
-        goahead <- "Y"
-      }
-      if (goahead %in% c("y","Y")) {
-        dir.create(x, recursive = TRUE)
-        if (verbose) cat(x," has been created  \n")
-      }
-    }
-  }
-} # end of confirmdir
-
 #' @title copyto copies a vector of files from one scenario directory to another
 #'
 #' @description copyto copies a vector of files (see examples) from one

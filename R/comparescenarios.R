@@ -755,8 +755,8 @@ cpueHSPM <- function(rundir,cpue,glbc,scenes,filen="",startyr=0) {
 #' }
 do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
                           intensity=100,zero=FALSE) {
-# rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(11,12)
-#  verbose=TRUE; intensity=100
+# rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(1,3)
+#  verbose=TRUE; intensity=100; zero=FALSE
   files2 <- files[pickfiles]
   nfile <- length(pickfiles)
   label <- vector(mode="character",length=nfile)

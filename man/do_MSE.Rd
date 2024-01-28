@@ -85,10 +85,11 @@ function using the ellipsis at the end of the argument list.}
 \item{interimout}{should results be saved after projections have finished?
 the default="", which means nothing is saved if no risk of crashing in
 subsequent analyses. But if trying new stuff which may waste lots of time
-if the projections need to be repeated, then set interimout = c(outdir,
-postfixdir), which should be defined in the run_aMSE you are using,
-and that will save the main objects needed for later analysis in the
-directory used to save final results.}
+if the projections need to be repeated, then set
+interimout = outdir, which should be a character string identifying a
+directory defined in the run_aMSE you are using, and that will save the
+main objects needed for later analysis in the directory used to save
+final results.}
 
 \item{varyrs}{how many years at the end of the conditioning on the fishery,
 data into zoneDD, to which to add recruitment variation, default = 7,
@@ -147,7 +148,7 @@ default = 0.4}
 default = 0.005}
 }
 \value{
-a large list containing tottime, projtime, starttime, glb, ctrl,
+a vary large list containing tottime, projtime, starttime, glb, ctrl,
     zoneDD, zoneDP, projC, condC, sauout, and outzone
 }
 \description{

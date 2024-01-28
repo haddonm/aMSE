@@ -29,6 +29,8 @@
 # interimout=""
 # nasInterval=5
 # minsizecomp=c(100,135)
+# uplimH=0.4
+# incH=0.005
 
 
 # SA context -------------
@@ -158,10 +160,11 @@
 #' @param interimout should results be saved after projections have finished?
 #'     the default="", which means nothing is saved if no risk of crashing in
 #'     subsequent analyses. But if trying new stuff which may waste lots of time
-#'     if the projections need to be repeated, then set interimout = c(outdir,
-#'     postfixdir), which should be defined in the run_aMSE you are using,
-#'     and that will save the main objects needed for later analysis in the
-#'     directory used to save final results.
+#'     if the projections need to be repeated, then set
+#'     interimout = outdir, which should be a character string identifying a
+#'     directory defined in the run_aMSE you are using, and that will save the
+#'     main objects needed for later analysis in the directory used to save
+#'     final results.
 #' @param varyrs how many years at the end of the conditioning on the fishery,
 #'     data into zoneDD, to which to add recruitment variation, default = 7,
 #'     which suits the Tasmanian west coast. Used in prepareprojection
@@ -209,7 +212,7 @@
 #'  \link{doprojections}, \link{getprojyrC}, \link{oneyearrec}
 #' }
 #'
-#' @return a large list containing tottime, projtime, starttime, glb, ctrl,
+#' @return a vary large list containing tottime, projtime, starttime, glb, ctrl,
 #'     zoneDD, zoneDP, projC, condC, sauout, and outzone
 #' @export
 #'
@@ -334,7 +337,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   outhcr <- outproj$outhcr
   NAS <- list(Nt=zoneDP$Nt,catchN=zoneDP$catchN)
   zoneDP <- zoneDP[-c(17,16,15)]  # This removes the Nt etc from zoneDP
-  if (length(interimout) == 2) {
+  if (nchar(interimout) > 0) {
     outfile <- filenametopath(interimout[1],paste0("temp",interimout[2],".Rdata"))
     if (includeNAS) {
       postprojout <- list(zoneCP=zoneCP,hcrout=hcrout,zoneDP=zoneDP,glb=glb,
