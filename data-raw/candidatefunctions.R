@@ -110,7 +110,19 @@ for (i in 1:12)  lines(1:100, rep((i+0.2),100),lwd=2,col=cols[i])
 
 
 
+# headtail
 
+
+headtail <- function(x) { # x <- sauout$matureB[,,1]
+  if ("tbl" %in% class(x)) {
+    x <- as.data.frame(unclass(x), stringsAsFactors = FALSE,
+                           check.names=FALSE)
+  }
+  if (length(dim(x)) > 2) x <- x[,,1]
+  numcol <- ncol(x)
+  outans <- rbind(head(x),rep(NA,numcol),tail(x))
+  return(outans)
+}
 
 
 

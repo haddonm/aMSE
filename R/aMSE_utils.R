@@ -378,10 +378,11 @@ poptosau <- function(invar,glb) {  # invar=zoneDP$matureB; glb=glb
   nsau <- glb$nSAU
   nyrs <- dim(invar)[1]
   reps <- dim(invar)[3]
+  yrnames <- c(glb$hyrnames,glb$pyrnames)
   sauindex <- glb$sauindex
   saunames <- glb$saunames
   result <- array(0,dim=c(nyrs,nsau,reps),
-                  dimnames=list(1:nyrs,saunames,1:reps)) #aspirational catches
+                  dimnames=list(yrnames,saunames,1:reps)) #aspirational catches
   for (iter in 1:reps)
     for (yr in 1:nyrs)
       result[yr,,iter] <- tapply(invar[yr,,iter],sauindex,sum,na.rm=TRUE)
