@@ -3,6 +3,8 @@
 #' @description boxbysau is used to generate boxplots of the aavc, or sum5,
 #'     of sum10 for each sau, in each of the scenarios. The number of years over
 #'     which the aavc is calculated can be modified using the aavcyrs argument.
+#'     If the replicates differ between scenarios then these boxplots will be
+#'     omitted.
 #'
 #' @param rundir the directory in which comparisons are being made. It is best
 #'     to be a separate directory form any particular scenario.
@@ -39,33 +41,43 @@ boxbysau <- function(rundir,hspm,glbc,scenes,compvar="aavc",filen="",aavcyrs=10,
   saunames <- glbc[[1]]$saunames
   boxresult <- vector(mode="list",length=nsau)
   names(boxresult) <- saunames
-  reps <- glbc[[1]]$reps
-  boxdat <- matrix(0,nrow=reps,ncol=nscen,dimnames=list(1:reps,scenes))
-  if (nchar(filen) > 0) {
-    filen <- filenametopath(rundir,filen)
-    caption <- paste0("Boxplots of ",compvar," for each SAU.")
-  }
-  plotprep(width=8, height=8,newdev=FALSE,filename = filen,verbose=FALSE)
-  parset(plots=pickbound(nsau),margin=c(0.3,0.4,0.05,0.1),outmargin=c(1,0,0.25,0),
-         byrow=FALSE)
-  for (sau in 1:nsau) { # sau=1; i = 1
-    for (i in 1:nscen) boxdat[,i] <- boxvar[[i]][,sau]
-    if (maxval > 0) {
-      maxy <- maxval
-    } else {
-      maxy <- getmax(boxdat)
+  allreps <- unlist(lapply(glbc,"[[","reps"))
+  if (min(allreps) != max(allreps)) {
+    label <- paste0("Cannot compare scenarios with different replicate numbers",
+                    " catch box plots omitted \n")
+    warning(cat(label))
+  } else {
+    reps <- max(allreps)
+    boxdat <- matrix(0,nrow=reps,ncol=nscen,dimnames=list(1:reps,scenes))
+    if (nchar(filen) > 0) {
+      filen <- filenametopath(rundir,filen)
+      caption <- paste0("Boxplots of ",compvar," for each SAU.")
     }
-    boxresult[[sau]] <- boxplot(boxdat,ylim=c(0,maxy),yaxs="i",
-                                ylab=saunames[sau])
-    abline(h=boxresult[[sau]]$stats[3,1],lwd=2,lty=2,col=2)
+    plotprep(width=8, height=8,newdev=FALSE,filename = filen,verbose=FALSE)
+    parset(plots=pickbound(nsau),margin=c(0.3,0.4,0.05,0.1),
+           outmargin=c(1,0,0.25,0),byrow=FALSE)
+    for (sau in 1:nsau) { # sau=1; i = 1
+      for (i in 1:nscen) {
+        tmp <- boxvar[[i]][,sau]
+        boxdat[1:length(tmp),i] <- tmp
+      }
+      if (maxval > 0) {
+        maxy <- maxval
+      } else {
+        maxy <- getmax(boxdat)
+      }
+      boxresult[[sau]] <- boxplot(boxdat,ylim=c(0,maxy),yaxs="i",
+                                  ylab=saunames[sau])
+      abline(h=boxresult[[sau]]$stats[3,1],lwd=2,lty=2,col=2)
+    }
+    label <- switch(compvar,
+                    "aavc" = "Average Annual Variation in Catches",
+                    "sum5" = "Sum of Catches over first 5 Years",
+                    "sum10" = "Sum of Catches over first 10 Years")
+    mtext(label,side=1,outer=TRUE,line=-0.3,cex=1.0)
+    if (nchar(filen) > 0)
+      addplot(filen=filen,rundir=rundir,category="catchBoxPlots",caption)
   }
-  label <- switch(compvar,
-                  "aavc" = "Average Annual Variation in Catches",
-                  "sum5" = "Sum of Catches over first 5 Years",
-                  "sum10" = "Sum of Catches over first 10 Years")
-  mtext(label,side=1,outer=TRUE,line=-0.3,cex=1.0)
-  if (nchar(filen) > 0)
-    addplot(filen=filen,rundir=rundir,category="catchBoxPlots",caption)
 } # end of boxbysau
 
 
@@ -553,7 +565,8 @@ comparefinalscores <- function(rundir,scores,scenes,legloc="bottomright",
 #'
 #' @description cpueboxbysau is used to generate boxplots of the years taken to
 #'     reach the maximum median cpue for each sau x senario. It also provides
-#'     the summary statistics from the boxplots for each sau.
+#'     the summary statistics from the boxplots for each sau. If the replicates
+#'     differ between scenarios then these boxplots will be omitted.
 #'
 #' @param rundir the directory in which comparisons are being made. It is best
 #'     to be a separate directory form any particular scenario.
@@ -592,53 +605,64 @@ cpueboxbysau <- function(rundir,cpue,glbc,scenes,filen="",startyr=0,maxval=0) {
   for (sau in 1:nsau) label <- c(label,rep(saunames[sau],5))
   cpuebox[,1] <- label
   cpuebox[,2] <- rep(c("lowwhisk","25thQ","median","75thQ","highwhisk"),nsau)
-  reps <- glbc[[1]]$reps
-  boxdat <- matrix(0,nrow=reps,ncol=nscen,dimnames=list(1:reps,scenes))
-  if (startyr == 0) {
-    beginyr <- glbc[[1]]$hyrs
+  allreps <- unlist(lapply(glbc,"[[","reps"))
+  if (min(allreps) != max(allreps)) {
+    label <- paste0("Cannot compare scenarios with different replicate numbers",
+                    " so boxplots of maximum cpue year by sau omitted \n")
+    warning(cat(label))
   } else {
-    beginyr <- startyr
-  }
-  ce <- makelist(scenes)
-  maxceyr <- makelist(scenes)
-  for (i in 1:nscen) { # i =1
-    glb <- glbc[[i]]
-    ce[[i]] <- getprojyrs(cpue[[i]],glb$hyrs,glb$pyrs,startyr=beginyr)
-    maxceyr[[i]] <- getyr2maxce(ce[[i]],glb)
-  }
-  if (nchar(filen) > 0) {
-    filen2 <- filenametopath(rundir,filen)
-    caption <- paste0("Boxplots of year of maximum cpue by sau.")
-  }
-  start=1; finish=5
-  plotprep(width=8, height=8,newdev=FALSE,filename = filen2,verbose=FALSE)
-  parset(plots=pickbound(nsau),margin=c(0.3,0.4,0.05,0.1),outmargin=c(1,0,0.25,0),
-         byrow=FALSE)
-  for (sau in 1:nsau) { # sau=1; i = 1
-    for (i in 1:nscen) boxdat[,i] <- maxceyr[[i]][,sau]
-    if (maxval > 0) {
-      maxy <- maxval
+    reps <- max(allreps)
+    boxdat <- matrix(0,nrow=reps,ncol=nscen,dimnames=list(1:reps,scenes))
+    if (startyr == 0) {
+      beginyr <- glbc[[1]]$hyrs
     } else {
-      maxy <- getmax(boxdat)
+      beginyr <- startyr
     }
-    tmp <- boxplot(boxdat,ylim=c(0,maxy),yaxs="i",ylab=saunames[sau])
-    abline(h=tmp$stats[3,1],lwd=2,lty=2,col=2)
-    cpuebox[start:finish,3:numcol] <- tmp$stats
-    start <- finish + 1
-    finish <- finish + 5
+    ce <- makelist(scenes)
+    maxceyr <- makelist(scenes)
+    for (i in 1:nscen) { # i =1
+      glb <- glbc[[i]]
+      ce[[i]] <- getprojyrs(cpue[[i]],glb$hyrs,glb$pyrs,startyr=beginyr)
+      maxceyr[[i]] <- getyr2maxce(ce[[i]],glb)
+    }
+    if (nchar(filen) > 0) {
+      filen2 <- filenametopath(rundir,filen)
+      caption <- paste0("Boxplots of year of maximum cpue by sau.")
+    }
+    start=1; finish=5
+    plotprep(width=8, height=8,newdev=FALSE,filename = filen2,verbose=FALSE)
+    parset(plots=pickbound(nsau),margin=c(0.3,0.4,0.05,0.1),outmargin=c(1,0,0.25,0),
+           byrow=FALSE)
+    for (sau in 1:nsau) { # sau=1; i = 1
+
+      for (i in 1:nscen) {
+        tmp <- maxceyr[[i]][,sau]
+        boxdat[1:length(tmp),i] <- tmp
+      }
+      if (maxval > 0) {
+        maxy <- maxval
+      } else {
+        maxy <- getmax(boxdat)
+      }
+      tmp <- boxplot(boxdat,ylim=c(0,maxy),yaxs="i",ylab=saunames[sau])
+      abline(h=tmp$stats[3,1],lwd=2,lty=2,col=2)
+      cpuebox[start:finish,3:numcol] <- tmp$stats
+      start <- finish + 1
+      finish <- finish + 5
+    }
+    label <- "Years to Maximum Median CPUE by sau"
+    mtext(label,side=1,outer=TRUE,line=-0.3,cex=1.0)
+    if (nchar(filen) > 0) {
+      addplot(filen=filen2,rundir=rundir,category="cpueBoxPlots",caption)
+      filen3 <- unlist(strsplit(filen,".",fixed=TRUE))[1]
+      filen3 <- paste0(filen3,".csv")
+      filen <- filenametopath(rundir,filen3)
+      write.csv(cpuebox,file=filen)
+      caption <- "Years to maximum median cpue by sau from boxplots."
+      addtable(cpuebox,filen3,rundir=rundir,category="cpueBoxPlots",caption)
+    }
+    return(invisible(cpuebox))
   }
-  label <- "Years to Maximum Median CPUE by sau"
-  mtext(label,side=1,outer=TRUE,line=-0.3,cex=1.0)
-  if (nchar(filen) > 0) {
-    addplot(filen=filen2,rundir=rundir,category="cpueBoxPlots",caption)
-    filen3 <- unlist(strsplit(filen,".",fixed=TRUE))[1]
-    filen3 <- paste0(filen3,".csv")
-    filen <- filenametopath(rundir,filen3)
-    write.csv(cpuebox,file=filen)
-    caption <- "Years to maximum median cpue by sau from boxplots."
-    addtable(cpuebox,filen3,rundir=rundir,category="cpueBoxPlots",caption)
-  }
-  return(invisible(cpuebox))
 } # end of cpueboxbysau
 
 #' @title cpueHSPM generates boxplots of cpue HSPMs and output statistics
@@ -748,25 +772,27 @@ cpueHSPM <- function(rundir,cpue,glbc,scenes,filen="",startyr=0) {
 #'   postfixdir <- "BC_compare"
 #'   rundir <- filenametopath(prefixdir,postfixdir)
 #'   # normally one would use code to select the files, outdir is used if all
-#'   # RData files ar ein one directory, otherwise set outdir='' and files
+#'   # RData files are in one directory, otherwise set outdir='' and files
 #'   # shgould contain the full paths as well as the filenames
-#'   files=c("BC.RData","BC433.RData","BC541.RData")
+#'   files=c("BC.RData","BCmeta.RData","BC541.RData")
 #'   do_comparison(rundir,postfixdir,outdir,files,pickfiles=c(1,2,3))
 #' }
 do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
                           intensity=100,zero=FALSE) {
-# rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(1,3)
+# rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(4,5)
 #  verbose=TRUE; intensity=100; zero=FALSE
   files2 <- files[pickfiles]
   nfile <- length(pickfiles)
   label <- vector(mode="character",length=nfile)
   for (i in 1:nfile) label[i] <- unlist(strsplit(files2[i],".",fixed=TRUE))[1]
   ans <- makelist(label) # vector(mode="list",length=nfile)
-  dyn <- makelist(label) # vector(mode="list",length=nfile)
-  glbc <- makelist(label) # vector(mode="list",length=nfile)
-  prods <- makelist(label) # vector(mode="list",length=nfile)
+  dyn <- makelist(label)
+  glbc <- makelist(label)
+  ctrlc <- makelist(label)
+  condCc <- makelist(label)
+  prods <- makelist(label)
   scenes <- vector(mode="character",length=nfile)
-  scores <- makelist(label) # vector(mode="list",length=nfile)
+  scores <- makelist(label)
   zone <- makelist(label)
   for (i in 1:nfile) { # i = 1
     if (nchar(outdir) == 0) {
@@ -781,6 +807,8 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
     ans[[i]] <- out
     dyn[[i]] <- out$sauout
     glbc[[i]] <- out$glb
+    ctrlc[[i]] <- out$ctrl
+    condCc[[i]] <- out$condC
     prods[[i]] <- out$sauprod
     scenes[i] <- out$ctrl$runlabel
     scores[[i]] <- out$outhcr
@@ -793,8 +821,16 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
     catch[[i]] <- dyn[[i]]$catch
     cpue[[i]] <- dyn[[i]]$cpue
   }
+  scenprops <- scenarioproperties(scenes,glbc,ctrlc,condCc)
+  if ((verbose) & (any(scenprops[,"same"] == 0))) {
+    warning(cat("At least one important scenario property differs betweem scenarios \n"))
+  }
+  if (verbose) print(scenprops)
   if (verbose) cat("Now doing the comparisons  \n")
   setuphtml(rundir=rundir)
+  filename <- "scenarioproperties.csv"
+  addtable(scenprops,filen=filename,rundir=rundir,category="scenes",
+           caption=paste0("Important scenario properties for comparability."))
   quantscen <- comparedynamics(rundir=rundir,dyn,glbc,scenes)
   tabulateproductivity(rundir,prods,scenes)
 
@@ -832,7 +868,7 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
                   filen=paste0("Catch_div_MSY_",scenes[i],".png"),
                   label="Catch / MSY",hline=1,Q=90)
   }
-  plotzonedyn(rundir,scenes,zone,glbc[[1]],console=FALSE,q90=TRUE,polys=TRUE,
+  plotzonedyn(rundir,scenes,zone,glbc,console=FALSE,q90=TRUE,polys=TRUE,
               intens=intensity)
   tabulatezoneprod(rundir,prods,scenes)
   # ribbon plots by sau and dynamic variable
@@ -869,7 +905,7 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
   makecompareoutput(rundir=rundir,glbc,scenes,postfixdir,
                     filesused=files[pickfiles],openfile=TRUE,verbose=FALSE)
   return(invisible(list(scenes=scenes,ans=ans,quantscen=quantscen,dyn=dyn,
-                        prods=prods)))
+                        prods=prods,scenprops=scenprops)))
 } # end of do_comparison
 
 
@@ -1567,8 +1603,8 @@ plotsceneproj <- function(rundir,inarr,glb,scene,filen="",label="",
 #'     comparison of scenarios
 #' @param scenes the names of the different scenarios being compared
 #' @param zone a list of the out$outzone objects from each chosen scenario
-#' @param glb one of the global objects from out. They should all have the
-#'     same reps and years.
+#' @param glbc all of the global objects from out. They should all have the
+#'     same reps and years but this will be checked.
 #' @param console should the plot be sent to the console or saved for use in the
 #'     web-page output? default=TRUE, set to FALSE to save it
 #' @param q90 should the 90th quantiles be plotted? default=TRUE. If FALSE then
@@ -1586,59 +1622,67 @@ plotsceneproj <- function(rundir,inarr,glb,scene,filen="",label="",
 #'
 #' @examples
 #' print("wait on data sets")
-plotzonedyn <- function(rundir,scenes,zone,glb,console=TRUE,
+plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,
                         q90=TRUE,polys=TRUE,intens=127) {
   nscen <- length(scenes)
-  reps <- glb$reps
-  hyrs <- glb$hyrs
-  pyrs <- glb$pyrs
-  yrs <- hyrs + pyrs
-  pyrnames <- glb$pyrnames
-  yrnames <- as.numeric(c(tail(glb$hyrnames,1),pyrnames))
-  varx <- array(0,dim=c((pyrs+1),reps,nscen),
-                dimnames=list(yrnames,1:reps,scenes))
-  qlab <- c("2.5%","5%","50%","95%","97.5%")
-  varq <- array(0,dim=c(5,(pyrs+1),nscen),
-                dimnames=list(qlab,yrnames,scenes))
-  filen=""
-  if (!console) {
-    filen <- filenametopath(rundir,"zonedynamics.png")
-    caption <- paste0("Outputs for each scenario summarized across the whole ",
-                      "zone. Plots of Catch, MatureB, HarvestR, and deplsB.")
-  }
-  plotprep(width=8,height=6,newdev=FALSE,filename=filen,verbose=FALSE)
-  parset(plots=c(2,2),margin=c(0.3,0.4,0.05,0.05),outmargin=c(0,1,0,0),
-         byrow=FALSE)
-  for (i in 1:nscen) {
-    varx[,,i] <- zone[[i]]$catch[hyrs:yrs,]
-    varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975))
-  }
-  doquantplot(varq,varname="Catch (t)",yrnames,scenes,q90=q90,polys=polys,
-              intens=intens)
-  for (i in 1:nscen) {
-    varx[,,i] <- zone[[i]]$matureB[hyrs:yrs,]
-    varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975))
-  }
-  doquantplot(varq,varname="Mature Biomass",yrnames,scenes,q90=q90,polys=polys,
-              intens=intens)
-  for (i in 1:nscen) {
-    varx[,,i] <- zone[[i]]$harvestR[hyrs:yrs,]
-    varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975))
-  }
-  doquantplot(varq,varname="Harvest Rate",yrnames,scenes,q90=q90,polys=polys,
-              intens=intens)
-  for (i in 1:nscen) {
-    varx[,,i] <- zone[[i]]$cpue[hyrs:yrs,]
-    varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975))
-  }
-  doquantplot(varq,varname="CPUE",yrnames,scenes,q90=q90,polys=polys,
-              intens=intens)
-  label <- paste0(scenes,collapse=",")
-  legend("bottomright",legend=scenes,lwd=3,col=1:nscen,bty="n",cex=1.1)
-  mtext("Zone Wide Dynamics",side=2,line=-0.2,outer=TRUE,cex=1.1)
-  if (!console) {
-    addplot(filen=filen,rundir=rundir,category="zone",caption)
-  }
+  allreps <- unlist(lapply(glbc,"[[","reps"))
+  if (min(allreps) != max(allreps)) {
+    label <- paste0("Cannot compare scenarios with different replicate numbers",
+                    " so some plots of dynamics omitted \n")
+    warning(cat(label))
+  } else {
+    reps <- max(allreps)
+    glb <- glbc[[1]]
+    hyrs <- glb$hyrs
+    pyrs <- glb$pyrs
+    yrs <- hyrs + pyrs
+    pyrnames <- glb$pyrnames
+    yrnames <- as.numeric(c(tail(glb$hyrnames,1),pyrnames))
+    varx <- array(0,dim=c((pyrs+1),reps,nscen),
+                  dimnames=list(yrnames,1:reps,scenes))
+    qlab <- c("2.5%","5%","50%","95%","97.5%")
+    varq <- array(0,dim=c(5,(pyrs+1),nscen),
+                  dimnames=list(qlab,yrnames,scenes))
+    filen=""
+    if (!console) {
+      filen <- filenametopath(rundir,"zonedynamics.png")
+      caption <- paste0("Outputs for each scenario summarized across the whole ",
+                        "zone. Plots of Catch, MatureB, HarvestR, and deplsB.")
+    }
+    plotprep(width=8,height=6,newdev=FALSE,filename=filen,verbose=FALSE)
+    parset(plots=c(2,2),margin=c(0.3,0.4,0.05,0.05),outmargin=c(0,1,0,0),
+           byrow=FALSE)
+    for (i in 1:nscen) {
+      varx[,,i] <- zone[[i]]$catch[hyrs:yrs,]
+      varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975))
+    }
+    doquantplot(varq,varname="Catch (t)",yrnames,scenes,q90=q90,polys=polys,
+                intens=intens)
+    for (i in 1:nscen) {
+      varx[,,i] <- zone[[i]]$matureB[hyrs:yrs,]
+      varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975))
+    }
+    doquantplot(varq,varname="Mature Biomass",yrnames,scenes,q90=q90,polys=polys,
+                intens=intens)
+    for (i in 1:nscen) {
+      varx[,,i] <- zone[[i]]$harvestR[hyrs:yrs,]
+      varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975))
+    }
+    doquantplot(varq,varname="Harvest Rate",yrnames,scenes,q90=q90,polys=polys,
+                intens=intens)
+    for (i in 1:nscen) {
+      varx[,,i] <- zone[[i]]$cpue[hyrs:yrs,]
+      varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975))
+    }
+    doquantplot(varq,varname="CPUE",yrnames,scenes,q90=q90,polys=polys,
+                intens=intens)
+    label <- paste0(scenes,collapse=",")
+    legend("bottomright",legend=scenes,lwd=3,col=1:nscen,bty="n",cex=1.1)
+    mtext("Zone Wide Dynamics",side=2,line=-0.2,outer=TRUE,cex=1.1)
+    if (!console) {
+      addplot(filen=filen,rundir=rundir,category="zone",caption)
+    }
+  } # end of else statement
 } # end of plotzonedyn
 
 #' @title sauquantbyscene calcualtes the quantiles for all sau and all scenarios
@@ -1755,6 +1799,49 @@ sauribbon <- function(rundir,scenes,sau,varqnts,glb,varname,
   if (defpar) return(invisible(oldpar))
 } # end of sauribbon
 
+#' @title scenarioproperties tabulates important properties of each scenario
+#'
+#' @description scenarioproperties is used with the do_comparison function to
+#'     tabulate a set of important properties of each scenario so that the
+#'     comparability of each scenario can be quickly assessed.
+#'
+#' @param scenes the runnames of each scenario
+#' @param glbc the globals object or list for each scenario
+#' @param ctrlc the ctrl object for each scenario
+#' @param condCc the condC object for each scenario
+#'
+#' @seealso{
+#'   \link{do_comparison}
+#' }
+#'
+#' @return a list containing a matrix of a set of scenario properties to check
+#'     comparability, and a vector identifying whether all columns are identical
+#'     = 1 or some are different = 0
+#' @export
+#'
+#' @examples
+#' print("wait on data sets")
+scenarioproperties <- function(scenes,glbc,ctrlc,condCc) {
+  rows <- c("reps","randseed","sigR","sigB","sigCE","projyrs",
+            "numpop","nSAU","Nclass","hyrs","pyrs","larvdisp","initdepl")
+  numrow <- length(rows)
+  numcol <- length(scenes)
+  ansout <- matrix(0,nrow=numrow,ncol=numcol,dimnames=list(rows,scenes))
+  for (i in 1:numcol) {
+    initdepl <- min(condCc[[i]]$initdepl,na.rm=TRUE)
+    ansout[,i] <- c(ctrlc[[i]]$reps,ctrlc[[i]]$randseed,ctrlc[[i]]$withsigR,
+                    ctrlc[[i]]$withsigB,ctrlc[[i]]$withsigCE,
+                    ctrlc[[i]]$projection,glbc[[i]]$numpop,glbc[[i]]$nSAU,
+                    glbc[[i]]$Nclass,glbc[[i]]$hyrs,glbc[[i]]$pyrs,
+                    glbc[[i]]$larvdisp,initdepl)
+  }
+  same <- numeric(numrow)
+  for (i in 1:numrow) { # ansout <- scenprops; i=1
+    same[i] <- ifelse(min(ansout[i,]) == max(ansout[i,]),1,0)
+  }
+  ansout <- cbind(ansout,same)
+  return(ansout)
+} # end of scenarioproperties
 
 #' @title scenebyvar extracts as sau x variable x scenario from do_comparison output
 #'

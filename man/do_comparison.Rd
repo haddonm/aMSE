@@ -63,9 +63,9 @@ do_comparison provides a simplified interface for when making
   postfixdir <- "BC_compare"
   rundir <- filenametopath(prefixdir,postfixdir)
   # normally one would use code to select the files, outdir is used if all
-  # RData files ar ein one directory, otherwise set outdir='' and files
+  # RData files are in one directory, otherwise set outdir='' and files
   # shgould contain the full paths as well as the filenames
-  files=c("BC.RData","BC433.RData","BC541.RData")
+  files=c("BC.RData","BCmeta.RData","BC541.RData")
   do_comparison(rundir,postfixdir,outdir,files,pickfiles=c(1,2,3))
 }
 }

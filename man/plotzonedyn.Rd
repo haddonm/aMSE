@@ -8,7 +8,7 @@ plotzonedyn(
   rundir,
   scenes,
   zone,
-  glb,
+  glbc,
   console = TRUE,
   q90 = TRUE,
   polys = TRUE,
@@ -23,8 +23,8 @@ comparison of scenarios}
 
 \item{zone}{a list of the out$outzone objects from each chosen scenario}
 
-\item{glb}{one of the global objects from out. They should all have the
-same reps and years.}
+\item{glbc}{all of the global objects from out. They should all have the
+same reps and years but this will be checked.}
 
 \item{console}{should the plot be sent to the console or saved for use in the
 web-page output? default=TRUE, set to FALSE to save it}

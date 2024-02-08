@@ -125,11 +125,12 @@ headtail <- function(x) { # x <- sauout$matureB[,,1]
 }
 
 
+# scenarioproperties
 
 
 
 
-
+min(out$condC$initdepl)
 
 
 

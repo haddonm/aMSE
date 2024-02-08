@@ -46,6 +46,8 @@ a list of the boxplot statistics for the aavc x number of sau x the
 boxbysau is used to generate boxplots of the aavc, or sum5,
     of sum10 for each sau, in each of the scenarios. The number of years over
     which the aavc is calculated can be modified using the aavcyrs argument.
+    If the replicates differ between scenarios then these boxplots will be
+    omitted.
 }
 \examples{
 print("wait on data sets")

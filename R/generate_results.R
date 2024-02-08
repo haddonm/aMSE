@@ -287,11 +287,15 @@ makeoutput <- function(out,rundir,postdir,controlfile,hsfile=NULL,
   replist <- list(starttime=as.character(out$starttime),
                   endtime=as.character(out$runtime))
   glb <- out$glb
+  ctrl <- out$ctrl
   projy <- ifelse(doproject,glb$pyrs,0)
-  runnotes <- c(out$ctrl$runlabel,paste0("RunTime = ",out$tottime),
+  runnotes <- c(ctrl$runlabel,paste0("RunTime = ",out$tottime),
                 paste0("replicates = ",glb$reps),paste0("years projected = ",projy),
                 paste0("Populations = ",glb$numpop),paste0("SAU = ",glb$nSAU),
-                paste0("Randomseed for conditioning = ",out$ctrl$randseed))
+                paste0("Randomseed for conditioning = ",ctrl$randseed),
+                paste0("Recruitment variability sigR         = ",ctrl$withsigR),
+                paste0("Exploitable Biomass variability sigB = ",ctrl$withsigB),
+                paste0("Catch-Rate variability sigCE         = ",ctrl$withsigCE))
 
   make_html(replist = replist,  rundir = rundir,
             controlfile=controlfile, datafile=out$ctrl$datafile, hsfile=hsfile,
