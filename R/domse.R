@@ -338,7 +338,8 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   NAS <- list(Nt=zoneDP$Nt,catchN=zoneDP$catchN)
   zoneDP <- zoneDP[-c(17,16,15)]  # This removes the Nt etc from zoneDP
   if (nchar(interimout) > 0) {
-    outfile <- filenametopath(interimout[1],paste0("temp",interimout[2],".Rdata"))
+    confirmdir(interimout,ask=verbose)
+    outfile <- pathtopath(interimout[1],paste0("temp",interimout[2],".Rdata"))
     if (includeNAS) {
       postprojout <- list(zoneCP=zoneCP,hcrout=hcrout,zoneDP=zoneDP,glb=glb,
                          ctrl=ctrl,condC=condC,constants=constants,NAS=NAS)
