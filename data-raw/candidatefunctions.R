@@ -128,14 +128,49 @@ headtail <- function(x) { # x <- sauout$matureB[,,1]
 # scenarioproperties
 
 
+#' @title getmatcolfromlist extracts named columns from a list of matrices or df
+#'
+#' @decsription getmatcolfromlist One often has a list of matrices
+#'
+#' @param x  a list of 2d matrices
+#' @param columname the name of the row or column to be extracted
+#'
+#' @return a list of the required columns
+#' @export
+#'
+#' @examples
+#' y <- matrix(rnorm(100,mean=5,sd=1),nrow=10,ncol=10,
+#'             dimnames=list(paste0(1:10,"R"),paste0(1:10,"C")))
+#' x <- list(one=y,two=y)
+#' getmatcolfromlist(x,columname="5R")
+#' getmatcolfromlist(x,columname="4C")
+getmatcolfromlist <- function(x,columname) { # x=prods; columname="MSY"
+  nscenes <- length(x)
+  namecol <- tolower(columname)
+  vals <- vector(mode="list",length=nscenes)
+  names(vals) <- paste0(names(x),"_",columname)
 
+  for (i in 1:nscenes) {  # i=1
+    tmp <- x[[i]]
+    rownames(tmp) <- tolower(rownames(tmp))
+    colnames(tmp) <- tolower(colnames(tmp))
+    if (namecol %in% colnames(tmp)) { vals[[i]] <- tmp[,namecol]
+     } else {
+       if (namecol %in% rownames(tmp)) {
+        vals[[i]] <- tmp[namecol,]
+       } else {
+      warning(cat("unknown columname used in getmatcolfromlist \n"))
+       } # end of inner if
+    } # end of outer if
+  }
+  return(vals)
+} # end of getmatcolfromlist
 
-min(out$condC$initdepl)
-
-
-
-
-
+y <- matrix(rnorm(100,mean=5,sd=1),nrow=10,ncol=10,
+            dimnames=list(paste0(1:10,"R"),paste0(1:10,"C")))
+x <- list(one=y,two=y)
+getmatcolfromlist(x,columname="5R")
+getmatcolfromlist(x,columname="4C")
 
 
 

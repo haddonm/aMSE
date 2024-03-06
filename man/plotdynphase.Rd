@@ -18,7 +18,8 @@ plotdynphase(
   height = 10,
   fnt = 7,
   pntcex = 1.25,
-  zero = FALSE
+  zero = FALSE,
+  yline = NULL
 )
 }
 \arguments{
@@ -51,6 +52,8 @@ default='bottomright'}
 \item{pntcex}{the size of the year points along each median line}
 
 \item{zero}{should the phase plots have a zero origin. default=FALSE}
+
+\item{yline}{default = NULL, used to add horizontal lines to each plot}
 }
 \value{
 an invisible caption to the plot.

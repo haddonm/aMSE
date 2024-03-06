@@ -2,7 +2,7 @@
 % Please edit documentation in R/comparescenarios.R
 \name{plotzonedyn}
 \alias{plotzonedyn}
-\title{plotzonedyn plots zonewide catch, mature biomass, harvestR and CPUE}
+\title{plotzonedyn ribbonplot of zone catch, mature biomass, harvestR and CE}
 \usage{
 plotzonedyn(
   rundir,
@@ -41,8 +41,8 @@ a scale of 0 - 255. 127 is about 50 percent dense.}
 nothing but it does generate a plot and saves it if console=FALSE
 }
 \description{
-plotzonedyn generates plots of the zone-wide total catches, the
-    mature biomass, the harvest rate, and the CPUE across the years of
+plotzonedyn generates ribbonplots of the zone-wide total catches,
+    the mature biomass, the harvest rate, and the CPUE across the years of
     projection.
 }
 \examples{

@@ -7,6 +7,7 @@
 plotallphaseplots(
   rundir,
   dyn,
+  prods,
   glb,
   scenes,
   width = 9,
@@ -20,7 +21,9 @@ plotallphaseplots(
 \arguments{
 \item{rundir}{the compare scenario's directory}
 
-\item{dyn}{a list of the dynamics objects from each scenbario}
+\item{dyn}{a list of the dynamics objects from each scenario}
+
+\item{prods}{a list of the sauprod objects containing MSY, B0, Bmsy, etc}
 
 \item{glb}{the globals object. The assumption is that all glb objects are
 very similar between scenarios, although different reps can be compared}
@@ -50,7 +53,7 @@ plotallphaseplots produced a series of phase plots for a set of
     rate against catch.
 }
 \examples{
-print("wait on sutiable data")
+print("wait on suitable data")
 }
 \seealso{
 [\link{plotallphaseplots} which wraps a set of phase plots]

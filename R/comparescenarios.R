@@ -311,7 +311,7 @@ catchvsMSY <- function(catch,glbc,prods,scenes) {
     cvsmsy <- getprojyrs(catch[[i]],glb$hyrs,glb$pyrs,startyr=glb$hyrs)
     tmp <- cvsmsy
     prodsc <- prods[[i]]
-    msy <- prodsc["MSY",]
+    msy <- prodsc[,"MSY"]
     for (sau in 1:nsau) cvsmsy[,sau,] <- tmp[,sau,]/msy[sau]
     cdivmsy[[i]] <- cvsmsy
   }
@@ -809,12 +809,20 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
     glbc[[i]] <- out$glb
     ctrlc[[i]] <- out$ctrl
     condCc[[i]] <- out$condC
-    prods[[i]] <- out$sauprod
+    prods[[i]] <- t(out$sauprod)
     scenes[i] <- out$ctrl$runlabel
     scores[[i]] <- out$outhcr
     zone[[i]] <- out$outzone
   }
   nscenes <- length(scenes)
+  projequal <- vector(mode="logical",length=(length(nscenes)-1))
+  for (i in 2:nscenes) {
+     projequal[i-1] <- all.equal(glbc[[i-1]]$pyrs,glbc[[i]]$pyrs)
+     if (!(all(projequal))) {
+       label <- paste0("Number of projection years differs among scenario")
+        warning(cat("Number of projection years differs among scenario"))
+     }
+  }
   catch <- makelist(scenes)
   cpue <- makelist(scenes)
   for (i in 1:nscenes) {
@@ -826,6 +834,13 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
     warning(cat("At least one important scenario property differs betweem scenarios \n"))
   }
   if (verbose) print(scenprops)
+  # prodequal <- vector(mode="logical",length=(length(nscenes)-1))
+  # for (i in 2:nscenes) {
+  #   prodequal[i-1] <- all.equal(prods[[i-1]],prods[[i]])
+  #   if (all(prodequal)) {
+  #
+  #   }
+  # }
   if (verbose) cat("Now doing the comparisons  \n")
   setuphtml(rundir=rundir)
   filename <- "scenarioproperties.csv"
@@ -899,7 +914,7 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
     sauribbon(rundir,scenes=scenes,sau=sau,varqnts=depleBqnts,
               glb=glb,varname="depleB",console=FALSE,
               q90=TRUE,intens=intensity,addleg="bottomright")
-  plotallphaseplots(rundir=rundir,dyn=dyn,glb=glb,scenes=scenes,width=9,
+  plotallphaseplots(rundir=rundir,dyn=dyn,prods,glb=glb,scenes=scenes,width=9,
                     height=10,fnt=7,pntcex=1.5,zero=FALSE,
                     legloc="bottomright")
   makecompareoutput(rundir=rundir,glbc,scenes,postfixdir,
@@ -1277,6 +1292,7 @@ makelistobj <- function(res,objname) { # res=result$ans;objname="glb"
 #' @param fnt which font to use. default=7 = bold times
 #' @param pntcex the size of the year points along each median line
 #' @param zero should the phase plots have a zero origin. default=FALSE
+#' @param yline default = NULL, used to add horizontal lines to each plot
 #'
 #' @seealso [\link{getcompout} for how to generate the xlist and ylist]
 #'
@@ -1298,7 +1314,8 @@ makelistobj <- function(res,objname) { # res=result$ans;objname="glb"
 #' #              pntcex=1.5,zero=FALSE)
 plotdynphase <- function(xlist,ylist,scenes,glb,rundir="",xlab="xlabel",
                          ylab="ylabel",legloc="bottomright",console=TRUE,
-                         width=9,height=10,fnt=7,pntcex=1.25,zero=FALSE) {
+                         width=9,height=10,fnt=7,pntcex=1.25,zero=FALSE,
+                         yline=NULL) {
   nscenes <- length(scenes)
   nsau <- glb$nSAU
   saunames <- glb$saunames
@@ -1342,6 +1359,7 @@ plotdynphase <- function(xlist,ylist,scenes,glb,rundir="",xlab="xlabel",
              cex=1.5*pntcex,col=c(4,3))
       points(xvar[nyr,sau,scen],yvar[nyr,sau,scen],pch=16,cex=1.25,col=scen)
     }
+    if (length(yline) > 0) abline(h=yline,lwd=1,col=1)
     mtext(saunames[sau],side=3,outer=FALSE,cex=1.1,line=-1.1,adj=0.05)
   }
   mtext(xlab,side=1,outer=TRUE,cex=1.1,line=-0.2)
@@ -1364,7 +1382,8 @@ plotdynphase <- function(xlist,ylist,scenes,glb,rundir="",xlab="xlabel",
 #'     rate against catch.
 #'
 #' @param rundir the compare scenario's directory
-#' @param dyn a list of the dynamics objects from each scenbario
+#' @param dyn a list of the dynamics objects from each scenario
+#' @param prods a list of the sauprod objects containing MSY, B0, Bmsy, etc
 #' @param glb the globals object. The assumption is that all glb objects are
 #'     very similar between scenarios, although different reps can be compared
 #' @param scenes the names of the scenarios selected for comparison
@@ -1382,8 +1401,8 @@ plotdynphase <- function(xlist,ylist,scenes,glb,rundir="",xlab="xlabel",
 #' @export
 #'
 #' @examples
-#' print("wait on sutiable data")
-plotallphaseplots <- function(rundir,dyn,glb,scenes,width=9,height=10,
+#' print("wait on suitable data")
+plotallphaseplots <- function(rundir,dyn,prods,glb,scenes,width=9,height=10,
                               fnt=7,pntcex=1.5,zero=FALSE,legloc="bottomright") { #rundir=rundir; res=result
   matureB <- getcompout(dyn=dyn,glb=glb,scenes=scenes,pickvar="matureB")
   exploitB <- getcompout(dyn=dyn,glb=glb,scenes=scenes,pickvar="exploitB")
@@ -1393,6 +1412,41 @@ plotallphaseplots <- function(rundir,dyn,glb,scenes,width=9,height=10,
   depleB <- getcompout(dyn=dyn,glb=glb,scenes=scenes,pickvar="depleB")
   cpue <- getcompout(dyn=dyn,glb=glb,scenes=scenes,pickvar="cpue")
   harvestR <- getcompout(dyn=dyn,glb=glb,scenes=scenes,pickvar="harvestR")
+  msy <- getmatcolfromlist(prods,"MSY")
+  catbymsy <- catch
+  for (scene in 1:length(scenes)) {
+    for (sau in 1:glb$nSAU) {
+      catbymsy[[scene]][,sau,] <- (catch[[scene]][,sau,])/msy[[scene]][sau]
+    }
+  }
+  fileout <- plotdynphase(xlist=depleB,ylist=catbymsy,scenes=scenes,glb=glb,
+                          rundir=rundir,xlab="Exploitable Biomass Depletion",
+                          ylab="Actual Catches div MSY",legloc=legloc,
+                          console=FALSE,width=width,height=height,fnt=fnt,
+                          pntcex=pntcex,zero=zero,yline=1.0)
+  addplot(filen=fileout$filen,rundir=rundir,category="phaseplots",
+          caption=fileout$caption)
+  fileout <- plotdynphase(xlist=deplsB,ylist=catbymsy,scenes=scenes,glb=glb,
+                          rundir=rundir,xlab="Mature Biomass Depletion",
+                          ylab="Actual Catches div MSY",legloc=legloc,
+                          console=FALSE,width=width,height=height,fnt=fnt,
+                          pntcex=pntcex,zero=zero,yline=1.0)
+  addplot(filen=fileout$filen,rundir=rundir,category="phaseplots",
+          caption=fileout$caption)
+  fileout <- plotdynphase(xlist=depleB,ylist=catch,scenes=scenes,glb=glb,
+                          rundir=rundir,xlab="Exploitable Biomass Depletion",
+                          ylab="Actual Catches (t)",legloc=legloc,
+                          console=FALSE,width=width,height=height,fnt=fnt,
+                          pntcex=pntcex,zero=zero)
+  addplot(filen=fileout$filen,rundir=rundir,category="phaseplots",
+          caption=fileout$caption)
+  fileout <- plotdynphase(xlist=deplsB,ylist=catch,scenes=scenes,glb=glb,
+                          rundir=rundir,xlab="Mature Biomass Depletion",
+                          ylab="Actual Catches (t)",legloc=legloc,
+                          console=FALSE,width=width,height=height,fnt=fnt,
+                          pntcex=pntcex,zero=zero)
+  addplot(filen=fileout$filen,rundir=rundir,category="phaseplots",
+          caption=fileout$caption)
   fileout <- plotdynphase(xlist=matureB,ylist=acatch,scenes=scenes,glb=glb,
                           rundir=rundir,xlab="Mature Biomass (t)",
                           ylab="Aspirational Catch (t)",legloc=legloc,
@@ -1414,6 +1468,7 @@ plotallphaseplots <- function(rundir,dyn,glb,scenes,width=9,height=10,
                           pntcex=pntcex,zero=zero)
   addplot(filen=fileout$filen,rundir=rundir,category="phaseplots",
           caption=fileout$caption)
+
   fileout <- plotdynphase(xlist=catch,ylist=harvestR,scenes=scenes,glb=glb,
                           rundir=rundir,xlab="Actual Catch (t)",
                           ylab="Annual Harvest Rate",legloc=legloc,
@@ -1431,20 +1486,6 @@ plotallphaseplots <- function(rundir,dyn,glb,scenes,width=9,height=10,
   fileout <- plotdynphase(xlist=exploitB,ylist=catch,scenes=scenes,glb=glb,
                           rundir=rundir,xlab="Exploitable Biomass",
                           ylab="Actual Catch",legloc=legloc,
-                          console=FALSE,width=width,height=height,fnt=fnt,
-                          pntcex=pntcex,zero=zero)
-  addplot(filen=fileout$filen,rundir=rundir,category="phaseplots",
-          caption=fileout$caption)
-  fileout <- plotdynphase(xlist=catch,ylist=depleB,scenes=scenes,glb=glb,
-                          rundir=rundir,xlab="Actual Catches (t)",
-                          ylab="Exploitable Biomass Depletion",legloc=legloc,
-                          console=FALSE,width=width,height=height,fnt=fnt,
-                          pntcex=pntcex,zero=zero)
-  addplot(filen=fileout$filen,rundir=rundir,category="phaseplots",
-          caption=fileout$caption)
-  fileout <- plotdynphase(xlist=catch,ylist=deplsB,scenes=scenes,glb=glb,
-                          rundir=rundir,xlab="Actual Catches (t)",
-                          ylab="Mature Biomass Depletion",legloc=legloc,
                           console=FALSE,width=width,height=height,fnt=fnt,
                           pntcex=pntcex,zero=zero)
   addplot(filen=fileout$filen,rundir=rundir,category="phaseplots",
@@ -1593,10 +1634,10 @@ plotsceneproj <- function(rundir,inarr,glb,scene,filen="",label="",
   return(invisible(outmed))
 } # end of plotsceneproj
 
-#' @title plotzonedyn plots zonewide catch, mature biomass, harvestR and CPUE
+#' @title plotzonedyn ribbonplot of zone catch, mature biomass, harvestR and CE
 #'
-#' @description plotzonedyn generates plots of the zone-wide total catches, the
-#'     mature biomass, the harvest rate, and the CPUE across the years of
+#' @description plotzonedyn generates ribbonplots of the zone-wide total catches,
+#'     the mature biomass, the harvest rate, and the CPUE across the years of
 #'     projection.
 #'
 #' @param rundir the directory in which all results are held for a scenario or
