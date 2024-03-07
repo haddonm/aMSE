@@ -48,6 +48,32 @@ addpops <- function(invar,nyrs,reps) {  # invar=invar; glb=glb
   return(result)
 } # end of addpops
 
+#' @title addwarning carefully adds a single line to a predefined warning file
+#'
+#' @description addwarning addresses the need of capturing any warnings that are
+#'     issued during a simulation run. A predefined, full path warning file is
+#'     input along a single line of text describing the issue. In the case of
+#'     aMSE, the name of the warning file is carried in the globals object. At
+#'     the finish of the run, any warning messages are included in the runnotes
+#'     that are printed to the home tab in the output.
+#'
+#' @param warnfile the full path and name of a text file that aims to hold any
+#'     warnings that are reported to it.
+#' @param issue a character string describing the issue of any warning that one
+#'     wants to issue.
+#'
+#' @return nothing but it does append a character string as a newline to a file
+#' @export
+#'
+#' @examples
+#' print("wait for me to make one up")
+#' # syntax:  addwarning(glb$warnfile,"")
+addwarning <- function(warnfile,issue) {
+  withnewline <- grep("\\n",issue)
+  if (withnewline) { cat(issue,file=warnfile,append=TRUE)
+  } else { cat(issue,"\n",file=warnfile,append=TRUE)  }
+} # end of addwarning
+
 #' @title catchweightCE uses historical catch-by-sau to make weighted zone cpue
 #'
 #' @description catchweightCE is used when characterizing the historical

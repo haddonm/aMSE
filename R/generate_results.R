@@ -289,13 +289,23 @@ makeoutput <- function(out,rundir,postdir,controlfile,hsfile=NULL,
   glb <- out$glb
   ctrl <- out$ctrl
   projy <- ifelse(doproject,glb$pyrs,0)
+  warnings <- readLines(glb$warnfile)
+  numwarn <- length(warnings)
+  addnotes <- NULL
+  if (numwarn > 1) {
+    for (i in 1:numwarn)
+       addnotes <- c(addnotes,paste0("Warning ",i," ",warnings[i+1]))
+  } else {
+    addnotes <- c(addnotes,"No warnings reported.")
+  }
   runnotes <- c(ctrl$runlabel,paste0("RunTime = ",out$tottime),
                 paste0("replicates = ",glb$reps),paste0("years projected = ",projy),
                 paste0("Populations = ",glb$numpop),paste0("SAU = ",glb$nSAU),
                 paste0("Randomseed for conditioning = ",ctrl$randseed),
                 paste0("Recruitment variability sigR         = ",ctrl$withsigR),
                 paste0("Exploitable Biomass variability sigB = ",ctrl$withsigB),
-                paste0("Catch-Rate variability sigCE         = ",ctrl$withsigCE))
+                paste0("Catch-Rate variability sigCE         = ",ctrl$withsigCE),
+                addnotes)
 
   make_html(replist = replist,  rundir = rundir,
             controlfile=controlfile, datafile=out$ctrl$datafile, hsfile=hsfile,

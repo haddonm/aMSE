@@ -1310,7 +1310,7 @@ poplevelplot <- function(rundir,sau,popvar,glb,label="",console=TRUE) {
 
     lines(yrs,meds[,pop],lwd=3,col=outcol[pop])
   }
-  legend("topleft",legend=popnums,col=c(popcol[1:npop]),lwd=4,bty="n",cex=1)
+  legend("topright",legend=popnums,col=c(popcol[1:npop]),lwd=4,bty="n",cex=1)
   if (!console) {
     addplot(filen,rundir=rundir,category="poplevelplots",caption)
   }
@@ -1392,7 +1392,9 @@ predsizecomp <- function(sau,NSC,glb,minSL=10,interval=5,prop=TRUE,
         if (length(pickrep) < length(reptotal)) {
           reptotal[-pickrep] <- 1
           nreps <- length(reptotal) - length(pickrep)
-          outcome <- paste0(nreps," Replicates in year group ",i," were zero")
+          issue <- paste0("In predsizecomp ", nreps," Replicates in ",
+                            picknames[i]," for sau ",sau," were zero \n")
+          addwarning(glb$warnfile,issue)
         }
         for (rp in 1:reps) psauNt[,rp] <- yrsauNt[,rp]/reptotal[rp]
         reptotal <- colSums(psauNt,na.rm=TRUE)
@@ -1433,7 +1435,7 @@ predsizecomp <- function(sau,NSC,glb,minSL=10,interval=5,prop=TRUE,
   if (!console) {
     addplot(filen,rundir=rundir,category="NumSize",caption)
   }
-  return(invisible(outcome))
+ return(invisible(outcome))
 } # end of predsizecomp
 
 #' @title preparesizecomp strips out empty columns and identifies samples

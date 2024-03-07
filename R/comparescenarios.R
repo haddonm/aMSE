@@ -834,13 +834,6 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
     warning(cat("At least one important scenario property differs betweem scenarios \n"))
   }
   if (verbose) print(scenprops)
-  # prodequal <- vector(mode="logical",length=(length(nscenes)-1))
-  # for (i in 2:nscenes) {
-  #   prodequal[i-1] <- all.equal(prods[[i-1]],prods[[i]])
-  #   if (all(prodequal)) {
-  #
-  #   }
-  # }
   if (verbose) cat("Now doing the comparisons  \n")
   setuphtml(rundir=rundir)
   filename <- "scenarioproperties.csv"
@@ -1472,13 +1465,6 @@ plotallphaseplots <- function(rundir,dyn,prods,glb,scenes,width=9,height=10,
   fileout <- plotdynphase(xlist=catch,ylist=harvestR,scenes=scenes,glb=glb,
                           rundir=rundir,xlab="Actual Catch (t)",
                           ylab="Annual Harvest Rate",legloc=legloc,
-                          console=FALSE,width=width,height=height,fnt=fnt,
-                          pntcex=pntcex,zero=zero)
-  addplot(filen=fileout$filen,rundir=rundir,category="phaseplots",
-          caption=fileout$caption)
-  fileout <- plotdynphase(xlist=exploitB,ylist=cpue,scenes=scenes,glb=glb,
-                          rundir=rundir,xlab="Exploitable Biomass",
-                          ylab="CPUE",legloc=legloc,
                           console=FALSE,width=width,height=height,fnt=fnt,
                           pntcex=pntcex,zero=zero)
   addplot(filen=fileout$filen,rundir=rundir,category="phaseplots",

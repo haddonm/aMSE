@@ -835,6 +835,9 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
      }
    }# end of recdev loop
    # make output objects
+   warningfile <- pathtopath(rundir,"warnings.txt")
+   label <- paste0(Sys.time()," A listing of any warnings generated in aMSE run")
+   cat(label,"\n",file=warningfile,append=FALSE)
    condC <- list(histCatch=histCatch,histyr=histyr,
                  histCE=histCE,yearCE=yearCE,initdepl=initdepl,
                  compdat=compdat,recdevs=recdevs,parsin=parsin,optpars=optpars,
@@ -850,7 +853,8 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
    globals <- list(numpop=numpop, nSAU=nSAU, midpts=midpts,Nclass=Nclass,
                    reps=reps,hyrs=hyrs,pyrs=projyrs,hyrnames=hyrnames,
                    pyrnames=pyrnames,saunames=SAUnames,SAUpop=SAUpop,
-                   larvdisp=larvdisp,indexCE=indexCE,envimpact=envimpact)
+                   larvdisp=larvdisp,indexCE=indexCE,envimpact=envimpact,
+                   warnfile=warningfile)
    totans <- list(SAUnames,SAUpop,minc,cw,larvdisp,randomseed,
                   initLML,condC,projC,globals,outctrl,catches,projyrs)
    names(totans) <- c("SAUnames","SAUpop","minc","cw","larvdisp","randomseed",
