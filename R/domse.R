@@ -1,5 +1,5 @@
 # Tas context -----------------
-# postfixdir <- "BC"
+# postfixdir <- "BCmeta"
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
@@ -31,7 +31,7 @@
 # minsizecomp=c(100,135)
 # uplimH=0.4
 # incH=0.005
-
+#
 
 # SA context -------------
 # rundir=rundir
@@ -67,7 +67,7 @@
 
 # VIC HS hsargs
 # rundir=rundir
-# controlfile=controlfile
+# controlfile = controlfile
 # hsargs=hsargs
 # hcrfun=Vic_HS
 # sampleCE=vicCPUE
@@ -76,12 +76,10 @@
 # getdata=vicdata
 # calcpopC=viccalcexpectpopC
 # makeouthcr=vicmakeouthcr
-# #hcrscoreoutputs = saextractandplotscores,
-# #HSPMs=sagetHSscores,
 # fleetdyn = NULL
 # scoreplot=vicplotfinalscores2
 # plotmultflags=vicplotmultandflags
-# interimout=c(outdir,postfixdir)
+# interimout= "" #outdir
 # varyrs=7
 # startyr=38
 # verbose=TRUE
@@ -90,7 +88,7 @@
 # matureL=c(40,170)
 # wtatL=c(50,200)
 # mincount=120
-# includeNAS = TRUE
+# includeNAS = FALSE
 # depensate=0
 # kobeRP=c(0.4,0.2,0.15)
 # nasInterval=5
@@ -161,10 +159,14 @@
 #'     the default="", which means nothing is saved if no risk of crashing in
 #'     subsequent analyses. But if trying new stuff which may waste lots of time
 #'     if the projections need to be repeated, then set
-#'     interimout = outdir, which should be a character string identifying a
-#'     directory defined in the run_aMSE you are using, and that will save the
-#'     main objects needed for later analysis in the directory used to save
-#'     final results.
+#'     interimout = outdir, which should be a character string identifying the
+#'     fullpath to a directory, which is usually defined in the run_aMSE you are
+#'     using, and that will save the main objects needed for later analysis into
+#'     the directory used to save final results. Importantly, if your simulation
+#'     runs succeed there is no need to save the interimout results. Using
+#'     interimout automatically saves the numbers-at-size so, if you want the
+#'     numbers-at-size and your simulations work, then turn off interimout, ie
+#'     set it = "", and set includeNAS=TRUE.
 #' @param varyrs how many years at the end of the conditioning on the fishery,
 #'     data into zoneDD, to which to add recruitment variation, default = 7,
 #'     which suits the Tasmanian west coast. Used in prepareprojection
@@ -399,7 +401,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
            caption="HCR reference points")
   # plot the scores
   nSAU <- glb$nSAU
-  for (sau in 1:nSAU) {
+  for (sau in 1:nSAU) { # sau=7
     filen <- paste0("HS_Score_plots_",glb$saunames[sau],".png")
     filename <- pathtopath(rundir,filen)
     caption <- paste0("Harvest strategy scores and outputs for ",
@@ -411,6 +413,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
     caption <- paste0("catchmult and meta flags for ",glb$saunames[sau])
     plotmultflags(outhcr=outhcr,sauans=sauout,sau=sau,filen=filename)
     addplot(filen,rundir=rundir,category="scores",caption)
+    #medscores <- cbind(scoremed)
   }
   # generate population plots
   if (verbose) cat("plotting Population level dynamics \n")

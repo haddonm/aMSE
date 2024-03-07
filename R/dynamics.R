@@ -329,12 +329,12 @@ oneyearcat <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
   Cat <- numeric(Nclass)
   Os <- exp(-Me/2)
   NumNe <- (Os * (G %*% inNt))
-  midyexpB <- sum(SelectWt * NumNe) #SelectWt=Select*WtL =midyrexB
+  midyexpB <- max(sum(SelectWt * NumNe),1.0) #SelectWt=Select*WtL =midyrexB
   estH <- min(incat/midyexpB,0.8) # no more than 0.8 harvest rate
   Fish <- 1-(estH*selyr)
   newNt <- (Os * (Fish * NumNe))
   Cat <- (estH*selyr) * NumNe  #numbers at size in the catch
-  ExploitB <- sum(SelectWt * newNt) # end of year exploitable biomass
+  ExploitB <- max(sum(SelectWt * newNt),1.0) # end of year exploitable biomass
   avExpB <- (midyexpB + ExploitB)/2.0 #av start and end exploitB for cpue calcs
   MatureB <- sum(MatWt*newNt)
   Catch <- sum(WtL*Cat)/1e06

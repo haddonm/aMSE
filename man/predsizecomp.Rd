@@ -62,4 +62,6 @@ predsizecomp generates plots the size composition data for a
 print("wait on suitable data")
 # sau=1;NSC=sauNAS$catchN; glb=glb; minSL=minsizecomp[2];omit=5
 # interval=nasInterval;prop=TRUE;console=TRUE;rundir=rundir
+# sau=sau; NSC=sauNAS$Nt; glb=glb; minSL=minsizecomp[1];omit=5
+# interval=nasInterval;prop=TRUE;console=FALSE;rundir=rundir;omit=5
 }

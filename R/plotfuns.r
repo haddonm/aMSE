@@ -262,8 +262,8 @@ dosau <- function(inzone,glb,picksau,histCE,histCatch,yrnames,recdev) {
 #' print("wait on suitable built in data sets")
 dosauplot <- function(ylabel,postrep,glb,startyr,addCI=FALSE,
                       CIprobs=c(0.05,0.5,0.95),histCE=NULL,addCE=FALSE) {
-  # ylabel="Catch";postrep=zonePsau[["catch"]];glb=glb; addCE=FALSE
-  # startyr=startyr;histCE=histCE; CIprobs=c(0.05,0.5,0.95); addCI=TRUE
+  # ylabel="Catch";postrep=zonePsau[["harvestR"]];glb=glb; addCE=FALSE
+  # startyr=startyr;histCE=NULL; CIprobs=c(0.05,0.5,0.95); addCI=NULL
   label <- glb$saunames
   nsau <- glb$nSAU
   sauCI <- vector("list",nsau)
@@ -278,13 +278,13 @@ dosauplot <- function(ylabel,postrep,glb,startyr,addCI=FALSE,
   projyrs <- (hyrs + 1):allyrs
   parset(plots=nplot,byrow=FALSE)
   xvar <- yrnames[startyr:allyrs]
-  for (sau in 1:nsau) {  # sau = 2
+  for (sau in 1:nsau) {  # sau = 1
     ymax <- getmax(postrep[startyr:allyrs,sau,])
     plot(xvar,postrep[startyr:allyrs,sau,1],type="l",lwd=1,col="grey",panel.first=grid(),
          ylab=paste0(ylabel,"  ",label[sau]),ylim=c(0,ymax),xlab="Years",yaxs="i")
     for (i in 2:reps)
       lines(xvar,postrep[startyr:allyrs,sau,i],lwd=1,col="grey")
-    CI <- apply(postrep[projyrs,sau,],1,quantile,probs=CIprobs)
+    CI <- apply(postrep[projyrs,sau,],1,quantile,probs=CIprobs,na.rm=TRUE)
     sauCI[[sau]] <- CI
     lines(yrnames[projyrs],CI[2L,],lwd=2L,col=4L)
     if (addCI) {
@@ -1355,6 +1355,8 @@ poplevelplot <- function(rundir,sau,popvar,glb,label="",console=TRUE) {
 #' print("wait on suitable data")
 #' # sau=1;NSC=sauNAS$catchN; glb=glb; minSL=minsizecomp[2];omit=5
 #' # interval=nasInterval;prop=TRUE;console=TRUE;rundir=rundir
+#' # sau=sau; NSC=sauNAS$Nt; glb=glb; minSL=minsizecomp[1];omit=5
+#' # interval=nasInterval;prop=TRUE;console=FALSE;rundir=rundir;omit=5
 predsizecomp <- function(sau,NSC,glb,minSL=10,interval=5,prop=TRUE,
                          console=TRUE,rundir="",omit=5) {
   outcome <- "OK"
@@ -1382,10 +1384,10 @@ predsizecomp <- function(sau,NSC,glb,minSL=10,interval=5,prop=TRUE,
   plotprep(width=8,height=9,filename=filen,cex=0.9,verbose=FALSE)
   parset(plots=pickbound(numyrs+1),margin=c(0.25,0.45,0.1,0.1),byrow=FALSE,
          outmargin=c(1.5,1,0,0))
-  for (i in 1:numyrs) {  # i=5
+  for (i in 1:numyrs) {  # i=3
       yrsauNt <- psauNt <- sauNt[,i,]
       if (prop) {
-        reptotal <- colSums(yrsauNt)
+        reptotal <- colSums(yrsauNt,na.rm=TRUE); reptotal
         pickrep <- which(reptotal > 0)
         if (length(pickrep) < length(reptotal)) {
           reptotal[-pickrep] <- 1
@@ -1393,15 +1395,30 @@ predsizecomp <- function(sau,NSC,glb,minSL=10,interval=5,prop=TRUE,
           outcome <- paste0(nreps," Replicates in year group ",i," were zero")
         }
         for (rp in 1:reps) psauNt[,rp] <- yrsauNt[,rp]/reptotal[rp]
-       # psauNt[-pickrep] <- 0
+        reptotal <- colSums(psauNt,na.rm=TRUE)
+        pickpos <- which(reptotal > 0)
+        lenpickpos <- length(pickpos)
       }
-      qts <- apply(psauNt,1,quants)
-      medyrs[,i] <- qts[3,]
-      maxy <- max(psauNt[pickSC,])*1.025
-      plot(shlength[pickSC],psauNt[pickSC,1],type="l",lwd=1,col="grey",xlab="",
-           ylim=c(0,maxy),ylab=picknames[i],panel.first=grid())
-      for (j in 2:reps) lines(shlength[pickSC],psauNt[pickSC,j],lwd=1,col="grey")
-      lines(shlength[pickSC],qts[3,pickSC],lwd=2,col="red")
+      if (lenpickpos > 1) {
+         qts <- apply(psauNt[,pickpos],1,quants)
+         medyrs[,i] <- qts[3,]
+      } else {
+        if (lenpickpos == 1) {
+           medyrs[,i] <- psauNt[,pickpos]
+        } else {
+          medyrs[,i] <- 0
+        }
+      }
+      if (lenpickpos > 0) {
+        maxy <- max(psauNt[pickSC,pickpos])*1.025
+        plot(shlength[pickSC],psauNt[pickSC,pickpos[1]],type="l",lwd=1,col="grey",
+             xlab="",ylim=c(0,maxy),ylab=picknames[i],panel.first=grid())
+      }
+      if (lenpickpos > 1) {
+        for (j in 2:lenpickpos) lines(shlength[pickSC],psauNt[pickSC,pickpos[j]],
+                                    lwd=1,col="grey")
+        lines(shlength[pickSC],qts[3,pickSC],lwd=2,col="red")
+      }
   }
   maxy <- getmax(medyrs[pickSC,])
   plot(shlength[pickSC],medyrs[pickSC,1],type="l",lwd=2,col=1,xlab="",

@@ -86,10 +86,14 @@ function using the ellipsis at the end of the argument list.}
 the default="", which means nothing is saved if no risk of crashing in
 subsequent analyses. But if trying new stuff which may waste lots of time
 if the projections need to be repeated, then set
-interimout = outdir, which should be a character string identifying a
-directory defined in the run_aMSE you are using, and that will save the
-main objects needed for later analysis in the directory used to save
-final results.}
+interimout = outdir, which should be a character string identifying the
+fullpath to a directory, which is usually defined in the run_aMSE you are
+using, and that will save the main objects needed for later analysis into
+the directory used to save final results. Importantly, if your simulation
+runs succeed there is no need to save the interimout results. Using
+interimout automatically saves the numbers-at-size so, if you want the
+numbers-at-size and your simulations work, then turn off interimout, ie
+set it = "", and set includeNAS=TRUE.}
 
 \item{varyrs}{how many years at the end of the conditioning on the fishery,
 data into zoneDD, to which to add recruitment variation, default = 7,
