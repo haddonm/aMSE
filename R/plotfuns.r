@@ -348,7 +348,7 @@ finalcondyeardepletion <- function(rundir,sauzone,glb,deplvar="sB",console=TRUE)
   parset(plots=c(4,2),byrow=FALSE,margin=c(0.3,0.4,0.05,0.05),
          outmargin=c(1,1,0,0))
   for (i in 1:nsau) {
-    deplquant[i,] <- quantile(depl[hyrs,i,],probs=c(0,0.05,0.5,0.95,1))
+    deplquant[i,] <- quantile(depl[hyrs,i,],probs=c(0,0.05,0.5,0.95,1),na.rm=TRUE)
     hist(depl[hyrs,i,],main="",xlab="",ylab=saunames[i])
     abline(v=deplquant[i,3],lwd=2,col=2)
   }
@@ -528,7 +528,7 @@ onesau <- function(prerep,postrep,glb,startyr,picksau,addCI=FALSE,
     for (i in 2:reps)
       lines(startyr:allyrs,c(premat[startyr:preyrs,i],postmat[,i]),
             lwd=1,col="grey")
-    CI <- apply(postmat[,],1,quantile,probs=CIprobs)
+    CI <- apply(postmat[,],1,quantile,probs=CIprobs,na.rm=TRUE)
     varCI[[invar]] <- CI
     lines((preyrs+1):allyrs,CI[2,],lwd=2,col=4)
     if (addCI) {

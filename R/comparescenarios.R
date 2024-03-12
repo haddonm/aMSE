@@ -1681,25 +1681,29 @@ plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,
            byrow=FALSE)
     for (i in 1:nscen) {
       varx[,,i] <- zone[[i]]$catch[hyrs:yrs,]
-      varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975))
+      varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975),
+                         na.rm=TRUE)
     }
     doquantplot(varq,varname="Catch (t)",yrnames,scenes,q90=q90,polys=polys,
                 intens=intens)
     for (i in 1:nscen) {
       varx[,,i] <- zone[[i]]$matureB[hyrs:yrs,]
-      varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975))
+      varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975),
+                         na.rm=TRUE)
     }
     doquantplot(varq,varname="Mature Biomass",yrnames,scenes,q90=q90,polys=polys,
                 intens=intens)
     for (i in 1:nscen) {
       varx[,,i] <- zone[[i]]$harvestR[hyrs:yrs,]
-      varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975))
+      varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975),
+                         na.rm=TRUE)
     }
     doquantplot(varq,varname="Harvest Rate",yrnames,scenes,q90=q90,polys=polys,
                 intens=intens)
     for (i in 1:nscen) {
       varx[,,i] <- zone[[i]]$cpue[hyrs:yrs,]
-      varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975))
+      varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975),
+                         na.rm=TRUE)
     }
     doquantplot(varq,varname="CPUE",yrnames,scenes,q90=q90,polys=polys,
                 intens=intens)
@@ -1769,7 +1773,7 @@ sauquantbyscene <- function(invar,glb) {
 #'     comparison of scenarios
 #' @param scenes the names of the different scenarios being compared
 #' @param sau a number from 1:nsau identifying which sau's dat to plot
-#' @param varqnts the qunatiles for each scenario as output by sauquantbyscene
+#' @param varqnts the quantiles for each scenario as output by sauquantbyscene
 #' @param glb one of the global objects from out. They should all have the
 #'     same reps and years.
 #' @param varname just the name of the variable being plotted, to make sure the

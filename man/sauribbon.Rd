@@ -27,7 +27,7 @@ comparison of scenarios}
 
 \item{sau}{a number from 1:nsau identifying which sau's dat to plot}
 
-\item{varqnts}{the qunatiles for each scenario as output by sauquantbyscene}
+\item{varqnts}{the quantiles for each scenario as output by sauquantbyscene}
 
 \item{glb}{one of the global objects from out. They should all have the
 same reps and years.}
