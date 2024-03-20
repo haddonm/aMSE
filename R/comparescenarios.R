@@ -841,14 +841,14 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
            caption=paste0("Important scenario properties for comparability."))
   quantscen <- comparedynamics(rundir=rundir,dyn,glbc,scenes)
   tabulateproductivity(rundir,prods,scenes)
-
-  filename <- "compare_final_HSscores.png"
-  meds <- comparefinalscores(rundir,scores,scenes,legloc="bottomright",
-                             filen=filename,category="Scores")
-  addplot(filen=filename,rundir=rundir,category="Scores",
-          caption="The HS final scores for each sau.")
-
-  tabulatefinalHSscores(rundir,meds,scenes,category="Scores")
+  if (!is.null(scores$finalsc)) { # allow for incomparable HS score outputs
+    filename <- "compare_final_HSscores.png"
+    meds <- comparefinalscores(rundir,scores,scenes,legloc="bottomright",
+                               filen=filename,category="Scores")
+    addplot(filen=filename,rundir=rundir,category="Scores",
+            caption="The HS final scores for each sau.")
+    tabulatefinalHSscores(rundir,meds,scenes,category="Scores")
+  }
   outcatchHSPM <- calccatchHSPM(catch,glbc,scenes,aavcyrs=10)
   medHSPM <- outcatchHSPM$medians
   label <- names(medHSPM)

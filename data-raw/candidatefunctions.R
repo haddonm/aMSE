@@ -132,11 +132,36 @@ filename <- fullfiles[4]
 load(filename)
 
 
+outhcr <- out$outhcr
+g4s <- outhcr$g4s
+yrs <- as.numeric(dimnames(g4s)[[1]])
 
+plotprep(width=8, height=4.5)
+parset()
+plot(yrs,g4s[,7,1],type="l",lwd=2)
+lines(yrs,g4s[,7,2],lwd=2,col=2)
+lines(yrs,g4s[,7,3],lwd=2,col=4)
 
+expB <- out$sauout$exploitB
+yrsindex <- 59:88
+yrs <- as.numeric(dimnames(expB)[[1]])[yrsindex]
+catch <- out$sauout$catch
+cpue <- out$sauout$cpue
 
-
-
+iny1 <- expB
+iny2 <- catch
+iny3 <- cpue
+plotprep(width=8, height=8)
+parset(plots=c(3,1),margin=c(0.3,0.45,0.05,0.05))
+plot(yrs,iny1[yrsindex,7,1],type="l",lwd=2,xlab="")
+lines(yrs,iny1[yrsindex,7,2],lwd=2,col=2)
+lines(yrs,iny1[yrsindex,7,3],lwd=2,col=4)
+plot(yrs,iny2[yrsindex,7,1],type="l",lwd=2,xlab="")
+lines(yrs,iny2[yrsindex,7,2],lwd=2,col=2)
+lines(yrs,iny2[yrsindex,7,3],lwd=2,col=4)
+plot(yrs,iny3[yrsindex,7,1],type="l",lwd=2,xlab="")
+lines(yrs,iny3[yrsindex,7,2],lwd=2,col=2)
+lines(yrs,iny3[yrsindex,7,3],lwd=2,col=4)
 
 
 
