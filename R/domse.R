@@ -363,6 +363,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
     incrtime2 <- Sys.time(); timeinc <- incrtime2 - incrtime1
     cat("Finished all sau plots ",timeinc,attr(timeinc,"units"),"\n")
   }
+  if (verbose) cat("Starting size-composition plots \n")
   for (sau in 1:glb$nSAU) # sau=1
     predsizecomp(sau=sau, NSC=sauNAS$Nt, glb=glb, minSL=minsizecomp[1],
                  interval=nasInterval,prop=TRUE,console=FALSE,rundir=rundir)

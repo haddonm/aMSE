@@ -779,7 +779,7 @@ cpueHSPM <- function(rundir,cpue,glbc,scenes,filen="",startyr=0) {
 #' }
 do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
                           intensity=100,zero=FALSE) {
-# rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(4,5)
+# rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(1,3,4,5,6,7)
 #  verbose=TRUE; intensity=100; zero=FALSE
   files2 <- files[pickfiles]
   nfile <- length(pickfiles)
@@ -2059,13 +2059,13 @@ tabulateproductivity <- function(rundir,prods,scenes) {
 #' # syntax tabulatezoneprod(rundir=rundir,prods=prods,scenes=result$scenes)
 tabulatezoneprod <- function(rundir,prods,scenes) {
   nscen <- length(scenes)
-  rows <- c("B0","Bmsy","MSY","Dmsy","CEmsy")
-  out <- matrix(0,nrow=5,ncol=nscen,dimnames=list(rows,scenes))
-  for (i in 1:nscen) {
+  columns <- c("B0","Bmsy","MSY","Dmsy","CEmsy")
+  out <- matrix(0,nrow=nscen,ncol=5,dimnames=list(scenes,columns))
+  for (i in 1:nscen) { # i=1
     scenprod <- prods[[i]]
-    out[1:3,i] <- rowSums(scenprod[1:3,])
-    out[4,i] <- mean(scenprod[4,])
-    out[5,i] <- sum((scenprod[3,]/out[3,i]) * scenprod[5,i])
+    out[i,1:3] <- colSums(scenprod[,1:3])
+    out[i,4] <- mean(scenprod[,4])
+    out[i,5] <- sum((scenprod[,3]/out[i,3]) * scenprod[i,5])
   }
   filen <- paste0("zone_productivity.csv")
   caption <- paste0("Productivity statistics for the whole zone.")

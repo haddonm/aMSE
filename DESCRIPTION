@@ -1,7 +1,7 @@
 Package: aMSE
 Title: A Framework for Abalone Management Strategy Evaluation
-Version: 0.2.12
-Date: 2024-03-20
+Version: 0.2.13
+Date: 2024-04-05
 Authors@R: person(given="Malcolm",
                   family="Haddon", 
                   email = "malcolm.haddon@gmail.com", 
