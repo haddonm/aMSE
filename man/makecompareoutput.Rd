@@ -8,6 +8,7 @@ makecompareoutput(
   rundir,
   glbc,
   scenes,
+  scenarionames,
   postdir,
   filesused,
   openfile = TRUE,
@@ -20,6 +21,8 @@ makecompareoutput(
 \item{glbc}{a list of the globals objects from each scenario}
 
 \item{scenes}{a vector of the names for each scenario}
+
+\item{scenarionames}{a vector of the original scenarionames}
 
 \item{postdir}{the name of the directory holding the results, also used to
 name the internal webpage}
@@ -45,5 +48,5 @@ makecompareoutput simplifies taking the output from when
 \examples{
 print("wait on internal data-sets")
 # rundir=rundir;glbc=glbc;scenes=scenes;postdir=postfixdir
-# filesused=files[c(2,3,4)];openfile=TRUE;verbose=FALSE
+# filesused=files[c(1,2,3,4)];openfile=TRUE;verbose=FALSE
 }

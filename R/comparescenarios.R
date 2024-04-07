@@ -51,7 +51,7 @@ boxbysau <- function(rundir,hspm,glbc,scenes,compvar="aavc",filen="",aavcyrs=10,
     boxdat <- matrix(0,nrow=reps,ncol=nscen,dimnames=list(1:reps,scenes))
     if (nchar(filen) > 0) {
       filen <- filenametopath(rundir,filen)
-      caption <- paste0("Boxplots of ",compvar," for each SAU.")
+      caption <- paste0("Boxplots of ",compvar," for each SAU. Redline = median of first scenario.")
     }
     plotprep(width=8, height=8,newdev=FALSE,filename = filen,verbose=FALSE)
     parset(plots=pickbound(nsau),margin=c(0.3,0.4,0.05,0.1),
@@ -521,7 +521,7 @@ comparefinalscores <- function(rundir,scores,scenes,legloc="bottomright",
                                filen="",category="Tables") {
   #   scores=scores;scenes=scenes;legloc="bottomleft"; filen="";
   # rundir=rundir;scores=scores;scenes=scenes;legloc="bottomright"
-  # filen=filename;category="Scores"
+  # filen="";category="Scores"
   nmed <- length(scores)
   meds <- vector(mode="list",length=nmed)
   indim <- dim(scores[[1]]$finalsc)
@@ -530,7 +530,7 @@ comparefinalscores <- function(rundir,scores,scenes,legloc="bottomright",
   yrnames <- dimlabel[[1]]
   nsau <- indim[2]
   saunames <- dimlabel[[2]]
-  for (i in 1:nmed) { # i=2
+  for (i in 1:nmed) { # i=1
     medfsc <- matrix(0,nrow=nyrs,ncol=nsau,dimnames=list(yrnames,saunames))
     tmp <- scores[[i]]$finalsc
     if (is.null(tmp)) { #do what when tmp == null
@@ -627,7 +627,8 @@ cpueboxbysau <- function(rundir,cpue,glbc,scenes,filen="",startyr=0,maxval=0) {
     }
     if (nchar(filen) > 0) {
       filen2 <- filenametopath(rundir,filen)
-      caption <- paste0("Boxplots of year of maximum cpue by sau.")
+      caption <- paste0("Boxplots of year of maximum cpue by sau.",
+                        "Redline is median max-cpue for first scenario.")
     }
     start=1; finish=5
     plotprep(width=8, height=8,newdev=FALSE,filename = filen2,verbose=FALSE)
@@ -702,8 +703,8 @@ cpueHSPM <- function(rundir,cpue,glbc,scenes,filen="",startyr=0) {
     filen <- filenametopath(rundir,filen)
     caption <- paste0("Boxplots of year of maximum cpue.")
   }
-  plotprep(width=9, height=9,newdev=FALSE,filename = filen,verbose=FALSE)
-  parset(plots=c(3,1),margin=c(0.4,0.4,0.05,0.1),outmargin=c(1,0,0,0),byrow=FALSE)
+  plotprep(width=12, height=9,newdev=FALSE,filename = filen,verbose=FALSE)
+  parset(plots=pickbound(nscen),margin=c(0.4,0.4,0.05,0.1),outmargin=c(1,0,0,0),byrow=FALSE)
   for (i in 1:nscen) { # i = 1
     glb <- glbc[[i]]
     if (startyr == 0) {
@@ -714,7 +715,7 @@ cpueHSPM <- function(rundir,cpue,glbc,scenes,filen="",startyr=0) {
     ce <- getprojyrs(cpue[[i]],glb$hyrs,glb$pyrs,startyr=beginyr)
     maxceyr <- getyr2maxce(ce,glb)
     qs <- boxplot(maxceyr,ylim=c(0,max(maxceyr)+2),yaxs="i",
-                  ylab="Years to maximum CPUE",xlab=scenes[i])
+                  ylab="Years to maximum CPUE",xlab="")
     mtext(scenes[i],side=1,outer=FALSE,cex=1,line=1.75)
     qsstats <- qs$stats
     colnames(qsstats) <- glb$saunames
@@ -726,196 +727,6 @@ cpueHSPM <- function(rundir,cpue,glbc,scenes,filen="",startyr=0) {
     addplot(filen=filen,rundir=rundir,category="cpueBoxPlots",caption)
   return(invisible(boxresult))
 } #end of cpueHSPM
-
-#' @title do_comparison is a wrapper function that compares scenarios
-#'
-#' @description do_comparison provides a simplified interface for when making
-#'     comparisons between multiple scenarios. It uses the saved .RData files
-#'     from each scenario and it is up to the user to put those filenames into
-#'     a vector of characters.
-#'
-#' @param rundir the complete path to the directory into which all results and
-#'     plots from the comparisons will be placed.
-#' @param postfixdir the name of the final sub-directory into which the results
-#'     will be placed. This is used as the name of the website generated to
-#'     display the results
-#' @param outdir the full path to the directory holding all the required .RData
-#'     files. If set to '' then files is assumed to include the full path
-#' @param files the vector of RData file names to be used. If outdir set to ''
-#'     then files is assumed to include the full path as well as the file name
-#' @param pickfiles a vector of indices selecting the files to be used.
-#' @param verbose should progress updates be made to the console, default=TRUE
-#' @param intensity is the density of the rgb colours used in the ribbon plots.
-#'     the default = 100
-#' @param zero should the phase plots have an origin at zero, default=FALSE
-#'
-#' @seealso{
-#'    \link{scenebyvar}, \link{scenebyzone}. \link{RGB}
-#' }
-#'
-#' @return nothing but it does conduct a comparison of at least two scenarios
-#'     and places tables and plots into a given sub-directory
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#'   suppressPackageStartupMessages({
-#'   library(aMSE)
-#'   library(TasHS)
-#'   library(codeutils)
-#'   library(hplot)
-#'   library(makehtml)
-#'   library(knitr)
-#'   })
-#'   dropdir <- getDBdir()
-#'   prefixdir <- paste0(dropdir,"A_codeUse/aMSEUse/scenarios/")
-#'   postfixdir <- "BC_compare"
-#'   rundir <- filenametopath(prefixdir,postfixdir)
-#'   # normally one would use code to select the files, outdir is used if all
-#'   # RData files are in one directory, otherwise set outdir='' and files
-#'   # shgould contain the full paths as well as the filenames
-#'   files=c("BC.RData","BCmeta.RData","BC541.RData")
-#'   do_comparison(rundir,postfixdir,outdir,files,pickfiles=c(1,2,3))
-#' }
-do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
-                          intensity=100,zero=FALSE) {
-# rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(1,3,4,5,6,7)
-#  verbose=TRUE; intensity=100; zero=FALSE
-  files2 <- files[pickfiles]
-  nfile <- length(pickfiles)
-  label <- vector(mode="character",length=nfile)
-  for (i in 1:nfile) label[i] <- unlist(strsplit(files2[i],".",fixed=TRUE))[1]
-  ans <- makelist(label) # vector(mode="list",length=nfile)
-  dyn <- makelist(label)
-  glbc <- makelist(label)
-  ctrlc <- makelist(label)
-  condCc <- makelist(label)
-  prods <- makelist(label)
-  scenes <- vector(mode="character",length=nfile)
-  scores <- makelist(label)
-  zone <- makelist(label)
-  for (i in 1:nfile) { # i = 1
-    if (nchar(outdir) == 0) {
-      filename <- files2[i]
-    } else {
-      filename <- pathtopath(outdir,files2[i])
-    }
-    if (verbose)
-      cat("Loading ",files2[i]," which may take time, be patient  \n")
-    out <- NULL # so the function knows an 'out' exists
-    load(filename)
-    ans[[i]] <- out
-    dyn[[i]] <- out$sauout
-    glbc[[i]] <- out$glb
-    ctrlc[[i]] <- out$ctrl
-    condCc[[i]] <- out$condC
-    prods[[i]] <- t(out$sauprod)
-    scenes[i] <- out$ctrl$runlabel
-    scores[[i]] <- out$outhcr
-    zone[[i]] <- out$outzone
-  }
-  nscenes <- length(scenes)
-  projequal <- vector(mode="logical",length=(length(nscenes)-1))
-  for (i in 2:nscenes) {
-     projequal[i-1] <- all.equal(glbc[[i-1]]$pyrs,glbc[[i]]$pyrs)
-     if (!(all(projequal))) {
-       label <- paste0("Number of projection years differs among scenario")
-        warning(cat("Number of projection years differs among scenario"))
-     }
-  }
-  catch <- makelist(scenes)
-  cpue <- makelist(scenes)
-  for (i in 1:nscenes) {
-    catch[[i]] <- dyn[[i]]$catch
-    cpue[[i]] <- dyn[[i]]$cpue
-  }
-  scenprops <- scenarioproperties(scenes,glbc,ctrlc,condCc)
-  if ((verbose) & (any(scenprops[,"same"] == 0))) {
-    warning(cat("At least one important scenario property differs betweem scenarios \n"))
-  }
-  if (verbose) print(scenprops)
-  if (verbose) cat("Now doing the comparisons  \n")
-  setuphtml(rundir=rundir)
-  filename <- "scenarioproperties.csv"
-  addtable(scenprops,filen=filename,rundir=rundir,category="scenes",
-           caption=paste0("Important scenario properties for comparability."))
-  quantscen <- comparedynamics(rundir=rundir,dyn,glbc,scenes)
-  tabulateproductivity(rundir,prods,scenes)
-  if (!is.null(scores$finalsc)) { # allow for incomparable HS score outputs
-    filename <- "compare_final_HSscores.png"
-    meds <- comparefinalscores(rundir,scores,scenes,legloc="bottomright",
-                               filen=filename,category="Scores")
-    addplot(filen=filename,rundir=rundir,category="Scores",
-            caption="The HS final scores for each sau.")
-    tabulatefinalHSscores(rundir,meds,scenes,category="Scores")
-  }
-  outcatchHSPM <- calccatchHSPM(catch,glbc,scenes,aavcyrs=10)
-  medHSPM <- outcatchHSPM$medians
-  label <- names(medHSPM)
-  for (i in 1:length(medHSPM)) {
-    filename <- paste0("proj",label[i],".csv")
-    addtable(medHSPM[[label[i]]],filen=filename,rundir=rundir,category="HSPM",
-             caption=paste0("Median ",label[i]," values by sau and scenario."))
-  }
-  outtab <- catchHSPM(rundir,hspm=outcatchHSPM,glbc,scenes,
-                      filen="compare_catches_boxplots.png",aavcyrs=10)
-  boxbysau(rundir,hspm=outcatchHSPM,glbc,scenes,compvar="aavc",
-           filen="sau_aavc_boxplots.png",aavcyrs=10,maxval=0.4)
-  boxbysau(rundir,hspm=outcatchHSPM,glbc,scenes,compvar="sum5",
-           filen="sau_sum5_boxplots.png",aavcyrs=10,maxval=0) #
-  boxbysau(rundir,hspm=outcatchHSPM,glbc,scenes,compvar="sum10",
-           filen="sau_sum10_boxplots.png",aavcyrs=10,maxval=0) #
-  catchbpstats(rundir,outtab)
-  cpueHSPM(rundir,cpue,glbc,scenes=scenes,filen="sau_maxce_boxplots.png")
-  outcpue <- cpueboxbysau(rundir,cpue,glbc,scenes,filen="sau_maxceyr_box.png",
-                          startyr=0,maxval=0)
-  cdivmsy <- catchvsMSY(catch,glbc,prods,scenes)
-  nscen <- length(scenes)
-  for (i in 1:nscen) {
-    plotsceneproj(rundir,cdivmsy[[i]],glbc[[i]],scenes[i],
-                  filen=paste0("Catch_div_MSY_",scenes[i],".png"),
-                  label="Catch / MSY",hline=1,Q=90)
-  }
-  plotzonedyn(rundir,scenes,zone,glbc,console=FALSE,q90=TRUE,polys=TRUE,
-              intens=intensity)
-  tabulatezoneprod(rundir,prods,scenes)
-  # ribbon plots by sau and dynamic variable
-  # cpue <- scenebyvar(dyn=out$dyn,byvar="cpue",glb=out$glbc[[1]])
-  glb <- glbc[[1]]
-  catch <- scenebyvar(dyn,byvar="catch",glb=glb,projonly = TRUE)
-  catqnts <- sauquantbyscene(catch,glb)
-  nsau <- glbc[[1]]$nSAU
-  for (sau in 1:nsau)
-    sauribbon(rundir,scenes=scenes,sau=sau,varqnts=catqnts,
-              glb=glb,varname="Catch",console=FALSE,
-              q90=TRUE,intens=intensity,addleg="bottomright")
-  cpue <- scenebyvar(dyn,byvar="cpue",glb=glb,projonly = TRUE)
-  cpueqnts <- sauquantbyscene(cpue,glb)
-  for (sau in 1:nsau)
-    sauribbon(rundir,scenes=scenes,sau=sau,varqnts=cpueqnts,
-              glb=glb,varname="cpue",console=FALSE,
-              q90=TRUE,intens=intensity,addleg="bottomright")
-  deplsB <- scenebyvar(dyn,byvar="deplsB",glb=glb,projonly=TRUE)
-  deplsBqnts <- sauquantbyscene(deplsB,glb)
-  for (sau in 1:nsau)
-    sauribbon(rundir,scenes=scenes,sau=sau,varqnts=deplsBqnts,
-              glb=glb,varname="deplsB",console=FALSE,
-              q90=TRUE,intens=intensity,addleg="bottomright")
-  depleB <- scenebyvar(dyn,byvar="depleB",glb=glb,projonly=TRUE)
-  depleBqnts <- sauquantbyscene(depleB,glb)
-  for (sau in 1:nsau)
-    sauribbon(rundir,scenes=scenes,sau=sau,varqnts=depleBqnts,
-              glb=glb,varname="depleB",console=FALSE,
-              q90=TRUE,intens=intensity,addleg="bottomright")
-  plotallphaseplots(rundir=rundir,dyn=dyn,prods,glb=glb,scenes=scenes,width=9,
-                    height=10,fnt=7,pntcex=1.5,zero=FALSE,
-                    legloc="bottomright")
-  makecompareoutput(rundir=rundir,glbc,scenes,postfixdir,
-                    filesused=files[pickfiles],openfile=TRUE,verbose=FALSE)
-  return(invisible(list(scenes=scenes,ans=ans,quantscen=quantscen,dyn=dyn,
-                        prods=prods,scenprops=scenprops)))
-} # end of do_comparison
-
 
 #' @title do_comp_outputs extracts components of the output from do_comparison
 #'
@@ -1181,6 +992,7 @@ getcompout <- function(dyn,glb,scenes,pickvar="matureB",projonly=TRUE) { # out=r
 #' @param rundir the full path to the directory holding the all result files
 #' @param glbc a list of the globals objects from each scenario
 #' @param scenes a vector of the names for each scenario
+#' @param scenarionames a vector of the original scenarionames
 #' @param postdir the name of the directory holding the results, also used to
 #'     name the internal webpage
 #' @param filesused a vector of the names of the scenarios that were compared,
@@ -1196,15 +1008,21 @@ getcompout <- function(dyn,glb,scenes,pickvar="matureB",projonly=TRUE) { # out=r
 #' @examples
 #' print("wait on internal data-sets")
 #' # rundir=rundir;glbc=glbc;scenes=scenes;postdir=postfixdir
-#' # filesused=files[c(2,3,4)];openfile=TRUE;verbose=FALSE
-makecompareoutput <- function(rundir,glbc,scenes,postdir,filesused,
-                              openfile=TRUE,verbose=FALSE) {
+#' # filesused=files[c(1,2,3,4)];openfile=TRUE;verbose=FALSE
+makecompareoutput <- function(rundir,glbc,scenes,scenarionames,postdir,
+                              filesused,openfile=TRUE,verbose=FALSE) {
   replist <- list(starttime=as.character(Sys.time()),
                   endtime="")
   nscene <- length(scenes)
   reps <- NULL
   for (i in 1:nscene) reps <- paste0(reps,glbc[[i]]$reps,"  ")
-  runnotes <- c(paste0(c("Scenarios",filesused),collapse="__"),
+  if (all.equal.character(scenarionames,scenes) != TRUE) {
+    scenarios <- paste0(scenarionames,"_",scenes)
+  } else {
+    scenarios <- scenes
+  }
+  runnotes <- c("Scenarios: ",
+                scenarios,
                 paste0("RunTime = ",0),
                 paste0("replicates = ",reps),
                 paste0("years projected = ",glbc[[1]]$pyrs),
@@ -1801,7 +1619,7 @@ sauquantbyscene <- function(invar,glb) {
 #' \dontrun{
 #'  # a possible example run where scenarios 1, 13, and 14 are compared.
 #'    result <- do_comparison(rundir=rundir,postfixdir=postfixdir,outdir=outdir,
-#'                            files=files,pickfiles=c(1,13,14),verbose=TRUE)
+#'                            files=files,pickfiles=c(1,2,3),verbose=TRUE)
 #'    out <- do_comp_outputs(result,projonly=TRUE)
 #'    catch <- scenebyvar(dyn=out$dyn,byvar="catch",glb=out$glbc[[1]])
 #'    sauribbon("",scenes=out$scenes,sau=8,varqnts=catqnts,glb=out$glbc[[1]],

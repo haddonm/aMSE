@@ -165,6 +165,114 @@ lines(yrs,iny3[yrsindex,7,3],lwd=2,col=4)
 
 
 
+   result <- do_comparison(rundir=rundir,postfixdir=postfixdir,outdir=outdir,
+                           files=files,pickfiles=c(1,2,3),verbose=TRUE)
+   out <- do_comp_outputs(result,projonly=TRUE)
+   catch <- scenebyvar(dyn=out$dyn,byvar="catch",glb=out$glbc[[1]])
+   catqnts <- sauquantbyscene(catch,out$glbc[[1]])
+   sauribbon("",scenes=out$scenes,sau=8,varqnts=catqnts,glb=out$glbc[[1]],
+   varname="Catch",console=TRUE,q90=TRUE,intens=100,addleg="bottomright")
+
+
+
+
+ #' @title plotscenproj plots a 3D array of data by sau in a single plot
+ #'
+ #' @description plotsceneproj uses a 3D array of years x sau x replicates to
+ #'     produce a plot by sau of those projections all in a single plot. Options
+ #'     exist to include a horizontal dashed line and to include a median line
+ #'     and either 90 or 95 quantiles across the plot.
+ #'
+ #' @param rundir the directory in which all results are held for a scenario or
+ #'     comparison of scenarios
+ #' @param inarr the 3D array of projections for a given scenario derived from
+ #'     catch or cpue or whatever
+ #' @param glb the global object relating to the particular acenario
+ #' @param scene the scenario name
+ #' @param filen the filename in which to store the plot, default="" which draws
+ #'     the plot to the console
+ #' @param label what is the name of the variable being plotted, default=""
+ #' @param maxy what constant maximum y-axis to use? default=0 which uss the
+ #'     maximum for each sau
+ #' @param Q which quantile to use, default = 90. If set to 0 no median or
+ #'     quantiles are plotted, 95 will lead to the 95 percent quantiles being
+ #'     plotted
+ #' @param hline should a horizontal dashed line be included. default=NA, which
+ #'     means that no line is added. Otherwise whichever value is given this
+ #'     argument will lead to a dashed horizontal black line of width 1.
+ #'
+ #' @return invisibly a list of the quantiles for each sau
+ #' @export
+ #'
+ #' @examples
+ #' print("wait on data sets")
+ #' #  rundir=rundir; inarr=cdivmsy[[1]];glb=glbc[[1]];scenes=scenes[1];
+ #' #  filen="";label="Catch / MSY";maxy=0
+plotsceneproj <- function(rundir,inarr,glb,scene,filen="",label="",
+                         maxy=0,Q=90,hline=NA) {
+  nsau <- glb$nSAU
+  saunames <- glb$saunames
+  outmed <- makelist(saunames)
+  reps <- glb$reps
+  if (nchar(filen) > 0) {
+   filen <- filenametopath(rundir,filen)
+   caption <- paste0("Projections of ",label," for ",scene," for each SAU.")
+  }
+  yrs <- as.numeric(names(inarr[,1,1]))
+  plotprep(width=8, height=8,newdev=FALSE,filename = filen,verbose=FALSE)
+  parset(plots=pickbound(nsau),margin=c(0.3,0.4,0.05,0.1),outmargin=c(0,1,0.25,0),
+        byrow=FALSE)
+  for (sau in 1:nsau) { # sau=1; i = 1
+     dat <- inarr[,sau,]
+     meds <- apply(dat,1,quants)
+     outmed[[sau]] <- meds
+     ymax <- maxy
+   if (ymax == 0) ymax <- getmax(dat)
+   plot(yrs,dat[,1],type="l",lwd=1,col="grey",panel.first=grid(),
+        ylim=c(0,ymax),ylab=saunames[sau],xlab="")
+   for (i in 1:reps) lines(yrs,dat[,i],lwd=1,col="grey")
+   if (Q > 0) {
+       lines(yrs,meds["50%",],lwd=2,col=4)
+       if (Q == 90) {
+         lines(yrs,meds["5%",],lwd=1,col=2)
+         lines(yrs,meds["95%",],lwd=1,col=2)
+       } else {
+         lines(yrs,meds["2.5%",],lwd=1,col=2)
+         lines(yrs,meds["97.5%",],lwd=1,col=2)
+       }
+   }
+   if (!is.na(hline)) abline(h=hline,lwd=1,col="black",lty=2)
+  }
+  mtext(paste0(scene,"  ",label),side=2,line=-0.2,outer=TRUE,cex=1.1)
+  if (nchar(filen) > 0)
+   addplot(filen=filen,rundir=rundir,category="C_vs_MSY",caption)
+  return(invisible(outmed))
+} # end of plotsceneproj
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

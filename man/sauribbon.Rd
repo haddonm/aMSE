@@ -64,7 +64,7 @@ sauribbon is used to produce a ribbon plot for a given sau across
 \dontrun{
  # a possible example run where scenarios 1, 13, and 14 are compared.
    result <- do_comparison(rundir=rundir,postfixdir=postfixdir,outdir=outdir,
-                           files=files,pickfiles=c(1,13,14),verbose=TRUE)
+                           files=files,pickfiles=c(1,2,3),verbose=TRUE)
    out <- do_comp_outputs(result,projonly=TRUE)
    catch <- scenebyvar(dyn=out$dyn,byvar="catch",glb=out$glbc[[1]])
    sauribbon("",scenes=out$scenes,sau=8,varqnts=catqnts,glb=out$glbc[[1]],
