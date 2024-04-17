@@ -5,7 +5,12 @@
 #' @description do_comparison provides a simplified interface for when making
 #'     comparisons between multiple scenarios. It uses the saved .RData files
 #'     from each scenario and it is up to the user to put those filenames into
-#'     a vector of characters.
+#'     a vector of characters. The juris argument is an attempt at generalizing
+#'     this comparison function and will allow for different jurisdictions to
+#'     enable future additions to do_comparison that will suit their specific
+#'     requirements. Currently, the only option that has been implemented is
+#'     for juris='TAS', but others can be added now that the basic framework
+#'     is implemented.
 #'
 #' @param rundir the complete path to the directory into which all results and
 #'     plots from the comparisons will be placed.
@@ -21,9 +26,18 @@
 #' @param intensity is the density of the rgb colours used in the ribbon plots.
 #'     the default = 100
 #' @param zero should the phase plots have an origin at zero, default=FALSE
+#' @param Q90 default = TRUE which means the inner 90th quantiles will be
+#'     plotted. If FALSE then the 95th quantiles will be used.
 #' @param altscenes a vector of alternative scenario names for use in plots and
 #'     tables where scenario names are very long and confuse results. default=
 #'     NULL, which implies using the base scenario names (runlabels).
+#' @param juris which jurisdiction is being examined? default="". This is
+#'     an argument so that if there are jurisdiction specific functions for
+#'     examining outputs that may be of particular interest to a particular
+#'     jurisdiction a suitable function can be written and input, along with
+#'     any extra arguments it might have, in the final ellipsis.
+#' @param ... the ellipsis is here in case a jurisdiction specific function or
+#'     functions is/are written to perform extra analyses, plots, and tables.
 #'
 #' @seealso{
 #'    \link{scenebyvar}, \link{scenebyzone}. \link{RGB}
@@ -49,14 +63,16 @@
 #'   rundir <- filenametopath(prefixdir,postfixdir)
 #'   # normally one would use code to select the files, outdir is used if all
 #'   # RData files are in one directory, otherwise set outdir='' and files
-#'   # shgould contain the full paths as well as the filenames
+#'   # should contain the full paths as well as the filenames
 #'   files=c("BC.RData","BCmeta.RData","BC541.RData")
 #'   do_comparison(rundir,postfixdir,outdir,files,pickfiles=c(1,2,3))
 #' }
 do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
-                          intensity=100,zero=FALSE,altscenes=NULL) {
-  # rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(5,7,10)
-  #  verbose=TRUE; intensity=100; zero=FALSE; altscenes=c("SA","Tas","Vic")
+                          intensity=100,zero=FALSE,Q90=TRUE,altscenes=NULL,
+                          juris="",...) {
+  # rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(2,3,4)
+  #  verbose=TRUE; intensity=100; zero=FALSE; altscenes=c("mult05","mult10","mult15")
+  #  juris=""
   # get files -------------------
   files2 <- files[pickfiles]
   nfile <- length(pickfiles)
@@ -123,6 +139,9 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
   if ((verbose) & (any(scenprops[,"same"] == 0))) {
     warning(cat("At least one important scenario property differs betweem scenarios \n"))
   }
+  if (tolower(juris) == "tas") {
+     cat("A specific jurisdiction fnction is required \n")
+  }
   if (verbose) print(scenprops)
   if (verbose) cat("Now doing the comparisons  \n")
   setuphtml(rundir=rundir)
@@ -146,6 +165,7 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
     warning(cat("TasHS should be first in comparisons, if used,",
                 " no Score tab produced \n"))
   }
+  # HSPM tab--------------------------------------------
   outcatchHSPM <- calccatchHSPM(catch,glbc,scenes,aavcyrs=10)
   medHSPM <- outcatchHSPM$medians
   label <- names(medHSPM)
@@ -154,6 +174,7 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
     addtable(medHSPM[[label[i]]],filen=filename,rundir=rundir,category="HSPM",
              caption=paste0("Median ",label[i]," values by sau and scenario."))
   }
+  # catches and cathBoxPlots tabs-------------------------------------
   outtab <- catchHSPM(rundir,hspm=outcatchHSPM,glbc,scenes,
                       filen="compare_catches_boxplots.png",aavcyrs=10)
   boxbysau(rundir,hspm=outcatchHSPM,glbc,scenes,compvar="aavc",
@@ -163,9 +184,11 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
   boxbysau(rundir,hspm=outcatchHSPM,glbc,scenes,compvar="sum10",
            filen="sau_sum10_boxplots.png",aavcyrs=10,maxval=0) #
   catchbpstats(rundir,outtab)
+  # cpueBoxPlots tab-------------------------------------------
   cpueHSPM(rundir,cpue,glbc,scenes=scenes,filen="sau_maxce_boxplots.png")
   outcpue <- cpueboxbysau(rundir,cpue,glbc,scenes,filen="sau_maxceyr_box.png",
                           startyr=0,maxval=0)
+  # C_vs_MSY tab-----------------------------------------
   cdivmsy <- catchvsMSY(catch,glbc,prods,scenes)
   nscen <- length(scenes)
   for (i in 1:nscen) {
@@ -173,11 +196,15 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
                   filen=paste0("Catch_div_MSY_",scenes[i],".png"),
                   label="Catch / MSY",hline=1,Q=90)
   }
-  plotzonedyn(rundir,scenes,zone,glbc,console=FALSE,q90=TRUE,polys=TRUE,
-              intens=intensity)
-  tabulatezoneprod(rundir,prods,scenes)
+  # zone tab----------------------------------------
+  outprod <- tabulatezoneprod(rundir,prods,scenes)
+  plotzonedyn(rundir,scenes,zone,glbc,console=FALSE,q90=Q90,polys=TRUE,
+              intens=intensity,hlines=list(catch=outprod[,"MSY"],
+              spawnB=outprod[,"Bmsy"],harvestR=0,cpue=outprod[,"CEmsy"]))
+
   # ribbon plots by sau and dynamic variable
   # cpue <- scenebyvar(dyn=out$dyn,byvar="cpue",glb=out$glbc[[1]])
+  # Catch ribbon tab -------------------------------------------
   glb <- glbc[[1]]
   catch <- scenebyvar(dyn,byvar="catch",glb=glb,projonly = TRUE)
   catqnts <- sauquantbyscene(catch,glb)
@@ -185,25 +212,29 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
   for (sau in 1:nsau)
     sauribbon(rundir,scenes=scenes,sau=sau,varqnts=catqnts,
               glb=glb,varname="Catch",console=FALSE,
-              q90=TRUE,intens=intensity,addleg="bottomright")
+              q90=Q90,intens=intensity,addleg="bottomright")
+  # cpue ribbon tab------------------------------------------
   cpue <- scenebyvar(dyn,byvar="cpue",glb=glb,projonly = TRUE)
   cpueqnts <- sauquantbyscene(cpue,glb)
   for (sau in 1:nsau)
     sauribbon(rundir,scenes=scenes,sau=sau,varqnts=cpueqnts,
               glb=glb,varname="cpue",console=FALSE,
-              q90=TRUE,intens=intensity,addleg="bottomright")
+              q90=Q90,intens=intensity,addleg="bottomright")
+  # depletion spawnB ribbon tab--------------------------------------------
   deplsB <- scenebyvar(dyn,byvar="deplsB",glb=glb,projonly=TRUE)
   deplsBqnts <- sauquantbyscene(deplsB,glb)
   for (sau in 1:nsau)
     sauribbon(rundir,scenes=scenes,sau=sau,varqnts=deplsBqnts,
               glb=glb,varname="deplsB",console=FALSE,
-              q90=TRUE,intens=intensity,addleg="bottomright")
+              q90=Q90,intens=intensity,addleg="bottomright")
+  # depletion exploitB ribbon tab--------------------------------------------
   depleB <- scenebyvar(dyn,byvar="depleB",glb=glb,projonly=TRUE)
   depleBqnts <- sauquantbyscene(depleB,glb)
   for (sau in 1:nsau)
     sauribbon(rundir,scenes=scenes,sau=sau,varqnts=depleBqnts,
               glb=glb,varname="depleB",console=FALSE,
-              q90=TRUE,intens=intensity,addleg="bottomright")
+              q90=Q90,intens=intensity,addleg="bottomright")
+  # phaseplots tab --------------------------------------------------
   plotallphaseplots(rundir=rundir,dyn=dyn,prods,glb=glb,scenes=scenes,width=9,
                     height=10,fnt=7,pntcex=1.5,zero=FALSE,
                     legloc="bottomright")

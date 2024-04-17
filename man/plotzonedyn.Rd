@@ -12,7 +12,8 @@ plotzonedyn(
   console = TRUE,
   q90 = TRUE,
   polys = TRUE,
-  intens = 127
+  intens = 127,
+  hlines = NULL
 )
 }
 \arguments{
@@ -36,6 +37,11 @@ the 95th quantiles are used.}
 
 \item{intens}{if polys=TRUE then intens signifies the intensity of colour on
 a scale of 0 - 255. 127 is about 50 percent dense.}
+
+\item{hlines}{should reference lines be drawn on each plot. default=NULL
+which = no lines if lines are required then hlines needs to be set to a
+list of h values for each scenario, for each plotted variable, see
+examples for syntax}
 }
 \value{
 nothing but it does generate a plot and saves it if console=FALSE
@@ -47,6 +53,10 @@ plotzonedyn generates ribbonplots of the zone-wide total catches,
 }
 \examples{
 print("wait on data sets")
+# syntax plotzonedyn(rundir,scenes,zone,glbc,console=FALSE,q90=TRUE,
+#                    polyd=TRUE,intens=100,hlines=list(catch=outprod[,"MSY"],
+#                    spawnB=outprod[,"Bmsy"],harvestR=0,
+#                    cpue=outprod[,"CEmsy"]))
 }
 \seealso{
 {

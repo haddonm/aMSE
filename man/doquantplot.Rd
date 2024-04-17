@@ -13,7 +13,8 @@ doquantplot(
   polys,
   intens = 127,
   addleg = FALSE,
-  locate = "bottomright"
+  locate = "bottomright",
+  hlin = NULL
 )
 }
 \arguments{
@@ -39,6 +40,8 @@ a scale of 0 - 255. 127 is about 50 percent dense.}
 \item{addleg}{add a legend? default=FALSE}
 
 \item{locate}{where to place legend if there is one, default='bottomright'}
+
+\item{hlin}{a vector of values for each scenario or NULL}
 }
 \value{
 nothing but it does add polygons or lines to a plot

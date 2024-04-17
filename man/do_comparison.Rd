@@ -13,7 +13,10 @@ do_comparison(
   verbose = TRUE,
   intensity = 100,
   zero = FALSE,
-  altscenes = NULL
+  Q90 = TRUE,
+  altscenes = NULL,
+  juris = "",
+  ...
 )
 }
 \arguments{
@@ -39,9 +42,21 @@ the default = 100}
 
 \item{zero}{should the phase plots have an origin at zero, default=FALSE}
 
+\item{Q90}{default = TRUE which means the inner 90th quantiles will be
+plotted. If FALSE then the 95th quantiles will be used.}
+
 \item{altscenes}{a vector of alternative scenario names for use in plots and
 tables where scenario names are very long and confuse results. default=
 NULL, which implies using the base scenario names (runlabels).}
+
+\item{juris}{which jurisdiction is being examined? default="". This is
+an argument so that if there are jurisdiction specific functions for
+examining outputs that may be of particular interest to a particular
+jurisdiction a suitable function can be written and input, along with
+any extra arguments it might have, in the final ellipsis.}
+
+\item{...}{the ellipsis is here in case a jurisdiction specific function or
+functions is/are written to perform extra analyses, plots, and tables.}
 }
 \value{
 nothing but it does conduct a comparison of at least two scenarios
@@ -51,7 +66,12 @@ nothing but it does conduct a comparison of at least two scenarios
 do_comparison provides a simplified interface for when making
     comparisons between multiple scenarios. It uses the saved .RData files
     from each scenario and it is up to the user to put those filenames into
-    a vector of characters.
+    a vector of characters. The juris argument is an attempt at generalizing
+    this comparison function and will allow for different jurisdictions to
+    enable future additions to do_comparison that will suit their specific
+    requirements. Currently, the only option that has been implemented is
+    for juris='TAS', but others can be added now that the basic framework
+    is implemented.
 }
 \examples{
 \dontrun{
@@ -69,7 +89,7 @@ do_comparison provides a simplified interface for when making
   rundir <- filenametopath(prefixdir,postfixdir)
   # normally one would use code to select the files, outdir is used if all
   # RData files are in one directory, otherwise set outdir='' and files
-  # shgould contain the full paths as well as the filenames
+  # should contain the full paths as well as the filenames
   files=c("BC.RData","BCmeta.RData","BC541.RData")
   do_comparison(rundir,postfixdir,outdir,files,pickfiles=c(1,2,3))
 }

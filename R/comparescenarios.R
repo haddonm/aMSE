@@ -824,6 +824,7 @@ do_comp_outputs <- function(result,projonly=TRUE) {
 #'     a scale of 0 - 255. 127 is about 50 percent dense.
 #' @param addleg add a legend? default=FALSE
 #' @param locate where to place legend if there is one, default='bottomright'
+#' @param hlin a vector of values for each scenario or NULL
 #'
 #' @seealso {
 #'    \link{plotzonedyn}, \link{RGB}
@@ -835,7 +836,7 @@ do_comp_outputs <- function(result,projonly=TRUE) {
 #' @examples
 #' print("wait on datasets")
 doquantplot <- function(varq,varname,yrnames,scenes,q90,polys,intens=127,
-                        addleg=FALSE,locate="bottomright") {
+                        addleg=FALSE,locate="bottomright",hlin=NULL) {
   maxy <- getmax(varq)
   nscen <- length(scenes)
   plot(yrnames,varq[3,,1],type="l",lwd=2,col=0,xlab="",ylab=varname,
@@ -849,6 +850,7 @@ doquantplot <- function(varq,varname,yrnames,scenes,q90,polys,intens=127,
         poldat <- makepolygon(varq[1,,i],varq[5,,i],yrnames)
         polygon(poldat,col=RGB(i,alpha=intens))
       }
+      if (!is.null(hlin)) abline(h=hlin[i],lwd=2,col=i)
     }
   } else {
     for (i in 1:nscen) {
@@ -1457,6 +1459,10 @@ plotsceneproj <- function(rundir,inarr,glb,scene,filen="",label="",
 #' @param polys should transparent polygons be plotted = TRUE, or lines = FALSE
 #' @param intens if polys=TRUE then intens signifies the intensity of colour on
 #'     a scale of 0 - 255. 127 is about 50 percent dense.
+#' @param hlines should reference lines be drawn on each plot. default=NULL
+#'     which = no lines if lines are required then hlines needs to be set to a
+#'     list of h values for each scenario, for each plotted variable, see
+#'     examples for syntax
 #'
 #' @seealso {
 #'   \link{poptozone}, \link{plotZone}
@@ -1467,8 +1473,12 @@ plotsceneproj <- function(rundir,inarr,glb,scene,filen="",label="",
 #'
 #' @examples
 #' print("wait on data sets")
+#' # syntax plotzonedyn(rundir,scenes,zone,glbc,console=FALSE,q90=TRUE,
+#' #                    polyd=TRUE,intens=100,hlines=list(catch=outprod[,"MSY"],
+#' #                    spawnB=outprod[,"Bmsy"],harvestR=0,
+#' #                    cpue=outprod[,"CEmsy"]))
 plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,
-                        q90=TRUE,polys=TRUE,intens=127) {
+                        q90=TRUE,polys=TRUE,intens=127,hlines=NULL) {
   nscen <- length(scenes)
   allreps <- unlist(lapply(glbc,"[[","reps"))
   if (min(allreps) != max(allreps)) {
@@ -1503,14 +1513,14 @@ plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,
                          na.rm=TRUE)
     }
     doquantplot(varq,varname="Catch (t)",yrnames,scenes,q90=q90,polys=polys,
-                intens=intens)
+                intens=intens,hlin=hlines[[1]])
     for (i in 1:nscen) {
       varx[,,i] <- zone[[i]]$matureB[hyrs:yrs,]
       varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975),
                          na.rm=TRUE)
     }
     doquantplot(varq,varname="Mature Biomass",yrnames,scenes,q90=q90,polys=polys,
-                intens=intens)
+                intens=intens,hlin=hlines[[2]])
     for (i in 1:nscen) {
       varx[,,i] <- zone[[i]]$harvestR[hyrs:yrs,]
       varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975),
@@ -1524,7 +1534,7 @@ plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,
                          na.rm=TRUE)
     }
     doquantplot(varq,varname="CPUE",yrnames,scenes,q90=q90,polys=polys,
-                intens=intens)
+                intens=intens,hlin=hlines[[4]])
     label <- paste0(scenes,collapse=",")
     legend("bottomright",legend=scenes,lwd=3,col=1:nscen,bty="n",cex=1.1)
     mtext("Zone Wide Dynamics",side=2,line=-0.2,outer=TRUE,cex=1.1)

@@ -206,13 +206,15 @@ lines(yrs,iny3[yrsindex,7,3],lwd=2,col=4)
  #'
  #' @examples
  #' print("wait on data sets")
- #' #  rundir=rundir; inarr=cdivmsy[[1]];glb=glbc[[1]];scenes=scenes[1];
- #' #  filen="";label="Catch / MSY";maxy=0
+ #' #  rundir=rundir; inarr=out$sauout$deplsB[58:88,,];glb=out$glb;scene="BCmeta"
+ #' #  filen="";label="Mature Biomass Depletion";maxy=0;Q=0;hline=0.2; eg=3
+ #' #
 plotsceneproj <- function(rundir,inarr,glb,scene,filen="",label="",
-                         maxy=0,Q=90,hline=NA) {
+                         maxy=0,Q=90,hline=NA,eg=0) {
   nsau <- glb$nSAU
   saunames <- glb$saunames
   outmed <- makelist(saunames)
+  egtraj <- NULL
   reps <- glb$reps
   if (nchar(filen) > 0) {
    filen <- filenametopath(rundir,filen)
@@ -227,10 +229,15 @@ plotsceneproj <- function(rundir,inarr,glb,scene,filen="",label="",
      meds <- apply(dat,1,quants)
      outmed[[sau]] <- meds
      ymax <- maxy
-   if (ymax == 0) ymax <- getmax(dat)
-   plot(yrs,dat[,1],type="l",lwd=1,col="grey",panel.first=grid(),
-        ylim=c(0,ymax),ylab=saunames[sau],xlab="")
+     if (ymax == 0) ymax <- getmax(dat)
+     plot(yrs,dat[,1],type="l",lwd=1,col="grey",panel.first=grid(),
+          ylim=c(0,ymax),ylab=saunames[sau],xlab="",yaxs="i")
    for (i in 1:reps) lines(yrs,dat[,i],lwd=1,col="grey")
+   if (eg > 0) {
+     trajeg <- sort(trunc(runif(eg,min=1,max=reps)))
+     for (i in 1:eg) lines(yrs,dat[,trajeg[i]],lwd=2,col=2)
+     egtraj <- rbind(egtraj,trajeg)
+   }
    if (Q > 0) {
        lines(yrs,meds["50%",],lwd=2,col=4)
        if (Q == 90) {
@@ -243,19 +250,240 @@ plotsceneproj <- function(rundir,inarr,glb,scene,filen="",label="",
    }
    if (!is.na(hline)) abline(h=hline,lwd=1,col="black",lty=2)
   }
+  if (eg > 0) rownames(egtraj) <- saunames; colnames(egtraj) <- 1:eg
   mtext(paste0(scene,"  ",label),side=2,line=-0.2,outer=TRUE,cex=1.1)
   if (nchar(filen) > 0)
    addplot(filen=filen,rundir=rundir,category="C_vs_MSY",caption)
-  return(invisible(outmed))
+  return(invisible(list(outmed=outmed, egtraj=egtraj)))
 } # end of plotsceneproj
 
 
+plotsceneproj(rundir,out$deplsB,glb=out$glb,scene="BCmeta",filen="",
+              label="Mature Biomass Depletion",maxy=0,Q=90,hline=NA)
 
 
 
 
+#' @title onecattraj is a one category trajectory plot of yrs x variable
+#'
+#' @description onecattraj expects a 2D matrix of yrs x reps of some variable.
+#'     For example, if one has 50 years x 250 replicates of the depletion level
+#'     of spawning biomass then dat would be dat[1:50,1:250]. Options exist
+#'     for including quantiles of the median trajectory plus either the inner
+#'     90th or 95th quantiles, designated by setting Q = 90 or 95. If Q is left
+#'     = 0 no quantiles are plotted. If eg is set > 0 then eg random replicates
+#'     will be selected and plotted as example trajectories. defpar defaults to
+#'     TRUE which will define the plot characteristics. To override this with
+#'     expernal definitions set defpar = FALSE
+#'
+#' @param dat a 2d matrix of yrs x replicates of some dynamic variable
+#' @param label The y-axis label for the plot, default = 'ylabe
+#' @param maxy  allows one to define the maximum y value for the plot. The
+#'     default = 0, which means the maximum of he data will be used.
+#' @param miny default = 0, which means the plot with have a y-axis starting at
+#'     zero. This argument provides the option of changing this, which would be
+#'     important if there are negative values to your dynamic variable. If miny
+#'     is set then maxy must also be set
+#' @param rundir the directory in which to store the plot file if a filename is
+#'     given. This is only required if filen is defined.
+#' @param filen the full name of the file
+#' @param Q valid values can be 0, 90, or 95, meaning no CI, add the 90th CI,
+#'     or add the 05th CI in red to the blue to the median line.
+#' @param eg Should example single trajectories be added to the plot? More than
+#'     5 tends to be very busy, 3 or less are good. More than 2 appears to many
+#'     when the CI are also plotted. If plotted long they are red, if plotted
+#'     with the CI these lines are yellow.
+#' @param defpar default = TRUE, which defines the plot properties. If you wish
+#'     to add multiple plots to a single graph then define your own pars
+#'     outside the function and set defpar = FALSE
+#' @param xlab xlabel omitted if the x-axis is years, otherwise name it here
+#'     and the plot will have room added for the xlabel.
+#' @param hline should a horizontal dashed line be included. default=NA, which
+#'     means that no line is added. Otherwise whichever value is given this
+#'     argument will lead to a dashed horizontal black line of width 1.
+#'
+#' @return a list of the median values and a vector of the indices of the
+#'     random trajectories selected if added.
+#' @export
+#'
+#' @examples
+#'  delta <- 2+rnorm(100,mean=0.02,sd=0.05)
+#'  y <- matrix(0,nrow=101,ncol=100)
+#'  for (i in 1:100) y[,i] <-sin(seq(0,delta[i]*pi,length=101))
+#'  rownames(y) <- seq(0,2*pi,length=101)
+#'  catout <- onecattraj(dat=y,label="Randomized sine waves",maxy=1.1,miny=-1.1,
+#'                       rundir=NA,filen="",Q=95,eg=0,xlab="pi-value")
+#'  catout <- onecattraj(dat=y,label="Randomized sine waves",maxy=1.1,
+#'                       miny=-1.1,rundir=NA,filen="",Q=0,eg=3,xlab="pi-value")
+onecattraj <- function(dat,label="ylabel",maxy=0,miny=0,rundir=NA,filen="",
+                       Q=0,eg=0,defpar=TRUE,xlab="",hline=NA) {
+  yrs <- as.numeric(rownames(dat))
+  reps <- ncol(dat)
+  meds <- apply(dat,1,quants)
+  if (miny != 0) {
+    yax <- c(miny,maxy)
+   } else {
+     if (maxy > 0) {
+       yax <- c(0,maxy)
+       } else {
+       yax <- c(0,getmax(dat))
+     }
+  }
+  filelen <- nchar(filen)
+  if (filelen > 0) {
+    if (substr(filen,filelen-2,filelen) != "png") filen <- paste0(filen,".png")
+    filen <- pathtopath(rundir,filen)
+    caption <- paste0("Projections of ",label)
+  }
+  if (defpar) {
+    plotprep(width=8, height=4.5,newdev=FALSE,filename = filen,verbose=FALSE)
+    xmarg <- ifelse(nchar(xlab > 0),0.45,0.3)
+    parset(plots=c(1,1),margin=c(xmarg,0.4,0.05,0.1))
+  }
+  plot(yrs,dat[,1],type="l",lwd=1,col="grey",panel.first=grid(),
+       ylim=yax,ylab=label,xlab=xlab,yaxs="i")
+  for (i in 1:reps) lines(yrs,dat[,i],lwd=1,col="grey")
+  if (Q > 0) {
+    lines(yrs,meds["50%",],lwd=2,col=4)
+    if (Q == 90) {
+      lines(yrs,meds["5%",],lwd=2,col=2)
+      lines(yrs,meds["95%",],lwd=2,col=2)
+    } else {
+      lines(yrs,meds["2.5%",],lwd=2,col=2)
+      lines(yrs,meds["97.5%",],lwd=2,col=2)
+    }
+  }
+  if (!is.na(hline)) abline(h=hline,lwd=1,col="black",lty=2)
+  egtraj <- NULL
+  if (eg > 0) {
+    lincol <- ifelse(Q > 0,"yellow","red")
+    egtraj <- as.matrix(sort(trunc(runif(eg,min=1,max=reps))))
+    colnames(egtraj) <- label; rownames(egtraj) <- 1:eg
+    for (i in 1:eg) lines(yrs,dat[,egtraj[i]],lwd=2,col=lincol)
+  }
+  return(invisible(list(meds=meds,egtraj=egtraj)))
+} # end of onecatproj
+
+catout <- onecattraj(dat=out$sauout$deplsB[58:88,6,],label="sau12 - BCmeta",maxy=0,
+           rundir=NA,filen="",Q=95,eg=2,hline=0.2)
+
+catout <- onecattraj(dat=y,label="Randomized sine waves",maxy=1.1,miny=-1.1,
+                     rundir=NA,filen="",Q=95,eg=0,xlab="pi")
+
+catout <- onecattraj(dat=y,label="Randomized sine waves",maxy=1.1,miny=-1.1,
+                     rundir=NA,filen="",Q=0,eg=3,xlab="pi")
+
+catout
 
 
+
+dat3 <- out$sauout$deplsB[59:88,,];label="Mature Biomass Depletion"
+catnames=out$glb$saunames;maxy=0;miny=0:rundir=NA;filen="";Q=0;eg=0;xlab="";wide=8
+hline=NA
+
+
+#' @title multicattraj plots a 3D array of data by category in a single graphic
+#'
+#' @description multicattraj uses a 3D array of years x sau x replicates
+#'     'steps x category x replciates' to produce a plot by category of those
+#'     replicates all in a single plot. Options exist to include a horizontal
+#'     dashed line and to include a median line with either 90 or 95 quantiles,
+#'     and or a highlighted set of randomly chosen replicatges to illustrate
+#'     individual variation.
+#'
+#' @param dat3 a 3D array of steps 'years", x category 'sau' x replicates
+#' @param label The y-axis label for the plot, default = 'ylabe
+#' @param catnames names for each category, eg the sau names in aMSE
+#' @param maxy  allows one to define the maximum y value for the plot. The
+#'     default = 0, which means the maximum of he data will be used.
+#' @param miny default = 0, which means the plot with have a y-axis starting at
+#'     zero. This argument provides the option of changing this, which would be
+#'     important if there are negative values to your dynamic variable. If miny
+#'     is set then maxy must also be set
+#' @param rundir the directory in which to store the plot file if a filename is
+#'     given. This is only required if filen is defined.
+#' @param filen the full name of the file
+#' @param Q valid values can be 0, 90, or 95, meaning no CI, add the 90th CI,
+#'     or add the 05th CI in red to the blue to the median line.
+#' @param eg Should example single trajectories be added to the plot? More than
+#'     5 tends to be very busy, 3 or less are good. More than 2 appears to many
+#'     when the CI are also plotted. If plotted long they are red, if plotted
+#'     with the CI these lines are yellow.
+#' @param defpar default = TRUE, which defines the plot properties. If you wish
+#'     to add multiple plots to a single graph then define your own pars
+#'     outside the function and set defpar = FALSE
+#' @param xlab xlabel omitted if the x-axis is years, otherwise name it here
+#'     and the plot will have room added for the xlabel.
+#' @param hline should a horizontal dashed line be included. default=NA, which
+#'     means that no line is added. Otherwise whichever value is given this
+#'     argument will lead to a dashed horizontal black line of width 1.
+#' @param wide how wide, in inches, should the graphic be, default = 8
+#' @param high how tall, in inches, should the graphic be, default = 8
+#'
+#' @return a list of the quantiles and random trajectories, if selected, for
+#'     each category
+#' @export
+#'
+#' @examples
+#'  y <- array(0,dim=c(101,4,100),dimnames=list(seq(0,2*pi,length=101),1:4,1:100))
+#'  for (j in 1:4) {  # make some 3D data
+#'    delta <- 2+rnorm(100,mean=0.02,sd=0.05)
+#'    for (i in 1:100) y[,j,i] <-sin(seq(0,delta[i]*pi,length=101))
+#'  }
+#'  multicattraj(dat3=y,label="Randomized Sines",catnames=c("A","B","C","D"),
+#'               maxy=1.1,miny=-1.1,rundir=NA,filen="",
+#'               Q=95,eg=0,hline=NA,xlab="pi-value",wide=8,high=6)
+multicattraj <- function(dat3,label="ylabel",catnames,maxy=0,miny=0,rundir=NA,
+                         filen="",Q=0,eg=0,xlab="",hline=NA,wide=8,high=8) {
+  datdim <- dim(dat3)
+  ninst <- datdim[1]
+  ncat <- datdim[2]
+  inst <- as.numeric(dimnames(dat3)[[1]])
+  outmulti <- makelist(catnames)
+  filelen <- nchar(filen)
+  if (filelen > 0) {
+    if (substr(filen,filelen-2,filelen) != "png") filen <- paste0(filen,".png")
+    filen <- pathtopath(rundir,filen)
+    caption <- paste0("Projections of ",label)
+  }
+  plotprep(width=wide,height=high,newdev=FALSE,filename = filen,verbose=FALSE)
+  xmarg <- ifelse(nchar(xlab) > 0,0.45,0.3)
+  parset(plots=pickbound(ncat),margin=c(xmarg,0.4,0.05,0.1),
+         outmargin=c(0,1,0.25,0),byrow=FALSE)
+  for (cat in 1:ncat) { # cat=1; i = 1
+    dat <- dat3[,cat,]
+    outmulti[[cat]] <- onecattraj(dat=dat,label=paste0(catnames[cat],"_",label),
+                         maxy=maxy,miny=miny,rundir=rundir,filen=filen,
+                         Q=Q,eg=eg,defpar=FALSE,xlab=xlab,hline=hline)
+  }
+  return(invisible(outmulti))
+} # en do fmulticattraj
+
+
+multicattraj(dat3=out$sauout$deplsB[55:88,,],label="MatureB Depletion",
+              catnames=out$glb$saunames,maxy=0,miny=0,rundir=NA,filen="",
+              Q=95,eg=0,hline=NA,xlab="",wide=8,high=9)
+
+
+
+
+# compare hsargs-----------------------------------
+
+
+
+comptashsargs <- function(ans) {
+  label <- names(ans)
+  hsargs <- makelist(label)
+  nscen <- length(label)
+  for (i in 1:nscen) hsargs[[i]] <- ans[[i]]$hsargs
+  nargs <- length(hsargs[[1]])
+  names(ans[[1]])
+}
+
+
+
+hlines=list(catch=outprod[,"MSY"],spawnB=outprod[,"Bmsy"],harvestR=0,
+            cpue=outprod[,"CEmsy"])
 
 
 
