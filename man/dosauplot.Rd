@@ -12,7 +12,8 @@ dosauplot(
   addCI = FALSE,
   CIprobs = c(0.05, 0.5, 0.95),
   histCE = NULL,
-  addCE = FALSE
+  addCE = FALSE,
+  hlin = NULL
 )
 }
 \arguments{
@@ -35,6 +36,9 @@ default = c(0.05,0.5,0.95)}
 \item{histCE}{the historical cpue data if included, default = NULL}
 
 \item{addCE}{should historical cpue be included on the plots, default=FALSE}
+
+\item{hlin}{a vector of horizontal reference lines, one for each sau, or NULL
+if a vector then a horizontal line will be added to each plot.}
 }
 \value{
 invisibly, a list of CI and median for each SAU

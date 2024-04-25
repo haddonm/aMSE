@@ -246,12 +246,13 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   production <- zone$product
   projC <- zone$zone1$projC
   condC <- zone$zone1$condC
-  # save some equil results -------------------------------------------------
+  # biology, recruits, and production tabs -------------------------------------------------
   biology_plots(rundir, glb, zoneC, matL=matureL,Lwt=wtatL)
   sauprod <- plotproductivity(rundir,production,glb,hsargs)
-  hsargs$saumsy <- sauprod[3,]
+ # hsargs$saumsy <- sauprod[3,]
+  # numbers-at-size tab------------------------------------------------------
   numbersatsize(rundir, glb, zoneD)
-  #Condition on Fishery -----------------------------------------------------
+  #zoneDD tab -----------------------------------------------------
   if (any(condC$initdepl < 1)) {
     initdepl <- condC$initdepl
     if (verbose) cat("Conducting initial depletions  ",initdepl,"\n")
@@ -284,6 +285,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   popdefs[,"SAU"] <- glb$sauname[glb$sauindex]  #so SAU can be txt
   addtable(popdefs,"popdefs.csv",rundir,category="zoneDD",
            caption="Population vs Operating model parameter definitions")
+  # condition tab----------------------------------------
   condout <- plotconditioning(zoneDD,glb,zoneC,condC$histCE,
                               histCatch=condC$histCatch,rundir,
                               condC$recdevs,console=FALSE)
@@ -292,7 +294,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
     cat("Conditioning plots completed ",timeinc,attr(timeinc,"units") ,"\n")
   }
   saurecdevs(condC$recdevs,glb,rundir,filen="saurecdevs.png")
-  # plot predicted size-comp of catch vs observed size-comps
+  # predictedcatchN tab-----------------------------------------
   catchN <- zoneDD$catchN
   sauCt <- popNAStosau(catchN,glb)
   compdat <- condC$compdat$lfs
@@ -307,6 +309,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                    catchN=sauCt[,,plotsau],start=NA,proportion=TRUE,
                    console=FALSE)
     }
+    # OrigComp tab--------------------------------------------
     saucompdata(allcomp=compdat,glb=glb,horizline=5,console=FALSE,rundir=rundir,
                 ylabel="Size-Composition of Catches",tabname="OrigComp")
   }
@@ -354,15 +357,17 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   }
   B0 <- getvar(zoneC,"B0")
   ExB0 <- getvar(zoneC,"ExB0")
+  # projSAU tab----------------------------------------------------------
   if (verbose) cat("Starting the sau related plots \n")
-  sauout <- sauplots(zoneDP,NAS,glb,rundir,B0,ExB0,
-                     startyr=startyr,addCI=TRUE,histCE=condC$histCE)
+  sauout <- sauplots(zoneDP,NAS,glb,rundir,B0,ExB0,startyr=startyr,
+                     addCI=TRUE,histCE=condC$histCE,hlines=sauprod)
   sauNAS <- list(Nt=sauout$Nt,catchN=sauout$catchN)
   sauout <- sauout[-c(12,11)]  # This removes the Nt and catchN from sauout
   if (verbose) {
     incrtime2 <- Sys.time(); timeinc <- incrtime2 - incrtime1
     cat("Finished all sau plots ",timeinc,attr(timeinc,"units"),"\n")
   }
+  # Add to numbers-at-size tab------------------------------------------------------
   if (verbose) cat("Starting size-composition plots \n")
   for (sau in 1:glb$nSAU) # sau=1
     predsizecomp(sau=sau, NSC=sauNAS$Nt, glb=glb, minSL=minsizecomp[1],
@@ -375,17 +380,21 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
     incrtime1 <- Sys.time(); timeinc <- incrtime1 - incrtime2
     cat("Finished size-composition plots",timeinc,attr(timeinc,"units"),"\n")
   }
+  # DiagProj tab------------------------------------
   diagnosticsproj(sauout,glb,rundir,nrep=ndiagprojs)
+  # zonescale tab ----------------------------------
   outzone <- poptozone(zoneDP,NAS,glb,
                        B0=sum(getvar(zoneC,"B0")),
                        ExB0=sum(getvar(zoneC,"ExB0")))
   zonesummary <- plotZone(outzone,rundir,glb,startyr=startyr,
                           CIprobs=c(0.05,0.5,0.95),addfile=TRUE)
+  # Fishery tab-----------------------------------------------
   if (verbose) cat("Plotting fishery information \n")
   outfish <- fishery_plots(rundir=rundir,glb=glb,select=zoneCP[[1]]$Select,
                            histyr=condC$histyr,projLML=projC$projLML)
   historicalplots(rundir=rundir,condC=condC,glb=glb)
   NAS$catchN <- NAS$catchN[(cutcatchN:glb$Nclass),,,]
+  # HSperf tab--------------------------------
   projtime <- Sys.time()
   tottime <- round((projtime - starttime),3)
   sum5 <- getprojyrC(catsau=zoneDP$catsau,glb=glb,period=5)
@@ -400,13 +409,13 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   plothsstats(rundir,HSstats,glb,average=TRUE)
   addtable(hcrout$refpts,"hcrout_refpts.csv",rundir,category="HSperf",
            caption="HCR reference points")
-  # plot the scores
+  # scores tab----------------------------------------------------
   nSAU <- glb$nSAU
   for (sau in 1:nSAU) { # sau=7
     filen <- paste0("HS_Score_plots_",glb$saunames[sau],".png")
     filename <- pathtopath(rundir,filen)
     caption <- paste0("Harvest strategy scores and outputs for ",
-                      glb$saunames[sau])
+                      glb$saunames[sau],". Blue line is median target CE.")
     scoremed <- scoreplot(outhcr,zoneDP,sau,filen=filename)
     addplot(filen,rundir=rundir,category="scores",caption)
     filen <- paste0("HS_Mult_MetaFlag_plots_",glb$saunames[sau],".png")
@@ -416,6 +425,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
     addplot(filen,rundir=rundir,category="scores",caption)
     #medscores <- cbind(scoremed)
   }
+  # poplevelplots tab ---------------------------------
   # generate population plots
   if (verbose) cat("plotting Population level dynamics \n")
   popmedcatch <- vector(mode="list",length=nSAU)
@@ -435,18 +445,23 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                            label="Depletion_ExpB",console=FALSE)
     popmeddepleB[[sau]] <- saumed
   }
-
-  # generate sau phase plots
-  kobedata <- vector(mode="list",length=nSAU)
-  names(kobedata) <- glb$saunames
-  for (plotsau in 1:glb$nSAU) {
-    twophaseplots(dyn=sauout,glb=glb,outhcr=outhcr,sau=plotsau,kobeRP=kobeRP,
-                  rundir=rundir,startyr=condC$yearCE[1],console=FALSE,fnt=7)
+  # phaseplot tab--------------------------------------------------
+  nsau <- glb$nSAU
+  columns <- c("meddepl","medH","medTargCE","medGrad4")
+  kobedata <- matrix(0,nrow=nsau,ncol=4,dimnames=list(glb$saunames,columns))
+  for (sau in 1:glb$nSAU) {
+    kobedata[sau,] <- twophaseplots(dyn=sauout,glb=glb,outhcr=outhcr,sau=sau,
+                                    kobeRP=kobeRP,rundir=rundir,
+                                    startyr=condC$yearCE[1],console=FALSE,fnt=7)
   }
+  addtable(kobedata,"kobe_plot_endpoints.csv",rundir,category="phaseplot",
+           caption=paste0("The median depletion and Harvest rate, and median ",
+                          "Target CE and Grad4 values."))
   if (verbose) {
     incrtime2 <- Sys.time(); timeinc <- incrtime2 - incrtime1
     cat("All plots and tables completed ",timeinc,attr(timeinc,"units"),"\n")
   }
+  # out list generation-------------------------------------------------------
   if (!includeNAS) NAS=NULL
   out <- list(tottime=tottime,runtime=projtime,starttime=starttime,glb=glb,
               ctrl=ctrl,zoneCP=zoneCP,zoneD=zoneD,zoneDD=zoneDD,zoneDP=zoneDP,

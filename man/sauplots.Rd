@@ -14,7 +14,8 @@ sauplots(
   startyr,
   addCI = TRUE,
   histCE = NULL,
-  tabcat = "projSAU"
+  tabcat = "projSAU",
+  hlines = NULL
 )
 }
 \arguments{
@@ -39,6 +40,10 @@ default=TRUE}
 \item{histCE}{historical CPUE data used in CPUE plots, default=NULL}
 
 \item{tabcat}{the name of the results website tab for the plots}
+
+\item{hlines}{default = NULL, otherwise a dataframe of vectors of sau
+properties. eg sauprod containing Bmsy, MSY, Dmsy, CEmsy for adding to
+each projSAU plot}
 }
 \value{
 a list of lists of CI for each SAU and variable as well as the

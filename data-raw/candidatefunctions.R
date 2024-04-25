@@ -488,7 +488,34 @@ hlines=list(catch=outprod[,"MSY"],spawnB=outprod[,"Bmsy"],harvestR=0,
 
 
 
+# find sauMSY-----------------------------
 
+
+findsaumsy <- function(product,glb) {  # product=prody
+  harv <- as.numeric(rownames(product[,"Catch",]))
+  nh <- length(harv)
+  nsau <- glb$nSAU
+  saunames <- glb$saunames
+  sauindex <- glb$sauindex
+  label <- dimnames(product)
+  sauyield <- matrix(0,nrow=nh,ncol=nsau,dimnames=list(label[[1]],saunames))
+  saumatB <- matrix(0,nrow=nh,ncol=nsau,dimnames=list(label[[1]],saunames))
+  for (i in 1:nh) {
+    saumatB[i,] <- tapply(product[i,"MatB",],sauindex,sum,na.rm=TRUE)
+    sauyield[i,] <- tapply(product[i,"Catch",],sauindex,sum,na.rm=TRUE)
+  }
+
+  catch <- product[,"Catch",]
+  numpop <- ncol(catch)
+  label <- c(colnames(product),"index")
+  xval <- matrix(0,nrow=numpop,ncol=length(label),
+                 dimnames=list(1:numpop,label))
+  for (pop in 1:numpop) { # pop=1
+    pick <- which.max(catch[,pop])
+    xval[pop,] <- c(product[pick,,pop],pick)
+  }
+  return(xval)
+}
 
 
 

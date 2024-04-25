@@ -16,6 +16,7 @@ do_comparison(
   Q90 = TRUE,
   altscenes = NULL,
   juris = "",
+  ribbonleg = "topleft",
   ...
 )
 }
@@ -54,6 +55,8 @@ an argument so that if there are jurisdiction specific functions for
 examining outputs that may be of particular interest to a particular
 jurisdiction a suitable function can be written and input, along with
 any extra arguments it might have, in the final ellipsis.}
+
+\item{ribbonleg}{location of the legend in the ribon plots, default=topleft}
 
 \item{...}{the ellipsis is here in case a jurisdiction specific function or
 functions is/are written to perform extra analyses, plots, and tables.}

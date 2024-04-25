@@ -42,7 +42,8 @@ tastes differ, though really we should encourage people to be more
 considerate.}
 }
 \value{
-nothing but it does plot a graph containing two kobe plots
+a vector of median depletion and H, and median Grad4 and TargCE, it
+    also plots a graph containing two kobe plots if in Tas.
 }
 \description{
 twophaseplot generates a combination of the formal kobe plot of

@@ -254,6 +254,8 @@ dosau <- function(inzone,glb,picksau,histCE,histCatch,yrnames,recdev) {
 #'     default = c(0.05,0.5,0.95)
 #' @param histCE the historical cpue data if included, default = NULL
 #' @param addCE should historical cpue be included on the plots, default=FALSE
+#' @param hlin a vector of horizontal reference lines, one for each sau, or NULL
+#'     if a vector then a horizontal line will be added to each plot.
 #'
 #' @return invisibly, a list of CI and median for each SAU
 #' @export
@@ -261,7 +263,8 @@ dosau <- function(inzone,glb,picksau,histCE,histCatch,yrnames,recdev) {
 #' @examples
 #' print("wait on suitable built in data sets")
 dosauplot <- function(ylabel,postrep,glb,startyr,addCI=FALSE,
-                      CIprobs=c(0.05,0.5,0.95),histCE=NULL,addCE=FALSE) {
+                      CIprobs=c(0.05,0.5,0.95),histCE=NULL,addCE=FALSE,
+                      hlin=NULL) {
   # ylabel="Catch";postrep=zonePsau[["harvestR"]];glb=glb; addCE=FALSE
   # startyr=startyr;histCE=NULL; CIprobs=c(0.05,0.5,0.95); addCI=NULL
   label <- glb$saunames
@@ -298,6 +301,7 @@ dosauplot <- function(ylabel,postrep,glb,startyr,addCI=FALSE,
     }
     abline(v=(yrnames[hyrs]+0.5),col=2L,lty=2L)
     if (addCE) abline(h=150,col=2,lty=2)
+    if (!is.null(hlin)) abline(h=hlin[sau],lwd=2,lty=2,col=1)
   }
   return(invisible(sauCI))
 } # end of dosauplot
@@ -478,7 +482,7 @@ HSphaseplot <- function(dyn,glb,sau,rundir="",startyr=1992,console=TRUE,
   if ((!console) & (setpar)) {
     addplot(filen,rundir=rundir,category="phaseplot",caption)
   }
-  return(invisible(list(mediandepl=meddepl,medianH=medH)))
+  return(invisible(c(mediandepl=meddepl[nyrs],medianH=medH[nyrs])))
 } # end of HSphaseplot
 
 #' @title onesau plots the dynamics for a single SAU
@@ -1484,6 +1488,9 @@ preparesizecomp <- function(sizecomp,mincount=100) { # sizecomp=compdat[,,sau]; 
 #'     default=TRUE
 #' @param histCE historical CPUE data used in CPUE plots, default=NULL
 #' @param tabcat the name of the results website tab for the plots
+#' @param hlines default = NULL, otherwise a dataframe of vectors of sau
+#'     properties. eg sauprod containing Bmsy, MSY, Dmsy, CEmsy for adding to
+#'     each projSAU plot
 #'
 #' @return a list of lists of CI for each SAU and variable as well as the
 #'     zoneDsau and zonePsau
@@ -1492,9 +1499,9 @@ preparesizecomp <- function(sizecomp,mincount=100) { # sizecomp=compdat[,,sau]; 
 #' @examples
 #' print("wait on suitable internal data-sets")
 sauplots <- function(zoneDP,NAS,glb,rundir,B0,ExB0,startyr,addCI=TRUE,
-                     histCE=NULL,tabcat="projSAU") {
+                     histCE=NULL,tabcat="projSAU",hlines=NULL) {
   # zoneDP=zoneDP;NAS=NAS;glb=glb;rundir=rundir;B0=B0;ExB0=ExB0;
-  # startyr=48; addCI=TRUE;histCE=condC$histCE; tabcat="projSAU"
+  # startyr=48; addCI=TRUE;histCE=condC$histCE; tabcat="projSAU"; hlines=NULL
   zonePsau <- zonetosau(zoneDP,NAS,glb,B0,ExB0)
   label <-  c("cpue","catch","acatch","matureB","exploitB","recruit","harvestR")
   finalcondyeardepletion(rundir,sauzone=zonePsau,glb,deplvar="sB",console=FALSE)
@@ -1502,51 +1509,51 @@ sauplots <- function(zoneDP,NAS,glb,rundir,B0,ExB0,startyr,addCI=TRUE,
   #CPUE
   filen <- filenametopath(rundir,"proj_cpue_SAU.png")  # filen=""
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
-  CI <- dosauplot("cpue",zonePsau[["cpue"]],glb,addCE=TRUE,
-                  startyr=startyr,addCI=TRUE,histCE=histCE)
+  CI <- dosauplot("cpue",zonePsau[["cpue"]],glb,addCE=TRUE,startyr=startyr,
+                  addCI=TRUE,histCE=histCE,hlin=hlines["CEmsy",])
   caption <- "The CPUE projections for each SAU."
   addplot(filen,rundir=rundir,category=tabcat,caption)
   #Catches
   filen <- filenametopath(rundir,"proj_catch_SAU.png")
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
   CI <- dosauplot("catch",zonePsau[["catch"]],glb,
-                  startyr=startyr,addCI=TRUE,histCE=NULL)
+                  startyr=startyr,addCI=TRUE,histCE=NULL,hlin=hlines["MSY",])
   caption <- "The catch projections for each SAU."
   addplot(filen,rundir=rundir,category=tabcat,caption)
   #Aspirational catches
   filen <- filenametopath(rundir,"proj_aspcatch_SAU.png")
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
   CI <- dosauplot("acatch",zonePsau[["acatch"]],glb,
-                  startyr=startyr,addCI=TRUE,histCE=NULL)
+                  startyr=startyr,addCI=TRUE,histCE=NULL,hlin=NULL)
   caption <- paste0("The Aspirational catch projections for each SAU. Catches ",
                     "prior to HS are actual catches.")
   addplot(filen,rundir=rundir,category=tabcat,caption)
   #MatureBiomass
   filen <- filenametopath(rundir,"proj_matureB_SAU.png")
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
-  CI <- dosauplot("matureB",zonePsau[["matureB"]],glb,
-                  startyr=startyr,addCI=TRUE,histCE=NULL)
+  CI <- dosauplot("matureB",zonePsau[["matureB"]],glb,startyr=startyr,
+                  addCI=TRUE,histCE=NULL,hlin=hlines["Bmsy",])
   caption <- "The mature biomass projections for each SAU."
   addplot(filen,rundir=rundir,category=tabcat,caption)
   #exploitable biomass
   filen <- filenametopath(rundir,"proj_exploitB_SAU.png")
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
   CI <- dosauplot("exploitB",zonePsau[["exploitB"]],glb,
-                  startyr=startyr,addCI=TRUE,histCE=NULL)
+                  startyr=startyr,addCI=TRUE,histCE=NULL,hlin=NULL)
   caption <- "The exploitable biomass projections for each SAU."
   addplot(filen,rundir=rundir,category=tabcat,caption)
   #recruitment
   filen <- filenametopath(rundir,"proj_recruit_SAU.png")
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
   CI <- dosauplot("recruit",zonePsau[["recruit"]],glb,
-                  startyr=startyr,addCI=TRUE,histCE=NULL)
+                  startyr=startyr,addCI=TRUE,histCE=NULL,hlin=NULL)
   caption <- "The recruitment projections for each SAU."
   addplot(filen,rundir=rundir,category=tabcat,caption)
  # harvest rate
   filen <- filenametopath(rundir,"proj_harvestR_SAU.png")
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
   CI <- dosauplot("harvestR",zonePsau[["harvestR"]],glb,
-                  startyr=startyr,addCI=TRUE,histCE=NULL)
+                  startyr=startyr,addCI=TRUE,histCE=NULL,hlin=hlines["Hmsy",])
   caption <- "The Harvest Rate projections for each SAU."
   addplot(filen,rundir=rundir,category=tabcat,caption)
   return(invisible(zonePsau))
@@ -1676,7 +1683,7 @@ tasphaseplot <- function(proxyB,proxyH,glb,sau,rundir="",console=TRUE,fnt=7,
   if ((!console) & (setpar)) {
     addplot(filen,rundir=rundir,category="phaseplot",caption)
   }
-  return(invisible(list(mediandepl=meddepl,medianH=medH)))
+  return(invisible(c(mediandepl=meddepl[nyrs],medianH=medH[nyrs])))
 } # end of tasphaseplot
 
 #' @title twophaseplots generates a formal kobe plot plus a Tasmanian proxy plot
@@ -1703,7 +1710,8 @@ tasphaseplot <- function(proxyB,proxyH,glb,sau,rundir="",console=TRUE,fnt=7,
 #'     tastes differ, though really we should encourage people to be more
 #'     considerate.
 #'
-#' @return nothing but it does plot a graph containing two kobe plots
+#' @return a vector of median depletion and H, and median Grad4 and TargCE, it
+#'     also plots a graph containing two kobe plots if in Tas.
 #' @export
 #'
 #' @examples
@@ -1726,15 +1734,18 @@ twophaseplots <- function(dyn,glb,outhcr,sau,kobeRP,rundir="",startyr=1992,
     plotprep(width=12,height=6,filename=filen,cex=0.9,verbose=FALSE)
     parset(plots=c(1,2),cex.lab=1.25,margin=c(0.45,0.45,0.1,0.1))
   }
-  HSphaseplot(dyn=dyn,glb=glb,sau=sau,rundir=rundir,
-              startyr=startyr,console=console,setpar=FALSE,
-              targdepl=kobeRP[1],limdepl=kobeRP[2],limH=kobeRP[3])
+  outkobe <- HSphaseplot(dyn=dyn,glb=glb,sau=sau,rundir=rundir,
+                         startyr=startyr,console=console,setpar=FALSE,
+                         targdepl=kobeRP[1],limdepl=kobeRP[2],limH=kobeRP[3])
+  outtas <- c(0,0)
   if (!is.null(outhcr$targsc)) {
-    tasphaseplot(proxyB=outhcr$targsc,proxyH=outhcr$g4s,glb=glb,sau=sau,
-                 rundir=rundir,console=console,setpar=FALSE,fnt=fnt)
+     outtas <- tasphaseplot(proxyB=outhcr$targsc,proxyH=outhcr$g4s,glb=glb,
+                            sau=sau,rundir=rundir,console=console,
+                            setpar=FALSE,fnt=fnt)
   }
   if (!console) {
     addplot(filen,rundir=rundir,category="phaseplot",caption)
   }
+  return(c(outkobe,outtas))
 } # end of twophaseplots
 

@@ -221,6 +221,7 @@ catchbpstats <- function(rundir,outtab) {
 #'     the default = 10
 #' @param maxvals the maximum y-axis value for the aavc, the sum5, and the sum10,
 #'     default=c(0.25,750,1500)
+#' @param wid the width of hteplot, default = 12, room for 3 scenarios
 #'
 #' @seealso{
 #'    \link{getprojyrs}, \link{getprojyraavc},  \link{getprojyrC}
@@ -235,7 +236,7 @@ catchbpstats <- function(rundir,outtab) {
 #' # rundir=rundir;hspm=outcatchHSPM;glbc=glbc;scenes=scenes
 #' # filen="compare_catches_boxplots.png";aavcyrs=10
 catchHSPM <- function(rundir,hspm,glbc,scenes,filen="",aavcyrs=10,
-                      maxvals=c(0.25,750,1500)) {
+                      maxvals=c(0.25,750,1500),wid=12) {
   nscen <- length(scenes)
   aavc <- hspm$aavc
   sum5 <- hspm$sum5
@@ -248,10 +249,11 @@ catchHSPM <- function(rundir,hspm,glbc,scenes,filen="",aavcyrs=10,
   nres <- length(boxresult)
   if (nchar(filen) > 0) {
     filen <- filenametopath(rundir,filen)
-    caption <- paste0("Boxplots of aavc, sum5, and sum10 for each SAU.")
+    caption <- paste0("Boxplots of aavc, sum5, and sum10 for each SAU and scenario.")
   }
-  plotprep(width=9, height=9,newdev=FALSE,filename = filen,verbose=FALSE)
-  parset(plots=c(3,2),margin=c(0.4,0.4,0.05,0.1),outmargin=c(1,0,0,0),byrow=FALSE)
+  plotprep(width=wid, height=9,newdev=FALSE,filename = filen,verbose=FALSE)
+  parset(plots=c(3,nscen),margin=c(0.3,0.4,0.05,0.1),outmargin=c(0,0,1.5,0),
+         byrow=FALSE)
   count <- 0
   maxval <- numeric(nscen)
   for (i in 1:nscen) { # i = 1
@@ -259,6 +261,7 @@ catchHSPM <- function(rundir,hspm,glbc,scenes,filen="",aavcyrs=10,
     for (j in 1:nscen) maxval[j] <- getmax(aavc[[j]])
     boxresult[[count]] <- boxplot(aavc[[i]],ylim=c(0,max(maxval)),yaxs="i",
                                   ylab="Average Annual Catch Variation")
+    mtext(scenes[i],side=3,outer=FALSE,cex=1.2,line=0.5)
     count <- count + 1
     for (j in 1:nscen) maxval[j] <- getmax(sum5[[j]][,1:nsau])
     boxresult[[count]] <- boxplot(sum5[[i]][,1:nsau],ylim=c(0,max(maxval)),yaxs="i",
@@ -267,7 +270,6 @@ catchHSPM <- function(rundir,hspm,glbc,scenes,filen="",aavcyrs=10,
     for (j in 1:nscen) maxval[j] <- getmax(sum10[[j]][,1:nsau])
     boxresult[[count]] <- boxplot(sum10[[i]][,1:nsau],ylim=c(0,max(maxval)),yaxs="i",
                                   ylab="sum first 10 years catch")
-    mtext(scenes[i],side=1,outer=FALSE,cex=1,line=1.75)
   }
   if (nchar(filen) > 0)
     addplot(filen=filen,rundir=rundir,category="catches",caption)
@@ -1502,7 +1504,8 @@ plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,
     if (!console) {
       filen <- filenametopath(rundir,"zonedynamics.png")
       caption <- paste0("Outputs for each scenario summarized across the whole ",
-                        "zone. Plots of Catch, MatureB, HarvestR, and deplsB.")
+                        "zone. Plots of Catch, MatureB, HarvestR, and deplsB.",
+                        " Horizintal lines are Bmsy, MSY, and CEmsy.")
     }
     plotprep(width=8,height=6,newdev=FALSE,filename=filen,verbose=FALSE)
     parset(plots=c(2,2),margin=c(0.3,0.4,0.05,0.05),outmargin=c(0,1,0,0),

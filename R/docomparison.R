@@ -36,6 +36,7 @@
 #'     examining outputs that may be of particular interest to a particular
 #'     jurisdiction a suitable function can be written and input, along with
 #'     any extra arguments it might have, in the final ellipsis.
+#' @param ribbonleg location of the legend in the ribon plots, default=topleft
 #' @param ... the ellipsis is here in case a jurisdiction specific function or
 #'     functions is/are written to perform extra analyses, plots, and tables.
 #'
@@ -69,7 +70,7 @@
 #' }
 do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
                           intensity=100,zero=FALSE,Q90=TRUE,altscenes=NULL,
-                          juris="",...) {
+                          juris="",ribbonleg="topleft",...) {
   # rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(2,3,4)
   #  verbose=TRUE; intensity=100; zero=FALSE; altscenes=c("mult05","mult10","mult15")
   #  juris=""
@@ -174,9 +175,10 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
     addtable(medHSPM[[label[i]]],filen=filename,rundir=rundir,category="HSPM",
              caption=paste0("Median ",label[i]," values by sau and scenario."))
   }
-  # catches and cathBoxPlots tabs-------------------------------------
+  # catches tab-------------------------------------
   outtab <- catchHSPM(rundir,hspm=outcatchHSPM,glbc,scenes,
                       filen="compare_catches_boxplots.png",aavcyrs=10)
+  # catchBoxPlots tab------------------------------
   boxbysau(rundir,hspm=outcatchHSPM,glbc,scenes,compvar="aavc",
            filen="sau_aavc_boxplots.png",aavcyrs=10,maxval=0)
   boxbysau(rundir,hspm=outcatchHSPM,glbc,scenes,compvar="sum5",
@@ -212,32 +214,32 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
   for (sau in 1:nsau)
     sauribbon(rundir,scenes=scenes,sau=sau,varqnts=catqnts,
               glb=glb,varname="Catch",console=FALSE,
-              q90=Q90,intens=intensity,addleg="bottomright")
+              q90=Q90,intens=intensity,addleg=ribbonleg)
   # cpue ribbon tab------------------------------------------
   cpue <- scenebyvar(dyn,byvar="cpue",glb=glb,projonly = TRUE)
   cpueqnts <- sauquantbyscene(cpue,glb)
   for (sau in 1:nsau)
     sauribbon(rundir,scenes=scenes,sau=sau,varqnts=cpueqnts,
               glb=glb,varname="cpue",console=FALSE,
-              q90=Q90,intens=intensity,addleg="bottomright")
+              q90=Q90,intens=intensity,addleg=ribbonleg)
   # depletion spawnB ribbon tab--------------------------------------------
   deplsB <- scenebyvar(dyn,byvar="deplsB",glb=glb,projonly=TRUE)
   deplsBqnts <- sauquantbyscene(deplsB,glb)
   for (sau in 1:nsau)
     sauribbon(rundir,scenes=scenes,sau=sau,varqnts=deplsBqnts,
               glb=glb,varname="deplsB",console=FALSE,
-              q90=Q90,intens=intensity,addleg="bottomright")
+              q90=Q90,intens=intensity,addleg=ribbonleg)
   # depletion exploitB ribbon tab--------------------------------------------
   depleB <- scenebyvar(dyn,byvar="depleB",glb=glb,projonly=TRUE)
   depleBqnts <- sauquantbyscene(depleB,glb)
   for (sau in 1:nsau)
     sauribbon(rundir,scenes=scenes,sau=sau,varqnts=depleBqnts,
               glb=glb,varname="depleB",console=FALSE,
-              q90=Q90,intens=intensity,addleg="bottomright")
+              q90=Q90,intens=intensity,addleg=ribbonleg)
   # phaseplots tab --------------------------------------------------
   plotallphaseplots(rundir=rundir,dyn=dyn,prods,glb=glb,scenes=scenes,width=9,
                     height=10,fnt=7,pntcex=1.5,zero=FALSE,
-                    legloc="bottomright")
+                    legloc="topright")
   makecompareoutput(rundir=rundir,glbc,scenes,scenarionames,postfixdir,
                     filesused=files[pickfiles],openfile=TRUE,verbose=FALSE)
   return(invisible(list(scenes=scenes,ans=ans,quantscen=quantscen,dyn=dyn,

@@ -437,13 +437,14 @@ plotproductivity <- function(rundir,product,glb,hsargs) {
   npop <- glb$numpop
   nh <- dim(product)[1]
   label <- dimnames(product)
+  harv <- as.numeric(label[[1]])
   sauindex <- glb$sauindex
   saunames <- glb$saunames
   wts <- matrix(0,nrow=nh,ncol=npop,dimnames=list(label[[1]],label[[3]]))
   sauyield <- matrix(0,nrow=nh,ncol=nsau,dimnames=list(label[[1]],saunames))
   saumatB <- matrix(0,nrow=nh,ncol=nsau,dimnames=list(label[[1]],saunames))
   saucpue <- matrix(0,nrow=nh,ncol=nsau,dimnames=list(label[[1]],saunames))
-  rows <- c("B0","Bmsy","MSY","Dmsy","CEmsy")
+  rows <- c("B0","Bmsy","MSY","Dmsy","CEmsy","Hmsy")
   sauprod <- matrix(0,nrow=length(rows),ncol=nsau,dimnames=list(rows,saunames))
   # Now do sau production
   for (i in 1:nh) {
@@ -475,7 +476,8 @@ plotproductivity <- function(rundir,product,glb,hsargs) {
     text(0.8*max(saucpue[,i]),0.75*ymax,label[i],cex=1.5,pos=4)
     text(1.1*msyce,0.15*ymax,round(msyce,2),cex=1.25,pos=4)
     sauprod[,i] <- c(saumatB[1,i],saumatB[pick,i],sauyield[pick,i],
-                     (saumatB[pick,i]/saumatB[1,i]),saucpue[pick,i])
+                     (saumatB[pick,i]/saumatB[1,i]),saucpue[pick,i],
+                     harv[pick])
   }
   mtext("CPUE at Bmsy (note different scales)",side=1,outer=TRUE,cex=1.0,
         line = -0.1)

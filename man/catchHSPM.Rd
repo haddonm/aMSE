@@ -11,7 +11,8 @@ catchHSPM(
   scenes,
   filen = "",
   aavcyrs = 10,
-  maxvals = c(0.25, 750, 1500)
+  maxvals = c(0.25, 750, 1500),
+  wid = 12
 )
 }
 \arguments{
@@ -33,6 +34,8 @@ the default = 10}
 
 \item{maxvals}{the maximum y-axis value for the aavc, the sum5, and the sum10,
 default=c(0.25,750,1500)}
+
+\item{wid}{the width of hteplot, default = 12, room for 3 scenarios}
 }
 \value{
 a list of the boxplot statistics for the three HSPMs x the number of
