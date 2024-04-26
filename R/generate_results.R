@@ -374,12 +374,12 @@ numbersatsize <- function(rundir, glb, zoneD, ssc=5) {
 #' @param product the productivity 3-D array
 #' @param glb the globals list
 #' @param hsargs the maximum CPUE target input is inside hsargs. This is
-#'     compared with the range of CPUE found across the produciton curve to
+#'     compared with the range of CPUE found across the production curve to
 #'     ensure that the target is not attempting to achieve the impossible. If
 #'     there is no maxtarg, this implies no comparison and no adding to the plot
 #'
 #' @return It produces five png files into rundir and returns sauprod, a matrix
-#'     of B0, Bmsy, MSY, Depletion-msy, and CEmsy for each sau
+#'     of B0, Bmsy, MSY, Depletion-msy, CEmsy, Hmsy, and Bexmsy for each sau
 #' @export
 #'
 #' @examples
@@ -443,12 +443,14 @@ plotproductivity <- function(rundir,product,glb,hsargs) {
   wts <- matrix(0,nrow=nh,ncol=npop,dimnames=list(label[[1]],label[[3]]))
   sauyield <- matrix(0,nrow=nh,ncol=nsau,dimnames=list(label[[1]],saunames))
   saumatB <- matrix(0,nrow=nh,ncol=nsau,dimnames=list(label[[1]],saunames))
-  saucpue <- matrix(0,nrow=nh,ncol=nsau,dimnames=list(label[[1]],saunames))
-  rows <- c("B0","Bmsy","MSY","Dmsy","CEmsy","Hmsy")
+  sauexB <- saumatB
+  saucpue <- saumatB
+  rows <- c("B0","Bmsy","MSY","Dmsy","CEmsy","Hmsy","Bexmsy")
   sauprod <- matrix(0,nrow=length(rows),ncol=nsau,dimnames=list(rows,saunames))
   # Now do sau production
   for (i in 1:nh) {
     saumatB[i,] <- tapply(product[i,"MatB",],sauindex,sum,na.rm=TRUE)
+    sauexB[i,] <- tapply(product[i,"ExB",],sauindex,sum,na.rm=TRUE)
     sauyield[i,] <- tapply(product[i,"Catch",],sauindex,sum,na.rm=TRUE)
     wts[i,] <- product[i,"Catch",]/sauyield[i,sauindex]
     saucpue[i,] <- tapply((product[i,"RelCE",] * wts[i,]),sauindex,sum,na.rm=TRUE)
@@ -477,7 +479,7 @@ plotproductivity <- function(rundir,product,glb,hsargs) {
     text(1.1*msyce,0.15*ymax,round(msyce,2),cex=1.25,pos=4)
     sauprod[,i] <- c(saumatB[1,i],saumatB[pick,i],sauyield[pick,i],
                      (saumatB[pick,i]/saumatB[1,i]),saucpue[pick,i],
-                     harv[pick])
+                     harv[pick],sauexB[pick,i])
   }
   mtext("CPUE at Bmsy (note different scales)",side=1,outer=TRUE,cex=1.0,
         line = -0.1)
@@ -492,11 +494,10 @@ plotproductivity <- function(rundir,product,glb,hsargs) {
   # Now do total production
   yield <- rowSums(product[,"Catch",])
   spb <- rowSums(product[,"MatB",])
-  Ht <- yield/spb
+  Ht <- harv
   depletMSY <- spb/spb[1]
   pickmsy <- which.max(yield)
   maxy <- getmax(yield)
-
   filen <- filenametopath(rundir,"production_SpB_Total.png")
   plotprep(width=7,height=6,newdev=FALSE,filename=filen,verbose=FALSE)
   parset(plots=c(3,2),cex=0.9)
@@ -535,12 +536,17 @@ plotproductivity <- function(rundir,product,glb,hsargs) {
               "relationships between spawning biomass depletion and ",
               "harvest rate.")
   addplot(filen,rundir=rundir,category="Production",caption)
+  zoneprod <- cbind(catch=yield,matB=spb,harv=Ht,deplsB=depletMSY)
   # add sauprod table to production tab
-  filen <- paste0("Production_by_sau.csv")
-  caption <- "Productivity properties: B0, Mnsy, MSY, Dmsy, Cemsy by sau."
+  filen <- "Production_by_sau.csv"
+  caption <- paste0("Productivity properties: B0, Bmsy, MSY, Dmsy, Cemsy,",
+                    " Hmsy, and Bexmsy for each sau.")
   addtable(sauprod,filen,rundir=rundir,category="Production",caption)
-  zoneprod <- matrix(0,nrow=5,ncol=1)
-
+  # add zone production table
+  filen <- "production_across_zone.csv"
+  caption <- paste0("Zone production: Catch, matureB, HarvestR, and Mature ",
+                    "depletion level. MSY at H = ",Ht[pickmsy])
+  addtable(zoneprod,filen,rundir=rundir,category="Production",caption)
   return(invisible(sauprod))
 } # end of plotproductivity
 

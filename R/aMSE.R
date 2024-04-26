@@ -27,7 +27,9 @@ NULL
 #'     2008). Earlier versions of this invertebrate MSE are described
 #'     in Haddon et al, (2013) and Haddon and Mundy (2016). A development
 #'     version of this R package is available on GitHub at
-#'     https://github.com/haddonm/aMSE.
+#'     https://github.com/haddonm/aMSE. There are no vignettes for this
+#'     package, instead see https://haddonm.github.io/aMSEGuide/ for a more
+#'     detailed guide for the use of aMSE.
 #'
 #' @references Haddon, M., Mundy, C., and D. Tarbath (2008) Using an
 #'     inverse-logistic model to describe growth increments of blacklip

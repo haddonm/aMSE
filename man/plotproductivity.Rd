@@ -14,13 +14,13 @@ plotproductivity(rundir, product, glb, hsargs)
 \item{glb}{the globals list}
 
 \item{hsargs}{the maximum CPUE target input is inside hsargs. This is
-compared with the range of CPUE found across the produciton curve to
+compared with the range of CPUE found across the production curve to
 ensure that the target is not attempting to achieve the impossible. If
 there is no maxtarg, this implies no comparison and no adding to the plot}
 }
 \value{
 It produces five png files into rundir and returns sauprod, a matrix
-    of B0, Bmsy, MSY, Depletion-msy, and CEmsy for each sau
+    of B0, Bmsy, MSY, Depletion-msy, CEmsy, Hmsy, and Bexmsy for each sau
 }
 \description{
 plotproductivity characterizes each population's yield curve, it
