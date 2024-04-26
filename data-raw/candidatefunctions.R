@@ -521,8 +521,9 @@ findsaumsy <- function(product,glb) {  # product=prody
 
 
 
-
-
+comp <- getfilestocompare(outdir=outdir,filenames=files[c(12,2,16)],
+                          altlabel=c("TT_BC","TV_BC","TS_BC"),verbose=TRUE,
+                          listtoenv=TRUE)
 
 
 

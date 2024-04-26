@@ -22,8 +22,9 @@ findlinenumber solves the problem of finding the line number in
     a given text file when one wants to change a specific line using the
     function changeline. After inc lines are printed the function stops and
     waits for any character to be input (a space will suffice) before printing
-    the next inc lines
+    the next inc lines, until there are no more lines.
 }
 \examples{
 print("wait on a suitable example")
+# findlinenumber(rundir=rundir,filename="controlsau.csv",inc=25)
 }

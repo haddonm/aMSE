@@ -313,7 +313,7 @@ copyto <- function(prefixdir,fromdir, todir, filelist,
 #'     a given text file when one wants to change a specific line using the
 #'     function changeline. After inc lines are printed the function stops and
 #'     waits for any character to be input (a space will suffice) before printing
-#'     the next inc lines
+#'     the next inc lines, until there are no more lines.
 #'
 #' @param rundir the directory path in which to find the text file.
 #' @param filename the full name of the text file in quotations.
@@ -325,7 +325,8 @@ copyto <- function(prefixdir,fromdir, todir, filelist,
 #'
 #' @examples
 #' print("wait on a suitable example")
-findlinenumber <- function(rundir,filename,inc=20) {  # rundir=rundir; filename="controlsau.csv"
+#' # findlinenumber(rundir=rundir,filename="controlsau.csv",inc=25)
+findlinenumber <- function(rundir,filename,inc=20) {  #
   filen <- filenametopath(rundir,filename)
   dat <- readLines(filen)
   nline <- length(dat)
@@ -335,6 +336,103 @@ findlinenumber <- function(rundir,filename,inc=20) {  # rundir=rundir; filename=
     if ((i %% inc) == 0)  x <- scan(what="character",n=1,quiet=TRUE)
   }
 } # end of findlinenumber
+
+#' @title getfilestocompare extracts data from aMSE scenario RData files
+#'
+#' @description getfilestocompare is used to extract the main components from
+#'     one or more stored aMSE RData files. This has use when wanting to explore
+#'     alternative tabulations or plots and for examining the internal details
+#'     of one or more scenario runs. It is a version of routines built into the
+#'     do_comparison function. Be careful with the use of the listtoenv
+#'     argument. If set to true then all the objects are extracted automatically
+#'     into the global environment. Each scenario is named afer the runlabel,
+#'     but if you are a fan of long runlabels then the option of devising
+#'     shorter labels for plot legend is provided by the altlabel argument.
+#'
+#' @param outdir a directory containing the RData files to be compared. If the
+#'     files are stored in multiple locations then set outdir = '' and it will
+#'     be ignored.
+#' @param filenames a vector of filenames. If outdir = '' then each filename
+#'     will need to include the full path. If outdir is a specific directory
+#'     then only the filenames c(x.RData,y.RData, ...) are required.
+#' @param altlabel default = NULL. If the runlabels for each scenario are too
+#'     long to allow plots to use them sensibly in their legends, then shorter,
+#'     alternative labels can be given as a vector of the same length as the
+#'     number of files.
+#' @param verbose progress statements sent to the console, default=TRUE
+#' @param listtoenv default=FALSE. If you wish to push all the extracted
+#'     components to the global environment then set this to TRUE. This will
+#'     allow easy access, otherwise pull out the bits manually from the
+#'     invisible output.
+#'
+#' @return a large invisible list of lists.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'   library(aMSE)  # example syntax
+#'   library(codeutils)
+#'   library(hplot)
+#'   dropdir <- getDBdir()
+#'   outdir <- pathtopath(dropdir,"National abalone MSE/RData/")
+#'   files <- dir(outdir)
+#'   printV(files)
+#'   comps <- getfilestocompare(outdir=outdir,filenames=files[c(24,21,28)],
+#'                              altlabel=c("TT_BC","TV_BC","TS_BC"),
+#'                              verbose=TRUE,listtoenv=FALSE)
+#'   prods <- comps$prods
+#' }
+getfilestocompare <- function(outdir,filenames,altlabel=NULL,verbose=TRUE,
+                              listtoenv=FALSE) {
+  nfile <- length(filenames)
+  if (is.null(altlabel)) {
+    label <- vector(mode="character",length=nfile)
+    for (i in 1:nfile) label[i] <- unlist(strsplit(filenames[i],".",fixed=TRUE))[1]
+  } else {
+    if (length(altlabel) != nfile)
+      stop(cat("Number of altlabels not equal to numfiles in getfilestocompare \n"))
+    label <- altlabel
+  }
+  ans <- makelist(label) # vector(mode="list",length=nfile)
+  dyn <- makelist(label)
+  glbc <- makelist(label)
+  ctrlc <- makelist(label)
+  condCc <- makelist(label)
+  prods <- makelist(label)
+  scenes <- vector(mode="character",length=nfile)
+  scores <- makelist(label)
+  zone <- makelist(label)
+  for (i in 1:nfile) { # i = 1
+    if (nchar(outdir) == 0) {
+      filen <- filenames[i]
+    } else {
+      filen <- pathtopath(outdir,filenames[i])
+    }
+    if (verbose)
+      cat("Loading ",filenames[i]," which may take time, be patient  \n")
+    out <- NULL # so the function knows an 'out' exists
+    load(filen)
+    ans[[i]] <- out
+    dyn[[i]] <- out$sauout
+    glbc[[i]] <- out$glb
+    ctrlc[[i]] <- out$ctrl
+    condCc[[i]] <- out$condC
+    prods[[i]] <- t(out$sauprod)
+    scenes[i] <- out$ctrl$runlabel
+    scores[[i]] <- out$outhcr
+    zone[[i]] <- out$outzone
+  }
+  # end results extraction----------------------
+  scenarionames <- scenes
+  nscenes <- length(scenes)
+  if (!is.null(altlabel)) {
+    scenes <- altlabel
+  }
+  out <- list(ans=ans,dyn=dyn,glbc=glbc,ctrlc=ctrlc,condCc=condCc,prods=prods,
+              scenes=scenes,scores=scores,zone=zone,scenarionames=scenarionames)
+  if (listtoenv) list2env(out,envir=.GlobalEnv)
+  return(invisible(out))
+} # end of getfilestocompare
 
 #' @title makewidedat converts long data to a wide data format
 #'
