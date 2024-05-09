@@ -1108,6 +1108,7 @@ makelistobj <- function(res,objname) { # res=result$ans;objname="glb"
 #' @param pntcex the size of the year points along each median line
 #' @param zero should the phase plots have a zero origin. default=FALSE
 #' @param yline default = NULL, used to add horizontal lines to each plot
+#' @param hline default = NULL, used to add vertical lines to each plot
 #'
 #' @seealso [\link{getcompout} for how to generate the xlist and ylist]
 #'
@@ -1130,7 +1131,7 @@ makelistobj <- function(res,objname) { # res=result$ans;objname="glb"
 plotdynphase <- function(xlist,ylist,scenes,glb,rundir="",xlab="xlabel",
                          ylab="ylabel",legloc="bottomright",console=TRUE,
                          width=9,height=10,fnt=7,pntcex=1.25,zero=FALSE,
-                         yline=NULL) {
+                         yline=NULL,hline=NULL) {
   nscenes <- length(scenes)
   nsau <- glb$nSAU
   saunames <- glb$saunames
@@ -1175,6 +1176,7 @@ plotdynphase <- function(xlist,ylist,scenes,glb,rundir="",xlab="xlabel",
       points(xvar[nyr,sau,scen],yvar[nyr,sau,scen],pch=16,cex=1.25,col=scen)
     }
     if (length(yline) > 0) abline(h=yline,lwd=1,col=1)
+    if (length(hline) > 0) abline(v=hline,lwd=1,col=1)
     mtext(saunames[sau],side=3,outer=FALSE,cex=1.1,line=-1.1,adj=0.05)
   }
   mtext(xlab,side=1,outer=TRUE,cex=1.1,line=-0.2)
@@ -1218,7 +1220,7 @@ plotdynphase <- function(xlist,ylist,scenes,glb,rundir="",xlab="xlabel",
 #' @examples
 #' print("wait on suitable data")
 plotallphaseplots <- function(rundir,dyn,prods,glb,scenes,width=9,height=10,
-                              fnt=7,pntcex=1.5,zero=FALSE,legloc="bottomright") { #rundir=rundir; res=result
+                              fnt=7,pntcex=1.5,zero=FALSE,legloc="bottomright") {
   matureB <- getcompout(dyn=dyn,glb=glb,scenes=scenes,pickvar="matureB")
   exploitB <- getcompout(dyn=dyn,glb=glb,scenes=scenes,pickvar="exploitB")
   acatch <- getcompout(dyn=dyn,glb=glb,scenes=scenes,pickvar="acatch")
@@ -1228,10 +1230,13 @@ plotallphaseplots <- function(rundir,dyn,prods,glb,scenes,width=9,height=10,
   cpue <- getcompout(dyn=dyn,glb=glb,scenes=scenes,pickvar="cpue")
   harvestR <- getcompout(dyn=dyn,glb=glb,scenes=scenes,pickvar="harvestR")
   msy <- getmatcolfromlist(prods,"MSY")
+  Bmsy <- getmatcolfromlist(prods,"Bmsy")
   catbymsy <- catch
+  matBbyBmsy <- matureB
   for (scene in 1:length(scenes)) {
     for (sau in 1:glb$nSAU) {
       catbymsy[[scene]][,sau,] <- (catch[[scene]][,sau,])/msy[[scene]][sau]
+      matBbyBmsy[[scene]][,sau,] <- matureB[[scene]][,sau,]/Bmsy[[scene]][sau]
     }
   }
   fileout <- plotdynphase(xlist=depleB,ylist=catbymsy,scenes=scenes,glb=glb,
@@ -1246,6 +1251,13 @@ plotallphaseplots <- function(rundir,dyn,prods,glb,scenes,width=9,height=10,
                           ylab="Actual Catches div MSY",legloc=legloc,
                           console=FALSE,width=width,height=height,fnt=fnt,
                           pntcex=pntcex,zero=zero,yline=1.0)
+  addplot(filen=fileout$filen,rundir=rundir,category="phaseplots",
+          caption=fileout$caption)
+  fileout <- plotdynphase(xlist=matBbyBmsy,ylist=catbymsy,scenes=scenes,glb=glb,
+                          rundir=rundir,xlab="Mature Biomass div Bmsy",
+                          ylab="Actual Catches div MSY",legloc=legloc,
+                          console=FALSE,width=width,height=height,fnt=fnt,
+                          pntcex=pntcex,zero=zero,yline=1.0,hline=1.0)
   addplot(filen=fileout$filen,rundir=rundir,category="phaseplots",
           caption=fileout$caption)
   fileout <- plotdynphase(xlist=depleB,ylist=catch,scenes=scenes,glb=glb,
@@ -1515,6 +1527,7 @@ plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,
       varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975),
                          na.rm=TRUE)
     }
+    projcatch <- varx  # save for phase plot
     doquantplot(varq,varname="Catch (t)",yrnames,scenes,q90=q90,polys=polys,
                 intens=intens,hlin=hlines[[1]])
     for (i in 1:nscen) {
@@ -1522,6 +1535,7 @@ plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,
       varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975),
                          na.rm=TRUE)
     }
+    projmatB <- varx  # save for phase plot
     doquantplot(varq,varname="Mature Biomass",yrnames,scenes,q90=q90,polys=polys,
                 intens=intens,hlin=hlines[[2]])
     for (i in 1:nscen) {
@@ -1544,6 +1558,43 @@ plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,
     if (!console) {
       addplot(filen=filen,rundir=rundir,category="zone",caption)
     }
+    # phase plot of catchdivMSY vs
+    catbymsy <- projcatch
+    matBbyBmsy <- projmatB
+    for (i in 1:nscen) {
+      catbymsy[,,i] <- projcatch[,,i]/hlines$catch[i]
+      matBbyBmsy[,,i] <- projmatB[,,i]/hlines$spawnB[i]
+    }
+    yrs <- c(tail(glb$hyrnames,1),glb$pyrnames)
+    nyrs <- length(yrs)
+    yvar <- xvar <- array(0,c(nyrs,nscen),
+                          dimnames=list(yrs,scenes))
+    for (scen in 1:nscen) {
+      xvar[,scen] <- apply(matBbyBmsy[,,scen],1,median)
+      yvar[,scen] <- apply(catbymsy[,,scen],1,median)
+    }
+    xlabel="Median Mature Biomass div Bmsy"
+    ylabel="Median Actual Catches div MSY"
+    xmin <- getmin(xvar); xmax <- getmax(xvar)
+    ymin <- getmin(yvar); ymax <- getmax(yvar)
+    filen <- pathtopath(rundir,
+                        paste0(removeEmpty(ylabel),
+                               "_vs_",removeEmpty(xlabel),".png"))
+    plotprep(width=7,height=7,newdev=FALSE,filename=filen,
+             verbose=FALSE,usefont=7)
+    parset()
+    plot(xvar[,1],yvar[,1],type="l",lwd=2,col=1,xlab=xlabel,ylab=ylabel,
+         panel.fist=grid(),xlim=c(xmin,xmax),ylim=c(ymin,ymax))
+    points(xvar[,1],yvar[,1],pch=16,cex=1.0,col=1)
+    for (i in 2:nscen) {
+      lines(xvar[,i],yvar[,i],lwd=2,col=i)
+      points(xvar[,i],yvar[,i],pch=16,cex=1.0,col=i)
+    }
+    abline(h=1.0,lwd=1,lty=2)
+    abline(v=1.0,lwd=1,lty=2)
+    legend("bottomright",scenes,col=c(1:nscen),lwd=4,bty="n",cex=1.25)
+    addplot(filen=filen,rundir=rundir,category="zone",
+            caption="Phase plot of C/MSY vs MatB/Bmsy")
   } # end of else statement
 } # end of plotzonedyn
 
@@ -1843,29 +1894,53 @@ tabulatefinalHSscores <- function(rundir,meds,scenes,category="Tables") {
 #' print("wait on data sets")
 tabulateproductivity <- function(rundir,prods,scenes) {
   nscen <- length(scenes)
-  same <- vector(mode="logical",length=nscen)
+  dimsame <- vector(mode="logical",length=nscen)
   count <- 1
   for (i in 1:nscen) {
     for (j in 2:nscen) {
       if (j > i) {
-         same[count] <- all(prods[[i]] == prods[[j]])
-         count <- count+1
+        dimsame[count] <- all(dim(prods[[1]]) == dim(prods[[2]]))
+        count <- count+1
       }
     }
   }
-  if (all(same)) {
-    filen <- paste0("productivity_",scenes[i],".csv")
-    caption <- paste0("SAU productivity statistics for ",scenes[i],".",
-                      " All productivity matrices identical.")
-    addtable(prods[[i]],filen,rundir=rundir,category="productivity",caption)
-    out <- prods[[1]]
-  } else {
+  if (!all(dimsame)) {
+    answer <- paste0("Some productivity matrices have different dimensions",
+                     " most likely that some scenarios were run using an ",
+                     "old version of aMSE \n")
+    warning(cat(answer))
     for (i in 1:nscen) {
       filen <- paste0("productivity_",scenes[i],".csv")
       caption <- paste0("SAU productivity statistics for ",scenes[i],".",
                         " Productivity matrices NOT identical.")
       addtable(prods[[i]],filen,rundir=rundir,category="productivity",caption)
       out <- prods
+    }
+  } else {
+    same <- vector(mode="logical",length=nscen)
+    count <- 1
+    for (i in 1:nscen) {
+      for (j in 2:nscen) {
+        if (j > i) {
+           same[count] <- all(prods[[i]] == prods[[j]])
+           count <- count+1
+        }
+      }
+    }
+    if (all(same)) {
+      filen <- paste0("productivity_",scenes[i],".csv")
+      caption <- paste0("SAU productivity statistics for ",scenes[i],".",
+                        " All productivity matrices identical.")
+      addtable(prods[[i]],filen,rundir=rundir,category="productivity",caption)
+      out <- prods[[1]]
+    } else {
+      for (i in 1:nscen) {
+        filen <- paste0("productivity_",scenes[i],".csv")
+        caption <- paste0("SAU productivity statistics for ",scenes[i],".",
+                          " Productivity matrices NOT identical.")
+        addtable(prods[[i]],filen,rundir=rundir,category="productivity",caption)
+        out <- prods
+      }
     }
   }
   return(invisible(out))

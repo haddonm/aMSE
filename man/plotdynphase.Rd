@@ -19,7 +19,8 @@ plotdynphase(
   fnt = 7,
   pntcex = 1.25,
   zero = FALSE,
-  yline = NULL
+  yline = NULL,
+  hline = NULL
 )
 }
 \arguments{
@@ -54,6 +55,8 @@ default='bottomright'}
 \item{zero}{should the phase plots have a zero origin. default=FALSE}
 
 \item{yline}{default = NULL, used to add horizontal lines to each plot}
+
+\item{hline}{default = NULL, used to add vertical lines to each plot}
 }
 \value{
 an invisible caption to the plot.
