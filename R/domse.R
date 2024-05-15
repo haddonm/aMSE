@@ -310,7 +310,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                    console=FALSE)
     }
     # OrigComp tab--------------------------------------------
-    saucompdata(allcomp=compdat,glb=glb,horizline=5,console=FALSE,rundir=rundir,
+    saucompdata(allcomp=compdat,glb=glb,horizline=140,console=FALSE,rundir=rundir,
                 ylabel="Size-Composition of Catches",tabname="OrigComp")
   }
   # do projections ------------------------------------------------------------

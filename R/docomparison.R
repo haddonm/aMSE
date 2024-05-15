@@ -71,7 +71,7 @@
 do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
                           intensity=100,zero=FALSE,Q90=TRUE,altscenes=NULL,
                           juris="",ribbonleg="topleft",...) {
-  # rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(3,5)
+  # rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(1,7)
   #  verbose=TRUE; intensity=100; zero=FALSE; altscenes=c("targCE","targ150")
   #  juris="";ribbonleg="topleft"
   # get files -------------------

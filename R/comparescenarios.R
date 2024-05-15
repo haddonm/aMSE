@@ -973,7 +973,7 @@ getcompout <- function(dyn,glb,scenes,pickvar="matureB",projonly=TRUE) { # out=r
     names(ans) <- scenes
     for (i in 1:nscen) {
       if (projonly) {
-        yrs <- (glb$hyrs + 1):(glb$hyrs + glb$pyrs)
+        yrs <- glb$hyrs:(glb$hyrs + glb$pyrs)
         ans[[i]] <- dyn[[i]][[pickvar]][yrs,,]
       } else {
         ans[[i]] <- dyn[[i]][[pickvar]]
@@ -1132,18 +1132,23 @@ plotdynphase <- function(xlist,ylist,scenes,glb,rundir="",xlab="xlabel",
                          ylab="ylabel",legloc="bottomright",console=TRUE,
                          width=9,height=10,fnt=7,pntcex=1.25,zero=FALSE,
                          yline=NULL,hline=NULL) {
+# xlist=depleB;ylist=catbymsy;scenes=scenes;glb=glb;rundir=rundir;
+# xlab="Exploitable Biomass Depletion";ylab="Actual Catches div MSY";
+# legloc=legloc; console=FALSE;width=width;height=height;fnt=fnt
+# pntcex=pntcex;zero=zero;yline=1.0; hline=140
   nscenes <- length(scenes)
   nsau <- glb$nSAU
   saunames <- glb$saunames
-  yvar <- xvar <- array(0,c(glb$pyrs,nsau,nscenes),
-                        dimnames=list(glb$pyrnames,glb$saunames,scenes))
+  yrnames <- c(tail(glb$hyrnames,1),glb$pyrnames)
+  yvar <- xvar <- array(0,c(glb$pyrs+1,nsau,nscenes),
+                        dimnames=list(yrnames,glb$saunames,scenes))
   for (scen in 1:nscenes) {
     for (sau in 1:nsau) {
       yvar[,sau,scen] <- apply(ylist[[scen]][,sau,],1,median)
       xvar[,sau,scen] <- apply(xlist[[scen]][,sau,],1,median)
     }
   }
-  yrs <- glb$pyrnames
+  yrs <- as.numeric(yrnames)
   if (console) { filen <- "" } else {
     filen <- pathtopath(rundir,
                         paste0(removeEmpty(ylab),"_vs_",removeEmpty(xlab),".png"))
@@ -1221,6 +1226,8 @@ plotdynphase <- function(xlist,ylist,scenes,glb,rundir="",xlab="xlabel",
 #' print("wait on suitable data")
 plotallphaseplots <- function(rundir,dyn,prods,glb,scenes,width=9,height=10,
                               fnt=7,pntcex=1.5,zero=FALSE,legloc="bottomright") {
+# rundir=rundir; dyn=dyn;prods=prods;glb=glb;scenes=scenes;width=9;height=10;
+# fnt=7; pntcex=1.5; zero=FALSE; legloc="topright"
   matureB <- getcompout(dyn=dyn,glb=glb,scenes=scenes,pickvar="matureB")
   exploitB <- getcompout(dyn=dyn,glb=glb,scenes=scenes,pickvar="exploitB")
   acatch <- getcompout(dyn=dyn,glb=glb,scenes=scenes,pickvar="acatch")
