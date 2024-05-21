@@ -1,9 +1,9 @@
 # Tas context -----------------
-# postfixdir <- "BCmeta"
+# postfixdir <- "BCtest"
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
-# hcrfun=mcdahcr  #mcdahcr   #  # consthcr   #constantrefhcr
+# hcrfun=constantrefhcr  #mcdahcr   #  # consthcr   #constantrefhcr
 # sampleCE=tasCPUE
 # sampleFIS=tasFIS
 # sampleNaS=tasNaS
@@ -31,7 +31,7 @@
 # minsizecomp=c(100,135)
 # uplimH=0.4
 # incH=0.005
-#
+
 
 # SA context -------------
 # rundir=rundir
@@ -331,7 +331,8 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                            hcrfun=hcrfun,hsargs=hsargs,sampleCE=sampleCE,
                            sampleFIS=sampleFIS,sampleNaS=sampleNaS,
                            getdata=getdata,calcpopC=calcpopC,
-                           makehcrout=makeouthcr,fleetdyn=fleetdyn,verbose=TRUE)
+                           makehcrout=makeouthcr,fleetdyn=fleetdyn,verbose=TRUE,
+                           fissettings=NULL,fisindex=NULL)
   if (verbose) {
     incrtime1 <- Sys.time(); timeinc <- incrtime1 - incrtime2
     cat("All projections finished ",timeinc,attr(timeinc,"units") ,"\n")

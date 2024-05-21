@@ -2,8 +2,8 @@
 % Please edit documentation in R/aMSE.R
 \docType{package}
 \name{aMSE}
-\alias{aMSE}
 \alias{aMSE-package}
+\alias{aMSE}
 \title{aMSE functions for Conditioning and Running an Invertebrate MSE}
 \description{
 The aMSE package provides functions to facilitate

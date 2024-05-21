@@ -55,7 +55,7 @@ exploitable biomass value from the model}
 \item{qest}{the estimated catchability from sizemod from zoneC}
 
 \item{fissettings}{an object containing settings used when calculating
-indices for the FIS}
+indices for the FIS within oneyearcat inside oneyearsauC}
 
 \item{fisindex}{a function used to estimate the FIS index}
 }

@@ -145,7 +145,8 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,fleetdyn,hsargs,
     out <- oneyearsauC(zoneCC=zoneC,inN=inN,popC=calcpopCout$popC,year=year,
                        Ncl=glob$Nclass,sauindex=sauindex,movem=glob$move,
                        sigmar=sigR,sigce=1e-08,r0=r0,b0=b0,exb0=exb0,rdev=rdev,
-                       envyr=NULL,envsurv=NULL,envrec=NULL)
+                       envyr=NULL,envsurv=NULL,envrec=NULL,fissettings=NULL,
+                       fisindex=NULL)
     dyn <- out$dyn
     zoneDD$exploitB[year,] <- dyn["exploitb",]
     zoneDD$midyexpB[year,] <- dyn["midyexpB",]
@@ -303,7 +304,7 @@ oneyear <- function(MatWt,SelWt,selyr,Me,G,qest,WtL,inNt,inH,lambda,scalece) {
 #' @param lambda the hyper-stability term from zoneC
 #' @param qest the estimated catchability from sizemod from zoneC
 #' @param fissettings an object containing settings used when calculating
-#'     indices for the FIS
+#'     indices for the FIS within oneyearcat inside oneyearsauC
 #' @param fisindex a function used to estimate the FIS index
 #'
 #' @seealso{
@@ -340,12 +341,13 @@ oneyearcat <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
   Catch <- sum(WtL*Cat)/1e06
   error <-  exp(rnorm(1,mean=0,sd=sigce) - (sigce^2.0)/2.0)
   ce <- as.numeric((qest * (((scalece*avExpB) * error) ^ lambda)))
+  outfis <- NULL
   if (!is.null(fissettings)) {
-    fisindex(fissettings,inNt)
+    outfis <- fisindex(fissettings,inNt)
   }
   vect <- c(exploitb=avExpB,midyexpB=midyexpB,matureb=MatureB,
             catch=Catch,cpue=ce)
-  ans <- list(vect=vect,NaL=newNt,catchN=Cat,NumNe=NumNe)
+  ans <- list(vect=vect,NaL=newNt,catchN=Cat,NumNe=NumNe,outfis=outfis)
   return(ans)
 } # End of oneyearcat
 
@@ -391,6 +393,9 @@ oneyearcat <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
 #'     in envyr this is by popultion
 #' @param envrec if notNULL contains the proportion of stock recruitment
 #'     in a given year that survives, by population
+#' @param fissettings an object containing settings used when calculating
+#'     indices for the FIS within oneyearcat inside oneyearsauC
+#' @param fisindex a function used to estimate the FIS index in oneyearcat
 #'
 #' @seealso{
 #'  \link{dohistoricC}, \link{oneyearcat}, \link{oneyearrec},
@@ -406,7 +411,8 @@ oneyearcat <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
 #' #  Ncl=Nclass;sauindex=sauindex;movem=movem;sigmar=sigmar;sigce=sigce;
 #' #  r0=r0;b0=b0;exb0=exb0;rdev=-1;envyr=envyr;envsurv=survNt;envrec=proprec
 oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,movem,sigmar,
-                        sigce=1e-08,r0,b0,exb0,rdev=-1,envyr,envsurv,envrec) {
+                        sigce=1e-08,r0,b0,exb0,rdev=-1,envyr,envsurv,envrec,
+                        fissettings=NULL,fisindex=NULL) {
   npop <- length(popC)
   ans <- vector("list",npop)
   if (year %in% envyr) {
@@ -422,7 +428,8 @@ oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,movem,sigmar,
                               selyr=pop$Select[,year],Me=pop$Me,G=pop$G,
                               scalece=pop$scalece,WtL=pop$WtL,
                               inNt=(inN[,popn] * survP),incat=popC[popn],
-                              sigce=sigce,lambda=pop$lambda,qest=pop$qest)
+                              sigce=sigce,lambda=pop$lambda,qest=pop$qest,
+                              fissettings=fissettings,fisindex=fisindex)
   }
   dyn <- sapply(ans,"[[","vect")
   steep <- getvect(zoneCC,"steeph") #sapply(zoneC,"[[","popdef")["steeph",]

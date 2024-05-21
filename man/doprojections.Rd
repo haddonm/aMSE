@@ -19,6 +19,8 @@ doprojections(
   makehcrout,
   fleetdyn,
   verbose = FALSE,
+  fissettings = NULL,
+  fisindex = NULL,
   ...
 )
 }
@@ -62,6 +64,11 @@ then have a function that returns NULL.}
 the sau and populations. Currently not needed by Tas but needed by SA}
 
 \item{verbose}{should the iterations be counted on the console?}
+
+\item{fissettings}{an object containing settings used when calculating
+indices for the FIS within oneyearcat inside oneyearsauC}
+
+\item{fisindex}{a function used to estimate the FIS index in oneyearcat}
 
 \item{...}{the ellipsis used in case any of the functions hcrfun, sampleCE,
 sampleFIS, sampleNas, and getdata require extra arguments not included

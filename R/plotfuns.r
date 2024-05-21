@@ -93,7 +93,7 @@ compareCPUE <- function(histCE,saucpue,glb,rundir,filen="",obscol=2) {
 #' @examples
 #' print("wait on suitable data sets")
 diagnosticsproj <- function(zonePsau,glb,rundir,nrep=3) {
-  # zonePsau=sauout$zonePsau;glb=glb;rundir=rundir;nrep=3
+  # zonePsau=sauout;glb=glb;rundir=rundir;nrep=3
   reps <- glb$reps
   nsau <- glb$nSAU
   hyrs <- glb$hyrs
@@ -128,8 +128,7 @@ diagnosticsproj <- function(zonePsau,glb,rundir,nrep=3) {
   parset(plots=pickbound(nsau),margin=c(0.3,0.35,0.05,0.05),
          outmargin = c(1,1,0,0))
   for (sau in 1:nsau)
-    hist(resid[,sau,],breaks=25,main="",ylab=saunames[sau],xlab="",
-         panel.first=grid())
+    hist(resid[,sau,],breaks=25,main="",ylab=saunames[sau],xlab="")
   mtext("Difference between Observed and Expected SAU Catches",
         side=1,outer=TRUE,cex=1.1,line=-0.1)
   mtext("Frequency",side=2,outer=TRUE,cex=1.1,line=-0.1)

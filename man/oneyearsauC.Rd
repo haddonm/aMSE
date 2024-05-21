@@ -20,7 +20,9 @@ oneyearsauC(
   rdev = -1,
   envyr,
   envsurv,
-  envrec
+  envrec,
+  fissettings = NULL,
+  fisindex = NULL
 )
 }
 \arguments{
@@ -63,6 +65,11 @@ in envyr this is by popultion}
 
 \item{envrec}{if notNULL contains the proportion of stock recruitment
 in a given year that survives, by population}
+
+\item{fissettings}{an object containing settings used when calculating
+indices for the FIS within oneyearcat inside oneyearsauC}
+
+\item{fisindex}{a function used to estimate the FIS index in oneyearcat}
 }
 \value{
 a list containing a revised dynamics list
