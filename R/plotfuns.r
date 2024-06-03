@@ -60,6 +60,8 @@ compareCPUE <- function(histCE,saucpue,glb,rundir,filen="",obscol=2) {
      mtext(lab2,side=1,line=-1.3,cex=1.25)
    }
   }
+  legend("topright",c("Observed CE","Predicted CE"),col=c(2,1),lwd=3,bty="n",
+         cex=1.0)
   mtext("CPUE",side=2,line=-0.3,outer=TRUE,cex=1.25)
   if (nchar(filen) > 0) {
     if (hce) {
@@ -1077,7 +1079,8 @@ plotprod <- function(product,xname="MatB",yname="Catch",xlimit=NA,
 plotsizecomp <- function(rundir,incomp,SAU="",lml=NULL,catchN=NULL,start=NA,
                          proportion=TRUE,console=TRUE,width=10,height=9,
                          fnt=7,tabcategory="predictedcatchN") {
-  # incomp=lfs; Nt=out$Nt; proportion=TRUE
+  # rundir=rundir;incomp=lfs;SAU=glb$saunames[plotsau];lml=LML;width=10;height=9
+  # catchN=sauCt[,,plotsau];start=NA;proportion=TRUE;console=TRUE;fnt=7
   if (console) { filen <- "" } else {
     filen <- filenametopath(rundir,paste0(SAU,"sizecomp_nas_by_year.png"))
   }
@@ -1104,7 +1107,7 @@ plotsizecomp <- function(rundir,incomp,SAU="",lml=NULL,catchN=NULL,start=NA,
            verbose=FALSE,usefont=fnt)
   parset(plots=pickbound(nyrs),margin=c(0.225,0.225,0.05,0.05),
          outmargin=c(1,1,0,0),byrow=FALSE)
-  for (yr in 1:nyrs) {
+  for (yr in 1:nyrs) { # yr = 3
     y <- incomp[,yr]
     ymax <- getmax(y)
     if ((proportion) & (!is.null(catchN))) ymax <- getmax(c(y,pNt[,yr]))
@@ -1115,12 +1118,20 @@ plotsizecomp <- function(rundir,incomp,SAU="",lml=NULL,catchN=NULL,start=NA,
     if ((proportion) & (!is.null(catchN))) {
       lines(mids,pNt[,yr],lwd=2,col=2)
     }
-    if (!is.null(lml)) abline(v=lml[yr],lwd=1,col="blue")
+    if (!is.null(lml)) {
+      if (ncol(lml) > 2) {
+        pickLML <- grep(SAU,colnames(lml))
+        abline(v=lml[yr,pickLML],lwd=2,col="blue")
+      } else {
+        abline(v=lml[yr,2],lwd=2,col="blue")
+      }
+    }
   }
   mtext("Shell Length (mm)",side=1,line=-0.2,outer=TRUE,cex=1.2)
   mtext(paste0("Proportion for ",SAU),side=2,line=-0.2,outer=TRUE,cex=1.2)
   if (!console) {
-    caption <- "Catch size-composition data to which the SBM is being fitted."
+    caption <- paste0("Catch size-composition data to which the SBM is being ",
+                      "fitted. The vertical blue lines are the LML by year.")
     addplot(filen,rundir,category=tabcategory,caption=caption)
   }
 } # end of plotsizecomp
@@ -1453,13 +1464,21 @@ predsizecomp <- function(sau,NSC,glb,minSL=10,interval=5,prop=TRUE,
 #'     made by readLBMdata.
 #' @param mincount the minimum number of observations within a year for
 #'     inclusion in the analysis, default = 100.
+#' @param deleteyears default = 0, which means all years will be retained.
+#'     Otherwise, this can be a vector of years, all of which will be removed
+#'     before the mincount is applied.
 #'
 #' @return a cleaned version of the sizecomp matrix
 #' @export
 #'
 #' @examples
 #' print("wait on data sets")
-preparesizecomp <- function(sizecomp,mincount=100) { # sizecomp=compdat[,,sau]; mincount=100
+#' # sizecomp=compdat[,,sau]; mincount=100; deleteyears=0
+preparesizecomp <- function(sizecomp,mincount=100,deleteyears=0) {
+  if (deleteyears[1] > 0) {
+    pickcols <- which(as.numeric(colnames(sizecomp)) %in% deleteyears)
+    if (length(pickcols) > 0) sizecomp <- sizecomp[,-pickcols]
+  }
   mids <- as.numeric(rownames(sizecomp))   #sizecomp[,"length"]
   totals <- colSums(sizecomp,na.rm=TRUE)
   pick <- which(totals > mincount)

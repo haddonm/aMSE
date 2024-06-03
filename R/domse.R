@@ -1,5 +1,5 @@
-# Tas context -----------------
-# postfixdir <- "BCtest"
+#Tas context -----------------
+# postfixdir <- "sau56"
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
@@ -24,13 +24,15 @@
 # depensate=0
 # pmwtSwitch = 0
 # stablewts = c(0.4, 0.5, 0.1)
-# hcrname="mcdahcr"  #"constantrefhcr"  #"mcdahcr"     #    #"consthcr"
+# hcrname="constantrefhcr"  #"constantrefhcr"  #"mcdahcr"     #    #"consthcr"
 # kobeRP = c(0.4,0.2,0.15)
 # interimout=""
 # nasInterval=5
 # minsizecomp=c(100,135)
-# uplimH=0.4
+# uplimH=0.35
 # incH=0.005
+# fissettings=NULL
+# fisindex=NULL
 
 
 # SA context -------------
@@ -208,6 +210,14 @@
 #'     default = 0.4
 #' @param incH defines the interval between H steps when estimating productivity
 #'     default = 0.005
+#' @param fissettings an object containing settings used when calculating
+#'     indices for the FIS within oneyearcat inside oneyearsauC inside
+#'     doprojections
+#' @param fisindex a function used to estimate the FIS index in oneyearcat
+#' @param deleteyrs default = 0, meaning delete no years from the sizecomp data.
+#'     if there are years that are to be removed then this should be a matrix
+#'     of years to delete vs sau, ie years as rows and sau as columns. All
+#'     sau need to be included. to compelte hte matrix 0 values can be used.
 #'
 #' @seealso{
 #'  \link{makeequilzone}, \link{dohistoricC}, \link{prepareprojection},
@@ -226,9 +236,11 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                    verbose=FALSE,ndiagprojs=3,cutcatchN=56,matureL=c(70,200),
                    wtatL=c(80,200),mincount=100,includeNAS=FALSE,
                    depensate=0,kobeRP=c(0.4,0.2,0.15),nasInterval=5,
-                   minsizecomp=c(100,135),uplimH=0.4,incH=0.005) {
+                   minsizecomp=c(100,135),uplimH=0.4,incH=0.005,
+                   fissettings=NULL,fisindex=NULL,deleteyrs=0) {
   # generate equilibrium zone -----------------------------------------------
   starttime <- (Sys.time())
+  setuphtml(rundir)
   zone <- makeequilzone(rundir,controlfile,doproduct=TRUE,uplimH=uplimH,
                         incH=incH,verbose=verbose)
   if (verbose) {
@@ -247,7 +259,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   projC <- zone$zone1$projC
   condC <- zone$zone1$condC
   # biology, recruits, and production tabs -------------------------------------------------
-  biology_plots(rundir, glb, zoneC, matL=matureL,Lwt=wtatL)
+  outbiol <- biology_plots(rundir, glb, zoneC, matL=matureL,Lwt=wtatL)
   sauprod <- plotproductivity(rundir,production,glb,hsargs)
  # hsargs$saumsy <- sauprod[3,]
   # numbers-at-size tab------------------------------------------------------
@@ -299,12 +311,14 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   sauCt <- popNAStosau(catchN,glb)
   compdat <- condC$compdat$lfs
   if (!is.null(compdat)) {
-    for (plotsau in 1:glb$nSAU) { # plotsau=1
-      lfs <- preparesizecomp(compdat[,,plotsau],mincount=mincount)
+    for (plotsau in 1:glb$nSAU) { # plotsau=2
+      if (length(ncol(deleteyrs)) == 0) delyrs=0 else delyrs=deleteyrs[,plotsau]
+      lfs <- preparesizecomp(compdat[,,plotsau],mincount=mincount,
+                             deleteyears=delyrs)
       yrsize <- as.numeric(colnames(lfs))
       histyr <- condC$histyr
       pickyr <- match(yrsize,histyr[,"year"])
-      LML <- histyr[pickyr,"histLML"]
+      LML <- condC$histyr[pickyr,]
       plotsizecomp(rundir=rundir,incomp=lfs,SAU=glb$saunames[plotsau],lml=LML,
                    catchN=sauCt[,,plotsau],start=NA,proportion=TRUE,
                    console=FALSE)
@@ -332,7 +346,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                            sampleFIS=sampleFIS,sampleNaS=sampleNaS,
                            getdata=getdata,calcpopC=calcpopC,
                            makehcrout=makeouthcr,fleetdyn=fleetdyn,verbose=TRUE,
-                           fissettings=NULL,fisindex=NULL)
+                           fissettings=fissettings,fisindex=fisindex)
   if (verbose) {
     incrtime1 <- Sys.time(); timeinc <- incrtime1 - incrtime2
     cat("All projections finished ",timeinc,attr(timeinc,"units") ,"\n")
@@ -391,8 +405,23 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                           CIprobs=c(0.05,0.5,0.95),addfile=TRUE)
   # Fishery tab-----------------------------------------------
   if (verbose) cat("Plotting fishery information \n")
-  outfish <- fishery_plots(rundir=rundir,glb=glb,select=zoneCP[[1]]$Select,
-                           histyr=condC$histyr,projLML=projC$projLML)
+  if (glb$sauLML) {
+    for (sau in 1:glb$nSAU) { # sau = 1
+      pickS <- which(glb$sauindex == sau)
+      outfish <- fishery_plots(rundir=rundir,glb=glb,
+                               select=zoneCP[[pickS[1]]]$Select,
+                               histyr=condC$histyr,projLML=projC$projLML,
+                               SAU=sau)
+    }
+  } else {
+    outfish <- fishery_plots(rundir=rundir,glb=glb,select=zoneCP[[1]]$Select,
+                             histyr=condC$histyr,projLML=projC$projLML)
+  }
+  LMLs <- outfish$outyrs$LMLs
+  tabcap <- paste0(" The LML and maximum LML in each year where a change occurs.",
+                   " Once a change in LML occurs it continues until the next ",
+                   "change, or until the final year.")
+  addtable(LMLs,"LMLs_through_time.csv",rundir,category="Fishery",caption=tabcap)
   historicalplots(rundir=rundir,condC=condC,glb=glb)
   NAS$catchN <- NAS$catchN[(cutcatchN:glb$Nclass),,,]
   # HSperf tab--------------------------------

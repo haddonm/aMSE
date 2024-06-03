@@ -105,7 +105,7 @@ biology_plots <- function(rundir, glb, zoneC, matL=c(30,210), Lwt=c(80,210)) {
   addplot(filen,rundir=rundir,category="Biology",caption)
   # Tabulate biological properties uses zoneC
   rows <- c("M","R0","B0","ExB0","MSY","MSYDepl","bLML",
-            "MaxDL","L50","L95","AvRec","steep")
+            "MaxDL","L50","L95","AvRec","steep","SaM")
   sau <- getlistvar(zoneC,"SAU")
   nSAU <- length(unique(sau))
   columns <- paste0("p",1:numpop)
@@ -126,6 +126,7 @@ biology_plots <- function(rundir, glb, zoneC, matL=c(30,210), Lwt=c(80,210)) {
   resultpop["L95",] <- popdefs["L95",]
   resultpop["AvRec",] <- round(popdefs["AvRec",])
   resultpop["steep",] <- popdefs["steeph",]
+  resultpop["SaM",] <- -popdefs["SaMa",]/popdefs["SaMb",]
   plotrecruitment(rundir,resultpop,glb)
   res <- as.data.frame(t(round(resultpop,3)))
   res[,"SAU"] <- getlistvar(zoneC,"SAU")
@@ -147,7 +148,7 @@ biology_plots <- function(rundir, glb, zoneC, matL=c(30,210), Lwt=c(80,210)) {
   hist(resultpop["AvRec",]/1000,xlab="AvRec '000s",main="",breaks=20)
   caption <- paste0("The range of biological properties across the zone.")
   addplot(filen,rundir=rundir,category="Biology",caption)
-  return(invisible(resultpop))
+  return(invisible(list(resultpop=resultpop,res=res)))
 } # end of biology_plots
 
 #' @title compzoneN compares numbers-at-size before/after depletion
@@ -204,45 +205,48 @@ compzoneN <- function(unfN,curN,glb,yr,depl,ssc=5,LML=0,rundir="") {
 #'     be limited so that the lower arm set to zero and the upper set to 1 need
 #'     not all be viewed and to give greater separation to any set of LML, which
 #'     will usually be close to each other.
+#' @param SAU index of which SAU is being used. When the LML is the same across
+#'     all SAU, this argument is redundant and can remain as 1, the default.
 #'
 #' @return invisibly, the matrix of unique selectivities
 #' @export
 #'
 #' @examples
 #' print("wait on suitable internal data sets")
-fishery_plots <- function(rundir,glb,select,histyr,projLML, rge=55:105) {
+fishery_plots <- function(rundir,glb,select,histyr,projLML,rge=55:105,SAU=1) {
   # rundir=rundir;glb=glb;select=zoneCP[[1]]$Select;histyr=condC$histyr;
-  # projLML=projC$projLML; rge=55:105
+  # projLML=projC$projLML; rge=55:105; SAU=1
+  sauname <- glb$saunames[SAU]
   mids <- glb$midpts
-  maxlml <-
-  lml <- cbind(as.numeric(histyr[,"histLML"]),
-               rep(tail(mids,1),length(glb$hyrnames)))
-  colnames(lml) <- c("LML","Max")
-  lmlall <- rbind(lml,projLML)
   allyrs <- c(glb$hyrnames,glb$pyrnames)
-  rownames(lmlall) <- allyrs
-  outyrs <- uniquepairs(lmlall,col1=1,col2=2)
-  realcomb <- outyrs$realcomb
-#  nsel <- length(realcomb)
-  combnames <- outyrs$combnames[realcomb]
-  ncomb <- length(combnames)
-  yrlist <- outyrs$yrlist
-  selyrs <- numeric(ncomb)
-  yrnames <- numeric(ncomb)
-  yrlml <- numeric(ncomb)
-  picksel <- 0
-  for (i in 1:ncomb) { # i = 1
-    yrcomb <- yrlist[[combnames[i]]]
-#    if (!is.null(yrcomb)) {
-    selyrs[i] <- yrcomb[1]
-    yrnames[i] <- allyrs[yrcomb[1]]
-    yrlml[i] <- lmlall[yrcomb[1],1]
- #   }
+  if (glb$sauLML) {
+    lml <- cbind(glb$hyrnames,as.numeric(histyr[,(SAU+1)]),
+                 rep(tail(mids,1),length(glb$hyrnames)))
+    colnames(lml) <- c("year","LML","Max")
+    newprojLML <- cbind(glb$pyrnames,projLML[,c(SAU,(glb$nSAU+SAU))])
+    lmlall <- rbind(lml,newprojLML)
+    rownames(lmlall) <- allyrs
+    outyrs <- uniquepairs(lmlall,col1=2,col2=3,yrs="year")
+  } else {
+    lml <- cbind(glb$hyrnames,as.numeric(histyr[,(SAU+1)]),
+                 rep(tail(mids,1),length(glb$hyrnames)))
+    colnames(lml) <- c("year","LML","Max")
+    newprojLML <- cbind(glb$pyrnames,projLML)
+    lmlall <- rbind(lml,newprojLML)
+    rownames(lmlall) <- allyrs
+    outyrs <- uniquepairs(lmlall,col1=2,col2=3,yrs="year")
   }
+  uniqueLML <- outyrs$uniqueLML
+  yrnames <- as.numeric(rownames(uniqueLML))
+  yrlml <- uniqueLML[,"LML"]
+  selyrs <- match(yrnames,allyrs)
   selplot <- select[,selyrs]
   rownames(selplot) <- mids
-  filen <- filenametopath(rundir,"fishery_Selectivity_through_time.png")
-  plotprep(width=7,height=4,newdev=FALSE,filename=filen,cex=0.9,
+  colnames(selplot) <- outyrs$combnames
+  ncomb <- length(outyrs$combnames)
+  saufile <- paste0("fishery_Selectivity_through_time_",sauname,".png")
+  filen <- filenametopath(rundir,saufile)
+  plotprep(width=7,height=4,newdev=TRUE,filename=filen,cex=0.9,
            verbose=FALSE)
   parset(cex=1.0)
   plot(mids[rge],selplot[rge,1],type="l",lwd=2,col=1,panel.first=grid(),
@@ -254,7 +258,7 @@ fishery_plots <- function(rundir,glb,select,histyr,projLML, rge=55:105) {
                       "The years after the LML value are the first year in the data",
                       " in which that LML is expressed.")
   addplot(filen,rundir=rundir,category="Fishery",caption)
-  return(invisible(list(select=selplot,yrlml=yrlml,yrnames=yrnames)))
+  return(invisible(list(select=selplot,yrlml=yrlml,yrnames=yrnames,outyrs=outyrs)))
 } # end of fishery_plots
 
 #' @title makeoutput take the output from do_MSE and generates the HTML files

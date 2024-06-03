@@ -4,7 +4,7 @@
 \alias{preparesizecomp}
 \title{preparesizecomp strips out empty columns and identifies samples}
 \usage{
-preparesizecomp(sizecomp, mincount = 100)
+preparesizecomp(sizecomp, mincount = 100, deleteyears = 0)
 }
 \arguments{
 \item{sizecomp}{the size-composition of catch data from the dat object
@@ -12,6 +12,10 @@ made by readLBMdata.}
 
 \item{mincount}{the minimum number of observations within a year for
 inclusion in the analysis, default = 100.}
+
+\item{deleteyears}{default = 0, which means all years will be retained.
+Otherwise, this can be a vector of years, all of which will be removed
+before the mincount is applied.}
 }
 \value{
 a cleaned version of the sizecomp matrix
@@ -25,4 +29,5 @@ preparesizecomp takes in the size composition of catch data
 }
 \examples{
 print("wait on data sets")
+# sizecomp=compdat[,,sau]; mincount=100; deleteyears=0
 }

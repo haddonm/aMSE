@@ -173,58 +173,6 @@ changevar <- function(filename,rundir,varname,newvalue,prompt=FALSE,verbose=TRUE
   return(cat(label," \n"))
 } # end of changevar
 
-#' @title checksizecompdata is a utility to allow a check of their sizecomp data
-#'
-#' @description checksizecompdata is a utility which allows a user to check the
-#'     coverage and level of sampling of size-composition data prior to
-#'     analysis in the MSE (or sizemod) so that a selection can be made to
-#'     potentially excluded inadequate samples. This is not a required function
-#'     for every analysis it is designed simply as a tool for quality control of
-#'     the input data.
-#'
-#' @param rundir the directory in which all files relating to a
-#'     particular run are to be held.
-#' @param controlfile default="control.csv", the filename of the control
-#'     file present in rundir containing information regarding the run.
-#' @param verbose Should progress comments be printed to console, default=TRUE#'
-#'
-#' @return nothing but it does plot a graph
-#' @export
-#'
-#' @examples
-#' print("wait on data sets")
-checksizecompdata <- function(rundir,controlfile,verbose=TRUE) {
-  zone1 <- readctrlfile(rundir,infile=controlfile,verbose=verbose)
-  setuphtml(rundir)
-  compdat <- zone1$condC$compdat$lfs
-  if (is.null(compdat))
-    stop(cat("No size-composition file found in copntrol file \n"))
-  palfs <- zone1$condC$compdat$palfs
-  saunames <- zone1$SAUnames
-  nsau <- length(saunames)
-  histyr <- zone1$condC$histyr
-  addtable(palfs,"sizecomp_obs_by_year_by_SAU.csv",rundir,
-           category="predictedcatchN",
-           caption="Number of sizecomp observations by year and SAU.")
-  for (plotsau in 1:nsau) {
-    lfs <- preparesizecomp(compdat[,,plotsau],mincount=0)
-    yrsize <- as.numeric(colnames(lfs))
-    pickyr <- match(yrsize,histyr[,"year"])
-    LML <- histyr[pickyr,"histLML"]
-    plotsizecomp(rundir=rundir,incomp=lfs,SAU=saunames[plotsau],lml=LML,
-                 catchN=NULL,start=NA,proportion=TRUE,
-                 console=FALSE)
-  }
-  replist <- NULL
-  projy <- 0
-  runnotes <- c(controlfile,paste0("SAU = ",nsau))
-  make_html(replist = replist,  rundir = rundir,
-            controlfile=controlfile, datafile=zone1$ctrl$datafile,
-            width = 500, openfile = TRUE,  runnotes = runnotes,
-            verbose = verbose, packagename = "aMSE",  htmlname = "sizecomp")
-  if (verbose) cat("finished  \n")
-} # end of checksizecompdata
-
 #' @title copyto copies a vector of files from one scenario directory to another
 #'
 #' @description copyto copies a vector of files (see examples) from one
@@ -422,7 +370,7 @@ getfilestocompare <- function(outdir,filenames,altlabel=NULL,verbose=TRUE,
     scores[[i]] <- out$outhcr
     zone[[i]] <- out$outzone
   }
-  # end results extraction----------------------
+  # end results extraction
   scenarionames <- scenes
   nscenes <- length(scenes)
   if (!is.null(altlabel)) {
@@ -953,16 +901,18 @@ sumpop2sau <- function(invect,sauindex) {
 
 #' @title uniquepairs identifies unique combinations of two columns in a matrix
 #'
-#' @description uniquepairs identifies unique combinations of two columns in a
-#'     matrix. This can be used to identify unique pairs of parameters that
+#' @description uniquepairs identifies unique combinations of pairs of LML,
+#'     being the LML and the maxLML for a given year. This is used to identify
+#'     unique pairs of parameters that
 #'     are used to define things like selectivity. In aMSE this is used when
 #'     implementing a slot selectivity so that one needs to identify all years
 #'     in which a change to the LML structure occurs. This can include a
 #'     change in the LML and or the maximum allowable size = MAL
 #'
-#' @param x the projLML matrix or any minimum two column matrix
+#' @param x the projLML matrix or any minimum three column matrix
 #' @param col1 the column number of the first variable
 #' @param col2 the column number of the second variable
+#' @param yrs a year column containing literal years
 #'
 #' @return invisibly a list of the number of unique pairs, a matrix of all
 #'     possible pairs, the row indices of each of the unique pairs in the
@@ -970,43 +920,92 @@ sumpop2sau <- function(invect,sauindex) {
 #' @export
 #'
 #' @examples
-#' lmls <- c(145,210,145,210,145,210,145,210,145,185,150,185,150,185,
-#'           150,185,150,185,150,185)
-#' projL <- matrix(lmls,nrow=10,ncol=2,dimnames=list(1:10,c("LML","Max")),
-#'                 byrow=TRUE)
-#' outp <- uniquepairs(x=projL,col1=1,col2=2)
-#' outp
-#'   # x=lmlall;col1=1;col2=2
-uniquepairs <- function(x,col1=1,col2=2) {
-  uc1 <- unique(x[,col1])
-  uc2 <- unique(x[,col2])
-  n1 <- length(uc1)
-  n2 <- length(uc2)
-  ncomb <- n1*n2
-  combin <- matrix(0,nrow=ncomb,ncol=2)
-  pcomb <- 1
-  for (i in 1:n1) {
-    for (j in 1:n2) {
-      combin[pcomb,1] <- uc1[i]
-      combin[pcomb,2] <- uc2[j]
-      pcomb <- pcomb + 1
-    }
-  }
-  yrlist <- vector(mode="list",length=ncomb)
-  combnames <-  paste(combin[,1],combin[,2],sep="_")
-  realcomb <- NULL
-  for (i in 1:ncomb) {
-    tmp <- which((x[,1] == combin[i,1]) & (x[,2] == combin[i,2]))
-    if (length(tmp > 0)) {
-      yrlist[[i]] <- tmp
-      realcomb <- c(realcomb,i)
+#'  lmls <- c(2000,145,210,2001,145,210,2002,145,210,2003,145,210,2004,145,185,
+#'            2005,150,185,2006,150,185,2007,150,185,2008,145,210,2009,145,210,
+#'            2010,150,185,2011,150,185,2012,145,210)
+#'  numrow <- length(lmls)/3
+#'  projL <- matrix(lmls,nrow=numrow,ncol=3,
+#'                  dimnames=list(1:numrow,c("year","LML","Max")),byrow=TRUE)
+#'  projL
+#'  outp <- uniquepairs(x=projL,col1=2,col2=3,yrs="year")
+#'  outp
+#'  # x=lmlall;col1=2;col2=3; yrs="year"
+uniquepairs <- function(x,col1=2,col2=3,yrs="year") {
+  x <- as.data.frame(x)
+  x[,"combs"] <- NA
+  x[,"combs"] <- paste0(x[,col1],"_",x[,col2])
+  years <- x[,yrs]
+  combnames <- unique(x[,"combs"])
+  ncomb <- length(combnames)
+  yearcomb <- vector(mode="list",length=ncomb); names(yearcomb) <- combnames
+  uniqueLML <- matrix(0,nrow=ncomb,ncol=2)
+  colnames(uniqueLML) <- c("LML","maxLML")
+  rows <- NULL
+  for (i in 1:ncomb) { # i = 2
+    first <- as.numeric(substr(combnames[i],1,3))
+    second <- as.numeric(substr(combnames[i],5,7))
+    uniqueLML[i,] <- c(first,second)
+    pickC <- which((x[,col1] == first) & (x[,col2] == second))
+    npick <- length(pickC)
+    if (npick > 1) {
+      diff <- pickC[1:(npick-1)] - pickC[2:npick]
+      grps <- which(diff != -1)
     } else {
-      yrlist[[i]] <- 0
+      grps <- NULL
+    }
+    vectcomb <- NULL
+    if (length(grps) == 0) {
+      if (x[pickC[1],yrs] == x[tail(pickC,1),yrs]) {
+        vectcomb <- c(x[pickC[1],col1],x[pickC[1],col2],x[pickC[1],yrs])
+      } else {
+        vectcomb <- c(x[pickC[1],col1],x[pickC[1],col2],
+                      x[pickC[1],yrs],x[tail(pickC,1),yrs])
+      }
+    } else {
+      ngrp <- length(grps)
+      loc <- 1
+      for (grp in 1:(ngrp+1)) { # grp = 4
+        upper <- ifelse(grp == (ngrp+1),length(pickC),grps[grp])
+        picksub <- pickC[loc:upper]
+        if (x[picksub[1],yrs] == x[tail(picksub,1),yrs]) {
+          vectcomb <- c(vectcomb,x[picksub[1],yrs])
+        } else {
+          vectcomb <- c(vectcomb,x[picksub[1],yrs],x[tail(picksub,1),yrs])
+        }
+        loc <- grps[grp] + 1
+      }
+      vectcomb <- c(x[pickC[1],col1],x[pickC[1],col2],vectcomb)
+    }
+    yearcomb[[i]] <- vectcomb
+    rows <- c(rows,vectcomb[3])
+  }
+  rownames(uniqueLML) <- rows
+  # tabulate results
+  ngrp <- length(yearcomb)
+  nobs <- sapply(yearcomb,length)
+  numrow <- sum(nobs) - 2*ngrp
+  columns <- c("year","LML","maxLML")
+  LMLtable <- matrix(0,nrow=numrow,ncol=length(columns))
+  colnames(LMLtable) <- columns
+  count <- 0
+  for (i in 1:ngrp) { # i = 1
+    num <- nobs[i]
+    val <- yearcomb[[i]]
+    lml <- val[1]
+    maxlml <- val[2]
+    yrs <- val[3:num]
+    nyr <- length(yrs)
+    for (yr in 1:nyr) { # yr=5
+      count <- count + 1
+      LMLtable[count,1] <- yrs[yr]
+      LMLtable[count,2:3] <- c(lml,maxlml)
     }
   }
-  names(yrlist) <- combnames
-  return(invisible(list(realcomb=realcomb,combin=combin,yrlist=yrlist,
-                        combnames=combnames)))
+  LMLs <- LMLtable[order(LMLtable[,"year"]),]
+  rownames(LMLs) <- LMLs[,"year"]
+  result <- list(yearcomb=yearcomb,LMLs=LMLs,uniqueLML=uniqueLML,
+                 combnames=combnames)
+  return(invisible(result))
 } # end of uniquepairs
 
 #' @title zonetosau translates the zonexpop objects to zonexsau objects

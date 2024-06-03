@@ -4,14 +4,16 @@
 \alias{uniquepairs}
 \title{uniquepairs identifies unique combinations of two columns in a matrix}
 \usage{
-uniquepairs(x, col1 = 1, col2 = 2)
+uniquepairs(x, col1 = 2, col2 = 3, yrs = "year")
 }
 \arguments{
-\item{x}{the projLML matrix or any minimum two column matrix}
+\item{x}{the projLML matrix or any minimum three column matrix}
 
 \item{col1}{the column number of the first variable}
 
 \item{col2}{the column number of the second variable}
+
+\item{yrs}{a year column containing literal years}
 }
 \value{
 invisibly a list of the number of unique pairs, a matrix of all
@@ -19,19 +21,23 @@ invisibly a list of the number of unique pairs, a matrix of all
     matrix, and the names of all possible combinations
 }
 \description{
-uniquepairs identifies unique combinations of two columns in a
-    matrix. This can be used to identify unique pairs of parameters that
+uniquepairs identifies unique combinations of pairs of LML,
+    being the LML and the maxLML for a given year. This is used to identify
+    unique pairs of parameters that
     are used to define things like selectivity. In aMSE this is used when
     implementing a slot selectivity so that one needs to identify all years
     in which a change to the LML structure occurs. This can include a
     change in the LML and or the maximum allowable size = MAL
 }
 \examples{
-lmls <- c(145,210,145,210,145,210,145,210,145,185,150,185,150,185,
-          150,185,150,185,150,185)
-projL <- matrix(lmls,nrow=10,ncol=2,dimnames=list(1:10,c("LML","Max")),
-                byrow=TRUE)
-outp <- uniquepairs(x=projL,col1=1,col2=2)
-outp
-  # x=lmlall;col1=1;col2=2
+ lmls <- c(2000,145,210,2001,145,210,2002,145,210,2003,145,210,2004,145,185,
+           2005,150,185,2006,150,185,2007,150,185,2008,145,210,2009,145,210,
+           2010,150,185,2011,150,185,2012,145,210)
+ numrow <- length(lmls)/3
+ projL <- matrix(lmls,nrow=numrow,ncol=3,
+                 dimnames=list(1:numrow,c("year","LML","Max")),byrow=TRUE)
+ projL
+ outp <- uniquepairs(x=projL,col1=2,col2=3,yrs="year")
+ outp
+ # x=lmlall;col1=2;col2=3; yrs="year"
 }

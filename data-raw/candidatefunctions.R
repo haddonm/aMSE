@@ -527,7 +527,207 @@ comp <- getfilestocompare(outdir=outdir,filenames=files[c(12,2,16)],
 
 
 
+# population properties-------------------------
 
+# run aMSE ---------------------------
+options("show.signif.stars"=FALSE,
+        "stringsAsFactors"=FALSE,
+        "max.print"=50000,
+        "width"=240)
+suppressPackageStartupMessages({
+  library(aMSE)
+  library(TasHS)
+  library(codeutils)
+  library(hplot)
+  library(makehtml)
+  library(knitr)
+})
+dropdir <- getDBdir()
+prefixdir <- pathtopath(dropdir,"/A_codeUse/aMSETAS/NW/")
+#prefixdir <- pathtopath(dropdir,"/A_codeUse/aMSEUse/scenarios/")
+
+
+postfixdir <- "sau56"
+verbose <- TRUE
+rundir <- path.expand(filenametopath(prefixdir,postfixdir))
+
+
+
+biol <- read.csv(pathtopath(rundir,"zonebiology.csv"),header=TRUE)
+
+pickP <- which(biol[,"MSY"] < 50)
+biol1 <- biol[pickP,]
+
+plotprep(width=10, height=5)
+parset()
+plot(biol1[,"MaxDL"],biol1[,"MSY"],type="p",pch=16,cex=1.0)
+
+model <- lm(biol1[,"MSY"] ~ biol1[,"MaxDL"])
+abline(model,lwd=3,col=2)
+summary(model)
+
+
+var1 <- "MaxDL"
+var2 <- "MSYDepl"
+
+plotprep(width=10, height=5)
+parset()
+plot(biol1[,var1],biol1[,var2],type="p",pch=16,cex=1.0,xlab=var1,ylab=var2)
+model <- lm(biol1[,var2] ~ biol1[,var1])
+summary(model)
+abline(model,lwd=3,col=2)
+
+pairs(biol1[,c(1:3,5:10,12)],pch=16,gap=0.2)
+
+
+MSYDepl ~ MaxDL
+
+
+# makePOPmatrix -----------------------------------------------
+
+options("show.signif.stars"=FALSE,
+        "stringsAsFactors"=FALSE,
+        "max.print"=50000,
+        "width"=240)
+suppressPackageStartupMessages({
+  library(aMSE)
+  library(TasHS)
+  library(codeutils)
+  library(hplot)
+  library(makehtml)
+  library(knitr)
+})
+dropdir <- getDBdir()
+prefixdir <- pathtopath(dropdir,"/A_codeUse/aMSETAS/NW/")
+#prefixdir <- pathtopath(dropdir,"/A_codeUse/aMSEUse/scenarios/")
+
+
+postfixdir <- "sau56"
+verbose <- TRUE
+rundir <- path.expand(filenametopath(prefixdir,postfixdir))
+ctrlfile <- "controlsau56.csv"
+
+
+draft <- getdraftpops(rundir=rundir,ctrlfile=ctrlfile)
+
+
+round(draft$pops[,1:8],4)
+
+
+
+
+filename <- pathtopath(rundir,"popconstants.csv")
+write.csv(draft$pops,filename)
+
+
+msy <- sapply(out$zoneC,"[[","MSY")
+bLML <- sapply(out$zoneC,"[[","bLML")
+B0 <- sapply(out$zoneC,"[[","B0")
+
+
+
+
+displaypopprops <- function(rundir,x,verbose) {
+  pops <- draft$pops
+  out <- x$out
+  condC <- x$condC
+  glb <- out$glb
+  ctrl <- x$ctrl
+  zoneD <- x$out$zoneD
+  zoneC <- x$out$zoneC
+  setuphtml(rundir)
+
+  notes <- c(paste0("Populations = ",glb$numpop),paste0("SAU = ",glb$nSAU),
+             paste0("Randomseed for conditioning = ",ctrl$randseed),
+             paste0("Recruitment variability sigR         = ",ctrl$withsigR),
+             paste0("Exploitable Biomass variability sigB = ",ctrl$withsigB),
+             paste0("Catch-Rate variability sigCE         = ",ctrl$withsigCE))
+
+  label <- paste0(ctrl$runlabel," population properties. This is a bigtable",
+                  " so, if you scroll across then use the topleft arrow to",
+                  " return to the home page.")
+  addtable(round(pops,4),filen="popprops.csv",rundir=rundir,category="poptable",
+           caption=label,big=TRUE)
+  # OrigComp tab--------------------------------------------
+  saucompdata(allcomp=condC$compdat$lfs,glb=glb,horizline=140,console=FALSE,
+              rundir=rundir,ylabel="Size-Composition of Catches",
+              tabname="OrigComp")
+  # What size comp data is there
+  palfs <- condC$compdat$palfs
+  label <- paste0(ctrl$runlabel," Number of observations of numbers-at-size in ",
+                  "the catch for each SAU.")
+  addtable(palfs,filen="sizecompnumbers.csv",rundir=rundir,category="OrigComp",
+           caption=label)
+  # plot initial equilibrium size-comp by population
+  Nt <- zoneD$Nt[,1,]
+  rownames(Nt) <- glb$midpts
+  colnames(Nt) <- paste0(glb$saunames[glb$sauindex],"_",1:glb$numpop)
+  draftnumbersatsize(rundir, glb, Nt, ssc=5)
+
+
+  make_html(replist = NULL,  rundir = rundir,
+            controlfile=ctrl$controlfile, datafile=ctrl$datafile, hsfile=NULL,
+            width = 500, openfile = TRUE,  runnotes = notes,
+            verbose = verbose, packagename = "aMSE",  htmlname = ctrl$runlabel)
+} # end of displaypopprops
+
+
+
+
+displaypopprops(rundir,draft,verbose=FALSE)
+
+
+
+
+
+library(codeutils)
+
+lmls <- c(2000,145,210,2001,145,210,2002,145,210,2003,145,210,2004,145,185,
+          2005,150,185,2006,150,185,2007,150,185,2008,145,210,2009,145,210,
+          2010,150,185,2011,150,185,2012,145,210)
+numrow <- length(lmls)/3
+projL <- matrix(lmls,nrow=numrow,ncol=3,
+                dimnames=list(1:numrow,c("year","LML","Max")),byrow=TRUE)
+projL
+outp <- uniquepairs2(x=projL,col1=2,col2=3,yrs="year")
+outp
+
+yearcomb <- outyrs
+
+
+ngrp <- length(yearcomb)
+nobs <- sapply(yearcomb,length)
+numrow <- sum(nobs) - 2*ngrp
+columns <- c("year","LML","maxLML")
+LMLtable <- matrix(0,nrow=numrow,ncol=length(columns))
+colnames(LMLtable) <- columns
+count <- 0
+begin <- 1
+for (i in 1:ngrp) { # i = 2
+  num <- nobs[i]
+  val <- yearcomb[[i]]
+  lml <- val[1]
+  maxlml <- val[2]
+  yrs <- val[3:num]
+  nyr <- length(yrs)
+  count <- count + nyr
+  LMLtable[begin:count,1] <- yrs
+  LMLtable[begin:count,2] <- rep(val[1],length(begin:count))
+  LMLtable[begin:count,3] <- rep(val[2],length(begin:count))
+  begin <- begin+nyr
+}
+LMLs <- LMLtable[order(LMLtable[,"year"]),]
+rownames(LMLs) <- LMLs[,"year"]
+
+
+for (i in 1:ngrp) {
+  wrk <- yearcomb[[i]]
+  n <- length(wrk)
+   yearvect <- c(yearvect,)
+
+}
+
+combnames <- names(outyrs)
 
 
 

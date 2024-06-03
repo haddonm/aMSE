@@ -4,7 +4,7 @@
 \alias{makeabpop}
 \title{makeabpop generates full population structure in an unfished state}
 \usage{
-makeabpop(popparam, midpts, projLML)
+makeabpop(popparam, midpts, initLML)
 }
 \arguments{
 \item{popparam}{the vector of biological parameters values that define
@@ -14,7 +14,7 @@ popdefs, which is produced by definepops}
 \item{midpts}{the center values of the size classes dervied from
 the zone data file}
 
-\item{projLML}{the LML expected in the projection years 2 - Nyrs;
+\item{initLML}{the LML expected in the projection years 2 - Nyrs;
 a vector obtained from the controlfile}
 }
 \value{
@@ -33,5 +33,5 @@ makeabpop generates the full population structure in an
    achieves equilibrium.
 }
 \examples{
-print("See the code for makezoneC to see usage of makeabpop")
+print("See code for makezoneC to see usage of makeabpop")
 }

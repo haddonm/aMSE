@@ -641,7 +641,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
      optpars <- exp(read.csv(paramfile,header=TRUE,row.names=1))
      parsin <- TRUE
    }
-   batch <- getsingleNum("batch",indat)  # deprecated
+ #  batch <- getsingleNum("batch",indat)  # deprecated
    reps <- getsingleNum("replicates",indat)
    withsigR <- getsingleNum("withsigR",indat)
    withsigB <- getsingleNum("withsigB",indat)
@@ -667,10 +667,10 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
    randomseedP <- getsingleNum("randomseedP",indat)
    initLML <- getsingleNum("initLML",indat)
    projyrs <- getsingleNum("PROJECT",indat)
-   gauntlet <- getsingleNum("SLOTFISHERY",indat)
-   if (!is.null(gauntlet)) {
-     if (gauntlet == 0) gauntlet <- NULL
-   }
+   gauntlet <- getsingleNum("SLOTFISHERY",indat) # affects selectivity
+   if (is.null(gauntlet)) gauntlet <- 0
+   sauLML <- getsingleNum("sauLML",indat)        # affects selectivity
+   if (is.null(sauLML)) sauLML <- 0
    rows <- c("runlabel","datafile","bysau","replicates","withsigR","withsigB",
              "withsigCE","nSAU","SAUpop","SAUnames","initdepl","minc","cw",
              "Nclass","larvdisp","randomseed","randomseedP","initLML",
@@ -696,24 +696,46 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
    indexCE <- NULL
    maxsize <- cw * Nclass
    if (projyrs > 0) {
-     projLML <- matrix(0,nrow=projyrs,ncol=2,
-                         dimnames=list(c(1:projyrs),c("LML","Max")))
-     if (!is.null(gauntlet)) {
+     if (sauLML) {
+       columns <- c(SAUnames,paste0("max",SAUnames))
+     } else {
+       columns <- c("LML","Max")
+     }
+     numcol <- length(columns)
+     projLML <- matrix(0,nrow=projyrs,ncol=numcol,
+                         dimnames=list(c(1:projyrs),columns))
+     if ((gauntlet) & (!sauLML)) { # gauntlet and not sauLML
        from <- grep("PROJLML",indat)
        for (i in 1:projyrs) { # i = 1
          from <- from + 1
          tmp <- removeEmpty(unlist(strsplit(indat[from],",")))
+         # is maxLML defined, if so, read it, otherwise include maxsize
          if (length(tmp >= 3) & !is.na(suppressWarnings(as.numeric(tmp[3])))) {
-           projLML[i,] <- getConst(indat[from],2,2)
+            projLML[i,] <- getConst(indat[from],2,2)
          } else {
            projLML[i,] <- c(getConst(indat[from],nb=1,index=2),maxsize)
          }
        }
-     } else {
+     }
+     if ((!gauntlet) & (!sauLML)) {
        from <- grep("PROJLML",indat)
        for (i in 1:projyrs) {
          from <- from + 1
          projLML[i,] <- c(getConst(indat[from],nb=1,index=2),maxsize)
+       }
+     }
+     if ((!gauntlet) & (sauLML)) {
+       from <- grep("PROJLML",indat)
+       for (i in 1:projyrs) {
+         from <- from + 1
+         projLML[i,] <- c(getConst(indat[from],nb=nSAU,index=2),rep(maxsize,nSAU))
+       }
+     }
+     if ((gauntlet) & (sauLML)) {
+       from <- grep("PROJLML",indat)
+       for (i in 1:projyrs) {
+         from <- from + 1
+         projLML[i,] <- c(getConst(indat[from],nb=(2*nSAU),index=2))
        }
      }
    } # end of projyrs if test
@@ -723,13 +745,23 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
       begin <- grep("CondYears",indat)[1]
       histCatch <- matrix(0,nrow=catches,ncol=nSAU)
       colnames(histCatch) <- SAUnames
-      histyr <- matrix(0,nrow=hyrs,ncol=2)
-      colnames(histyr) <- c("year","histLML")
-      for (i in 1:hyrs) { # i=2
+      if (sauLML) {
+        histyr <- matrix(0,nrow=hyrs,ncol=(nSAU+1))
+        colnames(histyr) <- c("year",paste0("hist",SAUnames))
+      } else {
+        histyr <- matrix(0,nrow=hyrs,ncol=2)
+        colnames(histyr) <- c("year","histLML")
+      }
+      for (i in 1:hyrs) { # i=1
          begin <- begin + 1
          asnum <- as.numeric(removeEmpty(unlist(strsplit(indat[begin],","))))
-         histyr[i,] <- asnum[1:2]
-         histCatch[i,] <- asnum[3:(nSAU+2)]
+         if (sauLML) {
+           histyr[i,] <- asnum[1:3]
+           histCatch[i,] <- asnum[4:(nSAU*2 + 1)]
+         } else {
+           histyr[i,] <- asnum[1:2]
+           histCatch[i,] <- asnum[3:(nSAU+2)]
+         }
       }
       rownames(histCatch) <- histyr[,1]
       rownames(histyr) <- histyr[,1]
@@ -796,6 +828,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
        }
      }
    } # end of !is.null(yrfis)
+   # get sizecomp data---------------------
    lffiles <- NULL
    sizecomp <- getsingleNum("SIZECOMP",indat)
    if (sizecomp > 0) {
@@ -813,6 +846,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
          compdat <- getLFdata(rundir,lffilename)
       }
    }  # end of sizecomp loop
+   # get recdevs----------------------------------------
    recdevs <- matrix(-1,nrow=hyrs,ncol=nSAU,dimnames=list(hyrnames,SAUnames))
    if (parsin) {
      firstrec <- 6
@@ -854,7 +888,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
                    reps=reps,hyrs=hyrs,pyrs=projyrs,hyrnames=hyrnames,
                    pyrnames=pyrnames,saunames=SAUnames,SAUpop=SAUpop,
                    larvdisp=larvdisp,indexCE=indexCE,envimpact=envimpact,
-                   warnfile=warningfile)
+                   warnfile=warningfile,sauLML=sauLML)
    totans <- list(SAUnames,SAUpop,minc,cw,larvdisp,randomseed,
                   initLML,condC,projC,globals,outctrl,catches,projyrs)
    names(totans) <- c("SAUnames","SAUpop","minc","cw","larvdisp","randomseed",
@@ -881,7 +915,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
 #' @examples
 #' print("wait on data sets")
 readpopdatafile <- function(indir,infile) {
-  # indir=rundir;infile="zone1sau2pop6.csv"
+  # indir=rundir;infile=ctrl$datafile
   filename <- filenametopath(indir,infile)
   indat <- readLines(filename)   # reads the whole file as character strings
   nsau <- getsingleNum("nsau",indat)
@@ -893,10 +927,9 @@ readpopdatafile <- function(indir,infile) {
 
   begin <- grep("PDFs",indat)
   npar <- getConst(indat[begin],1)
-  rows <- c("popnum","SAU","DLMax","L50","L50inc","SigMax",
-            "LML","Wtb","Wta","Me","AvRec","defsteep","L50C",
-            "deltaC","MaxCEpars","selL50p","selL95p",
-            "SaMa","L50Mat","lambda","qest")
+  rows <- c("popnum","DLMax","L50","L95","SigMax","SaMa","SaMb",
+            "Wta","Wtb","Me","L50C","deltaC","AvRec","selP1","selP2","Nyrs",
+            "steeph","MaxCE","L50Mat","SAU","lambda","qest","scalece")
   ans <- matrix(0,nrow=length(rows),ncol=numpop)
   begin <- begin + 1
   for (i in 1:npar) {
@@ -966,14 +999,14 @@ readsaudatafile <- function(rundir,infile,optpar=NULL) {
    }
    poprec <- matrix(0,nrow=numpop,ncol=3,
                     dimnames=list(1:numpop,c("sau","pop","prec")))
-   begin <- grep("propREC",indat) + 2
+   readrow <- grep("propREC",indat) + 2
    for (i in 1:numpop) {
-      poprec[i,] <- getConst(indat[begin],nb=3,index=1)
-      begin <- begin + 1
+      poprec[i,] <- getConst(indat[readrow],nb=3,index=1)
+      readrow <- readrow + 1
    }
-   pop <- 1  # needed for the following counting
+   pop <- 1  # define suaindex
    sauindex <- numeric(numpop); names(sauindex) <- poprec[,"sau"]
-   for (i in 1:nsau) {
+      for (i in 1:nsau) {
       npop <- saupop[i]
       for (j in 1:npop) {
          sauindex[pop] <- i

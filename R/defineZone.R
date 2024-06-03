@@ -80,7 +80,7 @@ definepops <- function(inSAU,inSAUindex,const,glob) {
                "MaxCE","L50mat","SAU","lambda","qest","scalece")
   popdefs <- matrix(0,nrow=numpop,ncol=length(columns),
                     dimnames=list(1:numpop,columns))
-  popdefs[,"Nyrs"] <- rep(hyrs,numpop) # Num Years - why is this here?
+  popdefs[,"Nyrs"] <- rep(hyrs,numpop) # Num Years - for selectivity?
   for (pop in 1:numpop) {  # pop=1
     popdefs[pop,"Me"] <- rnormz(1,mean=const["Me",pop],
                                sd=const["sMe",pop])
@@ -448,16 +448,16 @@ logistic <- function(inL50,delta,lens,knifeedge=0,maxLML=0) {
 #'     popdefs, which is produced by definepops
 #' @param midpts the center values of the size classes dervied from
 #'     the zone data file
-#' @param projLML the LML expected in the projection years 2 - Nyrs;
+#' @param initLML the LML expected in the projection years 2 - Nyrs;
 #'     a vector obtained from the controlfile
 #'
 #' @return a list of numpop lists of 19 objects as detailed above.
 #' @export
 #'
 #' @examples
-#' print("See the code for makezoneC to see usage of makeabpop")
-makeabpop <- function(popparam,midpts,projLML) {
-  #  popparam=popdef;midpts=midpts;projLML=projC$projLML
+#' print("See code for makezoneC to see usage of makeabpop")
+makeabpop <- function(popparam,midpts,initLML) {
+  #  popparam=popdef;midpts=midpts;initLML=initialLML
   #(DLMax,L50,L95,SigMax,SaMa,SaMb,Wta,Wtb,Me,L50C,L95C,R0 SelP[1],SelP[2],Nyrs,steeph,MaxCE,L50Mat block
   #   1    2   3    4      5    6   7   8   9 10   11   12  13     14      15   16     17    18     19
   numYr <- popparam["Nyrs"]
@@ -471,15 +471,21 @@ makeabpop <- function(popparam,midpts,projLML) {
   blk <- popparam["block"]
   selL50 <- popparam["SelP1"]
   selL95 <- popparam["SelP2"]
-  verLML <- unique(projLML) # find different LML in projections
+  if (ncol(initLML) > 2) { # ensures correct sau LML selected if sauLML
+    pickLML <- grep(popparam["SAU"],colnames(initLML))
+  } else {
+    pickLML <- 2
+  }
+  histLML <- initLML[,pickLML]
+  verLML <- unique(histLML) # find unique LML in the vetor of LML
   for (LML in verLML) {
     Sel <- logistic((LML+selL50),selL95,midpts)
     Sel <- Sel * emergent # include emergence to determine availability
-    pick <- which(projLML == LML)
+    pick <- which(histLML == LML)
     zSelect[,pick] <- rep(Sel,length(pick))
   }
   zSelWt <- zSelect * WtL
-  zLML <- projLML
+  zLML <- histLML
   Me <- as.numeric(popparam["Me"])
   AvRec <- as.numeric(popparam["AvRec"])  # R0
   qest <- as.numeric(popparam["qest"])
@@ -530,7 +536,7 @@ makeabpop <- function(popparam,midpts,projLML) {
 #' print("wait on datafiles")
 makeequilzone <- function(rundir,ctrlfile="control.csv",doproduct=TRUE,
                           uplimH=0.4,incH=0.005,verbose=TRUE) {
- #  rundir=rundir;ctrlfile=controlfile;doproduct=FALSE; verbose=TRUE
+ #  rundir=rundir;ctrlfile=controlfile;doproduct=FALSE; verbose=TRUE;uplimH=0.35;incH=0.005
   zone1 <- readctrlfile(rundir,infile=ctrlfile,verbose=verbose)
   ctrl <- zone1$ctrl
   glb <- zone1$globals     # glb without the movement matrix
@@ -567,7 +573,6 @@ makeequilzone <- function(rundir,ctrlfile="control.csv",doproduct=TRUE,
   # ans <- resetexB0(zoneC,zoneD) # rescale exploitB to avexplB after dynamics
   # zoneC <- ans$zoneC
   # zoneD <- ans$zoneD
-  setuphtml(rundir)
   equilzone <- list(zoneC=zoneC,zoneD=zoneD,glb=glb,constants=constants,
                     saudat=saudat,product=product,ctrl=ctrl,zone1=zone1)
   return(equilzone)
@@ -664,18 +669,14 @@ makezoneC <- function(zone,const) { # zone=zone1; const=constants
     } else {
       set.seed()
   }
-  if (zone$catches > 0) {
-     initialLML <- zone$condC$histyr[,2]
-     glb$hyrs <- length(initialLML)
-   } else {
-     initialLML <- rep(zone$initLML,glb$hyrs)
-   }
+  initialLML <- cbind(year=glb$hyrnames,histLML=rep(zone$initLML,glb$hyrs))
+  rownames(initialLML) <- glb$hyrnames
+  if (zone$catches > 0) initialLML <- zone$condC$histyr
   if (zone$ctrl$bysau) {
     popdefs <- definepops(nSAU,SAUindex,const,glob=glb) # define pops
   } else {
     popdefs <- popsdefine(const,glob=glb)
   }
-
   zoneC <- vector("list",numpop)
   for (pop in 1:numpop) {      # pop <- 1
     popdef <- popdefs[pop,]
@@ -891,9 +892,10 @@ modzoneC <- function(zoneC,zoneD,glob,lowlim=0.0,uplim=0.4,inc=0.005) {
 #' \dontrun{
 #'   data(zone1)
 #'   glb <- zone1$globals
+#'   # this needs fixing
 #' }
 popsdefine <- function(const,glob) {
-  #  inSAU=nSAU; inSAUindex=SAUindex; const=saudat; glob=glb
+  #  inSAU=nSAU; inSAUindex=SAUindex; const=const; glob=glb
   numpop <- glob$numpop
   hyrs <- glob$hyrs
   columns <- c("DLMax","L50","L95","SigMax","SaMa","SaMb","Wta","Wtb","Me",
@@ -905,18 +907,18 @@ popsdefine <- function(const,glob) {
   popdefs[,"Me"] <- const["Me",]
   popdefs[,"DLMax"] <- const["DLMax",]
   popdefs[,"L50"] <- const["L50",]
-  popdefs[,"L95"] <- const["L50",] + const["L50inc",]
+  popdefs[,"L95"] <- const["L95",]
   popdefs[,"SigMax"] <- const["SigMax",]
   popdefs[,"L50mat"] <- const["L50Mat",]
   popdefs[,"SaMa"] <- const["SaMa",]
-  popdefs[,"SaMb"] <- -const["SaMa",]/const["L50Mat",]
-  popdefs[,"SelP1"] <- const["selL50p",]
-  popdefs[,"SelP2"] <- const["selL95p",]
+  popdefs[,"SaMb"] <- const["SaMb",]
+  popdefs[,"SelP1"] <- const["selP1",]
+  popdefs[,"SelP2"] <- const["selP2",]
   popdefs[,"L50C"] <- const["L50C",]
   popdefs[,"deltaC"] <- const["deltaC",]
   popdefs[,"Wtb"] <- const["Wtb",]
   popdefs[,"Wta"] <- const["Wta",]
-  popdefs[,"steeph"] <- const["defsteep",]
+  popdefs[,"steeph"] <- const["steeph",]
   popdefs[,"AvRec"] <- const["AvRec",]
   popdefs[,"MaxCE"] <- 0 # gets value in makezone
   popdefs[,"SAU"] <- const["SAU",]

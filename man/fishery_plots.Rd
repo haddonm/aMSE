@@ -4,7 +4,7 @@
 \alias{fishery_plots}
 \title{fishery_plots generates a set of plots relating to the fishery properties}
 \usage{
-fishery_plots(rundir, glb, select, histyr, projLML, rge = 55:105)
+fishery_plots(rundir, glb, select, histyr, projLML, rge = 55:105, SAU = 1)
 }
 \arguments{
 \item{rundir}{the rundir for the particular scenario}
@@ -21,6 +21,9 @@ fishery_plots(rundir, glb, select, histyr, projLML, rge = 55:105)
 be limited so that the lower arm set to zero and the upper set to 1 need
 not all be viewed and to give greater separation to any set of LML, which
 will usually be close to each other.}
+
+\item{SAU}{index of which SAU is being used. When the LML is the same across
+all SAU, this argument is redundant and can remain as 1, the default.}
 }
 \value{
 invisibly, the matrix of unique selectivities

@@ -351,7 +351,9 @@ makezoneDP <- function(allyr,iter,glb) { #  projyr=nyrs;iter=reps;glb=glob
 #'     unfished equilibrium, or more particularly by conditioning on historical
 #'     data then the projC object will be used to condition the projections. In
 #'     essence, this puts the selectivity and selectivity x weight-at-size into
-#'     projC. It can handle changes in LML through the years of projection.
+#'     projC. It can handle changes in LML through the years of projection, and
+#'     it can now also handle different LML in different sau as well as a slot
+#'     fishery selectivity.
 #'
 #' @param zoneC the constant part of the zone
 #' @param glob the globals for the simulation
@@ -362,24 +364,38 @@ makezoneDP <- function(allyr,iter,glb) { #  projyr=nyrs;iter=reps;glb=glob
 #'
 #' @examples
 #' print("wait on new example data")
-modprojC <- function(zoneC,glob,projC) { # zoneC=zone$zoneC; glob=glb; projC=zone1$projC
+modprojC <- function(zoneC,glob,projC) { # zoneC=zoneC; glob=glb; projC=projC
   numpop <- glob$numpop
   midpts <- glob$midpts
+  sauLML <- glob$sauLML
   projyrs <- projC$projyrs
   popdefs <- getlistvar(zoneC,"popdef")
   projSel <- array(0,dim=c(glob$Nclass,numpop,projyrs),
                    dimnames=list(midpts,glob$SAUnum,1:projyrs))
   projSelWt <- array(0,dim=c(glob$Nclass,numpop,projyrs),
                    dimnames=list(midpts,glob$SAUnum,1:projyrs))
-  pLML <- projC$projLML[,"LML"]
-  mLML <- projC$projLML[,"Max"]
-  nLML <- length(pLML)
+  if (sauLML) {
+    nsau <- glob$nSAU
+    pLML <- projC$projLML[,(1:nsau)]
+    mLML <- projC$projLML[,(nsau+1):(2*nsau)]
+    nLML <- nrow(pLML)
+  } else {
+    pLML <- as.matrix(projC$projLML[,"LML"])
+    mLML <- as.matrix(projC$projLML[,"Max"])
+    nLML <- length(pLML)
+  }
   if (nLML != projyrs) stop(cat("Only ",nLML,"projLML instead of ",projyrs,"\n"))
   for (pop in 1:numpop) { #  yr=1; pop=1
     selL50 <- popdefs["SelP1",pop]
     selL95 <- popdefs["SelP2",pop]
+    if (sauLML) {
+      pLMLcol <- grep(popdefs["SAU",pop],colnames(pLML)) # which column to use
+    } else {
+      pLMLcol <- 1
+    }
     for (yr in 1:projyrs) {
-      projSel[,pop,yr] <- logistic((pLML[yr] + selL50),selL95,midpts,maxLML=mLML[yr])
+      projSel[,pop,yr] <- logistic((pLML[yr,pLMLcol] + selL50),selL95,
+                                     midpts,maxLML=mLML[yr,pLMLcol])
       projSelWt[,pop,yr] <- projSel[,pop,yr] * zoneC[[pop]]$WtL
     }
   }

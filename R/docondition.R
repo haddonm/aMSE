@@ -279,13 +279,14 @@ changeline <- function(indir, filename, linenumber, newline,verbose=FALSE) {
 #' @examples
 #' print("wait on suitable data sets in data")
 #' # rundir=rundir; controlfile=controlfile;calcpopC=calcexpectpopC
-#' # verbose=TRUE; doproduct=TRUE; dohistoric=TRUE; mincount=120
-#' # matureL=c(70,200);wtatL=c(80,200);mincount=120
+#' # verbose=TRUE; doproduct=FALSE; dohistoric=TRUE; mincount=120
+#' # matureL=c(70,200);wtatL=c(80,200);mincount=120; uplimH=0.35;incH=0.005
 do_condition <- function(rundir,controlfile,calcpopC,
                          verbose=FALSE,doproduct=FALSE,dohistoric=TRUE,
                          matureL=c(70,200),wtatL=c(80,200),mincount=100,
                          uplimH=0.4,incH=0.005) {
   starttime <- Sys.time()
+  setuphtml(rundir)
   zone <- makeequilzone(rundir,controlfile,doproduct=doproduct,uplimH=uplimH,
                         incH=incH,verbose=verbose)
   equiltime <- (Sys.time()); if (verbose) print(equiltime - starttime)
@@ -345,10 +346,10 @@ do_condition <- function(rundir,controlfile,calcpopC,
          yrsize <- as.numeric(colnames(lfs))
          pickyr <- match(yrsize,condC$histyr[,"year"])
       }
-      LML <- condC$histyr[pickyr,"histLML"]
+      LML <- condC$histyr[pickyr,]
       plotsizecomp(rundir=rundir,incomp=lfs,SAU=glb$saunames[plotsau],lml=LML,
                    catchN=sauCt[,,plotsau],start=NA,proportion=TRUE,
-                  console=FALSE)
+                   console=FALSE)
     }
   } else {
     condout <- NULL

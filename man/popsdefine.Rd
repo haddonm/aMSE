@@ -28,6 +28,7 @@ popsdefine makes a parameter vector, popdef, for each
 \dontrun{
   data(zone1)
   glb <- zone1$globals
+  # this needs fixing
 }
 }
 \seealso{

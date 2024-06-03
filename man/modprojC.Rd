@@ -23,7 +23,9 @@ modprojC produces an object used to condition the zone when
     unfished equilibrium, or more particularly by conditioning on historical
     data then the projC object will be used to condition the projections. In
     essence, this puts the selectivity and selectivity x weight-at-size into
-    projC. It can handle changes in LML through the years of projection.
+    projC. It can handle changes in LML through the years of projection, and
+    it can now also handle different LML in different sau as well as a slot
+    fishery selectivity.
 }
 \examples{
 print("wait on new example data")
