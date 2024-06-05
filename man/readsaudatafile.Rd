@@ -28,5 +28,5 @@ readsaudatafile uses data described at the SAU level to make
 }
 \examples{
 print("wait on suitable data sets")
-# rundir=rundir; infile=ctrl$datafile;optpar=opar
+# rundir=rundir; infile="saudatasau56_by_sau.csv";optpar=NULL
 }

@@ -299,6 +299,10 @@ do_condition <- function(rundir,controlfile,calcpopC,
   zoneC <- zone$zoneC
   zoneD <- zone$zoneD
   biology_plots(rundir, glb, zoneC, matL=matureL,Lwt=wtatL)
+  filen <- "population_defined_properties.csv"
+  addtable(condC$poprec,filen=filen,rundir=rundir,category="popprops",
+           caption=paste0("Specific population properties defined rather than ",
+                          "randomly allocated away from a mean."))
   production <- NULL
   if (doproduct) production <- zone$product
   #Condition on Fishery

@@ -961,7 +961,7 @@ readpopdatafile <- function(indir,infile) {
 #'
 #' @examples
 #' print("wait on suitable data sets")
-#' # rundir=rundir; infile=ctrl$datafile;optpar=opar
+#' # rundir=rundir; infile="saudatasau56_by_sau.csv";optpar=NULL
 readsaudatafile <- function(rundir,infile,optpar=NULL) {
    filename <- filenametopath(rundir,infile)
    indat <- readLines(filename)   # reads the whole file as character strings
@@ -997,34 +997,36 @@ readsaudatafile <- function(rundir,infile,optpar=NULL) {
         ans[targetrow[i],] <- replace
       }
    }
-   poprec <- matrix(0,nrow=numpop,ncol=3,
-                    dimnames=list(1:numpop,c("sau","pop","prec")))
-   readrow <- grep("propREC",indat) + 2
+   readrow <- grep("propREC",indat) + 1
+   columns <- removeEmpty(unlist(strsplit(indat[readrow],",")))
+   numcol <- length(columns)
+   poprec <- matrix(0,nrow=numpop,ncol=numcol,
+                    dimnames=list(1:numpop,columns))
    for (i in 1:numpop) {
-      poprec[i,] <- getConst(indat[readrow],nb=3,index=1)
       readrow <- readrow + 1
+      poprec[i,] <- getConst(indat[readrow],nb=numcol,index=1)
    }
-   pop <- 1  # define suaindex
-   sauindex <- numeric(numpop); names(sauindex) <- poprec[,"sau"]
-      for (i in 1:nsau) {
-      npop <- saupop[i]
-      for (j in 1:npop) {
-         sauindex[pop] <- i
-         pop <- pop + 1
-      }
-   }
+   sauindex <- NULL # define sauindex
+   for (i in 1:nsau) sauindex <- c(sauindex,rep(i,saupop[i]))
    outrows <- c("SAU",rows)
    numrow <- length(outrows)
    consts <- matrix(0,nrow=numrow,ncol=numpop,
                     dimnames=list(outrows,poprec[,"pop"]))
    consts["SAU",] <- poprec[,"sau"]
-   for (index in 1:npar) { # index=17
+   for (index in 1:npar) { # index=1
       vect <- ans[rows[index],]
-      if (rows[index] == "AvRec") {
-         consts[rows[index],] <- log(vect[sauindex] * poprec[,"prec"])
-      } else {
-         consts[rows[index],] <- vect[sauindex]
-      }
+      consts[rows[index],] <- vect[sauindex]
+   }
+   pickVar <- which(rows == "AvRec")
+   vect <- ans[rows[pickVar],]
+   consts[rows[pickVar],] <- log(vect[sauindex] * poprec[,"AvRec"])
+   if (numcol > 3) {
+     deltav <- columns[4:numcol]
+     for (i in 1:length(deltav)) {
+       pickVar <- which(rows == deltav[i])
+       vect <- ans[rows[pickVar],]
+       consts[rows[pickVar],] <- poprec[,(3+i)]
+     }
    }
    return(list(constants=consts,saudat=ans,poprec=poprec))
 } # end of readsaudatafile

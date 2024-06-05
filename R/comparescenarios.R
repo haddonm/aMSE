@@ -1168,7 +1168,7 @@ plotdynphase <- function(xlist,ylist,scenes,glb,rundir="",xlab="xlabel",
       miny <- 0
     }
     plot(xvar[,sau,1],yvar[,sau,1],type="l",lwd=2,xlim=c(minx,maxx),
-         ylim=c(miny,maxy),panel.fist=grid(),xlab="",ylab="")
+         ylim=c(miny,maxy),panel.first=grid(),xlab="",ylab="")
     points(xvar[pts,sau,1],yvar[pts,sau,1],pch=16,cex=pntcex,col=1)
     points(xvar[c(1,nyr),sau,1],yvar[c(1,nyr),sau,1],pch=16,cex=1.5*pntcex,
            col=c(4,3))
@@ -1558,7 +1558,7 @@ plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,
                          na.rm=TRUE)
     }
     doquantplot(varq,varname="CPUE",yrnames,scenes,q90=q90,polys=polys,
-                intens=intens,hlin=hlines[[4]])
+                intens=intens,hlin=NULL) #hlines[[4]])
     label <- paste0(scenes,collapse=",")
     legend("bottomright",legend=scenes,lwd=3,col=1:nscen,bty="n",cex=1.1)
     mtext("Zone Wide Dynamics",side=2,line=-0.2,outer=TRUE,cex=1.1)
@@ -1591,7 +1591,7 @@ plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,
              verbose=FALSE,usefont=7)
     parset()
     plot(xvar[,1],yvar[,1],type="l",lwd=2,col=1,xlab=xlabel,ylab=ylabel,
-         panel.fist=grid(),xlim=c(xmin,xmax),ylim=c(ymin,ymax))
+         panel.first=grid(),xlim=c(xmin,xmax),ylim=c(ymin,ymax))
     points(xvar[,1],yvar[,1],pch=16,cex=1.0,col=1)
     for (i in 2:nscen) {
       lines(xvar[,i],yvar[,i],lwd=2,col=i)
@@ -1985,3 +1985,5 @@ tabulatezoneprod <- function(rundir,prods,scenes) {
   addtable(out,filen,rundir=rundir,category="zone",caption)
   return(invisible(out))
 } # end of tabulatezoneprod
+
+

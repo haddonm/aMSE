@@ -730,5 +730,47 @@ for (i in 1:ngrp) {
 combnames <- names(outyrs)
 
 
+# plot growth characteristics
+popgrowth <- function(rundir,zoneC,glb,verbose=TRUE,console=TRUE) {
+  # rundir=rundir;zoneC=zoneC;glb=glb;verbose=TRUE;console=TRUE
+  popdef <- getlistvar(zoneC,"popdef")
+  grow <- t(popdef[1:4,])
+  filen <- "popgrowthprops.csv"
+  caption <- "Population Growth Parameters."
+  addtable(grow,filen,rundir=rundir,category="popgrowth",caption)
+  sauindex <- glb$sauindex
+  nsau <- glb$nSAU
+  saunames <- glb$saunames
+  saupop <- glb$SAUpop
+  mids <- glb$midpts
+  for (sau in 1:nsau) { # sau = 1
+    if (console) {
+      filen=""
+    } else {
+      filen <- paste0("growth_increments_by_pop_",saunames[sau],".png")
+    }
+    pickS <- which(sauindex == sau)
+    popg <- grow[pickS,]
+    plotprep(width=10,height=9,newdev=TRUE,filename=filen,cex=0.9,
+             verbose=FALSE)
+    parset(plots=pickbound(saupop[sau]),margin=c(0.25,0.3,0.05,0.05),
+           outmargin=c(1.5,1.5,0,0))
+    for (pop in 1:saupop[sau]) {
+      p <- popg[pop,1:3]
+      MeanL <- (p[1]/((1+exp(log(19.0)*(mids-p[2])/(p[3]-p[2])))))
+      plot(mids,MeanL,type="l",lwd=2,xlab="",ylab=paste0("pop-",pop),
+           panel.first = grid())
+    }
+  }
+
+
+} # end of popgrowth
+
+
+
+popdef <- getlistvar(zoneC,"popdef")
+grow <- t(popdef[1:4,])
+
+
 
 

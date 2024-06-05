@@ -33,14 +33,19 @@ checksizecompdata <- function(rundir,controlfile,verbose=TRUE,openfile=TRUE) {
   saunames <- zone1$SAUnames
   nsau <- length(saunames)
   histyr <- zone1$condC$histyr
+  sauLML <- zone1$globals$sauLML
   addtable(palfs,"sizecomp_obs_by_year_by_SAU.csv",rundir,
            category="predictedcatchN",
            caption="Number of sizecomp observations by year and SAU.")
   for (plotsau in 1:nsau) {
-    lfs <- preparesizecomp(compdat[,,plotsau],mincount=0)
+    lfs <- preparesizecomp(compdat[,,plotsau],mincount=0,deleteyears=0)
     yrsize <- as.numeric(colnames(lfs))
     pickyr <- match(yrsize,histyr[,"year"])
-    LML <- histyr[pickyr,"histLML"]
+#    if (sauLML) {
+      LML <- histyr[pickyr,]
+    # } else {
+    #   LML <- histyr[pickyr,2]
+    # }
     plotsizecomp(rundir=rundir,incomp=lfs,SAU=saunames[plotsau],lml=LML,
                  catchN=NULL,start=NA,proportion=TRUE,
                  console=FALSE)

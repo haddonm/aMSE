@@ -260,6 +260,10 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   condC <- zone$zone1$condC
   # biology, recruits, and production tabs -------------------------------------------------
   outbiol <- biology_plots(rundir, glb, zoneC, matL=matureL,Lwt=wtatL)
+  filen <- "population_defined_properties.csv"
+  addtable(condC$poprec,filen=filen,rundir=rundir,category="popprops",
+           caption=paste0("Specific population properties defined rather than ",
+                          "randomly allocated away from a mean."))
   sauprod <- plotproductivity(rundir,production,glb,hsargs)
  # hsargs$saumsy <- sauprod[3,]
   # numbers-at-size tab------------------------------------------------------
