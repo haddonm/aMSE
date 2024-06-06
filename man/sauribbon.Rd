@@ -7,7 +7,6 @@
 sauribbon(
   rundir,
   scenes,
-  sau,
   varqnts,
   glb,
   varname,
@@ -24,8 +23,6 @@ sauribbon(
 comparison of scenarios}
 
 \item{scenes}{the names of the different scenarios being compared}
-
-\item{sau}{a number from 1:nsau identifying which sau's dat to plot}
 
 \item{varqnts}{the quantiles for each scenario as output by sauquantbyscene}
 

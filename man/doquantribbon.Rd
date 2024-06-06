@@ -7,6 +7,7 @@
 doquantribbon(
   varq,
   varname,
+  sau,
   yrnames,
   scenes,
   q90 = TRUE,
@@ -22,6 +23,8 @@ years for which quantiles are available}
 
 \item{varname}{The names of the variable being summarized, used as the
 y-label on the plot}
+
+\item{sau}{number of sau, to add to the y-axis label}
 
 \item{yrnames}{the numeric values of the years to be plotted. Used as the
 x-axis as well as the x-axis labels}
@@ -60,6 +63,8 @@ doquantribbon is used when trying to present a summary of multiple
 }
 \examples{
 print("wait on datasets")
+# varq=qntvar;varname=varname;yrnames=glbc[[1]]$pyrnames;scenes=scenes
+# q90=q90;intens=intens;addleg=addleg;addmedian=addmedian
 }
 \seealso{
 {

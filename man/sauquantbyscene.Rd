@@ -28,7 +28,7 @@ sauquantbyscene takes the output from the scenebyvar function
 }
 \examples{
 print("wait on data sets")
-# invar=cpue; glb=out$glbc[[1]]
+# invar=catch; glb=glbc
 }
 \seealso{
 {

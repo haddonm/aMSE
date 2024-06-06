@@ -526,19 +526,19 @@ comparefinalscores <- function(rundir,scores,scenes,legloc="bottomright",
   # filen="";category="Scores"
   nmed <- length(scores)
   meds <- vector(mode="list",length=nmed)
-  indim <- dim(scores[[1]]$finalsc)
-  dimlabel <- dimnames(scores[[1]]$finalsc)
-  nyrs <- indim[1]
-  yrnames <- dimlabel[[1]]
-  nsau <- indim[2]
-  saunames <- dimlabel[[2]]
-  for (i in 1:nmed) { # i=1
-    medfsc <- matrix(0,nrow=nyrs,ncol=nsau,dimnames=list(yrnames,saunames))
+  for (i in 1:nmed) { # i=2
     tmp <- scores[[i]]$finalsc
+    indim <- dim(tmp)
+    dimlabel <- dimnames(tmp)
+    nyrs <- indim[1]
+    yrnames <- dimlabel[[1]]
+    nsau <- indim[2]
+    saunames <- dimlabel[[2]]
+    medfsc <- matrix(0,nrow=nyrs,ncol=nsau,dimnames=list(yrnames,saunames))
     if (is.null(tmp)) { #do what when tmp == null
       scenes[i] <- paste0(scenes[i]," No Final Score")
     } else {
-      for (sau in 1:nsau) {
+      for (sau in 1:nsau) {  # sau = 1
         medfsc[,sau] <- apply(tmp[,sau,],1,median)
       }
     }
@@ -546,7 +546,14 @@ comparefinalscores <- function(rundir,scores,scenes,legloc="bottomright",
   }
   makeplot <- function(meds,sau,scenes,legloc) {
     nmed <- length(meds)
-    yrs <- as.numeric(rownames(meds[[1]]))
+    rows <- sapply(meds,nrow)
+    maxrow <- max(rows)
+    if (all(rows == maxrow)) {
+      yrs <- as.numeric(rownames(meds[[1]]))
+    } else {
+      pickR <- which(rows == maxrow)
+      yrs <- as.numeric(rownames(meds[[pickR]]))
+    }
     plot(yrs,meds[[1]][,sau],type="l",lwd=2,col=1,ylim=c(0,10),ylab=sau,
          panel.first=grid())
     if (nmed > 1) for (i in 2:nmed) lines(yrs,meds[[i]][,sau],lwd=2,col=i)
@@ -556,7 +563,7 @@ comparefinalscores <- function(rundir,scores,scenes,legloc="bottomright",
   plotprep(width=8, height=9,newdev=FALSE,filename=filen,verbose=FALSE)
   parset(plots=pickbound(nsau),margin=c(0.25,0.4,0.05,0.1),byrow=FALSE,
          outmargin=c(0,1,0,0))
-  for (i in 1:nsau) {
+  for (i in 1:nsau) { # i = 1
     makeplot(meds=meds,sau=saunames[i],scenes=scenes,legloc=legloc)
   }
   mtext("Median Final Scores",side=2,line=-0.1,outer=TRUE, cex=1.0)
@@ -893,6 +900,7 @@ doquantplot <- function(varq,varname,yrnames,scenes,q90,polys,intens=127,
 #'     years for which quantiles are available
 #' @param varname The names of the variable being summarized, used as the
 #'     y-label on the plot
+#' @param sau number of sau, to add to the y-axis label
 #' @param yrnames the numeric values of the years to be plotted. Used as the
 #'     x-axis as well as the x-axis labels
 #' @param scenes the names given to the different scenarios
@@ -913,13 +921,15 @@ doquantplot <- function(varq,varname,yrnames,scenes,q90,polys,intens=127,
 #'
 #' @examples
 #' print("wait on datasets")
-doquantribbon <- function(varq,varname,yrnames,scenes,q90=TRUE,intens=127,
+#' # varq=qntvar;varname=varname;yrnames=glbc[[1]]$pyrnames;scenes=scenes
+#' # q90=q90;intens=intens;addleg=addleg;addmedian=addmedian
+doquantribbon <- function(varq,varname,sau,yrnames,scenes,q90=TRUE,intens=127,
                           addleg="bottomright",addmedian=0) {
   maxy <- getmax(varq)
   nscen <- length(scenes)
-  plot(yrnames,varq[3,,1],type="l",lwd=2,col=0,xlab="",ylab=varname,
-       panel.first=grid(),ylim=c(0,maxy))
-  for (i in 1:nscen) {
+  plot(yrnames,varq[3,,1],type="l",lwd=2,col=0,xlab="",
+       ylab=paste0(varname,"_sau",sau),panel.first=grid(),ylim=c(0,maxy))
+  for (i in 1:nscen) { # i =2
     if (q90) {
       poldat <- makepolygon(varq[2,,i],varq[4,,i],yrnames)
       polygon(poldat,col=RGB(i,alpha=intens))
@@ -1558,7 +1568,7 @@ plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,
                          na.rm=TRUE)
     }
     doquantplot(varq,varname="CPUE",yrnames,scenes,q90=q90,polys=polys,
-                intens=intens,hlin=NULL) #hlines[[4]])
+                intens=intens,hlin=hlines[[4]])
     label <- paste0(scenes,collapse=",")
     legend("bottomright",legend=scenes,lwd=3,col=1:nscen,bty="n",cex=1.1)
     mtext("Zone Wide Dynamics",side=2,line=-0.2,outer=TRUE,cex=1.1)
@@ -1630,25 +1640,26 @@ plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,
 #'
 #' @examples
 #' print("wait on data sets")
-#' # invar=cpue; glb=out$glbc[[1]]
+#' # invar=catch; glb=glbc
 sauquantbyscene <- function(invar,glb) {
-  nyrs <- dim(invar[[1]])[1]
-  yrnames <- as.numeric(unlist(dimnames(invar[[1]])[1]))
-  nsau <- glb$nSAU
-  saunames <- glb$saunames
-  sauquant <- makelist(saunames)
+  # nyrs <- dim(invar[[1]])[1]
+  # yrnames <- as.numeric(unlist(dimnames(invar[[1]])[1]))
   nscen <- length(invar)
   scenes <- names(invar)
   qs <- c("2.5%","5%","50%","95%","97.5%")
-  scenquant <- array(0,dim=c(5,nyrs,nscen),dimnames=list(qs,yrnames,scenes))
-  for (sau in 1:nsau) {
-    for (i in 1:nscen) {
-      scen <- invar[[i]]
-      scenquant[,,i] <- apply(scen[,sau,],1,quants)
+#  scenquant <- array(0,dim=c(5,nyrs,nscen),dimnames=list(qs,yrnames,scenes))
+  scenquant <- makelist(scenes)
+  for (i in 1:nscen) {  # i = 1
+    scen <- invar[[i]]
+    nsau <- glb[[i]]$nSAU
+    saunames <- glb[[i]]$saunames
+    sauquant <- makelist(saunames)
+    for (sau in 1:nsau) {
+      sauquant[[sau]] <- apply(scen[,sau,],1,quants)
     }
-    sauquant[[sau]] <- scenquant
+    scenquant[[i]] <- sauquant
   }
-  return(sauquant)
+  return(scenquant)
 } # end of sauquantbyscene
 
 
@@ -1661,7 +1672,6 @@ sauquantbyscene <- function(invar,glb) {
 #' @param rundir the directory in which all results are held for a scenario or
 #'     comparison of scenarios
 #' @param scenes the names of the different scenarios being compared
-#' @param sau a number from 1:nsau identifying which sau's dat to plot
 #' @param varqnts the quantiles for each scenario as output by sauquantbyscene
 #' @param glb one of the global objects from out. They should all have the
 #'     same reps and years.
@@ -1696,27 +1706,43 @@ sauquantbyscene <- function(invar,glb) {
 #'    sauribbon("",scenes=out$scenes,sau=8,varqnts=catqnts,glb=out$glbc[[1]],
 #'    varname="Catch",console=TRUE,q90=TRUE,intens=100,addleg="bottomright")
 #' }
-sauribbon <- function(rundir,scenes,sau,varqnts,glb,varname,
+sauribbon <- function(rundir,scenes,varqnts,glb,varname,
                       console=TRUE,q90=TRUE,intens=127,addleg="bottomright",
                       addmedian=3,defpar=TRUE) {
+  # rundir=rundir;scenes=scenes;sau=1;varqnts=catqnts;glb=glbc;varname="cpue";
+  # console=TRUE;q90=Q90;intens=intensity;addleg=ribbonleg;defpar=TRUE;addmedian=TRUE
   filen <- ""
-  if (!console) {
-    filename <- paste0(glb$saunames[sau],"_",varname,"_ribbon.png")
-    filen <- filenametopath(rundir,filename)
-    caption <- paste0(varname," ribbon plot for ",glb$saunames[sau])
+  nscen <- length(scenes)
+  numsau <- sapply(glb,"[[","nSAU")
+  maxsau <- max(numsau)
+  if (all(numsau == maxsau)) {
+    for (sau in 1:maxsau) { # sau = 1
+      if (!console) {
+        filename <- paste0(glb[[1]]$saunames[sau],"_",varname,"_ribbon.png")
+        filen <- filenametopath(rundir,filename)
+        caption <- paste0(varname," ribbon plot for ",glb[[1]]$saunames[sau])
+      }
+      if (defpar) {
+        oldpar <- par(no.readonly=TRUE)
+        plotprep(width=8,height=4,newdev=FALSE,filename=filen,verbose=FALSE)
+        parset(cex=1.1,margin=c(0.35,0.5,0.05,0.05))
+      }
+      rc <- dim(varqnts[[1]][[1]])
+      rcnames <- dimnames(varqnts[[1]][[1]])
+      rcnames[[3]] <- scenes
+      qntvar <- array(0,dim=(c(rc,nscen)),dimnames=rcnames)
+      for (i in 1:nscen) qntvar[,,i] <- varqnts[[i]][[sau]]
+      doquantribbon(qntvar,varname=varname,sau=sau,yrnames=glb[[1]]$pyrnames,
+                    scenes=scenes,q90=q90,intens=intens,addleg=addleg,
+                    addmedian=addmedian)
+      if (!console) {
+        addplot(filen=filen,rundir=rundir,category=varname,caption)
+      }
+      if (defpar) return(invisible(oldpar))
+    }
+  } else {
+    warning("Differing number of SAU, not ribbon plts produced. \n")
   }
-  if (defpar) {
-    oldpar <- par(no.readonly=TRUE)
-    plotprep(width=8,height=4,newdev=FALSE,filename=filen,verbose=FALSE)
-    parset(cex=1.1,margin=c(0.35,0.5,0.05,0.05))
-  }
-  label <- paste0(varname,"_",glb$saunames[sau])
-  doquantribbon(varqnts[[sau]],label,yrnames=glb$pyrnames,scenes=scenes,
-                q90=q90,intens=intens,addleg=addleg,addmedian=addmedian)
-  if (!console) {
-    addplot(filen=filen,rundir=rundir,category=varname,caption)
-  }
-  if (defpar) return(invisible(oldpar))
 } # end of sauribbon
 
 #' @title scenarioproperties tabulates important properties of each scenario
@@ -1796,7 +1822,7 @@ scenebyvar <- function(dyn,byvar,glb,projonly=TRUE) {
     scenes <- names(dyn)
     varout <- makelist(scenes)
     if (projonly) {
-      for (i in 1:nscen) varout[[i]] <- projectiononly(dyn[[i]][[byvar]],glb)
+      for (i in 1:nscen) varout[[i]] <- projectiononly(dyn[[i]][[byvar]],glb[[i]])
     } else {
       for (i in 1:nscen) varout[[i]] <- dyn[[i]][[byvar]]
     }
@@ -1901,18 +1927,14 @@ tabulatefinalHSscores <- function(rundir,meds,scenes,category="Tables") {
 #' print("wait on data sets")
 tabulateproductivity <- function(rundir,prods,scenes) {
   nscen <- length(scenes)
-  dimsame <- vector(mode="logical",length=nscen)
-  count <- 1
-  for (i in 1:nscen) {
-    for (j in 2:nscen) {
-      if (j > i) {
-        dimsame[count] <- all(dim(prods[[1]]) == dim(prods[[2]]))
-        count <- count+1
-      }
-    }
+  dimsame <- matrix(0,nrow=(nscen-1),ncol=2)
+  colnames(dimsame) <- c("rows","cols")
+  for (i in 2:nscen) { # i = 2
+    dimsame[i-1,"rows"] <- abs(dim(prods[[i-1]])[1] - dim(prods[[i]])[1])
+    dimsame[i-1,"cols"] <- abs(dim(prods[[i-1]])[2] - dim(prods[[i]])[2])
   }
-  if (!all(dimsame)) {
-    answer <- paste0("Some productivity matrices have different dimensions",
+  if (!all(dimsame < 1)) {
+    answer <- paste0("Some productivity matrices have different dimensions.",
                      " most likely that some scenarios were run using an ",
                      "old version of aMSE \n")
     warning(cat(answer))
@@ -1924,16 +1946,9 @@ tabulateproductivity <- function(rundir,prods,scenes) {
       out <- prods
     }
   } else {
-    same <- vector(mode="logical",length=nscen)
+    same <- vector(mode="logical",length=(nscen-1))
     count <- 1
-    for (i in 1:nscen) {
-      for (j in 2:nscen) {
-        if (j > i) {
-           same[count] <- all(prods[[i]] == prods[[j]])
-           count <- count+1
-        }
-      }
-    }
+    for (i in 2:nscen) same[i-1] <- all(prods[[i-1]] == prods[[i]])
     if (all(same)) {
       filen <- paste0("productivity_",scenes[i],".csv")
       caption <- paste0("SAU productivity statistics for ",scenes[i],".",
@@ -1969,16 +1984,16 @@ tabulateproductivity <- function(rundir,prods,scenes) {
 #'
 #' @examples
 #' print("wait on data sets")
-#' # syntax tabulatezoneprod(rundir=rundir,prods=prods,scenes=result$scenes)
+#' # syntax tabulatezoneprod(rundir=rundir,prods=prods,scenes=scenes)
 tabulatezoneprod <- function(rundir,prods,scenes) {
   nscen <- length(scenes)
   columns <- c("B0","Bmsy","MSY","Dmsy","CEmsy")
   out <- matrix(0,nrow=nscen,ncol=5,dimnames=list(scenes,columns))
-  for (i in 1:nscen) { # i=1
+  for (i in 1:nscen) { # i=2
     scenprod <- prods[[i]]
     out[i,1:3] <- colSums(scenprod[,1:3])
     out[i,4] <- mean(scenprod[,4])
-    out[i,5] <- sum((scenprod[,3]/out[i,3]) * scenprod[i,5])
+    out[i,5] <- sum((scenprod[,3]/out[i,3]) * scenprod[,5])
   }
   filen <- paste0("zone_productivity.csv")
   caption <- paste0("Productivity statistics for the whole zone.")

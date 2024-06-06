@@ -1,5 +1,5 @@
 #Tas context -----------------
-# postfixdir <- "sau56"
+# postfixdir <- "BCtarg"
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
@@ -24,7 +24,7 @@
 # depensate=0
 # pmwtSwitch = 0
 # stablewts = c(0.4, 0.5, 0.1)
-# hcrname="constantrefhcr"  #"constantrefhcr"  #"mcdahcr"     #    #"consthcr"
+# hcrname="mcdahcr"  #"constantrefhcr"  #"mcdahcr"     #    #"consthcr"
 # kobeRP = c(0.4,0.2,0.15)
 # interimout=""
 # nasInterval=5

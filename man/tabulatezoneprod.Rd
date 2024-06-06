@@ -24,5 +24,5 @@ tabulateproductivity writes out csv files for each scenario
 }
 \examples{
 print("wait on data sets")
-# syntax tabulatezoneprod(rundir=rundir,prods=prods,scenes=result$scenes)
+# syntax tabulatezoneprod(rundir=rundir,prods=prods,scenes=scenes)
 }

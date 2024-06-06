@@ -961,7 +961,7 @@ readpopdatafile <- function(indir,infile) {
 #'
 #' @examples
 #' print("wait on suitable data sets")
-#' # rundir=rundir; infile="saudatasau56_by_sau.csv";optpar=NULL
+#' # rundir=rundir; infile=ctrl$datafile;optpar=NULL
 readsaudatafile <- function(rundir,infile,optpar=NULL) {
    filename <- filenametopath(rundir,infile)
    indat <- readLines(filename)   # reads the whole file as character strings
@@ -1000,6 +1000,7 @@ readsaudatafile <- function(rundir,infile,optpar=NULL) {
    readrow <- grep("propREC",indat) + 1
    columns <- removeEmpty(unlist(strsplit(indat[readrow],",")))
    numcol <- length(columns)
+   if (numcol == 3) columns <- c("sau","pop","AvRec")
    poprec <- matrix(0,nrow=numpop,ncol=numcol,
                     dimnames=list(1:numpop,columns))
    for (i in 1:numpop) {
