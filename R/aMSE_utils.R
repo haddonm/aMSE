@@ -941,9 +941,15 @@ uniquepairs <- function(x,col1=2,col2=3,yrs="year") {
   uniqueLML <- matrix(0,nrow=ncomb,ncol=2)
   colnames(uniqueLML) <- c("LML","maxLML")
   rows <- NULL
-  for (i in 1:ncomb) { # i = 2
-    first <- as.numeric(substr(combnames[i],1,3))
-    second <- as.numeric(substr(combnames[i],5,7))
+  for (i in 1:ncomb) { # i = 1
+    numchar <- nchar(combnames[i])
+    if (numchar == 7) {
+      first <- as.numeric(substr(combnames[i],1,3))
+      second <- as.numeric(substr(combnames[i],5,7))
+    } else {
+      first <- as.numeric(substr(combnames[i],1,2))
+      second <- as.numeric(substr(combnames[i],4,6))
+    }
     uniqueLML[i,] <- c(first,second)
     pickC <- which((x[,col1] == first) & (x[,col2] == second))
     npick <- length(pickC)
