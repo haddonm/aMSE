@@ -350,7 +350,7 @@ finalcondyeardepletion <- function(rundir,sauzone,glb,deplvar="sB",console=TRUE)
     caption <- "Histograms of the depletion in the final year of conditioning."
   }
   plotprep(width=8,height=9,newdev=TRUE,filename=filen,cex=0.9,verbose=FALSE)
-  parset(plots=c(4,2),byrow=FALSE,margin=c(0.3,0.4,0.05,0.05),
+  parset(plots=pickbound(nsau),byrow=FALSE,margin=c(0.3,0.4,0.05,0.05),
          outmargin=c(1,1,0,0))
   for (i in 1:nsau) {
     deplquant[i,] <- quantile(depl[hyrs,i,],probs=c(0,0.05,0.5,0.95,1),na.rm=TRUE)

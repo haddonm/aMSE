@@ -266,6 +266,10 @@ changeline <- function(indir, filename, linenumber, newline,verbose=FALSE) {
 #'     default = 0.4
 #' @param incH defines the interval between H steps when estimating productivity
 #'     default = 0.005
+#' @param deleteyrs default = 0, meaning delete no years from the sizecomp data.
+#'     if there are years that are to be removed then this should be a matrix
+#'     of years to delete vs sau, ie years as rows and sau as columns. All
+#'     sau need to be included. to compelte hte matrix 0 values can be used.
 #'
 #' @seealso{
 #'  \link{makeequilzone}, \link{dohistoricC}, \link{prepareprojection},
@@ -284,7 +288,7 @@ changeline <- function(indir, filename, linenumber, newline,verbose=FALSE) {
 do_condition <- function(rundir,controlfile,calcpopC,
                          verbose=FALSE,doproduct=FALSE,dohistoric=TRUE,
                          matureL=c(70,200),wtatL=c(80,200),mincount=100,
-                         uplimH=0.4,incH=0.005) {
+                         uplimH=0.4,incH=0.005,deleteyrs=0) {
   starttime <- Sys.time()
   setuphtml(rundir)
   zone <- makeequilzone(rundir,controlfile,doproduct=doproduct,uplimH=uplimH,
@@ -346,7 +350,8 @@ do_condition <- function(rundir,controlfile,calcpopC,
       if (is.null(lfs)) {
         lfs <- NULL
        } else {
-         lfs <- preparesizecomp(condC$compdat$lfs[,,plotsau],mincount=mincount)
+         lfs <- preparesizecomp(condC$compdat$lfs[,,plotsau],mincount=mincount,
+                                deleteyears=deleteyrs[,plotsau])
          yrsize <- as.numeric(colnames(lfs))
          pickyr <- match(yrsize,condC$histyr[,"year"])
       }
@@ -358,6 +363,9 @@ do_condition <- function(rundir,controlfile,calcpopC,
   } else {
     condout <- NULL
   }
+  # plot the implied growth
+  popgrowth(rundir=rundir,zoneC=zoneC,glb=glb,console=FALSE,maxage=30,
+            startsize= 2.0)
   condtime <- Sys.time()
   tottime <- round((condtime - starttime),3)
   out <- list(tottime=tottime,runtime=condtime,starttime=starttime,glb=glb,

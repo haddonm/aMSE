@@ -53,6 +53,30 @@ biology_plots <- function(rundir, glb, zoneC, matL=c(30,210), Lwt=c(80,210)) {
   mtext("Proportion Mature",side=2,outer=TRUE,line = -0.1,cex=1.1)
   caption <- "The maturity vs length for each population in each SAU."
   addplot(filen,rundir=rundir,category="Biology",caption)
+  # emergence uses zoneC
+  emerg <- getlistvar(zoneC,"Emergent")
+  rownames(emerg) <- mids
+  filen <- filenametopath(rundir,"Emergence_at_Length_pop.png")
+  plotprep(width=7,height=8,newdev=FALSE,filename=filen,cex=0.9,
+           verbose=FALSE)
+  parset(plots=pickbound(nSAU),margin=c(0.25,0.3,0.05,0.05),
+         outmargin=c(1.5,1.5,0,0))
+  for (sau in 1:nSAU) {
+    pickP <- which(sauindex == sau)
+    popsau <- length(pickP)
+    plot(mids,emerg[,pickP[1]],type="l",lwd=1,xlab="",
+         ylab="",panel.first=grid(),xlim=c(matL[1],matL[2]))
+    if (popsau > 1)
+      for (pop in 2:popsau) lines(mids,emerg[,pickP[pop]],lwd=1,col=pop)
+    legend("topright",paste0("P",pickP),lwd=3,col=c(1:popsau),bty="n",
+           cex=0.85)
+    text(68,0.9,saunames[sau],cex=1.5,pos=4)
+  }
+  mtext("Shell Length (mm)",side=1,outer=TRUE,line = -0.1,cex=1.1)
+  mtext("Proportion Emergent",side=2,outer=TRUE,line = -0.1,cex=1.1)
+  caption <- paste0("The emergence-at-length for each population.",
+                    "The x-axis is constrained to emphasize differences.")
+  addplot(filen,rundir=rundir,category="Biology",caption)
   # weight-at-length using zoneC
   WtL <- getlistvar(zoneC,"WtL")
   rownames(WtL) <- mids
@@ -77,31 +101,7 @@ biology_plots <- function(rundir, glb, zoneC, matL=c(30,210), Lwt=c(80,210)) {
   mtext("Shell Length (mm)",side=1,outer=TRUE,line = -0.1,cex=1.1)
   mtext("Weight (g)",side=2,outer=TRUE,line = -0.1,cex=1.1)
   caption <- paste0("The weight-at-length for each population in each SAU. ",
-                      "The x-axis is constrained to encompass legal sizes.")
-  addplot(filen,rundir=rundir,category="Biology",caption)
-  # emergence uses zoneC
-  emerg <- getlistvar(zoneC,"Emergent")
-  rownames(emerg) <- mids
-  filen <- filenametopath(rundir,"Emergence_at_Length_pop.png")
-  plotprep(width=7,height=8,newdev=FALSE,filename=filen,cex=0.9,
-           verbose=FALSE)
-  parset(plots=pickbound(nSAU),margin=c(0.25,0.3,0.05,0.05),
-         outmargin=c(1.5,1.5,0,0))
-  for (sau in 1:nSAU) {
-    pickP <- which(sauindex == sau)
-    popsau <- length(pickP)
-    plot(mids,emerg[,pickP[1]],type="l",lwd=1,xlab="",
-         ylab="",panel.first=grid(),xlim=c(matL[1],matL[2]))
-    if (popsau > 1)
-      for (pop in 2:popsau) lines(mids,emerg[,pickP[pop]],lwd=1,col=pop)
-    legend("topright",paste0("P",pickP),lwd=3,col=c(1:popsau),bty="n",
-           cex=0.85)
-    text(68,0.9,saunames[sau],cex=1.5,pos=4)
-  }
-  mtext("Shell Length (mm)",side=1,outer=TRUE,line = -0.1,cex=1.1)
-  mtext("Proportion Emergent",side=2,outer=TRUE,line = -0.1,cex=1.1)
-  caption <- paste0("The emergence-at-length for each population.",
-                    "The x-axis is constrained to emphasize differences.")
+                    "The x-axis is constrained to encompass legal sizes.")
   addplot(filen,rundir=rundir,category="Biology",caption)
   # Tabulate biological properties uses zoneC
   rows <- c("M","R0","B0","ExB0","MSY","MSYDepl","bLML",
@@ -368,6 +368,83 @@ numbersatsize <- function(rundir, glb, zoneD, ssc=5) {
   }
 } # end of numbersatsize
 
+#' @title popgrowth plots implied size-at-age for each population for each sau
+#'
+#' @description popgrowth uses the defined growth parameters and a starting size
+#'     of 2mm and increments the shell length for 30 years to describe the
+#'     implied size-at-age for each population. Both plots and tables are
+#'     produced.
+#'
+#' @param rundir the full path to the directory in which all files relating to a
+#'     particular run are to be held.
+#' @param zoneC the zoneC object from makezoneC
+#' @param glb the globals object
+#' @param console should the plot be sent to the console or saved as a file.
+#'     default = TRUE = to the console
+#' @param maxage What maximum age to use, default = 30
+#' @param startsize what starting size to use, default = 2.0
+#'
+#' @return a list of the implied size-at-age in a matrix for each sau,
+#'     containing the details for each population in each sau.
+#' @export
+#'
+#' @examples
+#' print("wait on data")
+#' # rundir=rundir;zoneC=zoneC;glb=glb; console=TRUE;maxage=30;startsize=2
+popgrowth <- function(rundir,zoneC,glb,console=TRUE,maxage=30,startsize=2.0) {
+  popdef <- getlistvar(zoneC,"popdef")
+  grow <- t(popdef[1:4,])
+  sauindex <- glb$sauindex
+  nsau <- glb$nSAU
+  saunames <- glb$saunames
+  saugrowth <- makelist(saunames)
+  saupop <- glb$SAUpop
+  size <- startsize
+  for (sau in 1:nsau) { # sau = 2
+    pickS <- which(sauindex == sau)
+    popg <- grow[pickS,]
+    npop <- saupop[sau]
+    growpop <- matrix(0,nrow=(maxage+2),ncol=npop,
+                      dimnames=list(0:(maxage+1),paste0(saunames[sau],"_",1:npop)))
+    growpop[1,] <- rep(size,npop)
+    ages <- 0:maxage
+    if (console) {
+      filen=""
+    } else {
+      filen <- paste0("Implied_size_at_age_by_pop_",saunames[sau],".png")
+    }
+    outfile <- pathtopath(rundir,filen)
+    plotprep(width=10,height=9,newdev=TRUE,filename=outfile,cex=0.9,
+             verbose=FALSE)
+    parset(plots=pickbound(saupop[sau]),margin=c(0.25,0.3,0.05,0.05),
+           outmargin=c(1.5,1.5,0,0),byrow=FALSE)
+    for (pop in 1:saupop[sau]) {
+      p <- popg[pop,1:3]
+      for (age in 1:(maxage+1)) {
+        incL <- (p[1]/((1+exp(log(19.0)*(growpop[age,pop]-p[2])/(p[3]-p[2])))))
+        growpop[(age+1),pop] <- growpop[age,pop] + incL
+      }
+      plot(ages,growpop[1:(maxage+1),pop],type="l",lwd=2,xlab="",
+           ylab=paste0("pop-",pop),panel.first = grid())
+    }
+    label <- paste0("Age ",saunames[sau])
+    mtext(label,side=1,line=-0.1,outer=TRUE,cex=1.2,font=7)
+    mtext("Shell Length (mm)",side=2,line=0.25,outer=TRUE,cex=1.2,font=7)
+    saugrowth[[sau]] <- growpop
+    if (!console) {
+      caption <- paste0("Implied_size_at_age_by_pop_for_",saunames[sau])
+      addplot(filen,rundir=rundir,category="popgrowth",caption)
+    }
+  }
+  if (!console) {
+    for (sau in 1:nsau) {
+      filen <- paste0("popgrowthprops_for_",saunames[sau],".csv")
+      caption <-  paste0("Implied_size_at_age_by_pop_for_",saunames[sau])
+      addtable(saugrowth[[sau]],filen,rundir=rundir,category="popgrowth",caption)
+    }
+  }
+  return(invisible(saugrowth))
+} # end of popgrowth
 
 #' @title plotproductivity characterizes each population's yield curve
 #'

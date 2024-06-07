@@ -318,7 +318,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
     for (plotsau in 1:glb$nSAU) { # plotsau=2
       if (length(ncol(deleteyrs)) == 0) delyrs=0 else delyrs=deleteyrs[,plotsau]
       lfs <- preparesizecomp(compdat[,,plotsau],mincount=mincount,
-                             deleteyears=delyrs)
+                             deleteyears=deleteyrs[,plotsau])
       yrsize <- as.numeric(colnames(lfs))
       histyr <- condC$histyr
       pickyr <- match(yrsize,histyr[,"year"])
@@ -331,6 +331,9 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
     saucompdata(allcomp=compdat,glb=glb,horizline=140,console=FALSE,rundir=rundir,
                 ylabel="Size-Composition of Catches",tabname="OrigComp")
   }
+  # plot the implied growth
+  popgrowth(rundir=rundir,zoneC=zoneC,glb=glb,console=FALSE,maxage=30,
+            startsize= 2.0)
   # do projections ------------------------------------------------------------
   if (verbose) cat("Preparing for the projections \n")
   outpp <- prepareprojection(projC=projC,condC=condC,zoneC=zoneC,glb=glb,

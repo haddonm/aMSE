@@ -15,7 +15,8 @@ do_condition(
   wtatL = c(80, 200),
   mincount = 100,
   uplimH = 0.4,
-  incH = 0.005
+  incH = 0.005,
+  deleteyrs = 0
 )
 }
 \arguments{
@@ -50,6 +51,11 @@ default = 0.4}
 
 \item{incH}{defines the interval between H steps when estimating productivity
 default = 0.005}
+
+\item{deleteyrs}{default = 0, meaning delete no years from the sizecomp data.
+if there are years that are to be removed then this should be a matrix
+of years to delete vs sau, ie years as rows and sau as columns. All
+sau need to be included. to compelte hte matrix 0 values can be used.}
 }
 \value{
 a large list containing tottime, projtime, starttime, glb, ctrl,
