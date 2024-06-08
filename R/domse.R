@@ -39,16 +39,17 @@
 # rundir=rundir
 # controlfile=controlfile
 # hsargs=hsargs
-# hcrfun=SA_HS
+# hcrfun=SA_HS # March 2024 file
 # sampleCE=saCPUE
 # sampleFIS=saFIS
 # sampleNaS=saNaS
 # getdata=sadata
 # calcpopC=sacalcexpectpopC
-# makeouthcr=makeouthcr
-# hcrscoreoutputs = saextractandplotscores
-# fleetdyn = safleetdyn
-# scoreplot = plotfinalscores
+# makeouthcr=samakeouthcr
+# fleetdyn = fleetdynsa
+# scoreplot=saplotfinalscores2
+# plotmultflags=saplotmultandflags
+# interimout= ""
 # varyrs=7
 # startyr=38
 # verbose=TRUE
@@ -60,11 +61,13 @@
 # includeNAS = TRUE
 # depensate=0
 # kobeRP=c(0.4,0.2,0.15)
-# hcrfun=SA_HS
-# sampleCE=saCPUE
-# sampleFIS=saFIS
-# sampleNaS=saNaS
-# getdata=sadata
+# nasInterval=5
+# minsizecomp=c(100,135)
+# uplimH = 0.9
+# incH = 0.01
+# fissettings=NULL
+# fisindex=NULL
+# deleteyrs=0
 #
 
 # VIC HS hsargs
@@ -318,7 +321,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
     for (plotsau in 1:glb$nSAU) { # plotsau=2
       if (length(ncol(deleteyrs)) == 0) delyrs=0 else delyrs=deleteyrs[,plotsau]
       lfs <- preparesizecomp(compdat[,,plotsau],mincount=mincount,
-                             deleteyears=deleteyrs[,plotsau])
+                             deleteyears=delyrs)
       yrsize <- as.numeric(colnames(lfs))
       histyr <- condC$histyr
       pickyr <- match(yrsize,histyr[,"year"])
