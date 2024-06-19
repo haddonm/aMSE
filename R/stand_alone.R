@@ -60,6 +60,9 @@ checksizecompdata <- function(rundir,controlfile,verbose=TRUE,openfile=TRUE) {
   if (verbose) cat("finished  \n")
 } # end of checksizecompdata
 
+
+
+
 #' @title draftnumbersatsize plots details of initial numbers-at-size
 #'
 #' @description draftnumbersatsize plots up the initial unfished numbers-
@@ -119,67 +122,5 @@ draftnumbersatsize <- function(rundir, glb, Nt, ssc=5) {
     addplot(filen,rundir=rundir,category="NumSize",caption)
   }
 } # end of draftnumbersatsize
-
-#' @title getdraftpops generates a draft copy of the population properties
-#'
-#' @description getdraftpops is used to generate a first draft of the population
-#'     properties from the sau data using a standard sau based control and data
-#'     file. In am sau based run of aMSE the input properties for each sau are
-#'     expanded in a random manner across the populations, all that is except
-#'     the AvRec, which is determined by the use of proprec in the datafile.
-#'     However, all other properties are assigned randomly. The outcome is
-#'     characterized in terms of each population's productivity, which can then
-#'     be edited to more closely sorrespond to the productivity as observed in
-#'     the GPS data.
-#'
-#' @param rundir the directory containing the control csv files. It
-#'     can/will also act to store results in a manner that will allow them
-#'     to be displayed using makehtml.
-#' @param ctrlfile the main file that controls the particular run. It contains
-#'     the name of the data file that is used to biologically condition the
-#'     numpop populations
-#' @param verbose Should progress comments be printed to console, default=TRUE
-#' @param uplim defines the upper limit of harvest used when estimating the
-#'     productivity (also important when initial depletion is not 1.0). The
-#'     default = 0.35
-#' @param incH defines the interval between H steps when estimating productivity
-#'     default = 0.005
-#'
-#' @return a list of the draft population properties needed by makezoneC,
-#'     an object containing zoneC, zoneD, product, and glb, and the condC
-#' @export
-#'
-#' @examples
-#' print("wait on example") # verbose=TRUE;uplim=0.35;incH=0.005
-getdraftpops <- function(rundir,ctrlfile,verbose=TRUE,uplim=0.35,incH=0.005) {
-  zone1 <- readctrlfile(rundir,infile=ctrlfile,verbose=verbose)
-  ctrl <- zone1$ctrl
-  glb <- zone1$globals     # glb without the movement matrix
-  bysau <- zone1$ctrl$bysau
-  opar <- NULL
-  parsin <- zone1$condC$parsin
-  if (parsin) opar <- as.matrix(zone1$condC$optpars)
-  if (is.null(bysau)) bysau <- 0
-  if (bysau) {
-    saudata <- readsaudatafile(rundir,ctrl$datafile,optpar=opar)
-    constants <- saudata$constants
-    saudat <- saudata$saudat
-    zone1$condC$poprec <- saudata$poprec
-  } else {
-    constants <- readpopdatafile(rundir,ctrl$datafile)
-    saudat <- constants
-  }
-  if (verbose) cat("Files read, now making zone \n")
-  out <- setupzone(constants,zone1,doproduct=TRUE,uplim=uplim,inc=incH,
-                   verbose=verbose) # make operating model
-  popprops <- sapply(out$zoneC,"[[","popdef")
-  columns <- NULL
-  for (sau in 1:glb$nSAU)
-    columns <- c(columns,paste0(glb$saunames[sau],"-",1:glb$SAUpop[sau]))
-  colnames(popprops) <- columns
-  popprops2 <- rbind(popnum=1:glb$numpop,popprops)
-  return(invisible(list(pops=popprops2,out=out,condC=zone1$condC,ctrl=ctrl)))
-} # end of getdraftpops
-
 
 

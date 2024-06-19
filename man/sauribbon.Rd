@@ -8,7 +8,7 @@ sauribbon(
   rundir,
   scenes,
   varqnts,
-  glb,
+  glbc,
   varname,
   console = TRUE,
   q90 = TRUE,
@@ -26,8 +26,8 @@ comparison of scenarios}
 
 \item{varqnts}{the quantiles for each scenario as output by sauquantbyscene}
 
-\item{glb}{one of the global objects from out. They should all have the
-same reps and years.}
+\item{glbc}{the list of the global objects. They should all have the same
+number of sau.}
 
 \item{varname}{just the name of the variable being plotted, to make sure the
 figures all have the correct labelling}
@@ -50,7 +50,7 @@ topright, bottomleft, or bottomright, default = bottomright.}
 (the default setting) or, if set = FALSE use an external definition.}
 }
 \value{
-nothing but it does generate a plot and saves it if console=FALSE
+nothing but it generates a plot and saves it if console=FALSE
 }
 \description{
 sauribbon is used to produce a ribbon plot for a given sau across
@@ -63,8 +63,8 @@ sauribbon is used to produce a ribbon plot for a given sau across
    result <- do_comparison(rundir=rundir,postfixdir=postfixdir,outdir=outdir,
                            files=files,pickfiles=c(1,2,3),verbose=TRUE)
    out <- do_comp_outputs(result,projonly=TRUE)
-   catch <- scenebyvar(dyn=out$dyn,byvar="catch",glb=out$glbc[[1]])
-   sauribbon("",scenes=out$scenes,sau=8,varqnts=catqnts,glb=out$glbc[[1]],
+   catch <- scenebyvar(dyn=out$dyn,byvar="catch",glbc=out$glbc)
+   sauribbon("",scenes=out$scenes,sau=8,varqnts=catqnts,glb=out$glbc,
    varname="Catch",console=TRUE,q90=TRUE,intens=100,addleg="bottomright")
 }
 }

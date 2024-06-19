@@ -85,7 +85,7 @@ definepops <- function(inSAU,inSAUindex,const,glob) {
     popdefs[pop,"Me"] <- rnormz(1,mean=const["Me",pop],
                                sd=const["sMe",pop])
     popdefs[pop,"DLMax"] <- rnormz(1,mean=const["DLMax",pop],
-                                  sd=const["sMaxDL",pop])   # DLMax
+                                  sd=const["sDLMax",pop])   # DLMax
     popdefs[pop,"L50"] <- rnormz(1,mean=const["L50",pop],
                                 const["sL50",pop])
     popdefs[pop,"L95"] <- popdefs[pop,"L50"] +
@@ -546,7 +546,7 @@ makeequilzone <- function(rundir,ctrlfile="control.csv",doproduct=TRUE,
   if (parsin) opar <- as.matrix(zone1$condC$optpars)
   if (is.null(bysau)) bysau <- 0
   if (bysau) {
-    saudata <- readsaudatafile(rundir,ctrl$datafile,optpar=opar)
+    saudata <- readsaudatafile(rundir,ctrl$datafile,optpar=opar,verbose=verbose)
     constants <- saudata$constants
     saudat <- saudata$saudat
     zone1$condC$poprec <- saudata$poprec

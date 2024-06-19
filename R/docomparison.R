@@ -41,7 +41,8 @@
 #'     functions is/are written to perform extra analyses, plots, and tables.
 #'
 #' @seealso{
-#'    \link{scenebyvar}, \link{scenebyzone}. \link{RGB}
+#'    \link{scenebyvar}, \link{scenebyzone}. \link{RGB},
+#'    \link{getfilestocompare}
 #' }
 #'
 #' @return nothing but it does conduct a comparison of at least two scenarios

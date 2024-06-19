@@ -99,6 +99,7 @@ do_comparison provides a simplified interface for when making
 }
 \seealso{
 {
-   \link{scenebyvar}, \link{scenebyzone}. \link{RGB}
+   \link{scenebyvar}, \link{scenebyzone}. \link{RGB},
+   \link{getfilestocompare}
 }
 }

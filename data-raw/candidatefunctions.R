@@ -467,26 +467,6 @@ multicattraj(dat3=out$sauout$deplsB[55:88,,],label="MatureB Depletion",
 
 
 
-# compare hsargs-----------------------------------
-
-
-
-comptashsargs <- function(ans) {
-  label <- names(ans)
-  hsargs <- makelist(label)
-  nscen <- length(label)
-  for (i in 1:nscen) hsargs[[i]] <- ans[[i]]$hsargs
-  nargs <- length(hsargs[[1]])
-  names(ans[[1]])
-}
-
-
-
-hlines=list(catch=outprod[,"MSY"],spawnB=outprod[,"Bmsy"],harvestR=0,
-            cpue=outprod[,"CEmsy"])
-
-
-
 
 # find sauMSY-----------------------------
 
@@ -529,61 +509,6 @@ comp <- getfilestocompare(outdir=outdir,filenames=files[c(12,2,16)],
 
 # population properties-------------------------
 
-# run aMSE ---------------------------
-options("show.signif.stars"=FALSE,
-        "stringsAsFactors"=FALSE,
-        "max.print"=50000,
-        "width"=240)
-suppressPackageStartupMessages({
-  library(aMSE)
-  library(TasHS)
-  library(codeutils)
-  library(hplot)
-  library(makehtml)
-  library(knitr)
-})
-dropdir <- getDBdir()
-prefixdir <- pathtopath(dropdir,"/A_codeUse/aMSETAS/NW/")
-#prefixdir <- pathtopath(dropdir,"/A_codeUse/aMSEUse/scenarios/")
-
-
-postfixdir <- "sau56"
-verbose <- TRUE
-rundir <- path.expand(filenametopath(prefixdir,postfixdir))
-
-
-
-biol <- read.csv(pathtopath(rundir,"zonebiology.csv"),header=TRUE)
-
-pickP <- which(biol[,"MSY"] < 50)
-biol1 <- biol[pickP,]
-
-plotprep(width=10, height=5)
-parset()
-plot(biol1[,"MaxDL"],biol1[,"MSY"],type="p",pch=16,cex=1.0)
-
-model <- lm(biol1[,"MSY"] ~ biol1[,"MaxDL"])
-abline(model,lwd=3,col=2)
-summary(model)
-
-
-var1 <- "MaxDL"
-var2 <- "MSYDepl"
-
-plotprep(width=10, height=5)
-parset()
-plot(biol1[,var1],biol1[,var2],type="p",pch=16,cex=1.0,xlab=var1,ylab=var2)
-model <- lm(biol1[,var2] ~ biol1[,var1])
-summary(model)
-abline(model,lwd=3,col=2)
-
-pairs(biol1[,c(1:3,5:10,12)],pch=16,gap=0.2)
-
-
-MSYDepl ~ MaxDL
-
-
-# makePOPmatrix -----------------------------------------------
 
 options("show.signif.stars"=FALSE,
         "stringsAsFactors"=FALSE,
@@ -602,82 +527,48 @@ prefixdir <- pathtopath(dropdir,"/A_codeUse/aMSETAS/NW/")
 #prefixdir <- pathtopath(dropdir,"/A_codeUse/aMSEUse/scenarios/")
 
 
-postfixdir <- "sau56"
+postfixdir <- "sau22"
 verbose <- TRUE
 rundir <- path.expand(filenametopath(prefixdir,postfixdir))
-ctrlfile <- "controlsau56.csv"
-
+ctrlfile <- "controlsau22.csv"
+controlfile=ctrlfile
 
 draft <- getdraftpops(rundir=rundir,ctrlfile=ctrlfile)
 
+pops <- as.matrix(draft$pops)
+round(pops[,1:12],4)
 
-round(draft$pops[,1:8],4)
+tapply(pops[,"msy"],pops[,"SAU"],sum)
 
+str2(draft)
 
-
-
-filename <- pathtopath(rundir,"popconstants.csv")
-write.csv(draft$pops,filename)
-
-
-msy <- sapply(out$zoneC,"[[","MSY")
-bLML <- sapply(out$zoneC,"[[","bLML")
-B0 <- sapply(out$zoneC,"[[","B0")
-
-
-
-
-displaypopprops <- function(rundir,x,verbose) {
-  pops <- draft$pops
-  out <- x$out
-  condC <- x$condC
-  glb <- out$glb
-  ctrl <- x$ctrl
-  zoneD <- x$out$zoneD
-  zoneC <- x$out$zoneC
-  setuphtml(rundir)
-
-  notes <- c(paste0("Populations = ",glb$numpop),paste0("SAU = ",glb$nSAU),
-             paste0("Randomseed for conditioning = ",ctrl$randseed),
-             paste0("Recruitment variability sigR         = ",ctrl$withsigR),
-             paste0("Exploitable Biomass variability sigB = ",ctrl$withsigB),
-             paste0("Catch-Rate variability sigCE         = ",ctrl$withsigCE))
-
-  label <- paste0(ctrl$runlabel," population properties. This is a bigtable",
-                  " so, if you scroll across then use the topleft arrow to",
-                  " return to the home page.")
-  addtable(round(pops,4),filen="popprops.csv",rundir=rundir,category="poptable",
-           caption=label,big=TRUE)
-  # OrigComp tab--------------------------------------------
-  saucompdata(allcomp=condC$compdat$lfs,glb=glb,horizline=140,console=FALSE,
-              rundir=rundir,ylabel="Size-Composition of Catches",
-              tabname="OrigComp")
-  # What size comp data is there
-  palfs <- condC$compdat$palfs
-  label <- paste0(ctrl$runlabel," Number of observations of numbers-at-size in ",
-                  "the catch for each SAU.")
-  addtable(palfs,filen="sizecompnumbers.csv",rundir=rundir,category="OrigComp",
-           caption=label)
-  # plot initial equilibrium size-comp by population
-  Nt <- zoneD$Nt[,1,]
-  rownames(Nt) <- glb$midpts
-  colnames(Nt) <- paste0(glb$saunames[glb$sauindex],"_",1:glb$numpop)
-  draftnumbersatsize(rundir, glb, Nt, ssc=5)
-
-
-  make_html(replist = NULL,  rundir = rundir,
-            controlfile=ctrl$controlfile, datafile=ctrl$datafile, hsfile=NULL,
-            width = 500, openfile = TRUE,  runnotes = notes,
-            verbose = verbose, packagename = "aMSE",  htmlname = ctrl$runlabel)
-} # end of displaypopprops
-
+# filename <- pathtopath(rundir,"popconstants.csv")
+# write.csv(draft$pops,filename)
 
 
 
 displaypopprops(rundir,draft,verbose=FALSE)
 
+#pops
+
+pops <- as.matrix(draft$pops)
+glb <- draft$out$glb
+
+colpts <-  c(1,2   ,1,1,1,1,1,1,1,1,1,1,1,1,1,1,4,1,1,1,1,3)
+cexpts <-  c(1,1.75,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1.5,1,1,1,1,1.75)
+
+plotprep(width=10,height=9)
+parset()
+pairs(pops[1:glb$SAUpop[1],c(2,3,4,6,7,10,13,19,24,25)],gap=0.2,pch=16,
+      cex=cexpts,col=colpts)
 
 
+pickcol <- c(1,2,3,4,6,7,19,9,10,13,17,24,25,26)
+
+pops5 <- pops[1:glb$SAUpop[1],]
+pops6 <- pops[(glb$SAUpop[1]+1):(glb$SAUpop[1]+glb$SAUpop[2]),]
+
+pops5[order(pops5[,"msy"],decreasing=TRUE),pickcol]
 
 
 library(codeutils)
@@ -735,6 +626,178 @@ combnames <- names(outyrs)
 
 popgrowth(rundir="",zoneC=out$zoneC,glb=out$glb,verbose=TRUE,console=TRUE,
           maxage=30,startsize= 2.0)
+
+
+
+# Fix sMaxDL to sDLMax----------------------
+
+
+
+
+findinfluence <- function(ctrl,pops,reps,pickline,pickcol,calcpopC,
+                          deleteyrs) {
+  columns <- c("DLMax","L50","L95","SaMa","L50mat","Wta","Wtb","AvRec","SAU","msy",
+               "B0")
+  result <- matrix(0,nrow=reps,ncol=length(columns),dimnames=list(1:reps,columns))
+  pickR <- match(columns,rownames(pops))
+  whchline <- pickline
+  whchcol <- pickcol
+  dfile <- pathtopath(ctrl$rundir,ctrl$datafile)
+  chgeloc <- c(3,4,6,8,9,3)
+  wchline <- c(45,46,45,45,45,45)
+  delvar <- matrix(0,nrow=6,ncol=reps)
+  delvar[1,] <- runif(reps,min=0.1,max=0.5) # loc = 3 line 45 AvRec pop1
+  delvar[2,] <- runif(reps,min=95,max=104) # loc = 4 L50mat
+  delvar[3,] <- runif(reps,min=19.5,max=25) # loc = 6  DLMax
+  delvar[4,] <- runif(reps,min=22,max=42)  # loc = 7   L95
+  delvar[5,] <- runif(reps,min=3.1,max=3.3)   # loc = 8  Wtb
+  delvar[6,] <- 1 - delvar[1,]              # loc = 3 line 46 AvRec pop2
+  for (i in 1:reps) {  # i = 1
+    indatr <- readLines(dfile)
+    vals <- as.numeric(removeEmpty(unlist(strsplit(indatr[45],split=","))))
+    for (varloc in 1:5) vals[chgeloc[varloc]] <- delvar[varloc,i]
+    indatr[45] <- paste0(vals,collapse=" ,")
+    vals <- as.numeric(removeEmpty(unlist(strsplit(indatr[46],split=","))))
+    vals[chgeloc[6]] <- delvar[6,i]
+    indatr[46] <- paste0(vals,collapse=" ,")
+    writeLines(indatr,con=dfile)
+    out <- do_condition(rundir=ctrl$rundir,controlfile=ctrl$controlfile,
+                        calcpopC=calcpopC,
+                        verbose=FALSE,doproduct=TRUE,dohistoric=TRUE,
+                        matureL=c(70,200),wtatL=c(80,200),mincount=100,
+                        uplimH=0.4,incH=0.005,deleteyrs=deleteyrs)
+    pops <- t(out$pops)
+    result[i,] <- pops[pickR,whchcol]
+    print(round(pops[pickR,whchcol],3))
+    print(paste0("replicate ",i),quote=FALSE)
+  } # end of reps for loop
+  return(invisible(result))
+} # end of findinfluence
+
+
+
+deleteyrs <- matrix(c(0,0,0,0,0,0,0,1993,1994,1995,2014,2015,2016,2020),
+                    nrow=7,ncol=2,byrow=FALSE)
+# run aMSE ---------------------------
+options("show.signif.stars"=FALSE,
+        "stringsAsFactors"=FALSE,
+        "max.print"=50000,
+        "width"=240)
+suppressPackageStartupMessages({
+  library(aMSE)
+  library(TasHS)
+  library(codeutils)
+  library(hplot)
+  library(makehtml)
+  library(knitr)
+  library(qmdutils)
+})
+dropdir <- getDBdir()
+prefixdir <- pathtopath(dropdir,"/A_codeUse/aMSETAS/NW/")
+#prefixdir <- pathtopath(dropdir,"/A_codeUse/aMSETAS/scenarios/")
+#prefixdir <- pathtopath(dropdir,"/A_codeUse/aMSEUse/SAHS/")
+
+#postfixdir <- "saBC"
+postfixdir <- "sau22"
+verbose <- TRUE
+rundir <- path.expand(filenametopath(prefixdir,postfixdir))
+controlfile <- paste0("control",postfixdir,".csv")
+outdir <- "C:/aMSE_scenarios/BC/"
+confirmdir(rundir,ask=FALSE)
+confirmdir(outdir,ask=FALSE)
+
+load(file=paste0(outdir,"sau22",".RData"))
+
+
+start <- Sys.time()
+result <- findinfluence(ctrl=out$ctrl,pops=t(out$pops),reps=200,pickline=45,
+                        pickcol=1,calcpopC=calcexpectpopC,deleteyrs=deleteyrs)
+
+finish <- Sys.time()
+cat("Time Taken = ",finish - start, "\n\n")
+
+require(codeutils)
+savedir <- "C:/Users/Malcolm/Dropbox/projects/AIRF/NWLML/"
+filename <- pathtopath(savedir,"productivitydrivers.csv")
+write.csv(result,file=filename)
+
+
+
+
+
+
+chgevar <- "AvRec"
+
+plotprep(width=10,height=5)
+parset(plots=c(1,1))
+model1 <- lm(result[,"msy"] ~ result[,chgevar])
+plot(result[,chgevar],result[,"msy"],type="p",pch=16,cex=1.2,panel.first=grid)
+abline(model1,lwd=2,col=2)
+summary(model1)
+
+
+plotprep(width=10,height=8)
+parset(plots=c(1,1))
+pairs(result[,c(1,3,5,7,8,10,11)])
+#pairs(result[,c(1:4,6,7)])
+
+head(result)  #+
+
+model <- lm(result[,"msy"] ~ result[,"AvRec"]  + result[,"Wtb"] + result[,"DLMax"]
+                             +  result[,"L95"] + result[,"L50mat"])
+modout <- summary(model)
+modout
+
+model <- lm(result[,"msy"] ~ result[,"L50mat"])
+modout <- summary(model)
+modout
+
+
+
+model <- lm(result[,"msy"] ~ result[,"AvRec"] + result[,"Wtb"]+ result[,"DLMax"]
+             +  result[,"L95"]+ result[,"L50mat"])
+
+modout <- summary(model)
+modout
+round(modout$coefficients,6)
+
+
+)
+
+cor(result[,"msy"],result[,"AvRec"])
+cor(result[,"msy"],result[,"Wtb"])
+cor(result[,"msy"],result[,"DLMax"])
+cor(result[,"msy"],result[,"L95"])
+cor(result[,"msy"],result[,"L50mat"])
+
+require(codeutils)
+rundir <- "C:/Users/Malcolm/Dropbox/projects/AIRF/NWLML/"
+filename <- pathtopath(rundir,"productivitydrivers.csv")
+#write.csv(result,file=filename)
+
+result <- read.csv(filename,header=TRUE)
+
+
+
+
+# population production
+
+mod1 <- formula(result[,"msy"] ~ result[,"AvRec"])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

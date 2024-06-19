@@ -900,7 +900,7 @@ doquantplot <- function(varq,varname,yrnames,scenes,q90,polys,intens=127,
 #'     years for which quantiles are available
 #' @param varname The names of the variable being summarized, used as the
 #'     y-label on the plot
-#' @param sau number of sau, to add to the y-axis label
+#' @param sauname the name of the sau, to add to the y-axis label
 #' @param yrnames the numeric values of the years to be plotted. Used as the
 #'     x-axis as well as the x-axis labels
 #' @param scenes the names given to the different scenarios
@@ -923,12 +923,12 @@ doquantplot <- function(varq,varname,yrnames,scenes,q90,polys,intens=127,
 #' print("wait on datasets")
 #' # varq=qntvar;varname=varname;yrnames=glbc[[1]]$pyrnames;scenes=scenes
 #' # q90=q90;intens=intens;addleg=addleg;addmedian=addmedian
-doquantribbon <- function(varq,varname,sau,yrnames,scenes,q90=TRUE,intens=127,
+doquantribbon <- function(varq,varname,sauname,yrnames,scenes,q90=TRUE,intens=127,
                           addleg="bottomright",addmedian=0) {
   maxy <- getmax(varq)
   nscen <- length(scenes)
   plot(yrnames,varq[3,,1],type="l",lwd=2,col=0,xlab="",
-       ylab=paste0(varname,"_sau",sau),panel.first=grid(),ylim=c(0,maxy))
+       ylab=paste0(varname,"_",sauname),panel.first=grid(),ylim=c(0,maxy))
   for (i in 1:nscen) { # i =2
     if (q90) {
       poldat <- makepolygon(varq[2,,i],varq[4,,i],yrnames)
@@ -1673,8 +1673,8 @@ sauquantbyscene <- function(invar,glb) {
 #'     comparison of scenarios
 #' @param scenes the names of the different scenarios being compared
 #' @param varqnts the quantiles for each scenario as output by sauquantbyscene
-#' @param glb one of the global objects from out. They should all have the
-#'     same reps and years.
+#' @param glbc the list of the global objects. They should all have the same
+#'     number of sau.
 #' @param varname just the name of the variable being plotted, to make sure the
 #'     figures all have the correct labelling
 #' @param console should the plot be sent to the console or saved for use in the
@@ -1693,7 +1693,7 @@ sauquantbyscene <- function(invar,glb) {
 #'   \link{sauquantbyscene}, \link{doquantribbon}, \link{do_comp_outputs}
 #' }
 #'
-#' @return nothing but it does generate a plot and saves it if console=FALSE
+#' @return nothing but it generates a plot and saves it if console=FALSE
 #' @export
 #'
 #' @examples
@@ -1702,29 +1702,32 @@ sauquantbyscene <- function(invar,glb) {
 #'    result <- do_comparison(rundir=rundir,postfixdir=postfixdir,outdir=outdir,
 #'                            files=files,pickfiles=c(1,2,3),verbose=TRUE)
 #'    out <- do_comp_outputs(result,projonly=TRUE)
-#'    catch <- scenebyvar(dyn=out$dyn,byvar="catch",glb=out$glbc[[1]])
-#'    sauribbon("",scenes=out$scenes,sau=8,varqnts=catqnts,glb=out$glbc[[1]],
+#'    catch <- scenebyvar(dyn=out$dyn,byvar="catch",glbc=out$glbc)
+#'    sauribbon("",scenes=out$scenes,sau=8,varqnts=catqnts,glb=out$glbc,
 #'    varname="Catch",console=TRUE,q90=TRUE,intens=100,addleg="bottomright")
 #' }
-sauribbon <- function(rundir,scenes,varqnts,glb,varname,
+sauribbon <- function(rundir,scenes,varqnts,glbc,varname,
                       console=TRUE,q90=TRUE,intens=127,addleg="bottomright",
                       addmedian=3,defpar=TRUE) {
-  # rundir=rundir;scenes=scenes;sau=1;varqnts=catqnts;glb=glbc;varname="cpue";
+  # rundir=rundir;scenes=scenes;varqnts=catqnts;glb=glbc;varname="catch";
   # console=TRUE;q90=Q90;intens=intensity;addleg=ribbonleg;defpar=TRUE;addmedian=TRUE
   filen <- ""
   nscen <- length(scenes)
-  numsau <- sapply(glb,"[[","nSAU")
+  numsau <- sapply(glbc,"[[","nSAU")
   maxsau <- max(numsau)
   if (all(numsau == maxsau)) {
-    for (sau in 1:maxsau) { # sau = 1
+    cat(numsau,maxsau,"\n")
+    for (sau in 1:maxsau) { # sau = 2
+      sauname <- glbc[[1]]$saunames[sau]
+      print(sauname)
       if (!console) {
-        filename <- paste0(glb[[1]]$saunames[sau],"_",varname,"_ribbon.png")
+        filename <- paste0(sauname,"_",varname,"_ribbon.png")
         filen <- filenametopath(rundir,filename)
-        caption <- paste0(varname," ribbon plot for ",glb[[1]]$saunames[sau])
+        caption <- paste0(varname," ribbon plot for ",glbc[[1]]$saunames[sau])
       }
       if (defpar) {
         oldpar <- par(no.readonly=TRUE)
-        plotprep(width=8,height=4,newdev=FALSE,filename=filen,verbose=FALSE)
+        plotprep(width=8,height=4,newdev=TRUE,filename=filen,verbose=FALSE)
         parset(cex=1.1,margin=c(0.35,0.5,0.05,0.05))
       }
       rc <- dim(varqnts[[1]][[1]])
@@ -1732,17 +1735,17 @@ sauribbon <- function(rundir,scenes,varqnts,glb,varname,
       rcnames[[3]] <- scenes
       qntvar <- array(0,dim=(c(rc,nscen)),dimnames=rcnames)
       for (i in 1:nscen) qntvar[,,i] <- varqnts[[i]][[sau]]
-      doquantribbon(qntvar,varname=varname,sau=sau,yrnames=glb[[1]]$pyrnames,
+      doquantribbon(qntvar,varname=varname,sauname=sauname,yrnames=glbc[[1]]$pyrnames,
                     scenes=scenes,q90=q90,intens=intens,addleg=addleg,
                     addmedian=addmedian)
       if (!console) {
-        addplot(filen=filen,rundir=rundir,category=varname,caption)
+        addplot(filen=filen,rundir=rundir,category=varname,caption=caption)
       }
-      if (defpar) return(invisible(oldpar))
     }
   } else {
     warning("Differing number of SAU, not ribbon plts produced. \n")
   }
+  if (defpar) return(invisible(oldpar))
 } # end of sauribbon
 
 #' @title scenarioproperties tabulates important properties of each scenario

@@ -285,6 +285,23 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
     incrtime2 <- Sys.time(); timeinc <- incrtime2 - incrtime1
     cat("dohistoricC ",timeinc,attr(timeinc,"units"),"\n")
   }
+  #pop properties
+  popprops <- as.data.frame(sapply(zoneC,"[[","popdef"))
+  columns <- NULL
+  for (sau in 1:glb$nSAU)
+    columns <- c(columns,paste0(glb$saunames[sau],"-",1:glb$SAUpop[sau]))
+  colnames(popprops) <- columns
+  msy <- sapply(zoneC,"[[","MSY")
+  bLML <- sapply(zoneC,"[[","bLML")
+  B0 <- sapply(zoneC,"[[","B0")
+  pops <- rbind(1:sum(glb$SAUpop),popprops,msy,B0,bLML)
+  rownames(pops) <- c("popnum",rownames(popprops),"msy","B0","bLML")
+  pops <- t(pops)
+  label <- paste0(ctrl$runlabel," population properties. This is a bigtable",
+                  " so, if you scroll across or down then use the topleft",
+                  "  arrow to return to the home page.")
+  addtable(round(pops,4),filen="popprops.csv",rundir=rundir,category="poptable",
+           caption=label,big=TRUE)
   hyrs <- glb$hyrs
   propD <- as.data.frame(t(getzoneprops(zoneC,zoneDD,glb,year=hyrs)))
   columns <- c("B0","MSY","MSYDepl","bLML","propprot","SpBDepl","catch",
@@ -511,7 +528,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
               sauprod=sauprod,zonesummary=zonesummary,
               kobedata=kobedata,outhcr=outhcr,scoremed=scoremed,
               popmedcatch=popmedcatch,popmedcpue=popmedcpue,
-              popmeddepleB=popmeddepleB)
+              popmeddepleB=popmeddepleB,pops=pops)
   return(out)
 } # end of do_MSE
 

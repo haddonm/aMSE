@@ -435,9 +435,8 @@ oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,movem,sigmar,
   steep <- getvect(zoneCC,"steeph") #sapply(zoneC,"[[","popdef")["steeph",]
   if (year %in% envyr) {
     rdev <- -1
-    sigRmod <- 10
     recs <- oneyearrec(steep,r0,b0,dyn["matureb",],
-                       sigR=sigmar,devR=rdev) * proprec
+                       sigR=sigmar/10,devR=rdev) * proprec
   } else {
     if (rdev[1] > 0) rdev <- rdev[sauindex]
     recs <- oneyearrec(steep,r0,b0,dyn["matureb",],sigR=sigmar,devR=rdev)

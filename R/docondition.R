@@ -270,10 +270,13 @@ changeline <- function(indir, filename, linenumber, newline,verbose=FALSE) {
 #'     if there are years that are to be removed then this should be a matrix
 #'     of years to delete vs sau, ie years as rows and sau as columns. All
 #'     sau need to be included. to compelte hte matrix 0 values can be used.
+#' @param prodpops a vector of population numbers whose productivity
+#'     characteristics will be plotted into a tab called popprod, default=NULL
+#'     which implies no plots will be produced.
 #'
 #' @seealso{
 #'  \link{makeequilzone}, \link{dohistoricC}, \link{prepareprojection},
-#'  \link{doprojections}
+#'  \link{doprojections}, \link{prodforpop}
 #' }
 #'
 #' @return a large list containing tottime, projtime, starttime, glb, ctrl,
@@ -288,7 +291,7 @@ changeline <- function(indir, filename, linenumber, newline,verbose=FALSE) {
 do_condition <- function(rundir,controlfile,calcpopC,
                          verbose=FALSE,doproduct=FALSE,dohistoric=TRUE,
                          matureL=c(70,200),wtatL=c(80,200),mincount=100,
-                         uplimH=0.4,incH=0.005,deleteyrs=0) {
+                         uplimH=0.4,incH=0.005,deleteyrs=0,prodpops=NULL) {
   starttime <- Sys.time()
   setuphtml(rundir)
   zone <- makeequilzone(rundir,controlfile,doproduct=doproduct,uplimH=uplimH,
@@ -308,7 +311,17 @@ do_condition <- function(rundir,controlfile,calcpopC,
            caption=paste0("Specific population properties defined rather than ",
                           "randomly allocated away from a mean."))
   production <- NULL
-  if (doproduct) production <- zone$product
+  if (doproduct) {
+    production <- zone$product
+    nprod <- length(prodpops)
+    if (nprod > 0) {
+      for (pop in 1:nprod) {
+        pickpop <- prodpops[pop]
+        prodforpop(rundir=rundir,inprod=production[,,pickpop],pop=pickpop,
+                   console=FALSE)
+      }
+    }
+  }
   #Condition on Fishery
   if (any(condC$initdepl < 1)) {
     if (!doproduct) stop("doproduct must be TRUE for Initial Depletion to work \n")
@@ -326,6 +339,39 @@ do_condition <- function(rundir,controlfile,calcpopC,
   } else {
     zoneDD <- zoneD
   }
+  #pop properties
+  popprops <- as.data.frame(sapply(zoneC,"[[","popdef"))
+  columns <- NULL
+  for (sau in 1:glb$nSAU)
+    columns <- c(columns,paste0(glb$saunames[sau],"-",1:glb$SAUpop[sau]))
+  colnames(popprops) <- columns
+  msy <- sapply(zoneC,"[[","MSY")
+  bLML <- sapply(zoneC,"[[","bLML")
+  B0 <- sapply(zoneC,"[[","B0")
+  pops <- rbind(1:sum(glb$SAUpop),popprops,msy,B0,bLML)
+  rownames(pops) <- c("popnum",rownames(popprops),"msy","B0","bLML")
+  pops <- t(pops)
+  label <- paste0(ctrl$runlabel," population properties. This is a bigtable",
+                  " so, if you scroll across or down then use the topleft",
+                  "  arrow to return to the home page.")
+  addtable(round(pops,4),filen="popprops.csv",rundir=rundir,category="poptable",
+           caption=label,big=TRUE)
+  saucompdata(allcomp=condC$compdat$lfs,glb=glb,horizline=140,console=FALSE,
+              rundir=rundir,ylabel="Size-Composition of Catches",
+              tabname="OrigComp")
+  # What size comp data is there
+  palfs <- condC$compdat$palfs
+  label <- paste0(ctrl$runlabel," Number of observations of numbers-at-size in ",
+                  "the catch for each SAU.")
+  addtable(palfs,filen="sizecompnumbers.csv",rundir=rundir,category="OrigComp",
+           caption=label)
+  # plot initial equilibrium size-comp by population
+  Nt <- zoneDD$Nt[,1,]
+  rownames(Nt) <- glb$midpts
+  colnames(Nt) <- paste0(glb$saunames[glb$sauindex],"_",1:glb$numpop)
+  draftnumbersatsize(rundir, glb, Nt, ssc=5)
+
+  #properties of zoneDD
   hyrs <- glb$hyrs
   propD <- t(getzoneprops(zoneC,zoneDD,glb,year=hyrs))
   addtable(round(propD,4),"propertyDD.csv",rundir,category="zoneDD",caption=
@@ -371,7 +417,7 @@ do_condition <- function(rundir,controlfile,calcpopC,
   out <- list(tottime=tottime,runtime=condtime,starttime=starttime,glb=glb,
               ctrl=ctrl,zoneC=zoneC,zoneD=zoneD,zoneDD=zoneDD,
               condC=condC,condout=condout,projC=projC,production=production,
-              saudat=zone$saudat,constants=zone$constants)
+              saudat=zone$saudat,constants=zone$constants,pops=pops)
   return(out)
 } # end of do_condition tottime=tottime,projtime=projtime,starttime=starttime
 
@@ -786,20 +832,82 @@ plotcondCPUE <- function(histCE,saucpue,glb,rundir,filen="") {
 #' print("wait on suitable example")
 printline <- function(rundir, datafile, linenumber=29) {
   dat <- readLines(filenametopath(rundir,datafile))
-  print(dat[linenumber])
+  if (length(dat) <= linenumber) {
+    print(dat[linenumber])
+  } else {
+    print("You are trying to print past the length of the input file!")
+  }
 } #end of printline
 
-# param=param
-# rundir=rundir
-# controlfile=controlfile
-# datafile=datafile
-# linenum=29
-# calcpopC=calcexpectpopC
-# extra=extra
-# picksau=sau
-# nsau=nsau
-# outplot=FALSE
 
+#' @title prodforpop plots the productivity characteristics for a population
+#'
+#' @description prodforpop plots the productivity characteristics for a
+#'     population. This is especially useful for a detailed consideration of
+#'     an SAU's dynamics. This also allows one to check that the harvest rate
+#'     range used to estimate production runs past the MSY level.
+#'
+#' @param rundir the full path to the scenario directory
+#' @param inprod the production matrix for a single population, for example,
+#'     out$production[,,2] is the second population's production properties.
+#' @param pop which population is being examined? A single integer
+#' @param console should the plot be saved to a png file or go to the console.
+#'     the default = TRUE plotting to theconsole
+#'
+#' @return nothing but it does generate a plot
+#' @export
+#'
+#' @examples
+#' # syntax prodforpop(rundir=rundir,inprod=produciton[,,2],pop=2,console=FALSE)
+#' # rundir=""; inprod=out$production[,,2]; pop=2; console=TRUE
+prodforpop <- function(rundir,inprod,pop,console=TRUE) {
+  yield <- inprod[,"Catch"]
+  spb <- inprod[,"MatB"]
+  Ht <- rownames(inprod)
+  deplet <- inprod[,"Deplet"]
+  pickmsy <- which.max(yield)
+  msy <- yield[pickmsy]
+  maxy <- getmax(yield)
+  filen <- ""
+  if (!console) {
+    label <- paste0("production_plots_for_population_",pop,".png")
+    filen <- pathtopath(rundir,label)
+  }
+  plotprep(width=7,height=6,newdev=FALSE,filename=filen,verbose=FALSE)
+  parset(plots=c(3,2),cex=0.9,outmargin=c(1,0.25,0,0))
+  plot(spb,yield,type="l",lwd=2,col=1,xlab="Spawning Biomass t",
+       ylab="",panel.first = grid(),
+       ylim=c(0,maxy),yaxs="i")
+  abline(v=spb[pickmsy],col=2,lwd=2)
+  plot(Ht,spb,type="l",lwd=2,xlab="Annual Harvest Rate",
+       ylab="Spawning Biomass t",panel.first = grid(),
+       ylim=c(0,getmax(spb)),yaxs="i")
+  abline(h=spb[pickmsy],col=2,lwd=2)
+  abline(v=Ht[pickmsy],col=2,lwd=2)
+  plot(Ht,yield,type="l",lwd=2,col=1,xlab="Annual Harvest Rate",
+       ylab="",panel.first = grid(),
+       ylim=c(0,maxy),yaxs="i")
+  abline(v=Ht[pickmsy],col=2,lwd=2)
+  plot(spb,deplet,type="l",lwd=2,ylab="Total Depletion Level",
+       xlab="Spawning Biomass t",panel.first = grid(),
+       ylim=c(0,1.05),yaxs="i")
+  abline(h=deplet[pickmsy],col=2,lwd=2)
+  abline(v=spb[pickmsy],col=2,lwd=2)
+  plot(deplet,yield,type="l",lwd=2,col=1,xlab="Total Depletion Level",
+       ylab="",panel.first = grid())
+  abline(v=deplet[pickmsy],col=2,lwd=2)
+  plot(Ht,deplet,type="l",lwd=2,col=1,xlab="Annual Harvest Rate",
+       ylab="Total Depletion Level",panel.first = grid(),
+       ylim=c(0,1.05),yaxs="i")
+  abline(h=deplet[pickmsy],col=2,lwd=2)
+  abline(v=Ht[pickmsy],col=2,lwd=2)
+  mtext(paste0("Population ",pop),side=1,line=-0.1,outer=TRUE,cex=1.1)
+  mtext("Production t",side=2,line=-1,outer=TRUE,cex=1.1)
+  if (!console) {
+    caption <- "The production curves for the population."
+    addplot(filen,rundir=rundir,category="popprod",caption)
+  }
+} # end of prodforpop
 
 #' @title sauavrecssq applies the AvRec and returns the ssq from the cpue
 #'

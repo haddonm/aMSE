@@ -467,7 +467,7 @@ datafiletemplate <- function(indir,filename="saudataEG.csv") {
    cat("DLMax , 21.5060321746972,26.6005907815097,24.3520350566157,29.0972888599621,",
        "29.2904865501258,28.6097710536279,26.7206918605892,21.5736807435363 ,",
         "maximum growth increment \n",file=filename, append=TRUE)
-   cat("sMaxDL ,",genconst(rep(0.3,nSAU)),", variation of MaxDL \n",
+   cat("sDLMax ,",genconst(rep(0.3,nSAU)),", variation of MaxDL \n",
        file=filename, append=TRUE)
    cat("L50 ,",genconst(rep(130.0,nSAU)),", Length at 50% MaxDL \n",
        file=filename, append=TRUE)
@@ -954,6 +954,7 @@ readpopdatafile <- function(indir,infile) {
 #' @param infile the name of the specific datafile used.
 #' @param optpar the optimum parameters from sizemod used to replace inputs for
 #'     the main parameters estimated.
+#' @param verbose Should progress comments be printed to console, default=FALSE
 #'
 #' @return a list of the constants matrix with values for each population and
 #'     the original matrix of sau values from readsaudatafile
@@ -961,17 +962,28 @@ readpopdatafile <- function(indir,infile) {
 #'
 #' @examples
 #' print("wait on suitable data sets")
-#' # rundir=rundir; infile=ctrl$datafile;optpar=NULL
-readsaudatafile <- function(rundir,infile,optpar=NULL) {
+#' # rundir=rundir; infile=ctrl$datafile;optpar=NULL;verbose=TRUE
+readsaudatafile <- function(rundir,infile,optpar=NULL,verbose=FALSE) {
    filename <- filenametopath(rundir,infile)
    indat <- readLines(filename)   # reads the whole file as character strings
+   changesMaxDL <- grep("sMaxDL",indat)
+   if (length(changesMaxDL) > 0) {
+     dline <- indat[changesMaxDL]
+     num <- nchar(dline)
+     indat[changesMaxDL] <- paste0("sDLMax",substr(dline,7,num))
+     label <- paste0("Use sDLMax instead of sMaxDL in the data file, as ",
+                     "sMaxDL is now deprecated and is being changed ",
+                     "automatically  \n")
+     warning(label)
+     writeLines(indat,con=filename)
+   }
    nsau <- getsingleNum("nsau",indat)
    saupop <- getConst(indat[grep("saupop",indat)],nsau)
    numpop <- sum(saupop)
    checkmsedata(intxt=indat,rundir=rundir,verbose=TRUE)
    txt <- indat[grep("saunames",indat)]
    saunames <- unlist(strsplit(txt,","))[2:(nsau+1)]
-   rows <- c("DLMax","sMaxDL","L50","sL50","L50inc","sL50inc","SigMax",
+   rows <- c("DLMax","sDLMax","L50","sL50","L50inc","sL50inc","SigMax",
              "sSigMax","LML","Wtb","sWtb","Wta","sWta","Me","sMe",
              "AvRec","sAvRec","defsteep","sdefsteep","L50C","sL50C",
              "deltaC","sdeltaC","MaxCEpars","sMaxCEpars","selL50p",
@@ -1022,11 +1034,20 @@ readsaudatafile <- function(rundir,infile,optpar=NULL) {
    vect <- ans[rows[pickVar],]
    consts[rows[pickVar],] <- log(vect[sauindex] * poprec[,"AvRec"])
    if (numcol > 3) {
+     if (verbose) {
+       whichvar <- paste0(columns[3:numcol],collapse=" ,")
+       print(paste0(whichvar," are being set manually"))
+     }
      deltav <- columns[4:numcol]
-     for (i in 1:length(deltav)) {
+     for (i in 1:length(deltav)) { # i = 2
+       svarname <- paste0("s",deltav[i])
        pickVar <- which(rows == deltav[i])
-       vect <- ans[rows[pickVar],]
-       consts[rows[pickVar],] <- poprec[,(3+i)]
+       if (rows[(pickVar+1)] == svarname) {
+         if (any(ans[rows[(pickVar+1)],] > 1e-05))
+           warning("Variation on ",deltav[i]," is too large for manual setting \n")
+         vect <- ans[rows[pickVar],]
+         consts[rows[pickVar],] <- poprec[,(3+i)]
+       }
      }
    }
    return(list(constants=consts,saudat=ans,poprec=poprec))

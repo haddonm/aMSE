@@ -4,7 +4,7 @@
 \alias{readsaudatafile}
 \title{readsaudatafile generates the constants matrix from sau data}
 \usage{
-readsaudatafile(rundir, infile, optpar = NULL)
+readsaudatafile(rundir, infile, optpar = NULL, verbose = FALSE)
 }
 \arguments{
 \item{rundir}{the directory in which the data file is to be found. This will
@@ -14,6 +14,8 @@ usually be the rundir for the scenario run}
 
 \item{optpar}{the optimum parameters from sizemod used to replace inputs for
 the main parameters estimated.}
+
+\item{verbose}{Should progress comments be printed to console, default=FALSE}
 }
 \value{
 a list of the constants matrix with values for each population and
@@ -28,5 +30,5 @@ readsaudatafile uses data described at the SAU level to make
 }
 \examples{
 print("wait on suitable data sets")
-# rundir=rundir; infile=ctrl$datafile;optpar=NULL
+# rundir=rundir; infile=ctrl$datafile;optpar=NULL;verbose=TRUE
 }

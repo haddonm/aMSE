@@ -16,7 +16,8 @@ do_condition(
   mincount = 100,
   uplimH = 0.4,
   incH = 0.005,
-  deleteyrs = 0
+  deleteyrs = 0,
+  prodpops = NULL
 )
 }
 \arguments{
@@ -56,6 +57,10 @@ default = 0.005}
 if there are years that are to be removed then this should be a matrix
 of years to delete vs sau, ie years as rows and sau as columns. All
 sau need to be included. to compelte hte matrix 0 values can be used.}
+
+\item{prodpops}{a vector of population numbers whose productivity
+characteristics will be plotted into a tab called popprod, default=NULL
+which implies no plots will be produced.}
 }
 \value{
 a large list containing tottime, projtime, starttime, glb, ctrl,
@@ -89,6 +94,6 @@ print("wait on suitable data sets in data")
 \seealso{
 {
  \link{makeequilzone}, \link{dohistoricC}, \link{prepareprojection},
- \link{doprojections}
+ \link{doprojections}, \link{prodforpop}
 }
 }

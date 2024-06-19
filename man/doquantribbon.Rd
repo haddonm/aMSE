@@ -7,7 +7,7 @@
 doquantribbon(
   varq,
   varname,
-  sau,
+  sauname,
   yrnames,
   scenes,
   q90 = TRUE,
@@ -24,7 +24,7 @@ years for which quantiles are available}
 \item{varname}{The names of the variable being summarized, used as the
 y-label on the plot}
 
-\item{sau}{number of sau, to add to the y-axis label}
+\item{sauname}{the name of the sau, to add to the y-axis label}
 
 \item{yrnames}{the numeric values of the years to be plotted. Used as the
 x-axis as well as the x-axis labels}
