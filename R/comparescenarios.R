@@ -1716,10 +1716,8 @@ sauribbon <- function(rundir,scenes,varqnts,glbc,varname,
   numsau <- sapply(glbc,"[[","nSAU")
   maxsau <- max(numsau)
   if (all(numsau == maxsau)) {
-    cat(numsau,maxsau,"\n")
     for (sau in 1:maxsau) { # sau = 2
       sauname <- glbc[[1]]$saunames[sau]
-      print(sauname)
       if (!console) {
         filename <- paste0(sauname,"_",varname,"_ribbon.png")
         filen <- filenametopath(rundir,filename)

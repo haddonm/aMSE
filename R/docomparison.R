@@ -215,25 +215,25 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
     catch <- scenebyvar(dyn,byvar="catch",glb=glbc,projonly = TRUE)
     catqnts <- sauquantbyscene(catch,glbc)
     sauribbon(rundir,scenes=scenes,varqnts=catqnts,
-                glb=glbc,varname="Catch",console=FALSE,
+                glbc=glbc,varname="Catch",console=FALSE,
                 q90=Q90,intens=intensity,addleg=ribbonleg)
     # cpue ribbon tab------------------------------------------
     cpue <- scenebyvar(dyn,byvar="cpue",glb=glbc,projonly = TRUE)
     cpueqnts <- sauquantbyscene(cpue,glbc)
     sauribbon(rundir,scenes=scenes,varqnts=cpueqnts,
-                glb=glbc,varname="cpue",console=FALSE,
+                glbc=glbc,varname="cpue",console=FALSE,
                 q90=Q90,intens=intensity,addleg=ribbonleg)
     # depletion spawnB ribbon tab--------------------------------------------
     deplsB <- scenebyvar(dyn,byvar="deplsB",glb=glbc,projonly=TRUE)
     deplsBqnts <- sauquantbyscene(deplsB,glbc)
     sauribbon(rundir,scenes=scenes,varqnts=deplsBqnts,
-                glb=glbc,varname="deplsB",console=FALSE,
+                glbc=glbc,varname="deplsB",console=FALSE,
                 q90=Q90,intens=intensity,addleg=ribbonleg)
     # depletion exploitB ribbon tab--------------------------------------------
     depleB <- scenebyvar(dyn,byvar="depleB",glb=glbc,projonly=TRUE)
     depleBqnts <- sauquantbyscene(depleB,glbc)
     sauribbon(rundir,scenes=scenes,varqnts=depleBqnts,
-                glb=glbc,varname="depleB",console=FALSE,
+                glbc=glbc,varname="depleB",console=FALSE,
                 q90=Q90,intens=intensity,addleg=ribbonleg)
     # phaseplots tab --------------------------------------------------
     plotallphaseplots(rundir=rundir,dyn=dyn,prods,glb=glbc[[1]],scenes=scenes,width=9,
