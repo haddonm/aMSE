@@ -72,8 +72,8 @@
 do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
                           intensity=100,zero=FALSE,Q90=TRUE,altscenes=NULL,
                           juris="",ribbonleg="topleft",...) {
-  # rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(1,7)
-  #  verbose=TRUE; intensity=100; zero=FALSE; altscenes=c("targCE","targ150")
+  # rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(3,4,9)
+  #  verbose=TRUE; intensity=100; zero=FALSE; altscenes=NULL
   #  juris="";ribbonleg="topleft"; Q90=TRUE
   # get files -------------------
   files2 <- files[pickfiles]
@@ -154,11 +154,15 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
   tabulateproductivity(rundir,prods,scenes)
   # Final Scores tab---------------------------------
   scenscore <- lapply(scores,"[[","finalsc")
+  if (!is.null(scenscore[[1]])) {
   lengths <- numeric(nscenes)
   for (i in 1:nscenes)
     lengths[i] <- length(apply(scenscore[[i]][,1,],1,median))
   maxlen <- max(lengths)
   doplot <- ifelse(all(lengths == maxlen),TRUE,FALSE)
+  } else {
+    doplot <-  FALSE
+  }
   if (doplot) {
     if (!is.null(scenscore[[1]])) {
       filename <- "compare_final_HSscores.png"
