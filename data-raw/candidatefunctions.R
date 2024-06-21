@@ -787,14 +787,11 @@ mod1 <- formula(result[,"msy"] ~ result[,"AvRec"])
 
 
 
+summod3
 
 
 
-
-
-
-
-
+printout(summod3)
 
 
 

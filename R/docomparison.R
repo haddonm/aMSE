@@ -175,77 +175,75 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
       warning(cat("No Final Score or Different years of projection,",
                   " no Score tab produced \n"))
     }
-    # HSPM tab--------------------------------------------
-    outcatchHSPM <- calccatchHSPM(catch,glbc,scenes,aavcyrs=10)
-    medHSPM <- outcatchHSPM$medians
-    label <- names(medHSPM)
-    for (i in 1:length(medHSPM)) {
-      filename <- paste0("proj",label[i],".csv")
-      addtable(medHSPM[[label[i]]],filen=filename,rundir=rundir,category="HSPM",
-               caption=paste0("Median ",label[i]," values by sau and scenario."))
-    }
-    # catches tab-------------------------------------
-    outtab <- catchHSPM(rundir,hspm=outcatchHSPM,glbc,scenes,
-                        filen="compare_catches_boxplots.png",aavcyrs=10)
-    # catchBoxPlots tab------------------------------
-    boxbysau(rundir,hspm=outcatchHSPM,glbc,scenes,compvar="aavc",
-             filen="sau_aavc_boxplots.png",aavcyrs=10,maxval=0)
-    boxbysau(rundir,hspm=outcatchHSPM,glbc,scenes,compvar="sum5",
-             filen="sau_sum5_boxplots.png",aavcyrs=10,maxval=0) #
-    boxbysau(rundir,hspm=outcatchHSPM,glbc,scenes,compvar="sum10",
-             filen="sau_sum10_boxplots.png",aavcyrs=10,maxval=0) #
-    catchbpstats(rundir,outtab)
-    # cpueBoxPlots tab-------------------------------------------
-    cpueHSPM(rundir,cpue,glbc,scenes=scenes,filen="sau_maxce_boxplots.png")
-    outcpue <- cpueboxbysau(rundir,cpue,glbc,scenes,filen="sau_maxceyr_box.png",
-                            startyr=0,maxval=0)
-    # C_vs_MSY tab-----------------------------------------
-    cdivmsy <- catchvsMSY(catch,glbc,prods,scenes)
-    nscen <- length(scenes)
-    for (i in 1:nscen) {
-      plotsceneproj(rundir,cdivmsy[[i]],glbc[[i]],scenes[i],
-                    filen=paste0("Catch_div_MSY_",scenes[i],".png"),
-                    label="Catch / MSY",hline=1,Q=90)
-    }
-    # zone tab----------------------------------------
-    outprod <- tabulatezoneprod(rundir,prods,scenes)
-    plotzonedyn(rundir,scenes,zone,glbc,console=FALSE,q90=Q90,polys=TRUE,
-                intens=intensity,hlines=list(catch=outprod[,"MSY"],
-                spawnB=outprod[,"Bmsy"],harvestR=0,cpue=outprod[,"CEmsy"]))
+  }
+  # HSPM tab--------------------------------------------
+  outcatchHSPM <- calccatchHSPM(catch,glbc,scenes,aavcyrs=10)
+  medHSPM <- outcatchHSPM$medians
+  label <- names(medHSPM)
+  for (i in 1:length(medHSPM)) {
+    filename <- paste0("proj",label[i],".csv")
+    addtable(medHSPM[[label[i]]],filen=filename,rundir=rundir,category="HSPM",
+             caption=paste0("Median ",label[i]," values by sau and scenario."))
+  }
+  # catches tab-------------------------------------
+  outtab <- catchHSPM(rundir,hspm=outcatchHSPM,glbc,scenes,
+                      filen="compare_catches_boxplots.png",aavcyrs=10)
+  # catchBoxPlots tab------------------------------
+  boxbysau(rundir,hspm=outcatchHSPM,glbc,scenes,compvar="aavc",
+           filen="sau_aavc_boxplots.png",aavcyrs=10,maxval=0)
+  boxbysau(rundir,hspm=outcatchHSPM,glbc,scenes,compvar="sum5",
+           filen="sau_sum5_boxplots.png",aavcyrs=10,maxval=0) #
+  boxbysau(rundir,hspm=outcatchHSPM,glbc,scenes,compvar="sum10",
+           filen="sau_sum10_boxplots.png",aavcyrs=10,maxval=0) #
+  catchbpstats(rundir,outtab)
+  # cpueBoxPlots tab-------------------------------------------
+  cpueHSPM(rundir,cpue,glbc,scenes=scenes,filen="sau_maxce_boxplots.png")
+  outcpue <- cpueboxbysau(rundir,cpue,glbc,scenes,filen="sau_maxceyr_box.png",
+                          startyr=0,maxval=0)
+  # C_vs_MSY tab-----------------------------------------
+  cdivmsy <- catchvsMSY(catch,glbc,prods,scenes)
+  nscen <- length(scenes)
+  for (i in 1:nscen) {
+    plotsceneproj(rundir,cdivmsy[[i]],glbc[[i]],scenes[i],
+                  filen=paste0("Catch_div_MSY_",scenes[i],".png"),
+                  label="Catch / MSY",hline=1,Q=90)
+  }
+  # zone tab----------------------------------------
+  outprod <- tabulatezoneprod(rundir,prods,scenes)
+  plotzonedyn(rundir,scenes,zone,glbc,console=FALSE,q90=Q90,polys=TRUE,
+              intens=intensity,hlines=list(catch=outprod[,"MSY"],
+              spawnB=outprod[,"Bmsy"],harvestR=0,cpue=outprod[,"CEmsy"]))
 
-    # ribbon plots by sau and dynamic variable
-    # cpue <- scenebyvar(dyn=out$dyn,byvar="cpue",glb=out$glbc[[1]])
-    # Catch ribbon tab -------------------------------------------
-    catch <- scenebyvar(dyn,byvar="catch",glb=glbc,projonly = TRUE)
-    catqnts <- sauquantbyscene(catch,glbc)
-    sauribbon(rundir,scenes=scenes,varqnts=catqnts,
-                glbc=glbc,varname="Catch",console=FALSE,
-                q90=Q90,intens=intensity,addleg=ribbonleg)
-    # cpue ribbon tab------------------------------------------
-    cpue <- scenebyvar(dyn,byvar="cpue",glb=glbc,projonly = TRUE)
-    cpueqnts <- sauquantbyscene(cpue,glbc)
-    sauribbon(rundir,scenes=scenes,varqnts=cpueqnts,
-                glbc=glbc,varname="cpue",console=FALSE,
-                q90=Q90,intens=intensity,addleg=ribbonleg)
-    # depletion spawnB ribbon tab--------------------------------------------
-    deplsB <- scenebyvar(dyn,byvar="deplsB",glb=glbc,projonly=TRUE)
-    deplsBqnts <- sauquantbyscene(deplsB,glbc)
-    sauribbon(rundir,scenes=scenes,varqnts=deplsBqnts,
-                glbc=glbc,varname="deplsB",console=FALSE,
-                q90=Q90,intens=intensity,addleg=ribbonleg)
-    # depletion exploitB ribbon tab--------------------------------------------
-    depleB <- scenebyvar(dyn,byvar="depleB",glb=glbc,projonly=TRUE)
-    depleBqnts <- sauquantbyscene(depleB,glbc)
-    sauribbon(rundir,scenes=scenes,varqnts=depleBqnts,
-                glbc=glbc,varname="depleB",console=FALSE,
-                q90=Q90,intens=intensity,addleg=ribbonleg)
-    # phaseplots tab --------------------------------------------------
-    plotallphaseplots(rundir=rundir,dyn=dyn,prods,glb=glbc[[1]],scenes=scenes,width=9,
-                      height=10,fnt=7,pntcex=1.5,zero=FALSE,
-                      legloc="topright")
-  } else (
-    warning("Number of projection years differ, limiting plotted output \n")
-  )
+  # ribbon plots by sau and dynamic variable
+  # cpue <- scenebyvar(dyn=out$dyn,byvar="cpue",glb=out$glbc[[1]])
+  # Catch ribbon tab -------------------------------------------
+  catch <- scenebyvar(dyn,byvar="catch",glb=glbc,projonly = TRUE)
+  catqnts <- sauquantbyscene(catch,glbc)
+  sauribbon(rundir,scenes=scenes,varqnts=catqnts,
+              glbc=glbc,varname="Catch",console=FALSE,
+              q90=Q90,intens=intensity,addleg=ribbonleg)
+  # cpue ribbon tab------------------------------------------
+  cpue <- scenebyvar(dyn,byvar="cpue",glb=glbc,projonly = TRUE)
+  cpueqnts <- sauquantbyscene(cpue,glbc)
+  sauribbon(rundir,scenes=scenes,varqnts=cpueqnts,
+              glbc=glbc,varname="cpue",console=FALSE,
+              q90=Q90,intens=intensity,addleg=ribbonleg)
+  # depletion spawnB ribbon tab--------------------------------------------
+  deplsB <- scenebyvar(dyn,byvar="deplsB",glb=glbc,projonly=TRUE)
+  deplsBqnts <- sauquantbyscene(deplsB,glbc)
+  sauribbon(rundir,scenes=scenes,varqnts=deplsBqnts,
+              glbc=glbc,varname="deplsB",console=FALSE,
+              q90=Q90,intens=intensity,addleg=ribbonleg)
+  # depletion exploitB ribbon tab--------------------------------------------
+  depleB <- scenebyvar(dyn,byvar="depleB",glb=glbc,projonly=TRUE)
+  depleBqnts <- sauquantbyscene(depleB,glbc)
+  sauribbon(rundir,scenes=scenes,varqnts=depleBqnts,
+              glbc=glbc,varname="depleB",console=FALSE,
+              q90=Q90,intens=intensity,addleg=ribbonleg)
+  # phaseplots tab --------------------------------------------------
+  plotallphaseplots(rundir=rundir,dyn=dyn,prods,glb=glbc[[1]],scenes=scenes,width=9,
+                    height=10,fnt=7,pntcex=1.5,zero=FALSE,
+                    legloc="topright")
   makecompareoutput(rundir=rundir,glbc,scenes,scenarionames,postfixdir,
                     filesused=files[pickfiles],openfile=TRUE,verbose=FALSE)
   return(invisible(list(scenes=scenes,ans=ans,quantscen=quantscen,dyn=dyn,
