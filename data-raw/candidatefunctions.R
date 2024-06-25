@@ -795,9 +795,52 @@ printout(summod3)
 
 
 
+apply(tabmat,1,mean)
+
+apply(tabmat,1,mean) * 1.05
+columns <- c("AvRec","Wtb","DLMax","L95","L50mat","msy")
+rows <- c("BC","Wtb","DLMax","L95","L50mat")
+result5 <- matrix(0,nrow=5,ncol=6,dimnames=list(rows,columns))
+oldvals <- c(0,3.2,21.75,31.75,99.5)
+newvals <- c(0,3.34879,22.8375,38.9375,104.475) # Wtb, DLMax,L95,L50mat
+chgeloc <- c(0,9,6,8,4)
+load(file=paste0("C:/aMSE_scenarios/BC/","sau22.RData"))
+ctrl <- out$ctrl
+dfile <- pathtopath(ctrl$rundir,ctrl$datafile)
+deleteyrs <- matrix(c(0,0,0,0,0,0,0,1993,1994,1995,2014,2015,2016,2020),
+                    nrow=7,ncol=2,byrow=FALSE)
+require(TasHS)
+out <- do_condition(rundir=ctrl$rundir,controlfile=ctrl$controlfile,
+                    calcpopC=calcexpectpopC,
+                    verbose=TRUE,doproduct=TRUE,dohistoric=TRUE,
+                    matureL=c(70,200),wtatL=c(80,200),mincount=100,
+                    uplimH=0.4,incH=0.005,deleteyrs=deleteyrs)
+pops <- t(out$pops)
+pickout <- match(c("AvRec","Wtb","DLMax","L95","L50mat","msy"),rownames(pops))
+result5[1,] <- pops[pickout,1]
+for (i in 2:5) { # i = 2
+  indatr <- readLines(dfile)
+  vals <- as.numeric(removeEmpty(unlist(strsplit(indatr[45],split=","))))
+  vals[chgeloc[i]] <- newvals[i]
+  indatr[45] <- paste0(vals,collapse=" ,")
+  writeLines(indatr,con=dfile)
+  out <- do_condition(rundir=ctrl$rundir,controlfile=ctrl$controlfile,
+                      calcpopC=calcexpectpopC,
+                      verbose=TRUE,doproduct=TRUE,dohistoric=TRUE,
+                      matureL=c(70,200),wtatL=c(80,200),mincount=100,
+                      uplimH=0.4,incH=0.005,deleteyrs=deleteyrs)
+  pops <- t(out$pops)
+  pickout <- match(c("AvRec","Wtb","DLMax","L95","L50mat","msy"),rownames(pops))
+  result5[i,] <- pops[pickout,1]
+  indatr <- readLines(dfile)
+  vals <- as.numeric(removeEmpty(unlist(strsplit(indatr[45],split=","))))
+  vals[chgeloc[i]] <- oldvals[i]
+  indatr[45] <- paste0(vals,collapse=" ,")
+  writeLines(indatr,con=dfile)
+}
+result5
 
 
-
-
+result5[,6]/result5[1,6]
 
 

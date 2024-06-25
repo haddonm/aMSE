@@ -62,7 +62,6 @@ NULL
 #'   \item{taszoneD}{a list of 8 matrices and 2 arrays defining the
 #'       dynamics of a zone}
 #' }
-#' @docType package
 #' @name aMSE
 #' @keywords internal
 "_PACKAGE"

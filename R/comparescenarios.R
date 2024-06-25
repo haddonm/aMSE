@@ -1533,12 +1533,12 @@ plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,
     if (!console) {
       filen <- filenametopath(rundir,"zonedynamics.png")
       caption <- paste0("Outputs for each scenario summarized across the whole ",
-                        "zone. Plots of Catch, MatureB, HarvestR, and deplsB.",
-                        " Horizintal lines are Bmsy, MSY, and CEmsy.")
+                        "zone. Plots of Catch, MatureB, HarvestR, exploitB, and ",
+                        "Recruits. Horizintal lines are Bmsy, MSY, and CEmsy.")
     }
-    plotprep(width=8,height=6,newdev=FALSE,filename=filen,verbose=FALSE)
-    parset(plots=c(2,2),margin=c(0.3,0.4,0.05,0.05),outmargin=c(0,1,0,0),
-           byrow=FALSE)
+    plotprep(width=8,height=9,newdev=FALSE,filename=filen,verbose=FALSE)
+    parset(plots=c(3,2),margin=c(0.3,0.4,0.05,0.05),outmargin=c(0,1,0,0),
+           byrow=TRUE)
     for (i in 1:nscen) {
       varx[,,i] <- zone[[i]]$catch[hyrs:yrs,]
       varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975),
@@ -1569,6 +1569,20 @@ plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,
     }
     doquantplot(varq,varname="CPUE",yrnames,scenes,q90=q90,polys=polys,
                 intens=intens,hlin=hlines[[4]])
+    for (i in 1:nscen) {
+      varx[,,i] <- zone[[i]]$exploitB[hyrs:yrs,]
+      varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975),
+                         na.rm=TRUE)
+    }
+    doquantplot(varq,varname="Exploitable Biomass",yrnames,scenes,q90=q90,
+                polys=polys,intens=intens)
+    for (i in 1:nscen) {
+      varx[,,i] <- zone[[i]]$recruit[hyrs:yrs,]
+      varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975),
+                         na.rm=TRUE)
+    }
+    doquantplot(varq,varname="Recruitment",yrnames,scenes,q90=q90,
+                polys=polys,intens=intens)
     label <- paste0(scenes,collapse=",")
     legend("bottomright",legend=scenes,lwd=3,col=1:nscen,bty="n",cex=1.1)
     mtext("Zone Wide Dynamics",side=2,line=-0.2,outer=TRUE,cex=1.1)
