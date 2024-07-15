@@ -244,11 +244,11 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
   outhcr <- makehcrout(glb,hsargs)
   for (year in startyr:endyr) { # iter=1; year=startyr
     if (verbose) cat(yrnames[year]," ")
-      for (iter in 1:reps) {
+      for (iter in 1:reps) { # iter=1
       hcrdata <- getdata(sampleCE,sampleFIS,sampleNaS,
-                         sauCPUE=zoneDP$cesau[,,iter],
-                         sauacatch=zoneDP$acatch[,,iter],  # add year in here
-                         saucatch=zoneDP$catsau[,,iter],
+                         sauCPUE=as.matrix(zoneDP$cesau[,,iter]),
+                         sauacatch=as.matrix(zoneDP$acatch[,,iter]),  # add year in here
+                         saucatch=as.matrix(zoneDP$catsau[,,iter]),
                          sauNAS=list(Nt=zoneDP$Nt[,,,iter],
                          catchN=zoneDP$catchN[,,,iter],
                          NumNe=zoneDP$NumNe[,,,iter]),year=year,

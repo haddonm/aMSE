@@ -42,9 +42,10 @@ putNA <- function(x,pre,post) { # x=med14; pre=0; post=5
 #'
 #' @examples
 #' print("wait on data")
-addpops <- function(invar,nyrs,reps) {  # invar=invar; glb=glb
+addpops <- function(invar,nyrs,reps) {  # invar=inzone$acatch;nyrs=nyrs;reps=reps
   result <- array(0,dim=c(nyrs,reps),dimnames=list(1:nyrs,1:reps)) # 3D to 2D
-  for (iter in 1:reps) result[,iter] <- rowSums(invar[,,iter],na.rm=TRUE)
+  for (iter in 1:reps)
+    result[,iter] <- rowSums(as.matrix(invar[,,iter]),na.rm=TRUE)
   return(result)
 } # end of addpops
 

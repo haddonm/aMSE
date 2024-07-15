@@ -21,6 +21,7 @@
 #'
 #' @examples
 #' print("wait on suitable internal data sets")
+#' # histCE=histCE;saucpue=sauZone$cpue;glb=glb;rundir=rundir;filen=filen
 #' # sauZone=out$condout$sauZone; saucpue=sauZone$cpue; filen="";
 #' # histCE=out$condC$histCE;  glb=out$glb;obscol=2
 compareCPUE <- function(histCE,saucpue,glb,rundir,filen="",obscol=2) {
@@ -36,7 +37,7 @@ compareCPUE <- function(histCE,saucpue,glb,rundir,filen="",obscol=2) {
     years <- as.numeric(rownames(histCE))
     hyrs <- glb$hyrnames
     pick <- match(years,hyrs)
-    cpue <- saucpue[pick,1:nsau]
+    cpue <- as.matrix(saucpue[pick,1:nsau])
     rownames(cpue) <- years
   }
   label <- glb$saunames
@@ -129,8 +130,13 @@ diagnosticsproj <- function(zonePsau,glb,rundir,nrep=3) {
   resid <- catch[pickyr,,] - acatch[pickyr,,]
   parset(plots=pickbound(nsau),margin=c(0.3,0.35,0.05,0.05),
          outmargin = c(1,1,0,0))
-  for (sau in 1:nsau)
-    hist(resid[,sau,],breaks=25,main="",ylab=saunames[sau],xlab="")
+  for (sau in 1:nsau) {
+    if (length(dim(resid)) == 2) {
+      hist(resid,breaks=25,main="",ylab=saunames[sau],xlab="")
+    } else {
+      hist(resid[,sau,],breaks=25,main="",ylab=saunames[sau],xlab="")
+    }
+  }
   mtext("Difference between Observed and Expected SAU Catches",
         side=1,outer=TRUE,cex=1.1,line=-0.1)
   mtext("Frequency",side=2,outer=TRUE,cex=1.1,line=-0.1)
@@ -711,7 +717,7 @@ plotCNt <- function(Nt,glb,vline=NULL,start=3) {
 #' print("wait on suitable data sets")
 plotconditioning <- function(zoneDD,glb,zoneC,histCE,histCatch,rundir,
                              recdevs,console=TRUE) {
-  # zoneDD=zoneDD;glb=glb;zoneC=zoneCP;histCE=condC$histCE;rundir=rundir;recdevs=condC$recdevs
+  # zoneDD=zoneDD;glb=glb;zoneC=zoneC;histCE=condC$histCE;rundir=rundir;recdevs=condC$recdevs
   sauindex <- glb$sauindex
   popB0 <- getlistvar(zoneC,"B0")
   B0 <- tapply(popB0,sauindex,sum)
@@ -1667,7 +1673,7 @@ tasphaseplot <- function(proxyB,proxyH,glb,sau,rundir="",console=TRUE,fnt=7,
   targdepl <- 5
   limdepl <- 1
   limH <- 5
-  yrs <- as.numeric(rownames(proxyH[,,1]))
+  yrs <- as.numeric(rownames(as.matrix(proxyH[,,1])))
   nyrs <- length(yrs)
   filen <- ""
   if ((!console) & (setpar)) {
@@ -1676,9 +1682,9 @@ tasphaseplot <- function(proxyB,proxyH,glb,sau,rundir="",console=TRUE,fnt=7,
     caption <- paste0("Tasmanian PhasePlot_of Harvest Rate vs Mature Biomass for ",
                       glb$saunames[sau])
   }
-  medH <- apply(proxyH[,sau,],1,median)
+  medH <- as.matrix(apply(proxyH[,sau,],1,median))
   usemedH <- 10 - medH # because a high score = low H so re3versal is needed
-  meddepl <- apply(proxyB[,sau,],1,median)
+  meddepl <- as.matrix(apply(proxyB[,sau,],1,median))
   if (setpar) {
     plotprep(width=7,height=6,filename=filen,cex=0.9,verbose=FALSE)
     parset(cex.lab=1.25,margin=c(0.45,0.45,0.1,0.1),font=fnt)
@@ -1737,7 +1743,7 @@ tasphaseplot <- function(proxyB,proxyH,glb,sau,rundir="",console=TRUE,fnt=7,
 twophaseplots <- function(dyn,glb,outhcr,sau,kobeRP,rundir="",startyr=1992,
                           console=TRUE,fnt=7) {
 # dyn=sauout;glb=glb;outhcr=outhcr;sau=1;kobeRP=kobeRP;rundir=rundir;startyr=1992
-# console=FALSE;fnt=7
+# console=TRUE;fnt=7
   filen <- ""
   if (!console) {
     nfile <- paste0("PhasePlots_for_",glb$saunames[sau],".png")

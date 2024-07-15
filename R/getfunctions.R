@@ -21,7 +21,7 @@
 #'   getavrec(rundir,"saudataM1h5.csv",8)
 #' }
 getavrec <- function(rundir,datafile,nsau) {
-  filen <- filenametopath(rundir,datafile)
+  filen <- pathtopath(rundir,datafile)
   dat <- readLines(filen)
   pickA <- grep("AvRec",dat)[1] # ignore sAvRec
   avrec <- getConst(dat[pickA],nsau)
@@ -87,7 +87,7 @@ getdynamics <- function(zoneC,zoneDD,condC,glb,sau=1) {
 #'
 #' @examples
 #' print("wait on suitable internal data sets")
-#' # catsau=catch[[1]]; glb=glbc[[1]];period=5
+#' # catsau=zoneDP$catsau; glb=glbc[[1]];period=5
 getprojyrC <- function(catsau,glb,period=10) {
   hyrs <- glb$hyrs
   totyrs <- hyrs + glb$pyrs
@@ -96,9 +96,14 @@ getprojyrC <- function(catsau,glb,period=10) {
   columns <- c(glb$saunames,"zone")
   result <- matrix(0,nrow=reps,ncol=(nsau+1),dimnames=list(1:reps,columns))
   pmcat <- catsau[(hyrs+1):(hyrs+period),,]
-  for (i in 1:nsau) { # i = 1
-    saucat <- pmcat[,i,]
-    result[,i] <- colSums(saucat)
+  if (nsau == 1) {
+    saucat <- pmcat
+    result[,1] <- colSums(saucat)
+  } else {
+    for (i in 1:nsau) { # i = 1
+      saucat <- pmcat[,i,]
+      result[,i] <- colSums(saucat)
+    }
   }
   result[,(nsau+1)] <- rowSums(result)
   return(result)

@@ -534,9 +534,9 @@ makeabpop <- function(popparam,midpts,initLML) {
 #'
 #' @examples
 #' print("wait on datafiles")
+#'  #  rundir=rundir;ctrlfile=controlfile;doproduct=TRUE; verbose=TRUE;uplimH=0.35;incH=0.005
 makeequilzone <- function(rundir,ctrlfile="control.csv",doproduct=TRUE,
                           uplimH=0.4,incH=0.005,verbose=TRUE) {
- #  rundir=rundir;ctrlfile=controlfile;doproduct=FALSE; verbose=TRUE;uplimH=0.35;incH=0.005
   zone1 <- readctrlfile(rundir,infile=ctrlfile,verbose=verbose)
   ctrl <- zone1$ctrl
   glb <- zone1$globals     # glb without the movement matrix
@@ -1101,7 +1101,7 @@ resetexB0 <- function(zoneC,zoneD) {
 #' str(glb)
 #' }
 setupzone <- function(constants,zone1,doproduct,uplim=0.4,inc=0.005,verbose=TRUE) {
-  # constants=constants; zone1=zone1; doproduct=TRUE; uplim=0.4; inc=0.001; verbose=TRUE
+  # constants=constants; zone1=zone1; doproduct=TRUE; uplim=0.35; inc=0.001; verbose=TRUE
   ans <- makezoneC(zone1,constants) # initiates zoneC
   zoneC <- ans$zoneC
   glb <- ans$glb

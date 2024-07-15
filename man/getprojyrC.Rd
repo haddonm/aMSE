@@ -27,5 +27,5 @@ getprojyrC is used to calculate the cumulative catch taken
 }
 \examples{
 print("wait on suitable internal data sets")
-# catsau=catch[[1]]; glb=glbc[[1]];period=5
+# catsau=zoneDP$catsau; glb=glbc[[1]];period=5
 }

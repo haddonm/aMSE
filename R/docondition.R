@@ -64,6 +64,8 @@
 #' }
 adjustavrec <- function(rundir,glb,ctrl,calcpopC,verbose=TRUE,
                         lowmult=0.6,highmult=1.4,iterlim=30) {
+  # rundir=rundir; glb=glb;ctrl=ctrl;calcpopC=calcexpectpopC;verbose=TRUE
+  # lowmult=0.6;highmult=1.4;iterlim=30
   startime <- Sys.time()
   datafile <- ctrl$datafile
   controlfile <- ctrl$controlfile
@@ -71,7 +73,7 @@ adjustavrec <- function(rundir,glb,ctrl,calcpopC,verbose=TRUE,
   saunames <- glb$saunames
   final <- numeric(nsau)
   original <- getavrec(rundir,datafile,nsau=nsau)
-  for (sau in 1:nsau) { #  sau=3
+  for (sau in 1:nsau) { #  sau=1
     initial <- getavrec(rundir,datafile,nsau=nsau)
     param <- initial[sau]
     low <- param * lowmult
@@ -286,8 +288,9 @@ changeline <- function(indir, filename, linenumber, newline,verbose=FALSE) {
 #' @examples
 #' print("wait on suitable data sets in data")
 #' # rundir=rundir; controlfile=controlfile;calcpopC=calcexpectpopC
-#' # verbose=TRUE; doproduct=FALSE; dohistoric=TRUE; mincount=120
+#' # verbose=TRUE; doproduct=TRUE; dohistoric=TRUE; mincount=100
 #' # matureL=c(70,200);wtatL=c(80,200);mincount=120; uplimH=0.35;incH=0.005
+#' # deleteyrs=deleteyrs; prodpops=c(1,2,3,4)
 do_condition <- function(rundir,controlfile,calcpopC,
                          verbose=FALSE,doproduct=FALSE,dohistoric=TRUE,
                          matureL=c(70,200),wtatL=c(80,200),mincount=100,
@@ -438,12 +441,13 @@ do_condition <- function(rundir,controlfile,calcpopC,
 #'
 #' @examples
 #' print("wait on suitable internal data sets")
+#' # histCE=condC$histCE;saucpue=sauZone$cpue;glb=glb
 getCPUEssq <- function(histCE,saucpue,glb) {
   years <- as.numeric(rownames(histCE))
   hyrs <- glb$hyrnames
   pick <- match(years,hyrs)
   nsau <- glb$nSAU
-  cpue <- saucpue[pick,1:nsau]
+  cpue <- as.matrix(saucpue[pick,1:nsau])
   rownames(cpue) <- years
   label <- glb$saunames
   colnames(cpue) <- label
@@ -936,24 +940,28 @@ prodforpop <- function(rundir,inprod,pop,console=TRUE) {
 #'
 #' @examples
 #' print("Wait on suitable internal data files")
-#' #  param=param;rundir=rundir;controlfile=controlfile;datafile=datafile;linenum=29,
-#' #  calcpopC=calcexpectpopC;extra=extra;picksau=sau;nsau=nsau
+#' #  param=param;rundir=rundir;controlfile=controlfile;datafile=datafile;linenum="AvRec"
+#' #  calcpopC=calcexpectpopC;extra=extra;picksau=sau;nsau=nsau;outplot=FALSE
 sauavrecssq <- function(param,rundir,controlfile,datafile,linenum,
                         calcpopC,extra,picksau,nsau,outplot=FALSE) {
-  nsaum1 <- nsau - 1
-  if (picksau == 1)
-    replacetxt <- paste0("AvRec,",as.character(param),",",
-                         paste0(as.character(extra[1:nsaum1]),collapse=","),
-                         collapse=",")
-  if ((picksau > 1) & (picksau < nsau))
-    replacetxt <- paste0("AvRec,",
-                         paste0(as.character(extra[1:(picksau-1)]),collapse=","),
-                         ",",as.character(param),",",
-                         paste0(as.character(extra[picksau:nsaum1]),collapse=","))
-  if (picksau == nsau)
-    replacetxt <- paste0("AvRec,",
-                         paste0(as.character(extra[1:nsaum1]),collapse=","),
-                         ",",as.character(param),collapse=",")
+  if (nsau == 1) {
+    replacetxt <- paste0("AvRec,",as.character(param),",")#,collapse=",")
+  } else {
+    nsaum1 <- nsau - 1
+    if (picksau == 1)
+      replacetxt <- paste0("AvRec,",as.character(param),",",
+                           paste0(as.character(extra[1:nsaum1]),collapse=","),
+                           collapse=",")
+    if ((picksau > 1) & (picksau < nsau))
+      replacetxt <- paste0("AvRec,",
+                           paste0(as.character(extra[1:(picksau-1)]),collapse=","),
+                           ",",as.character(param),",",
+                           paste0(as.character(extra[picksau:nsaum1]),collapse=","))
+    if (picksau == nsau)
+      replacetxt <- paste0("AvRec,",
+                           paste0(as.character(extra[1:nsaum1]),collapse=","),
+                           ",",as.character(param),collapse=",")
+  }
   changeline(rundir,datafile,linenum,replacetxt)
   zone <- makeequilzone(rundir,controlfile,doproduct=FALSE,verbose=FALSE)
   # declare main objects

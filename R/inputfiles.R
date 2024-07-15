@@ -632,7 +632,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
    begin <- grep("START",indat) + 1
    runlabel <- getStr(indat[begin],1)
    datafile <- getStr(indat[begin+1],1)
-   bysau <- getsingleNum("bysau",indat)
+   bysau <- getsingleNum("bysau",indat) # this will be deprecated
    parfile <- getStr(indat[begin+3],1)
    optpars=NULL
    parsin=FALSE

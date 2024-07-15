@@ -25,4 +25,5 @@ getCPUEssq takes in the historical CPUE and the conditioned
 }
 \examples{
 print("wait on suitable internal data sets")
+# histCE=condC$histCE;saucpue=sauZone$cpue;glb=glb
 }
