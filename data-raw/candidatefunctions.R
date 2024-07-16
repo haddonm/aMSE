@@ -844,3 +844,12 @@ result5
 result5[,6]/result5[1,6]
 
 
+library(codeutils)
+
+extractRcode(indir="C:/Users/Malcolm/Dropbox/A_Code/aMSEGuide",
+             rmdfile="04_Using_aMSE.qmd",
+             filename="usingaMSE.R")
+
+
+
+

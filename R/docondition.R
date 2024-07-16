@@ -288,9 +288,9 @@ changeline <- function(indir, filename, linenumber, newline,verbose=FALSE) {
 #' @examples
 #' print("wait on suitable data sets in data")
 #' # rundir=rundir; controlfile=controlfile;calcpopC=calcexpectpopC
-#' # verbose=TRUE; doproduct=TRUE; dohistoric=TRUE; mincount=100
+#' # verbose=TRUE; doproduct=FALSE; dohistoric=TRUE; mincount=120
 #' # matureL=c(70,200);wtatL=c(80,200);mincount=120; uplimH=0.35;incH=0.005
-#' # deleteyrs=deleteyrs; prodpops=c(1,2,3,4)
+#' # deleteyrs=0; prodpops=NULL
 do_condition <- function(rundir,controlfile,calcpopC,
                          verbose=FALSE,doproduct=FALSE,dohistoric=TRUE,
                          matureL=c(70,200),wtatL=c(80,200),mincount=100,
@@ -399,8 +399,13 @@ do_condition <- function(rundir,controlfile,calcpopC,
       if (is.null(lfs)) {
         lfs <- NULL
        } else {
+         if (deleteyrs == 0) {
+           delyrs <- 0
+         } else {
+           delyrs <- deleteyrs[,plotsau]
+         }
          lfs <- preparesizecomp(condC$compdat$lfs[,,plotsau],mincount=mincount,
-                                deleteyears=deleteyrs[,plotsau])
+                                deleteyears=delyrs)
          yrsize <- as.numeric(colnames(lfs))
          pickyr <- match(yrsize,condC$histyr[,"year"])
       }

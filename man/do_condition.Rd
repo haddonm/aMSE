@@ -88,9 +88,9 @@ do_condition is a utility function that can be used to speed the
 \examples{
 print("wait on suitable data sets in data")
 # rundir=rundir; controlfile=controlfile;calcpopC=calcexpectpopC
-# verbose=TRUE; doproduct=TRUE; dohistoric=TRUE; mincount=100
+# verbose=TRUE; doproduct=FALSE; dohistoric=TRUE; mincount=120
 # matureL=c(70,200);wtatL=c(80,200);mincount=120; uplimH=0.35;incH=0.005
-# deleteyrs=deleteyrs; prodpops=c(1,2,3,4)
+# deleteyrs=0; prodpops=NULL
 }
 \seealso{
 {
