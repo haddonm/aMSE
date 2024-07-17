@@ -1031,8 +1031,10 @@ plotpopprops <- function(x,rundir,glb,varnames,startyr,console=TRUE,bins=25) {
 plotprod <- function(product,xname="MatB",yname="Catch",xlimit=NA,
                      xlab="Mature Biomass t",ylab="Production t",
                      font=7,filename="",devoff=FALSE) {
-  x <- product[,xname,]
-  y <- product[,yname,]
+  # product=product;xname="MatB";yname="Catch";xlimit=NA;xlab="Mature Biomass t"
+  # ylab="Production t";font=7;filename="";devoff=FALSE
+  x <- as.matrix(product[,xname,])
+  y <- as.matrix(product[,yname,])
   numpop <- ncol(x)
   maxy <- getmax(y)
   if (length(xlimit) == 1) xlimit <- c(0,getmax(x))
@@ -1295,8 +1297,9 @@ poplevelplot <- function(rundir,sau,popvar,glb,label="",console=TRUE) {
   saunames <- glb$saunames
   nyrs <- length(dimnames(popvar)[[1]])
   saudepl <- popvar[glb$hyrs:nyrs,(sauindex == sau),]
-  popnums <-  as.numeric(dimnames(saudepl)[[2]])
-  npop <- length(popnums)
+  npop <- glb$SAUpop[sau]
+  popnums <- 1
+  if (npop > 1) popnums <-  as.numeric(dimnames(saudepl)[[2]])
   reps <- glb$reps
   if (console) {
     filen <- ""
@@ -1312,12 +1315,18 @@ poplevelplot <- function(rundir,sau,popvar,glb,label="",console=TRUE) {
   label <- paste0(saunames[sau],"  ",label)
   plotprep(width=9,height=4.5,newdev=TRUE,filename=filen,cex=0.9,verbose=FALSE)
   parset()
-  plot(yrs,saudepl[,1,1],type="l",lwd=1,col="grey",ylim=c(0,maxy),
-       panel.first=grid(),xlab="",ylab=label)
-  for (iter in 1:reps) {
-    for (pop in 1:npop) {
-      lines(yrs,saudepl[,pop,iter],lwd=1,col="grey")
+  if (npop > 1) {
+    plot(yrs,saudepl[,1,1],type="l",lwd=1,col="grey",ylim=c(0,maxy),
+         panel.first=grid(),xlab="",ylab=label)
+    for (iter in 1:reps) {
+      for (pop in 1:npop) {
+        lines(yrs,saudepl[,pop,iter],lwd=1,col="grey")
+      }
     }
+  } else {
+    plot(yrs,saudepl[,1],type="l",lwd=1,col="grey",ylim=c(0,maxy),
+         panel.first=grid(),xlab="",ylab=label)
+    for (iter in 1:reps) lines(yrs,saudepl[,iter],lwd=1,col="grey")
   }
   meds <- matrix(0,nrow=numyrs,ncol=npop,dimnames=list(yrs,popnums))
   if (npop > 12) {
@@ -1325,10 +1334,14 @@ poplevelplot <- function(rundir,sau,popvar,glb,label="",console=TRUE) {
   } else {
     outcol <- popcol
   }
-  for (pop in 1:npop) {
-    meds[,pop] <- apply(saudepl[,pop,],1,median)
-
-    lines(yrs,meds[,pop],lwd=3,col=outcol[pop])
+  if (npop > 1) {
+    for (pop in 1:npop) {
+      meds[,pop] <- apply(saudepl[,pop,],1,median)
+      lines(yrs,meds[,pop],lwd=3,col=outcol[pop])
+    }
+  } else {
+    meds[,1] <- apply(saudepl,1,median)
+    lines(yrs,meds,lwd=3,col=2)
   }
   legend("topright",legend=popnums,col=c(popcol[1:npop]),lwd=4,bty="n",cex=1)
   if (!console) {

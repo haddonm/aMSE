@@ -261,7 +261,7 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
                        catsau = zoneDP$catsau[year-1,,iter],
                        fleetacatch=fleetdyn,hsargs=hsargs,glb=glb,
                        sigmab=sigmab,year=year)
-      outy <- oneyearsauC(zoneCC=zoneCP,inN=zoneDP$Nt[,year-1,,iter],
+      outy <- oneyearsauC(zoneCC=zoneCP,inN=as.matrix(zoneDP$Nt[,year-1,,iter]),
                           popC=calcpopCout$popC,year=year,Ncl=Nclass,
                           sauindex=sauindex,movem=movem,sigmar=sigmar,
                           sigce=sigce,r0=r0,b0=b0,exb0=exb0,envyr=envyr,
@@ -498,7 +498,7 @@ addrecvar <- function(zoneDD,zoneC,glob,condC,ctrl,varyrs,calcpopC,
                       fleetdyn,hsargs,sigR=1e-08,sigB=1e-08,lastsigR=0.3) {
   #  zoneDD=zoneDD;zoneC=zoneC;glob=glb; calcpopC=calcpopC
   #  condC=condC;ctrl=ctrl;varyrs=7;lastsigR=lastsigR;
-  #  sigR=1e-08; sigB=1e-08;
+  #  sigR=1e-08; sigB=1e-08; fleetdyn=NULL
   sauindex <- glob$sauindex
   histC <- condC$histCatch
   yrs <- condC$histyr[,"year"]
@@ -523,7 +523,7 @@ addrecvar <- function(zoneDD,zoneC,glob,condC,ctrl,varyrs,calcpopC,
   zoneDDR$catchN[,1:finalyr,,] <- zoneDD$catchN[,1:finalyr,]
   zoneDDR$Nt[,1:finalyr,,] <- zoneDD$Nt[,1:finalyr,]
   zoneDDR$NumNe[,1:finalyr,,] <- zoneDD$NumNe[,1:finalyr,]
-  for (i in 1:finalyr) { # i = 10
+  for (i in 1:finalyr) { # i = 1
     zoneDDR$acatch[i,,] <- tapply(zoneDD$catch[i,],sauindex,sum,na.rm=TRUE)
     saudyn <- poptosauCE(zoneDD$catch[i,],zoneDD$cpue[i,],sauindex)
     zoneDDR$cesau[i,,] <- saudyn$saucpue
@@ -547,7 +547,7 @@ addrecvar <- function(zoneDD,zoneC,glob,condC,ctrl,varyrs,calcpopC,
                        sauCPUE=cpuesau,catsau=catchsau,
                        fleetacatch=fleetdyn,hsargs=hsargs,
                        glb=glob,sigmab=sigB,year=year)
-      inN <- zoneDDR$Nt[,year-1,,iter]
+      inN <- as.matrix(zoneDDR$Nt[,year-1,,iter])
       out <- oneyearsauC(zoneCC=zoneC,inN=inN,popC=calcpopCout$popC,year=year,
                          Ncl=glob$Nclass,sauindex=sauindex,movem=glob$move,
                          sigmar=lastsigR,sigce=1e-08,r0=r0,b0=b0,exb0=exb0,

@@ -87,12 +87,15 @@ draftnumbersatsize <- function(rundir, glb, Nt, ssc=5) {
   saunames <- glb$saunames
   Nt <- Nt/1000.0
   filen <- pathtopath(rundir,"Initial_N-at-Size_by_SAU.png")
-  plotprep(width=7,height=6,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
+  plotprep(width=7,height=6,newdev=TRUE,filename=filen,cex=0.9,verbose=FALSE)
   parset(plots=pickbound(nsau))
-  for (plotsau in 1:nsau) {
+  for (plotsau in 1:nsau) { # plotsau=1
     pickcol <-  which(glb$sauindex == plotsau)
-    sNt <-
+    if (pickcol > 1) {
       Ntt <- rowSums(Nt[,pickcol],na.rm=TRUE)
+    } else {
+      Ntt <- Nt[,pickcol]
+    }
     xlabel <- paste0("Shell Length mm (",mids[ssc]," - 210mm)")
     plot(mids[ssc:nc],Ntt[ssc:nc],type="l",lwd=2,xlab=xlabel,
          ylab="Numbers-at_size '000s",panel.first=grid())

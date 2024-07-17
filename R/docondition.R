@@ -288,7 +288,7 @@ changeline <- function(indir, filename, linenumber, newline,verbose=FALSE) {
 #' @examples
 #' print("wait on suitable data sets in data")
 #' # rundir=rundir; controlfile=controlfile;calcpopC=calcexpectpopC
-#' # verbose=TRUE; doproduct=FALSE; dohistoric=TRUE; mincount=120
+#' # verbose=TRUE; doproduct=TRUE; dohistoric=TRUE; mincount=120
 #' # matureL=c(70,200);wtatL=c(80,200);mincount=120; uplimH=0.35;incH=0.005
 #' # deleteyrs=0; prodpops=NULL
 do_condition <- function(rundir,controlfile,calcpopC,
@@ -369,7 +369,7 @@ do_condition <- function(rundir,controlfile,calcpopC,
   addtable(palfs,filen="sizecompnumbers.csv",rundir=rundir,category="OrigComp",
            caption=label)
   # plot initial equilibrium size-comp by population
-  Nt <- zoneDD$Nt[,1,]
+  Nt <- as.matrix(zoneDD$Nt[,1,])
   rownames(Nt) <- glb$midpts
   colnames(Nt) <- paste0(glb$saunames[glb$sauindex],"_",1:glb$numpop)
   draftnumbersatsize(rundir, glb, Nt, ssc=5)
@@ -399,10 +399,10 @@ do_condition <- function(rundir,controlfile,calcpopC,
       if (is.null(lfs)) {
         lfs <- NULL
        } else {
-         if (deleteyrs == 0) {
-           delyrs <- 0
-         } else {
+         if (inherits(deleteyrs,"matrix")) {
            delyrs <- deleteyrs[,plotsau]
+         } else {
+           delyrs <- 0
          }
          lfs <- preparesizecomp(condC$compdat$lfs[,,plotsau],mincount=mincount,
                                 deleteyears=delyrs)

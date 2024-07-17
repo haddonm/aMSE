@@ -538,17 +538,27 @@ poptozone <- function(inzone,NAS=NULL,glb, B0, ExB0) {
   harvestR <- catch
   popcat <- inzone$catch
   popce <- inzone$cpue
-  for (iter in 1:reps) {
+  for (iter in 1:reps) { #
     harvestR[,iter] <- catch[,iter]/midyexpB[,iter]
-    for (yr in 1:nyrs) {
+    for (yr in 1:nyrs) { # yr = 1
       totC <- sum(popcat[yr,,iter],na.rm=TRUE)
       cpue[yr,iter] <- sum(popce[yr,,iter] * (popcat[yr,,iter]/totC),na.rm=TRUE)
       if (is.null(NAS)) {
-        catchN[,yr,iter] <- rowSums(inzone$catchN[,yr,,iter])
-        Nt[,yr,iter] <- rowSums(inzone$Nt[,yr,,iter])
+        if (glb$numpop > 1) {
+          catchN[,yr,iter] <- rowSums(inzone$catchN[,yr,,iter])
+          Nt[,yr,iter] <- rowSums(inzone$Nt[,yr,,iter])
+        } else {
+          catchN[,yr,iter] <- inzone$catchN[,yr,,iter]
+          Nt[,yr,iter] <- inzone$Nt[,yr,,iter]
+        }
       } else {
-        catchN[,yr,iter] <- rowSums(NAS$catchN[,yr,,iter])
-        Nt[,yr,iter] <- rowSums(NAS$Nt[,yr,,iter])
+        if (glb$numpop > 1) {
+          catchN[,yr,iter] <- rowSums(NAS$catchN[,yr,,iter])
+          Nt[,yr,iter] <- rowSums(NAS$Nt[,yr,,iter])
+        } else{
+          catchN[,yr,iter] <- NAS$catchN[,yr,,iter]
+          Nt[,yr,iter] <- NAS$Nt[,yr,,iter]
+        }
       }
     }
   }

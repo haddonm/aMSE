@@ -1,5 +1,5 @@
 #Tas context -----------------
-# postfixdir <- "sau5_4"
+# postfixdir <- "sau56"
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
@@ -33,7 +33,7 @@
 # incH=0.005
 # fissettings=NULL
 # fisindex=NULL
-#
+# #
 
 # SA context -------------
 # rundir=rundir
@@ -491,7 +491,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   names(popmedcpue) <- glb$saunames
   popmeddepleB <- vector(mode="list",length=nSAU)
   names(popmeddepleB) <- glb$saunames
-  for (sau in 1:nSAU) {
+  for (sau in 1:nSAU) { # sau = 1
     saumed <- poplevelplot(rundir=rundir,sau=sau,popvar=zoneDP$catch,glb=glb,
                  label="Catch",console=FALSE)
     popmedcatch[[sau]] <- saumed

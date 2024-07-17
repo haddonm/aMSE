@@ -342,8 +342,12 @@ numbersatsize <- function(rundir, glb, zoneD, ssc=5) {
   numpop <- glb$numpop
   nc <- glb$Nclass
   # initial numbers-at-size uses zoneD--
-  Nt <- zoneD$Nt[,1,]/1000.0
-  Ntt <- rowSums(zoneD$Nt[,1,])/1000.0  # totals
+  Nt <- as.matrix(zoneD$Nt[,1,])/1000.0
+  if (ncol(Nt) > 1) {
+    Ntt <- rowSums(Nt,na.rm=TRUE)  # totals
+  } else {
+    Ntt <- Nt
+  }
   if (nchar(rundir) > 0) {
     filen <- file.path(rundir,"Initial_N-at-Size.png")
   } else {
@@ -356,7 +360,8 @@ numbersatsize <- function(rundir, glb, zoneD, ssc=5) {
   maxy <- getmax(Nt[ssc:nc,])
   plot(mids[ssc:nc],Nt[ssc:nc,1],type="l",lwd=2,xlab="Shell Length mm (5 - 210mm)",
        ylab="Numbers-at_size '000s",panel.first=grid(),ylim=c(0,maxy))
-  for (pop in 2:numpop) lines(mids[ssc:nc],Nt[ssc:nc,pop],lwd=2,col=pop)
+  if (numpop > 1)
+    for (pop in 2:numpop) lines(mids[ssc:nc],Nt[ssc:nc,pop],lwd=2,col=pop)
   abline(h=0.0,col="darkgrey")
   legend("topright",paste0("P",1:numpop),lwd=3,col=c(1:numpop),bty="n",
          cex=1.2)
@@ -400,7 +405,7 @@ popgrowth <- function(rundir,zoneC,glb,console=TRUE,maxage=30,startsize=2.0) {
   saugrowth <- makelist(saunames)
   saupop <- glb$SAUpop
   size <- startsize
-  for (sau in 1:nsau) { # sau = 2
+  for (sau in 1:nsau) { # sau = 1
     pickS <- which(sauindex == sau)
     popg <- grow[pickS,]
     npop <- saupop[sau]
@@ -419,7 +424,7 @@ popgrowth <- function(rundir,zoneC,glb,console=TRUE,maxage=30,startsize=2.0) {
     parset(plots=pickbound(saupop[sau]),margin=c(0.25,0.3,0.05,0.05),
            outmargin=c(1.5,1.5,0,0),byrow=FALSE)
     for (pop in 1:saupop[sau]) {
-      p <- popg[pop,1:3]
+      if (is.null(nrow(popg))) p <- popg[1:3] else p <- popg[pop,1:3]
       for (age in 1:(maxage+1)) {
         incL <- (p[1]/((1+exp(log(19.0)*(growpop[age,pop]-p[2])/(p[3]-p[2])))))
         growpop[(age+1),pop] <- growpop[age,pop] + incL
@@ -573,8 +578,13 @@ plotproductivity <- function(rundir,product,glb,hsargs) {
                                            "the maxtarg for that SAU.")
   addplot(filen,rundir=rundir,category="Production",caption)
   # Now do total production
-  yield <- rowSums(product[,"Catch",])
-  spb <- rowSums(product[,"MatB",])
+  if (nsau > 1) {
+    yield <- rowSums(product[,"Catch",])
+    spb <- rowSums(product[,"MatB",])
+  } else {
+    yield <- product[,"Catch",]
+    spb <- product[,"MatB",]
+  }
   Ht <- harv
   depletMSY <- spb/spb[1]
   pickmsy <- which.max(yield)

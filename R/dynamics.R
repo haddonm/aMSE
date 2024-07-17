@@ -143,7 +143,7 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,fleetdyn,hsargs,
                      hsargs=hsargs,
                      glb=glob,
                      sigmab=sigB,year=year)
-    inN <- zoneDD$Nt[,year-1,]
+    inN <- as.matrix(zoneDD$Nt[,year-1,])
     out <- oneyearsauC(zoneCC=zoneC,inN=inN,popC=calcpopCout$popC,year=year,
                        Ncl=glob$Nclass,sauindex=sauindex,movem=glob$move,
                        sigmar=sigR,sigce=1e-08,r0=r0,b0=b0,exb0=exb0,rdev=rdev,
@@ -409,9 +409,10 @@ oneyearcat <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
 #'
 #' @examples
 #' print("Wait on new data")
-#' #  zoneCC=zoneCP;inN=zoneDP$Nt[,year-1,,iter];popC=popC;year=year;
-#' #  Ncl=Nclass;sauindex=sauindex;movem=movem;sigmar=sigmar;sigce=sigce;
-#' #  r0=r0;b0=b0;exb0=exb0;rdev=-1;envyr=envyr;envsurv=survNt;envrec=proprec
+#' #  zoneCC=zoneC;inN=inN;popC=calcpopCout$popC;year=year;
+#' #  Ncl=glob$Nclass;sauindex=sauindex;movem=glob$move;sigmar=sigR;sigce=1e-08;
+#' #  r0=r0;b0=b0;exb0=exb0;rdev=rdev;envyr=NULL;envsurv=NULL;envrec=NULL
+#' # fissetting=NULL;fisindex=NULL
 oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,movem,sigmar,
                         sigce=1e-08,r0,b0,exb0,rdev=-1,envyr,envsurv,envrec,
                         fissettings=NULL,fisindex=NULL) {
