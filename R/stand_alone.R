@@ -91,7 +91,7 @@ draftnumbersatsize <- function(rundir, glb, Nt, ssc=5) {
   parset(plots=pickbound(nsau))
   for (plotsau in 1:nsau) { # plotsau=1
     pickcol <-  which(glb$sauindex == plotsau)
-    if (pickcol > 1) {
+    if (length(pickcol) > 1) {
       Ntt <- rowSums(Nt[,pickcol],na.rm=TRUE)
     } else {
       Ntt <- Nt[,pickcol]
