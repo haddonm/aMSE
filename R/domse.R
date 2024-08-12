@@ -1,19 +1,19 @@
 #Tas context -----------------
-# postfixdir <- "sau56"
+# postfixdir <- "BCtarg"
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
-# hcrfun=constantrefhcr  #mcdahcr   #  # consthcr   #constantrefhcr
+# hcrfun= consthcr  #mcdahcr   #  # consthcr   #constantrefhcr
 # sampleCE=tasCPUE
 # sampleFIS=tasFIS
 # sampleNaS=tasNaS
-# getdata=tasdata
+# getdata=constdata   #  tasdata    constdata
 # calcpopC=calcexpectpopC
 # varyrs=7
 # startyr=38
 # verbose=TRUE
 # ndiagprojs=4
-# makeouthcr=makeouthcr   #makeoutconst - only used with consthcr# fleetdyn=NULL
+# makeouthcr=makeoutconst    #makeouthcr   #makeoutconst - only used with consthcr# fleetdyn=NULL
 # plotmultflags=plotmultandflags
 # scoreplot = plotfinalscores
 # cutcatchN=56
@@ -24,7 +24,7 @@
 # depensate=0
 # pmwtSwitch = 0
 # stablewts = c(0.4, 0.5, 0.1)
-# hcrname="constantrefhcr"  #"constantrefhcr"  #"mcdahcr"     #    #"consthcr"
+# hcrname="consthcr"  #"constantrefhcr"  #"mcdahcr"     #    #"consthcr"
 # kobeRP = c(0.4,0.2,0.15)
 # interimout=""
 # nasInterval=5
@@ -461,26 +461,29 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   #save(glb,file=paste0(rundir,"/glb.RData"))
   save_hsargs(rundir,hsargs)   # prints hsargs to HSPerfs tab
   if (verbose) cat("hsargs.txt saved to rundir \n")
-  if (verbose) cat("plotting HS performance statistics \n")
-  plothsstats(rundir,HSstats,glb,average=FALSE)
-  plothsstats(rundir,HSstats,glb,average=TRUE)
-  addtable(hcrout$refpts,"hcrout_refpts.csv",rundir,category="HSperf",
-           caption="HCR reference points")
-  # scores tab----------------------------------------------------
+  scoremed <- NULL
   nSAU <- glb$nSAU
-  for (sau in 1:nSAU) { # sau=7
-    filen <- paste0("HS_Score_plots_",glb$saunames[sau],".png")
-    filename <- pathtopath(rundir,filen)
-    caption <- paste0("Harvest strategy scores and outputs for ",
-                      glb$saunames[sau],". Blue line is median target CE.")
-    scoremed <- scoreplot(outhcr,zoneDP,sau,filen=filename)
-    addplot(filen,rundir=rundir,category="scores",caption)
-    filen <- paste0("HS_Mult_MetaFlag_plots_",glb$saunames[sau],".png")
-    filename <- pathtopath(rundir,filen)
-    caption <- paste0("catchmult and meta flags for ",glb$saunames[sau])
-    plotmultflags(outhcr=outhcr,sauans=sauout,sau=sau,filen=filename)
-    addplot(filen,rundir=rundir,category="scores",caption)
-    #medscores <- cbind(scoremed)
+  if (hsargs$hcrname != "consthcr") {
+    if (verbose) cat("plotting HS performance statistics \n")
+    plothsstats(rundir,HSstats,glb,average=FALSE)
+    plothsstats(rundir,HSstats,glb,average=TRUE)
+    addtable(hcrout$refpts,"hcrout_refpts.csv",rundir,category="HSperf",
+             caption="HCR reference points")
+  # scores tab----------------------------------------------------
+    for (sau in 1:nSAU) { # sau=7
+      filen <- paste0("HS_Score_plots_",glb$saunames[sau],".png")
+      filename <- pathtopath(rundir,filen)
+      caption <- paste0("Harvest strategy scores and outputs for ",
+                        glb$saunames[sau],". Blue line is median target CE.")
+      scoremed <- scoreplot(outhcr,zoneDP,sau,filen=filename)
+      addplot(filen,rundir=rundir,category="scores",caption)
+      filen <- paste0("HS_Mult_MetaFlag_plots_",glb$saunames[sau],".png")
+      filename <- pathtopath(rundir,filen)
+      caption <- paste0("catchmult and meta flags for ",glb$saunames[sau])
+      plotmultflags(outhcr=outhcr,sauans=sauout,sau=sau,filen=filename)
+      addplot(filen,rundir=rundir,category="scores",caption)
+      #medscores <- cbind(scoremed)
+    }
   }
   # poplevelplots tab ---------------------------------
   # generate population plots

@@ -1,7 +1,7 @@
 Package: aMSE
 Title: A Framework for Abalone Management Strategy Evaluation
-Version: 0.3.5
-Date: 2024-07-19
+Version: 0.3.6
+Date: 2024-08-12
 Authors@R: person(given="Malcolm",
                   family="Haddon", 
                   email = "malcolm.haddon@gmail.com", 
@@ -23,7 +23,7 @@ Imports:
     codeutils,
     hplot,
     makehtml
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 Suggests: 
     knitr,
     rmarkdown
