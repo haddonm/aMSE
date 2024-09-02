@@ -20,7 +20,7 @@ or 1.0, which prepares the recdevs for a round of conditioning ready to
 improve the observed fit to cpue.}
 }
 \value{
-invisibly the fill path and name of the control file. More
+invisibly the file path and name of the control file. More
     importantly, it write a control file template to that directory.
 }
 \description{
@@ -49,7 +49,7 @@ ctrlfiletemplate generates a standardized control file
  ctrlfiletemplate(yourdir,filename="controlEG.csv",devrec=-1)   #
  zone1 <- readctrlfile(yourdir,"controlEG.csv")
  str(zone1,max.level=1)
-}
+}  # indir=rundir; filename="controlEG.csv"; devrec=0.0
 }
 \seealso{
 {

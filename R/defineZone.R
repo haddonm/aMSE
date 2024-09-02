@@ -793,7 +793,8 @@ makezone <- function(glob,zoneC) { # glob=glb; zoneC=zoneC;
   }
   ans <- list(SAU=SAU,matureB=MatB,exploitB=ExplB,midyexpB=midyexpB,
               catch=Catch,harvestR=Harvest,cpue=cpue,recruit=Recruit,
-              deplsB=deplSpB,depleB=deplExB,catchN=CatchN,Nt=Nt,NumNe=NumNe)
+              deplsB=deplSpB,depleB=deplExB,catchN=CatchN,Nt=Nt,NumNe=NumNe,
+              outfis=NULL)
   return(list(zoneD=ans,zoneC=zoneC))
 } # end of makezone
 

@@ -186,7 +186,8 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 #' @param verbose should the iterations be counted on the console?
 #' @param fissettings an object containing settings used when calculating
 #'     indices for the FIS within oneyearcat inside oneyearsauC
-#' @param fisindex a function used to estimate the FIS index in oneyearcat
+#' @param yearFIS a vector holding the years of the FIS survey
+#' @param fisindexdata the fisindex data by SAU
 #' @param ... the ellipsis used in case any of the functions hcrfun, sampleCE,
 #'     sampleFIS, sampleNas, and getdata require extra arguments not included
 #'     in the default named collection
@@ -203,12 +204,12 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 #' print("wait on suitable internal data sets")
 doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
                           sampleCE,sampleFIS,sampleNaS,getdata,calcpopC,
-                          makehcrout,fleetdyn,verbose=FALSE,
-                          fissettings=NULL,fisindex=NULL,...) {
+                          makehcrout,fleetdyn,verbose=FALSE,fissettings=NULL,
+                          yearFIS=NULL,fisindexdata=NULL,...) {
   # ctrl=ctrl; zoneDP=zoneDP; zoneCP=zoneCP; glb=glb; hcrfun=hcrfun; hsargs=hsargs
   # sampleCE=tasCPUE; sampleFIS=tasFIS; sampleNaS=tasNaS;  getdata=tasdata
   # calcpopC=calcexpectpopC; verbose=TRUE; fleetdyn=NULL;makehcrout=makeouthcr
-  # fissettings=NULL;fisindex=NULL
+  # fissettings=NULL;fisindexdata=NULL;yearFIS=NULL
   reps <- ctrl$reps
   sigmar <- ctrl$withsigR
   sigmab <- ctrl$withsigB
@@ -266,7 +267,7 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
                           sauindex=sauindex,movem=movem,sigmar=sigmar,
                           sigce=sigce,r0=r0,b0=b0,exb0=exb0,envyr=envyr,
                           envsurv=survNt,envrec=proprec,
-                          fissettings=fissettings,fisindex=fisindex)
+                          fissettings=fissettings,fisindexdata=fisindexdata)
       dyn <- outy$dyn
       saudyn <- poptosauCE(dyn["catch",],dyn["cpue",],sauindex)
       zoneDP$exploitB[year,,iter] <- dyn["exploitb",]
@@ -552,7 +553,7 @@ addrecvar <- function(zoneDD,zoneC,glob,condC,ctrl,varyrs,calcpopC,
                          Ncl=glob$Nclass,sauindex=sauindex,movem=glob$move,
                          sigmar=lastsigR,sigce=1e-08,r0=r0,b0=b0,exb0=exb0,
                          rdev=condC$recdevs,envyr=NULL,envsurv=NULL,
-                         fissettings=NULL,fisindex=NULL)
+                         fissettings=NULL,fisindexdata=NULL)
       dyn <- out$dyn
       saudyn <- poptosauCE(dyn["catch",],dyn["cpue",],sauindex)
       zoneDDR$exploitB[year,,iter] <- dyn["exploitb",]

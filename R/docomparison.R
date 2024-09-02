@@ -72,7 +72,7 @@
 do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
                           intensity=100,zero=FALSE,Q90=TRUE,altscenes=NULL,
                           juris="",ribbonleg="topleft",...) {
-  # rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(1,5)
+  # rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(1,8)
   #  verbose=TRUE; intensity=100; zero=FALSE; altscenes=NULL
   #  juris="";ribbonleg="topleft"; Q90=TRUE
   # get files -------------------
@@ -137,7 +137,9 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
   # scenario properties-----------------------------------
   scenprops <- scenarioproperties(scenes,glbc,ctrlc,condCc)
   if ((verbose) & (any(scenprops[,"same"] == 0))) {
-    warning(cat("At least one important scenario property differs betweem scenarios \n"))
+    warnlab <- "At least one important scenario property differs betweem scenarios"
+    warning(cat(warnlab," \n"))
+    addtext(warnlab,rundir=rundir,filename="warnings.txt",category="scenes")
   }
   if (tolower(juris) == "tas") {
      cat("A specific jurisdiction fnction is required \n")
@@ -212,8 +214,8 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
   outprod <- tabulatezoneprod(rundir,prods,scenes)
   plotzonedyn(rundir,scenes,zone,glbc,console=FALSE,q90=Q90,polys=TRUE,
               intens=intensity,hlines=list(catch=outprod[,"MSY"],
-              spawnB=outprod[,"Bmsy"],harvestR=0,cpue=outprod[,"CEmsy"]))
-
+              spawnB=outprod[,"Bmsy"],harvestR=0,cpue=outprod[,"CEmsy"],
+              expB=outprod[,"Bexmsy"]))
   # ribbon plots by sau and dynamic variable
   # cpue <- scenebyvar(dyn=out$dyn,byvar="cpue",glb=out$glbc[[1]])
   # Catch ribbon tab -------------------------------------------

@@ -34,8 +34,6 @@ do_MSE(
   minsizecomp = c(100, 135),
   uplimH = 0.4,
   incH = 0.005,
-  fissettings = NULL,
-  fisindex = NULL,
   deleteyrs = 0
 )
 }
@@ -153,12 +151,6 @@ default = 0.4}
 
 \item{incH}{defines the interval between H steps when estimating productivity
 default = 0.005}
-
-\item{fissettings}{an object containing settings used when calculating
-indices for the FIS within oneyearcat inside oneyearsauC inside
-doprojections}
-
-\item{fisindex}{a function used to estimate the FIS index in oneyearcat}
 
 \item{deleteyrs}{default = 0, meaning delete no years from the sizecomp data.
 if there are years that are to be removed then this should be a matrix

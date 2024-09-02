@@ -1,19 +1,19 @@
 #Tas context -----------------
-# postfixdir <- "BCtarg"
+# postfixdir <- "BCtest"
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
-# hcrfun= consthcr  #mcdahcr   #  # consthcr   #constantrefhcr
+# hcrfun= constantrefhcr  #mcdahcr   #  # consthcr   #constantrefhcr
 # sampleCE=tasCPUE
 # sampleFIS=tasFIS
 # sampleNaS=tasNaS
-# getdata=constdata   #  tasdata    constdata
+# getdata=tasdata    #  tasdata    constdata
 # calcpopC=calcexpectpopC
 # varyrs=7
 # startyr=38
 # verbose=TRUE
 # ndiagprojs=4
-# makeouthcr=makeoutconst    #makeouthcr   #makeoutconst - only used with consthcr# fleetdyn=NULL
+# makeouthcr=makeouthcr    #makeouthcr   #makeoutconst - only used with consthcr# fleetdyn=NULL
 # plotmultflags=plotmultandflags
 # scoreplot = plotfinalscores
 # cutcatchN=56
@@ -24,7 +24,7 @@
 # depensate=0
 # pmwtSwitch = 0
 # stablewts = c(0.4, 0.5, 0.1)
-# hcrname="consthcr"  #"constantrefhcr"  #"mcdahcr"     #    #"consthcr"
+# hcrname="constantrefhcr"  #"constantrefhcr"  #"mcdahcr"     #    #"consthcr"
 # kobeRP = c(0.4,0.2,0.15)
 # interimout=""
 # nasInterval=5
@@ -32,8 +32,8 @@
 # uplimH=0.35
 # incH=0.005
 # fissettings=NULL
-# fisindex=NULL
-# #
+# fisindexdata=NULL
+# # #
 
 # SA context -------------
 # rundir=rundir
@@ -213,10 +213,6 @@
 #'     default = 0.4
 #' @param incH defines the interval between H steps when estimating productivity
 #'     default = 0.005
-#' @param fissettings an object containing settings used when calculating
-#'     indices for the FIS within oneyearcat inside oneyearsauC inside
-#'     doprojections
-#' @param fisindex a function used to estimate the FIS index in oneyearcat
 #' @param deleteyrs default = 0, meaning delete no years from the sizecomp data.
 #'     if there are years that are to be removed then this should be a matrix
 #'     of years to delete vs sau, ie years as rows and sau as columns. All
@@ -240,7 +236,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                    wtatL=c(80,200),mincount=100,includeNAS=FALSE,
                    depensate=0,kobeRP=c(0.4,0.2,0.15),nasInterval=5,
                    minsizecomp=c(100,135),uplimH=0.4,incH=0.005,
-                   fissettings=NULL,fisindex=NULL,deleteyrs=0) {
+                   deleteyrs=0) {
   # generate equilibrium zone -----------------------------------------------
   starttime <- (Sys.time())
   setuphtml(rundir)
@@ -373,7 +369,8 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                            sampleFIS=sampleFIS,sampleNaS=sampleNaS,
                            getdata=getdata,calcpopC=calcpopC,
                            makehcrout=makeouthcr,fleetdyn=fleetdyn,verbose=TRUE,
-                           fissettings=fissettings,fisindex=fisindex)
+                           fissettings=condC$fissettings,yearFIS=condC$yearFIS,
+                           fisindexdata=condC$fisindexdata)
   if (verbose) {
     incrtime1 <- Sys.time(); timeinc <- incrtime1 - incrtime2
     cat("All projections finished ",timeinc,attr(timeinc,"units") ,"\n")

@@ -1510,6 +1510,9 @@ plotsceneproj <- function(rundir,inarr,glb,scene,filen="",label="",
 #' #                    cpue=outprod[,"CEmsy"]))
 plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,
                         q90=TRUE,polys=TRUE,intens=127,hlines=NULL) {
+  # rundir=rundir;scenes=scenes;zone=zone;glbc=glbc;console=TRUE;q90=TRUE;
+  # polys=TRUE;intens=127; hlines=list(catch=outprod[,"MSY"],harvestR=0,
+  #  spawnB=outprod[,"Bmsy"],cpue=outprod[,"CEmsy"], expB=outprod[,"Bexmsy"])
   nscen <- length(scenes)
   allreps <- unlist(lapply(glbc,"[[","reps"))
   if (min(allreps) != max(allreps)) {
@@ -1574,6 +1577,7 @@ plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,
       varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975),
                          na.rm=TRUE)
     }
+    projexpB <- varx
     doquantplot(varq,varname="Exploitable Biomass",yrnames,scenes,q90=q90,
                 polys=polys,intens=intens)
     for (i in 1:nscen) {
@@ -1589,7 +1593,7 @@ plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,
     if (!console) {
       addplot(filen=filen,rundir=rundir,category="zone",caption)
     }
-    # phase plot of catchdivMSY vs
+    # phase plot of catchdivMSY vs MatB/Bmsy
     catbymsy <- projcatch
     matBbyBmsy <- projmatB
     for (i in 1:nscen) {
@@ -1608,24 +1612,81 @@ plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,
     ylabel="Median Actual Catches div MSY"
     xmin <- getmin(xvar); xmax <- getmax(xvar)
     ymin <- getmin(yvar); ymax <- getmax(yvar)
-    filen <- pathtopath(rundir,
-                        paste0(removeEmpty(ylabel),
-                               "_vs_",removeEmpty(xlabel),".png"))
+    filen=""
+    if (!console) {
+      filen <- pathtopath(rundir,
+                          paste0(removeEmpty(ylabel),
+                                "_vs_",removeEmpty(xlabel),".png"))
+    }
     plotprep(width=7,height=7,newdev=FALSE,filename=filen,
              verbose=FALSE,usefont=7)
     parset()
     plot(xvar[,1],yvar[,1],type="l",lwd=2,col=1,xlab=xlabel,ylab=ylabel,
          panel.first=grid(),xlim=c(xmin,xmax),ylim=c(ymin,ymax))
-    points(xvar[,1],yvar[,1],pch=16,cex=1.0,col=1)
+    points(xvar[,1],yvar[,1],pch=16,cex=1.5,col=1)
     for (i in 2:nscen) {
       lines(xvar[,i],yvar[,i],lwd=2,col=i)
-      points(xvar[,i],yvar[,i],pch=16,cex=1.0,col=i)
+      points(xvar[,i],yvar[,i],pch=16,cex=1.5,col=i)
+    }
+    for (i in 1:nscen) {
+      points(xvar[1,i],yvar[1],pch=16,cex=2.5,col="green")
+      points(xvar[nyrs,i],yvar[nyrs,i],pch=16,cex=2.5,col="red")
     }
     abline(h=1.0,lwd=1,lty=2)
     abline(v=1.0,lwd=1,lty=2)
     legend("bottomright",scenes,col=c(1:nscen),lwd=4,bty="n",cex=1.25)
-    addplot(filen=filen,rundir=rundir,category="zone",
-            caption="Phase plot of C/MSY vs MatB/Bmsy")
+    if (!console) {
+      caplab=paste0("Phase plot of C/MSY vs MatB/Bmsy. Large green dots = ",
+                    "projection start, large red dots = last projection year.")
+      addplot(filen=filen,rundir=rundir,category="zone",caption=caplab)
+    }
+    # phase plot of catchdivMSY vs expB/Bexmsy
+    catbymsy <- projcatch
+    expBbyBexmsy <- projexpB
+    for (i in 1:nscen) {
+      catbymsy[,,i] <- projcatch[,,i]/hlines$catch[i]
+      expBbyBexmsy[,,i] <- projmatB[,,i]/hlines$expB[i]
+    }
+    yrs <- c(tail(glb$hyrnames,1),glb$pyrnames)
+    nyrs <- length(yrs)
+    yvar <- xvar <- array(0,c(nyrs,nscen),
+                          dimnames=list(yrs,scenes))
+    for (scen in 1:nscen) {
+      xvar[,scen] <- apply(expBbyBexmsy[,,scen],1,median)
+      yvar[,scen] <- apply(catbymsy[,,scen],1,median)
+    }
+    xlabel="Median Exploitable Biomass div Bexmsy"
+    ylabel="Median Actual Catches div MSY"
+    xmin <- getmin(xvar); xmax <- getmax(xvar)
+    ymin <- getmin(yvar); ymax <- getmax(yvar)
+    filen=""
+    if (!console) {
+      filen <- pathtopath(rundir,
+                          paste0(removeEmpty(ylabel),
+                                 "_vs_",removeEmpty(xlabel),".png"))
+    }
+    plotprep(width=7,height=7,newdev=FALSE,filename=filen,
+             verbose=FALSE,usefont=7)
+    parset()
+    plot(xvar[,1],yvar[,1],type="l",lwd=2,col=1,xlab=xlabel,ylab=ylabel,
+         panel.first=grid(),xlim=c(xmin,xmax),ylim=c(ymin,ymax))
+    points(xvar[,1],yvar[,1],pch=16,cex=1.5,col=1)
+    for (i in 2:nscen) {
+      lines(xvar[,i],yvar[,i],lwd=2,col=i)
+      points(xvar[,i],yvar[,i],pch=16,cex=1.5,col=i)
+    }
+    for (i in 1:nscen) {
+      points(xvar[1,i],yvar[1],pch=16,cex=2.5,col="green")
+      points(xvar[nyrs,i],yvar[nyrs,i],pch=16,cex=2.5,col="red")
+    }
+    abline(h=1.0,lwd=1,lty=2)
+    abline(v=1.0,lwd=1,lty=2)
+    legend("bottomright",scenes,col=c(1:nscen),lwd=4,bty="n",cex=1.25)
+    if (!console) {
+      caplab=paste0("Phase plot of C/MSY vs expB/Bexmsy. Large green dots = ",
+                     "projection start, large red dots = last projection year.")
+      addplot(filen=filen,rundir=rundir,category="zone",caption=caplab)
+    }
   } # end of else statement
 } # end of plotzonedyn
 
@@ -2002,13 +2063,14 @@ tabulateproductivity <- function(rundir,prods,scenes) {
 #' # syntax tabulatezoneprod(rundir=rundir,prods=prods,scenes=scenes)
 tabulatezoneprod <- function(rundir,prods,scenes) {
   nscen <- length(scenes)
-  columns <- c("B0","Bmsy","MSY","Dmsy","CEmsy")
-  out <- matrix(0,nrow=nscen,ncol=5,dimnames=list(scenes,columns))
+  columns <- c("B0","Bmsy","MSY","Dmsy","CEmsy","Bexmsy")
+  out <- matrix(0,nrow=nscen,ncol=length(columns),dimnames=list(scenes,columns))
   for (i in 1:nscen) { # i=2
     scenprod <- prods[[i]]
     out[i,1:3] <- colSums(scenprod[,1:3])
-    out[i,4] <- mean(scenprod[,4])
-    out[i,5] <- sum((scenprod[,3]/out[i,3]) * scenprod[,5])
+    out[i,"Dmsy"] <- mean(scenprod[,"Dmsy"])
+    out[i,"CEmsy"] <- sum((scenprod[,3]/out[i,3]) * scenprod[,5])
+    out[i,"Bexmsy"] <- sum(scenprod[,"Bexmsy"])
   }
   filen <- paste0("zone_productivity.csv")
   caption <- paste0("Productivity statistics for the whole zone.")

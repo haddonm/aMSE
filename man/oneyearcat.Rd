@@ -18,7 +18,7 @@ oneyearcat(
   lambda,
   qest,
   fissettings = NULL,
-  fisindex = NULL
+  fisindexdata = NULL
 )
 }
 \arguments{
@@ -57,7 +57,7 @@ exploitable biomass value from the model}
 \item{fissettings}{an object containing settings used when calculating
 indices for the FIS within oneyearcat inside oneyearsauC}
 
-\item{fisindex}{a function used to estimate the FIS index}
+\item{fisindexdata}{a function used to estimate the FIS index}
 }
 \value{
 a list containing a vector of ExploitB, MatureB, Catch, and ce, and

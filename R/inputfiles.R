@@ -84,7 +84,7 @@ checkmsedata <- function(intxt,rundir,verbose=TRUE) { # intxt=indat;verbose=TRUE
 #'   \link{datafiletemplate}, \link{readsaudatafile}, \link{readctrlfile}
 #' }
 #'
-#' @return invisibly the fill path and name of the control file. More
+#' @return invisibly the file path and name of the control file. More
 #'     importantly, it write a control file template to that directory.
 #'
 #' @export
@@ -97,8 +97,8 @@ checkmsedata <- function(intxt,rundir,verbose=TRUE) { # intxt=indat;verbose=TRUE
 #'  ctrlfiletemplate(yourdir,filename="controlEG.csv",devrec=-1)   #
 #'  zone1 <- readctrlfile(yourdir,"controlEG.csv")
 #'  str(zone1,max.level=1)
-#' }
-ctrlfiletemplate <- function(indir,filename="controlEG.csv",devrec=0.0) { # indir=rundir; filename="controlEG.csv"; devrec=0.0
+#' }  # indir=rundir; filename="controlEG.csv"; devrec=0.0
+ctrlfiletemplate <- function(indir,filename="controlEG.csv",devrec=0.0) {
    if (!(devrec %in% c(-1,0.0,1.0)))
       stop("devrec must be either -1, 0.0, or 1 in ctrlfiletemplate  \n")
    filename <- filenametopath(indir,filename)
@@ -806,19 +806,20 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
    }  # end of use envimpact
    # start of FIS input section
    yearFIS <- NULL
-   fisindex <- NULL
+   fisindexdata <- NULL
+   fissettings <- NULL
    yrfis <- getsingleNum("FISINDEX",indat)
    if (!is.null(yrfis)) {
      if (yrfis > 0) {
        begin <- grep("FISINDEX",indat)
-       fisindex <- matrix(NA,nrow=yrfis,ncol=nSAU)
+       fisindexdata <- matrix(NA,nrow=yrfis,ncol=nSAU)
        yearFIS <- numeric(yrce)
-       colnames(fisindex) <- SAUnames
+       colnames(fisindexdata) <- SAUnames
        for (i in 1:yrfis) {
-         begin <- begin + 1
+         begin <- begin + 1  # start reading from 1 line below FISINDEX
          cenum <- as.numeric(unlist(strsplit(indat[begin],",")))
          yearFIS[i] <- cenum[1]
-         fisindex[i,] <- cenum[2:(nSAU+1)]
+         fisindexdata[i,] <- cenum[2:(nSAU+1)]
        }
        rownames(fisindex) <- yearFIS
        begin <- grep("FISSETTINGS",indat)
@@ -875,8 +876,8 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
    condC <- list(histCatch=histCatch,histyr=histyr,
                  histCE=histCE,yearCE=yearCE,initdepl=initdepl,
                  compdat=compdat,recdevs=recdevs,parsin=parsin,optpars=optpars,
-                 sizecomp=sizecomp,lffiles=lffiles,poprec=NULL,
-                 fisindex=fisindex,yearFIS=yearFIS)
+                 sizecomp=sizecomp,lffiles=lffiles,poprec=NULL,yearFIS=yearFIS,
+                 fisindexdata=fisindexdata,fissettings=fissettings)
    projC <- list(projLML=projLML,projyrs=projyrs,
                  Sel=NULL,SelWt=NULL,histCE=histCE)
    outctrl <- list(runlabel,datafile,infile,reps,randomseed,randomseedP,

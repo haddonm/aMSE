@@ -22,7 +22,7 @@ oneyearsauC(
   envsurv,
   envrec,
   fissettings = NULL,
-  fisindex = NULL
+  fisindexdata = NULL
 )
 }
 \arguments{
@@ -69,7 +69,7 @@ in a given year that survives, by population}
 \item{fissettings}{an object containing settings used when calculating
 indices for the FIS within oneyearcat inside oneyearsauC}
 
-\item{fisindex}{a function used to estimate the FIS index in oneyearcat}
+\item{fisindexdata}{the FIS index data by SAU}
 }
 \value{
 a list containing a revised dynamics list
@@ -92,10 +92,11 @@ oneyearsauC conducts one year's dynamics in the simulation
 }
 \examples{
 print("Wait on new data")
-#  zoneCC=zoneC;inN=inN;popC=calcpopCout$popC;year=year;
-#  Ncl=glob$Nclass;sauindex=sauindex;movem=glob$move;sigmar=sigR;sigce=1e-08;
-#  r0=r0;b0=b0;exb0=exb0;rdev=rdev;envyr=NULL;envsurv=NULL;envrec=NULL
-# fissetting=NULL;fisindex=NULL
+#  zoneCC=zoneCP;inN=as.matrix(zoneDP$Nt[,year-1,,iter]);
+#  popC=calcpopCout$popC;year=year; Ncl=Nclass;sauindex=sauindex;
+#  movem=movem;sigmar=sigmar;sigce=sigce;r0=r0;b0=b0;exb0=exb0;
+#  envyr=envyr;envsurv=NULL;envrec=NULL
+# fissetting=NULL;fisindexdata=NULL
 }
 \seealso{
 {

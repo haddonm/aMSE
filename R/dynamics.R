@@ -147,8 +147,9 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,fleetdyn,hsargs,
     out <- oneyearsauC(zoneCC=zoneC,inN=inN,popC=calcpopCout$popC,year=year,
                        Ncl=glob$Nclass,sauindex=sauindex,movem=glob$move,
                        sigmar=sigR,sigce=1e-08,r0=r0,b0=b0,exb0=exb0,rdev=rdev,
-                       envyr=NULL,envsurv=NULL,envrec=NULL,fissettings=NULL,
-                       fisindex=NULL)
+                       envyr=NULL,envsurv=NULL,envrec=NULL,
+                       fissettings=condC$fissettings,
+                       fisindexdata=condC$fisindexdata)
     dyn <- out$dyn
     zoneDD$exploitB[year,] <- dyn["exploitb",]
     zoneDD$midyexpB[year,] <- dyn["midyexpB",]
@@ -307,7 +308,7 @@ oneyear <- function(MatWt,SelWt,selyr,Me,G,qest,WtL,inNt,inH,lambda,scalece) {
 #' @param qest the estimated catchability from sizemod from zoneC
 #' @param fissettings an object containing settings used when calculating
 #'     indices for the FIS within oneyearcat inside oneyearsauC
-#' @param fisindex a function used to estimate the FIS index
+#' @param fisindexdata a function used to estimate the FIS index
 #'
 #' @seealso{
 #'  \link{dohistoricC}, \link{oneyearcat}, \link{oneyearrec}
@@ -324,7 +325,7 @@ oneyear <- function(MatWt,SelWt,selyr,Me,G,qest,WtL,inNt,inH,lambda,scalece) {
 #' #            incat=popC[popn],sigce=sigce,lambda=pop$lambda,qest=pop$qest,
 #' #            fissettings=NULL,fisindex=NULL)
 oneyearcat <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
-                       lambda,qest,fissettings=NULL,fisindex=NULL) {
+                       lambda,qest,fissettings=NULL,fisindexdata=NULL) {
   MatWt <- MatWt/1e06
   SelectWt <- SelWt/1e06
   Nclass <- length(selyr)
@@ -345,7 +346,7 @@ oneyearcat <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
   ce <- as.numeric((qest * (((scalece*avExpB) * error) ^ lambda)))
   outfis <- NULL
   if (!is.null(fissettings)) {
-    outfis <- fisindex(fissettings,inNt)
+    outfis <- fisindexdata(fissettings,inNt)
   }
   vect <- c(exploitb=avExpB,midyexpB=midyexpB,matureb=MatureB,
             catch=Catch,cpue=ce)
@@ -397,7 +398,7 @@ oneyearcat <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
 #'     in a given year that survives, by population
 #' @param fissettings an object containing settings used when calculating
 #'     indices for the FIS within oneyearcat inside oneyearsauC
-#' @param fisindex a function used to estimate the FIS index in oneyearcat
+#' @param fisindexdata the FIS index data by SAU
 #'
 #' @seealso{
 #'  \link{dohistoricC}, \link{oneyearcat}, \link{oneyearrec},
@@ -409,13 +410,14 @@ oneyearcat <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
 #'
 #' @examples
 #' print("Wait on new data")
-#' #  zoneCC=zoneC;inN=inN;popC=calcpopCout$popC;year=year;
-#' #  Ncl=glob$Nclass;sauindex=sauindex;movem=glob$move;sigmar=sigR;sigce=1e-08;
-#' #  r0=r0;b0=b0;exb0=exb0;rdev=rdev;envyr=NULL;envsurv=NULL;envrec=NULL
-#' # fissetting=NULL;fisindex=NULL
+#' #  zoneCC=zoneCP;inN=as.matrix(zoneDP$Nt[,year-1,,iter]);
+#' #  popC=calcpopCout$popC;year=year; Ncl=Nclass;sauindex=sauindex;
+#' #  movem=movem;sigmar=sigmar;sigce=sigce;r0=r0;b0=b0;exb0=exb0;
+#' #  envyr=envyr;envsurv=NULL;envrec=NULL
+#' # fissetting=NULL;fisindexdata=NULL
 oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,movem,sigmar,
                         sigce=1e-08,r0,b0,exb0,rdev=-1,envyr,envsurv,envrec,
-                        fissettings=NULL,fisindex=NULL) {
+                        fissettings=NULL,fisindexdata=NULL) {
   npop <- length(popC)
   ans <- vector("list",npop)
   if (year %in% envyr) {
@@ -432,7 +434,7 @@ oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,movem,sigmar,
                               scalece=pop$scalece,WtL=pop$WtL,
                               inNt=(inN[,popn] * survP),incat=popC[popn],
                               sigce=sigce,lambda=pop$lambda,qest=pop$qest,
-                              fissettings=fissettings,fisindex=fisindex)
+                              fissettings=fissettings,fisindexdata=fisindexdata)
   }
   dyn <- sapply(ans,"[[","vect")
   steep <- getvect(zoneCC,"steeph") #sapply(zoneC,"[[","popdef")["steeph",]
