@@ -109,6 +109,7 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
     scores[[i]] <- out$outhcr
     zone[[i]] <- out$outzone
   }
+  cat("\n")
   # end results extraction----------------------
   scenarionames <- scenes
   nscenes <- length(scenes)
@@ -138,8 +139,9 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
   scenprops <- scenarioproperties(scenes,glbc,ctrlc,condCc)
   if ((verbose) & (any(scenprops[,"same"] == 0))) {
     warnlab <- "At least one important scenario property differs betweem scenarios"
-    warning(cat(warnlab," \n"))
-    addtext(warnlab,rundir=rundir,filename="warnings.txt",category="scenes")
+    warning(cat(warnlab," \n\n"))
+    makehtml::addtext(warnlab,rundir=rundir,filename="warnings.txt",
+                      category="scenes")
   }
   if (tolower(juris) == "tas") {
      cat("A specific jurisdiction fnction is required \n")
@@ -217,7 +219,6 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
               spawnB=outprod[,"Bmsy"],harvestR=0,cpue=outprod[,"CEmsy"],
               expB=outprod[,"Bexmsy"]))
   # ribbon plots by sau and dynamic variable
-  # cpue <- scenebyvar(dyn=out$dyn,byvar="cpue",glb=out$glbc[[1]])
   # Catch ribbon tab -------------------------------------------
   catch <- scenebyvar(dyn,byvar="catch",glb=glbc,projonly = TRUE)
   catqnts <- sauquantbyscene(catch,glbc)

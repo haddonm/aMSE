@@ -1638,6 +1638,87 @@ saurecdevs <- function(recdevs,glb,rundir,filen="") {
   }
 } # end of compareCPUE
 
+#' @title simplephaseplot plots phase plots for multiple scenarios
+#'
+#' @description simplephaseplot commonly one wants to plot a dynamic variable
+#'     agsint another in a phase plot to illistrate how they change relative to
+#'     one another. This is done for multiple scenarios for comparison. This
+#'     function attempts to provide a simplified wrapper to do that.
+#'
+#' @param rundir the scenario directory for results storage
+#' @param xvar a vector of values defining the dynamics of the x variable
+#' @param yvar a vector of values defining the dynamics of the y variable
+#' @param xlabel the labelfor the x-axis, also used in the file name if saved
+#' @param ylabel the labelfor the y-axis, also used in the file name if saved
+#' @param console should the plot go to the console or be saved as a png file
+#' @param width the width of the plot, default = 7
+#' @param height the height of the plot, default = 7
+#' @param font which font to use, default = 7 = bold Serif
+#' @param hline adds horizontal reference line to the plot. default = NULL,
+#'     which means no line is added, perhaps use hline = 1.0
+#' @param vline adds vertical reference line to the plot. default = NULL,
+#'     which means no line is added, perhaps use vline = 1.0
+#' @param legpos where to put the legend on the plot, default = 'bottomright'
+#' @param scenes the names of scenarios to be compared.
+#'
+#' @return nothing but it does generate a plot
+#' @export
+#'
+#' @examples
+#' x = c()
+#' require(codeutils)
+#' require(hplot)
+#' x <- c(0.8,1.1,1.5,1.7, 1.8,1.7,1.6, 1.3,1.2, 1.1,1.1,1.35,1.425,1.35)
+#' y <- c(0.8,0.5,0.5,0.65,0.9,1.2,1.25,1.3,1.27,1.1,1.0,0.9, 0.95,1.05)
+#' simplephaseplot(xvar=x,yvar=y,xlabel="X",ylabel="Y",console=TRUE,scenes="A")
+#' x1 <- matrix(c(0.8,1.1,1.5,1.7, 1.8,1.7,1.6, 1.3,1.2, 1.1,1.1,1.35,1.425,
+#'                1.35,0.8,1.15,1.55,1.75,1.85,1.75,1.65,1.35,1.25,1.15,1.15,
+#'                1.40,1.475,1.4),nrow=14,ncol=2)
+#' y1 <- matrix(c(0.8,0.5,0.5,0.65,0.9,1.2,1.25,1.3,1.27,1.1,1.0,0.9,0.95,1.05,
+#'                0.8,0.5,0.5,0.65,0.9,1.2,1.25,1.3,1.27,1.1,1.0,0.9,0.95,1.05),
+#'                nrow=14,ncol=2)
+#' simplephaseplot(xvar=x1,yvar=y1,xlabel="X1",ylabel="Y1",console=TRUE,
+#'                 scenes=c("A","B"))
+simplephaseplot <- function(rundir,xvar,yvar,xlabel,ylabel,console=TRUE,
+                            width=7,height=7,font=7,hline=NULL,vline=NULL,
+                            legpos="bottomright",scenes=c("A","B")) {
+  xmin <- getmin(xvar); xmax <- getmax(xvar)
+  ymin <- getmin(yvar); ymax <- getmax(yvar)
+  filen=""
+  if (!console) {
+    filen <- pathtopath(rundir,
+                        paste0(removeEmpty(ylabel),
+                               "_vs_",removeEmpty(xlabel),".png"))
+  }
+  nscen <- length(scenes)
+  xvarm=as.matrix(xvar); yvarm=as.matrix(yvar)
+  nobs <- length(xvarm[,1])
+  plotprep(width=width,height=height,newdev=FALSE,filename=filen,
+           verbose=FALSE,usefont=font)
+  parset(cex=1.0)
+  plot(xvarm[,1],yvarm[,1],type="l",lwd=2,col=1,xlab=xlabel,ylab=ylabel,
+       panel.first=grid(),xlim=c(xmin,xmax),ylim=c(ymin,ymax))
+  points(xvarm[,1],yvarm[,1],pch=16,cex=1.5,col=1)
+  if (nscen > 1) {
+    for (i in 2:nscen) {
+      lines(xvarm[,i],yvarm[,i],lwd=2,col=i)
+      points(xvarm[,i],yvarm[,i],pch=16,cex=1.5,col=i)
+    }
+  }
+  for (i in 1:nscen) {
+    points(xvarm[1,i],yvarm[1,i],pch=16,cex=2.5,col="green")
+    points(xvarm[nobs,i],yvarm[nobs,i],pch=16,cex=2.5,col="red")
+  }
+  if (!is.null(hline)) abline(h=hline,lwd=1,lty=2)
+  if (!is.null(vline)) abline(v=vline,lwd=1,lty=2)
+  if (nscen > 1) legend(legpos,scenes,col=c(1:nscen),lwd=4,bty="n",cex=1.25)
+  if (!console) {
+    caplab=paste0("Phase plot of ",ylabel," vs ",xlabel,". Large green dots = ",
+                  "projection start, large red dots = last projection year.")
+    addplot(filen=filen,rundir=rundir,category="zone",caption=caplab)
+  }
+} # end of simplephaseplot
+
 #' @title tasphaseplot generates a Tasmanian proxy phase (kobe) plot
 #'
 #' @description tasphaseplot generates a Tasmanian proxy phase (kobe) plot. This

@@ -1236,7 +1236,7 @@ plotdynphase <- function(xlist,ylist,scenes,glb,rundir="",xlab="xlabel",
 #' print("wait on suitable data")
 plotallphaseplots <- function(rundir,dyn,prods,glb,scenes,width=9,height=10,
                               fnt=7,pntcex=1.5,zero=FALSE,legloc="bottomright") {
-# rundir=rundir; dyn=dyn;prods=prods;glb=glb;scenes=scenes;width=9;height=10;
+# rundir=rundir; dyn=dyn;prods=prods;glb=glbc[[1]];scenes=scenes;width=9;height=10;
 # fnt=7; pntcex=1.5; zero=FALSE; legloc="topright"
   matureB <- getcompout(dyn=dyn,glb=glb,scenes=scenes,pickvar="matureB")
   exploitB <- getcompout(dyn=dyn,glb=glb,scenes=scenes,pickvar="exploitB")
@@ -1248,12 +1248,15 @@ plotallphaseplots <- function(rundir,dyn,prods,glb,scenes,width=9,height=10,
   harvestR <- getcompout(dyn=dyn,glb=glb,scenes=scenes,pickvar="harvestR")
   msy <- getmatcolfromlist(prods,"MSY")
   Bmsy <- getmatcolfromlist(prods,"Bmsy")
+  Bexmsy <- getmatcolfromlist(prods,"Bexmsy")
   catbymsy <- catch
   matBbyBmsy <- matureB
+  expBbyBexmsy <- exploitB
   for (scene in 1:length(scenes)) {
     for (sau in 1:glb$nSAU) {
       catbymsy[[scene]][,sau,] <- (catch[[scene]][,sau,])/msy[[scene]][sau]
       matBbyBmsy[[scene]][,sau,] <- matureB[[scene]][,sau,]/Bmsy[[scene]][sau]
+      expBbyBexmsy[[scene]][,sau,] <- exploitB[[scene]][,sau,]/Bexmsy[[scene]][sau]
     }
   }
   fileout <- plotdynphase(xlist=depleB,ylist=catbymsy,scenes=scenes,glb=glb,
@@ -1272,6 +1275,13 @@ plotallphaseplots <- function(rundir,dyn,prods,glb,scenes,width=9,height=10,
           caption=fileout$caption)
   fileout <- plotdynphase(xlist=matBbyBmsy,ylist=catbymsy,scenes=scenes,glb=glb,
                           rundir=rundir,xlab="Mature Biomass div Bmsy",
+                          ylab="Actual Catches div MSY",legloc=legloc,
+                          console=FALSE,width=width,height=height,fnt=fnt,
+                          pntcex=pntcex,zero=zero,yline=1.0,hline=1.0)
+  addplot(filen=fileout$filen,rundir=rundir,category="phaseplots",
+          caption=fileout$caption)
+  fileout <- plotdynphase(xlist=expBbyBexmsy,ylist=catbymsy,scenes=scenes,glb=glb,
+                          rundir=rundir,xlab="Exploitable Biomass div Bexmsy",
                           ylab="Actual Catches div MSY",legloc=legloc,
                           console=FALSE,width=width,height=height,fnt=fnt,
                           pntcex=pntcex,zero=zero,yline=1.0,hline=1.0)
@@ -1610,36 +1620,9 @@ plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,
     }
     xlabel="Median Mature Biomass div Bmsy"
     ylabel="Median Actual Catches div MSY"
-    xmin <- getmin(xvar); xmax <- getmax(xvar)
-    ymin <- getmin(yvar); ymax <- getmax(yvar)
-    filen=""
-    if (!console) {
-      filen <- pathtopath(rundir,
-                          paste0(removeEmpty(ylabel),
-                                "_vs_",removeEmpty(xlabel),".png"))
-    }
-    plotprep(width=7,height=7,newdev=FALSE,filename=filen,
-             verbose=FALSE,usefont=7)
-    parset()
-    plot(xvar[,1],yvar[,1],type="l",lwd=2,col=1,xlab=xlabel,ylab=ylabel,
-         panel.first=grid(),xlim=c(xmin,xmax),ylim=c(ymin,ymax))
-    points(xvar[,1],yvar[,1],pch=16,cex=1.5,col=1)
-    for (i in 2:nscen) {
-      lines(xvar[,i],yvar[,i],lwd=2,col=i)
-      points(xvar[,i],yvar[,i],pch=16,cex=1.5,col=i)
-    }
-    for (i in 1:nscen) {
-      points(xvar[1,i],yvar[1],pch=16,cex=2.5,col="green")
-      points(xvar[nyrs,i],yvar[nyrs,i],pch=16,cex=2.5,col="red")
-    }
-    abline(h=1.0,lwd=1,lty=2)
-    abline(v=1.0,lwd=1,lty=2)
-    legend("bottomright",scenes,col=c(1:nscen),lwd=4,bty="n",cex=1.25)
-    if (!console) {
-      caplab=paste0("Phase plot of C/MSY vs MatB/Bmsy. Large green dots = ",
-                    "projection start, large red dots = last projection year.")
-      addplot(filen=filen,rundir=rundir,category="zone",caption=caplab)
-    }
+    simplephaseplot(xvar=xvar,yvar=yvar,xlabel=xlabel,ylabel=ylabel,
+                    console=FALSE,width=6,height=6,hline=1.0,vline=1.0,
+                    scenes=scenes)
     # phase plot of catchdivMSY vs expB/Bexmsy
     catbymsy <- projcatch
     expBbyBexmsy <- projexpB
@@ -1657,36 +1640,20 @@ plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,
     }
     xlabel="Median Exploitable Biomass div Bexmsy"
     ylabel="Median Actual Catches div MSY"
-    xmin <- getmin(xvar); xmax <- getmax(xvar)
-    ymin <- getmin(yvar); ymax <- getmax(yvar)
-    filen=""
-    if (!console) {
-      filen <- pathtopath(rundir,
-                          paste0(removeEmpty(ylabel),
-                                 "_vs_",removeEmpty(xlabel),".png"))
+    simplephaseplot(xvar=xvar,yvar=yvar,xlabel=xlabel,ylabel=ylabel,
+                    console=FALSE,width=6,height=6,hline=1.0,vline=1.0,
+                    scenes=scenes)
+    # phase plot of catchdivMSY vs expBdepl
+    pickyrs <- glb$hyrs:(glb$hyrs+glb$pyrs)
+    for (scen in 1:nscen) {
+      xvar[,scen] <- apply(zone[[scen]]$depleB[pickyrs,],1,median)
+      yvar[,scen] <- apply(zone[[scen]]$catch[pickyrs,],1,median)
     }
-    plotprep(width=7,height=7,newdev=FALSE,filename=filen,
-             verbose=FALSE,usefont=7)
-    parset()
-    plot(xvar[,1],yvar[,1],type="l",lwd=2,col=1,xlab=xlabel,ylab=ylabel,
-         panel.first=grid(),xlim=c(xmin,xmax),ylim=c(ymin,ymax))
-    points(xvar[,1],yvar[,1],pch=16,cex=1.5,col=1)
-    for (i in 2:nscen) {
-      lines(xvar[,i],yvar[,i],lwd=2,col=i)
-      points(xvar[,i],yvar[,i],pch=16,cex=1.5,col=i)
-    }
-    for (i in 1:nscen) {
-      points(xvar[1,i],yvar[1],pch=16,cex=2.5,col="green")
-      points(xvar[nyrs,i],yvar[nyrs,i],pch=16,cex=2.5,col="red")
-    }
-    abline(h=1.0,lwd=1,lty=2)
-    abline(v=1.0,lwd=1,lty=2)
-    legend("bottomright",scenes,col=c(1:nscen),lwd=4,bty="n",cex=1.25)
-    if (!console) {
-      caplab=paste0("Phase plot of C/MSY vs expB/Bexmsy. Large green dots = ",
-                     "projection start, large red dots = last projection year.")
-      addplot(filen=filen,rundir=rundir,category="zone",caption=caplab)
-    }
+    xlabel="Median Exploitable Biomass Depletion"
+    ylabel="Median Actual Catches div MSY"
+    simplephaseplot(xvar=xvar,yvar=yvar,xlabel=xlabel,ylabel=ylabel,
+                    console=FALSE,width=6,height=6,hline=1.0,vline=1.0,
+                    scenes=scenes)
   } # end of else statement
 } # end of plotzonedyn
 
