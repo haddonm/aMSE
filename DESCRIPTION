@@ -1,7 +1,7 @@
 Package: aMSE
 Title: A Framework for Abalone Management Strategy Evaluation
-Version: 0.3.7
-Date: 2024-09-02
+Version: 0.3.8
+Date: 2024-09-04
 Authors@R: person(given="Malcolm",
                   family="Haddon", 
                   email = "malcolm.haddon@gmail.com", 
@@ -14,8 +14,10 @@ Description: aMSE provides a formal framework for conducting management strategy
     to facilitate the generation of input data file templates, model
     initiation and conditioning, and a standard template for the generation
     of new harvest control rules. The vignette Use_aMSE provides details
-    of its operation. Rcpp can be included in readiness of speeding various
-    vital dynamics but currently no functions are implemented in Rcpp.
+    of its operation. The smallest scenario is one SAU with one population, the
+    biggest scenario could be dozens of sau and hundreds of populations, though
+    large scenarios can generate very large outputs (Gb) so memory may become
+    an issue. The largest implemented so far is 8 sau and 56 populations.
     The package has now been checked to operate using R4.4.1.
 Depends: R (>= 3.5.0)
 License: MIT + file LICENSE

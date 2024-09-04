@@ -1620,7 +1620,7 @@ plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,
     }
     xlabel="Median Mature Biomass div Bmsy"
     ylabel="Median Actual Catches div MSY"
-    simplephaseplot(xvar=xvar,yvar=yvar,xlabel=xlabel,ylabel=ylabel,
+    simplephaseplot(rundir=rundir,xvar=xvar,yvar=yvar,xlabel=xlabel,ylabel=ylabel,
                     console=FALSE,width=6,height=6,hline=1.0,vline=1.0,
                     scenes=scenes)
     # phase plot of catchdivMSY vs expB/Bexmsy
@@ -1640,7 +1640,7 @@ plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,
     }
     xlabel="Median Exploitable Biomass div Bexmsy"
     ylabel="Median Actual Catches div MSY"
-    simplephaseplot(xvar=xvar,yvar=yvar,xlabel=xlabel,ylabel=ylabel,
+    simplephaseplot(rundir=rundir,xvar=xvar,yvar=yvar,xlabel=xlabel,ylabel=ylabel,
                     console=FALSE,width=6,height=6,hline=1.0,vline=1.0,
                     scenes=scenes)
     # phase plot of catchdivMSY vs expBdepl
@@ -1651,7 +1651,7 @@ plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,
     }
     xlabel="Median Exploitable Biomass Depletion"
     ylabel="Median Actual Catches div MSY"
-    simplephaseplot(xvar=xvar,yvar=yvar,xlabel=xlabel,ylabel=ylabel,
+    simplephaseplot(rundir=rundir,xvar=xvar,yvar=yvar,xlabel=xlabel,ylabel=ylabel,
                     console=FALSE,width=6,height=6,hline=1.0,vline=1.0,
                     scenes=scenes)
   } # end of else statement

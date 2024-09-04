@@ -1670,15 +1670,17 @@ saurecdevs <- function(recdevs,glb,rundir,filen="") {
 #' require(hplot)
 #' x <- c(0.8,1.1,1.5,1.7, 1.8,1.7,1.6, 1.3,1.2, 1.1,1.1,1.35,1.425,1.35)
 #' y <- c(0.8,0.5,0.5,0.65,0.9,1.2,1.25,1.3,1.27,1.1,1.0,0.9, 0.95,1.05)
-#' simplephaseplot(xvar=x,yvar=y,xlabel="X",ylabel="Y",console=TRUE,scenes="A")
+#' # rundir not used if plotting to console
+#' simplephaseplot(rundir="",xvar=x,yvar=y,xlabel="X",ylabel="Y",console=TRUE,
+#'                 scenes="A")
 #' x1 <- matrix(c(0.8,1.1,1.5,1.7, 1.8,1.7,1.6, 1.3,1.2, 1.1,1.1,1.35,1.425,
 #'                1.35,0.8,1.15,1.55,1.75,1.85,1.75,1.65,1.35,1.25,1.15,1.15,
 #'                1.40,1.475,1.4),nrow=14,ncol=2)
 #' y1 <- matrix(c(0.8,0.5,0.5,0.65,0.9,1.2,1.25,1.3,1.27,1.1,1.0,0.9,0.95,1.05,
 #'                0.8,0.5,0.5,0.65,0.9,1.2,1.25,1.3,1.27,1.1,1.0,0.9,0.95,1.05),
 #'                nrow=14,ncol=2)
-#' simplephaseplot(xvar=x1,yvar=y1,xlabel="X1",ylabel="Y1",console=TRUE,
-#'                 scenes=c("A","B"))
+#' simplephaseplot(rundir="",xvar=x1,yvar=y1,xlabel="X1",ylabel="Y1",
+#'                 console=TRUE,scenes=c("A","B"))
 simplephaseplot <- function(rundir,xvar,yvar,xlabel,ylabel,console=TRUE,
                             width=7,height=7,font=7,hline=NULL,vline=NULL,
                             legpos="bottomright",scenes=c("A","B")) {
