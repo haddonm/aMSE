@@ -1526,9 +1526,9 @@ plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,
   nscen <- length(scenes)
   allreps <- unlist(lapply(glbc,"[[","reps"))
   if (min(allreps) != max(allreps)) {
-    label <- paste0("Cannot compare scenarios with different replicate numbers",
-                    " so some plots of dynamics omitted \n")
-    warning(cat(label))
+    label <- paste0("WARNING. Cannot compare scenarios with different replicate",
+                    " numbers so some plots of dynamics omitted \n")
+    cat(label)
   } else {
     reps <- max(allreps)
     glb <- glbc[[1]]
@@ -1621,7 +1621,18 @@ plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,
     xlabel="Median Mature Biomass div Bmsy"
     ylabel="Median Actual Catches div MSY"
     simplephaseplot(rundir=rundir,xvar=xvar,yvar=yvar,xlabel=xlabel,ylabel=ylabel,
-                    console=FALSE,width=6,height=6,hline=1.0,vline=1.0,
+                    console=console,width=6,height=6,hline=1.0,vline=1.0,
+                    scenes=scenes)
+    # phase plot of catchdivMSY vs matBdepletion
+    pickyrs <- glb$hyrs:(glb$hyrs+glb$pyrs)
+    for (scen in 1:nscen) {
+      xvar[,scen] <- apply(zone[[scen]]$deplsB[pickyrs,],1,median)
+      yvar[,scen] <- apply(catbymsy[,,scen],1,median)
+    }
+    xlabel="Median Mature Biomass Depletion"
+    ylabel="Median Actual Catches div MSY"
+    simplephaseplot(rundir=rundir,xvar=xvar,yvar=yvar,xlabel=xlabel,ylabel=ylabel,
+                    console=console,width=6,height=6,hline=1.0,vline=1.0,
                     scenes=scenes)
     # phase plot of catchdivMSY vs expB/Bexmsy
     catbymsy <- projcatch
@@ -1647,12 +1658,12 @@ plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,
     pickyrs <- glb$hyrs:(glb$hyrs+glb$pyrs)
     for (scen in 1:nscen) {
       xvar[,scen] <- apply(zone[[scen]]$depleB[pickyrs,],1,median)
-      yvar[,scen] <- apply(zone[[scen]]$catch[pickyrs,],1,median)
+      yvar[,scen] <- apply(catbymsy[,,scen],1,median)
     }
     xlabel="Median Exploitable Biomass Depletion"
     ylabel="Median Actual Catches div MSY"
     simplephaseplot(rundir=rundir,xvar=xvar,yvar=yvar,xlabel=xlabel,ylabel=ylabel,
-                    console=FALSE,width=6,height=6,hline=1.0,vline=1.0,
+                    console=console,width=6,height=6,hline=1.0,vline=1.0,
                     scenes=scenes)
   } # end of else statement
 } # end of plotzonedyn

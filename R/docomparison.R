@@ -111,6 +111,7 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
   }
   cat("\n")
   # end results extraction----------------------
+  setuphtml(rundir=rundir)
   scenarionames <- scenes
   nscenes <- length(scenes)
   if (!is.null(altscenes)) {
@@ -124,8 +125,8 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
   test <- numeric(nscenes - 1)
   for (i in 2:nscenes) test[i] <- abs(glbc[[i-1]]$pyrs - glbc[[i]]$pyrs)
   if (!all(test < 1)) {
-    label <- paste0("Number of projection years differs among scenario. \n")
-    warning(label)
+    label <- paste0("Number of projection years differs among scenario. \n\n")
+    cat(label)
   }
   # end consistency checks--------------------------
   # extract catches and CPUE-------------------------------
@@ -138,9 +139,9 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
   # scenario properties-----------------------------------
   scenprops <- scenarioproperties(scenes,glbc,ctrlc,condCc)
   if ((verbose) & (any(scenprops[,"same"] == 0))) {
-    warnlab <- "At least one important scenario property differs betweem scenarios"
-    warning(cat(warnlab," \n\n"))
-    makehtml::addtext(warnlab,rundir=rundir,filename="warnings.txt",
+    warnlab <- "At least one scenario property differs betweem scenarios"
+    cat(warnlab," \n\n")
+    addtext(warnlab,rundir=rundir,filename="warnings.txt",
                       category="scenes")
   }
   if (tolower(juris) == "tas") {
@@ -148,7 +149,6 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
   }
   if (verbose) print(scenprops)
   if (verbose) cat("Now doing the comparisons  \n")
-  setuphtml(rundir=rundir)
   filename <- "scenarioproperties.csv"
   addtable(scenprops,filen=filename,rundir=rundir,category="scenes",
            caption=paste0("Important scenario properties for comparability."))
@@ -159,11 +159,11 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
   # Final Scores tab---------------------------------
   scenscore <- lapply(scores,"[[","finalsc")
   if (!is.null(scenscore[[1]])) {
-  lengths <- numeric(nscenes)
-  for (i in 1:nscenes)
-    lengths[i] <- length(apply(scenscore[[i]][,1,],1,median))
-  maxlen <- max(lengths)
-  doplot <- ifelse(all(lengths == maxlen),TRUE,FALSE)
+    lengths <- numeric(nscenes)
+    for (i in 1:nscenes)
+      lengths[i] <- length(apply(scenscore[[i]][,1,],1,median))
+    maxlen <- max(lengths)
+    doplot <- ifelse(all(lengths == maxlen),TRUE,FALSE)
   } else {
     doplot <-  FALSE
   }
