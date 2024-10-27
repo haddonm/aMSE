@@ -207,8 +207,8 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
                           makehcrout,fleetdyn,verbose=FALSE,fissettings=NULL,
                           yearFIS=NULL,fisindexdata=NULL,...) {
   # ctrl=ctrl; zoneDP=zoneDP; zoneCP=zoneCP; glb=glb; hcrfun=hcrfun; hsargs=hsargs
-  # sampleCE=tasCPUE; sampleFIS=tasFIS; sampleNaS=tasNaS;  getdata=tasdata
-  # calcpopC=calcexpectpopC; verbose=TRUE; fleetdyn=NULL;makehcrout=makeouthcr
+  # sampleCE=tasCPUE; sampleFIS=tasFIS; sampleNaS=tasNaS;  getdata=constdata#tasdata
+  # calcpopC=calcexpectpopC; verbose=TRUE; fleetdyn=NULL;makehcrout=makeoutconst#makeouthcr
   # fissettings=NULL;fisindexdata=NULL;yearFIS=NULL
   reps <- ctrl$reps
   sigmar <- ctrl$withsigR
@@ -243,7 +243,7 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
     }
   }
   outhcr <- makehcrout(glb,hsargs)
-  for (year in startyr:endyr) { # iter=1; year=startyr
+  for (year in startyr:endyr) { # iter=1; year=58
     if (verbose) cat(yrnames[year]," ")
       for (iter in 1:reps) { # iter=1
       hcrdata <- getdata(sampleCE,sampleFIS,sampleNaS,

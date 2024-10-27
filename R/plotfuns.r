@@ -985,7 +985,7 @@ plotpopprops <- function(x,rundir,glb,varnames,startyr,console=TRUE,bins=25) {
   }
   mtext("Frequency",side=2,outer=TRUE,line=-0.2,cex=1.2)
   if (!console) {
-    caption <- paste0(" Selected Biological properties of all popualtions",
+    caption <- paste0(" Selected Biological properties of all populations",
                       " some are for year ",startyr,"; from propertyDD.csv.")
     addplot(filen,rundir=rundir,category="zoneDD",caption)
   }
@@ -1548,7 +1548,8 @@ sauplots <- function(zoneDP,NAS,glb,rundir,B0,ExB0,startyr,addCI=TRUE,
   plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
   CI <- dosauplot("cpue",zonePsau[["cpue"]],glb,addCE=TRUE,startyr=startyr,
                   addCI=TRUE,histCE=histCE,hlin=hlines["CEmsy",])
-  caption <- "The CPUE projections for each SAU."
+  caption <- paste0("The CPUE projections for each SAU. Dashed lines denote ",
+                    "expected cpue at MSY.")
   addplot(filen,rundir=rundir,category=tabcat,caption)
   #Catches
   filen <- filenametopath(rundir,"proj_catch_SAU.png")

@@ -13,7 +13,8 @@ plotzonedyn(
   q90 = TRUE,
   polys = TRUE,
   intens = 127,
-  hlines = NULL
+  hlines = NULL,
+  scencol = NULL
 )
 }
 \arguments{
@@ -42,6 +43,10 @@ a scale of 0 - 255. 127 is about 50 percent dense.}
 which = no lines if lines are required then hlines needs to be set to a
 list of h values for each scenario, for each plotted variable, see
 examples for syntax}
+
+\item{scencol}{what sequence of colours should each scenario have. The default=NULL
+which implies the colour will reflect the sequence in which they are
+read in.}
 }
 \value{
 nothing but it does generate a plot and saves it if console=FALSE

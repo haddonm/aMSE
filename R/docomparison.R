@@ -37,6 +37,9 @@
 #'     jurisdiction a suitable function can be written and input, along with
 #'     any extra arguments it might have, in the final ellipsis.
 #' @param ribbonleg location of the legend in the ribon plots, default=topleft
+#' @param scencol what sequence of colours should each scenario have. The default=NULL
+#'     which implies the colour will reflect the sequence in which they are
+#'     read in.
 #' @param ... the ellipsis is here in case a jurisdiction specific function or
 #'     functions is/are written to perform extra analyses, plots, and tables.
 #'
@@ -71,7 +74,7 @@
 #' }
 do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
                           intensity=100,zero=FALSE,Q90=TRUE,altscenes=NULL,
-                          juris="",ribbonleg="topleft",...) {
+                          juris="",ribbonleg="topleft",scencol=NULL,...) {
   # rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(1,8)
   #  verbose=TRUE; intensity=100; zero=FALSE; altscenes=NULL
   #  juris="";ribbonleg="topleft"; Q90=TRUE
@@ -217,7 +220,7 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
   plotzonedyn(rundir,scenes,zone,glbc,console=FALSE,q90=Q90,polys=TRUE,
               intens=intensity,hlines=list(catch=outprod[,"MSY"],
               spawnB=outprod[,"Bmsy"],harvestR=0,cpue=outprod[,"CEmsy"],
-              expB=outprod[,"Bexmsy"]))
+              expB=outprod[,"Bexmsy"]),scencol=scencol)
   # ribbon plots by sau and dynamic variable
   # Catch ribbon tab -------------------------------------------
   catch <- scenebyvar(dyn,byvar="catch",glb=glbc,projonly = TRUE)
@@ -243,6 +246,12 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
   sauribbon(rundir,scenes=scenes,varqnts=depleBqnts,
               glbc=glbc,varname="depleB",console=FALSE,
               q90=Q90,intens=intensity,addleg=ribbonleg)
+  # harvest rate tab-------------------------------------------------
+  harvestR <- scenebyvar(dyn,byvar="harvestR",glb=glbc,projonly=TRUE)
+  hqnts <- sauquantbyscene(harvestR,glbc)
+  sauribbon(rundir,scenes=scenes,varqnts=hqnts,
+            glbc=glbc,varname="harvestR",console=FALSE,
+            q90=Q90,intens=intensity,addleg=ribbonleg)
   # phaseplots tab --------------------------------------------------
   plotallphaseplots(rundir=rundir,dyn=dyn,prods,glb=glbc[[1]],scenes=scenes,width=9,
                     height=10,fnt=7,pntcex=1.5,zero=FALSE,

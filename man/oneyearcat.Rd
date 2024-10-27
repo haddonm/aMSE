@@ -32,10 +32,10 @@ oneyearcat(
 
 \item{G}{growth transtion matrix from zoneCC for the population}
 
-\item{scalece}{the xoneC'pop'$scalece used to scale al cpue to the sau
-nominla scale}
+\item{scalece}{the zoneC'pop'$scalece used to scale al cpue to the sau
+nominal scale}
 
-\item{WtL}{the weight-at-alength from zoneCC for the population}
+\item{WtL}{the weight-at-length from zoneCC for the population}
 
 \item{inNt}{the numbers at size for the year previous to the year
 of dynamics. These are projected into the active year.}

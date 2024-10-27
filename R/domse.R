@@ -1,19 +1,20 @@
 #Tas context -----------------
-# postfixdir <- "BCtest"
+# postfixdir <- "EGconst"
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
-# hcrfun= constantrefhcr  #mcdahcr   #  # consthcr   #constantrefhcr
+# hcrfun= consthcr  #mcdahcr   #  # consthcr   #constantrefhcr
 # sampleCE=tasCPUE
 # sampleFIS=tasFIS
 # sampleNaS=tasNaS
-# getdata=tasdata    #  tasdata    constdata
+# getdata=constdata    #  tasdata    constdata
 # calcpopC=calcexpectpopC
 # varyrs=7
 # startyr=38
 # verbose=TRUE
 # ndiagprojs=4
-# makeouthcr=makeouthcr    #makeouthcr   #makeoutconst - only used with consthcr# fleetdyn=NULL
+# makeouthcr=makeoutconst    #makeouthcr   #makeoutconst - only used with consthcr#
+# fleetdyn=NULL
 # plotmultflags=plotmultandflags
 # scoreplot = plotfinalscores
 # cutcatchN=56
@@ -22,9 +23,9 @@
 # mincount=100
 # includeNAS=FALSE
 # depensate=0
-# pmwtSwitch = 0
-# stablewts = c(0.4, 0.5, 0.1)
-# hcrname="constantrefhcr"  #"constantrefhcr"  #"mcdahcr"     #    #"consthcr"
+# #pmwtSwitch = 4
+# #stablewts = c(0.65, 0.25, 0.1)
+# #hcrname="consthcr"  #"constantrefhcr"  #"mcdahcr"     #    #"consthcr"
 # kobeRP = c(0.4,0.2,0.15)
 # interimout=""
 # nasInterval=5
@@ -33,7 +34,8 @@
 # incH=0.005
 # fissettings=NULL
 # fisindexdata=NULL
-# # #
+# deleteyrs=0
+# # # # #
 
 # SA context -------------
 # rundir=rundir
@@ -347,7 +349,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
     saucompdata(allcomp=compdat,glb=glb,horizline=140,console=FALSE,rundir=rundir,
                 ylabel="Size-Composition of Catches",tabname="OrigComp")
   }
-  # plot the implied growth
+  # popgrowth tab ------------------------------implied size-at-age
   popgrowth(rundir=rundir,zoneC=zoneC,glb=glb,console=FALSE,maxage=30,
             startsize= 2.0)
   # do projections ------------------------------------------------------------

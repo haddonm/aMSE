@@ -834,6 +834,9 @@ do_comp_outputs <- function(result,projonly=TRUE) {
 #' @param addleg add a legend? default=FALSE
 #' @param locate where to place legend if there is one, default='bottomright'
 #' @param hlin a vector of values for each scenario or NULL
+#' @param scencol what sequence of colours should each scenario have. The
+#'     default=NULL which implies the colour will reflect the sequence in
+#'     which they are read in.
 #'
 #' @seealso {
 #'    \link{plotzonedyn}, \link{RGB}
@@ -845,36 +848,40 @@ do_comp_outputs <- function(result,projonly=TRUE) {
 #' @examples
 #' print("wait on datasets")
 doquantplot <- function(varq,varname,yrnames,scenes,q90,polys,intens=127,
-                        addleg=FALSE,locate="bottomright",hlin=NULL) {
+                        addleg=FALSE,locate="bottomright",hlin=NULL,
+                        scencol=NULL) {
   maxy <- getmax(varq)
   nscen <- length(scenes)
+  if (is.null(scencol)) {
+    scencol <- 1:nscen
+  }
   plot(yrnames,varq[3,,1],type="l",lwd=2,col=0,xlab="",ylab=varname,
        panel.first=grid(),ylim=c(0,maxy))
   if (polys) {
     for (i in 1:nscen) {
       if (q90) {
         poldat <- makepolygon(varq[2,,i],varq[4,,i],yrnames)
-        polygon(poldat,col=RGB(i,alpha=intens))
+        polygon(poldat,col=RGB(scencol[i],alpha=intens))
       } else {
         poldat <- makepolygon(varq[1,,i],varq[5,,i],yrnames)
-        polygon(poldat,col=RGB(i,alpha=intens))
+        polygon(poldat,col=RGB(scencol[i],alpha=intens))
       }
-      if (!is.null(hlin)) abline(h=hlin[i],lwd=2,col=i)
+      if (!is.null(hlin)) abline(h=hlin[i],lwd=2,col=scencol[i])
     }
   } else {
     for (i in 1:nscen) {
-      lines(yrnames,varq[3,,i],lwd=2,col=i)
+      lines(yrnames,varq[3,,i],lwd=2,col=scencol[i])
       if (q90) {
-        lines(yrnames,varq[2,,i],lwd=1,col=i)
-        lines(yrnames,varq[4,,i],lwd=1,col=i)
+        lines(yrnames,varq[2,,i],lwd=1,col=scencol[i])
+        lines(yrnames,varq[4,,i],lwd=1,col=scencol[i])
       } else {
-        lines(yrnames,varq[1,,i],lwd=1,col=i)
-        lines(yrnames,varq[5,,i],lwd=1,col=i)
+        lines(yrnames,varq[1,,i],lwd=1,col=scencol[i])
+        lines(yrnames,varq[5,,i],lwd=1,col=scencol[i])
       }
     }
   } # end of polys if
   if (addleg) {
-    legend(locate,legend=scenes,col=1:nscen,lwd=3,bty="n",cex=1.1)
+    legend(locate,legend=scenes,col=scencol,lwd=3,bty="n",cex=1.1)
   }
 } # end of doquantplot
 
@@ -1504,6 +1511,9 @@ plotsceneproj <- function(rundir,inarr,glb,scene,filen="",label="",
 #'     which = no lines if lines are required then hlines needs to be set to a
 #'     list of h values for each scenario, for each plotted variable, see
 #'     examples for syntax
+#' @param scencol what sequence of colours should each scenario have. The default=NULL
+#'     which implies the colour will reflect the sequence in which they are
+#'     read in.
 #'
 #' @seealso {
 #'   \link{poptozone}, \link{plotZone}
@@ -1518,8 +1528,8 @@ plotsceneproj <- function(rundir,inarr,glb,scene,filen="",label="",
 #' #                    polyd=TRUE,intens=100,hlines=list(catch=outprod[,"MSY"],
 #' #                    spawnB=outprod[,"Bmsy"],harvestR=0,
 #' #                    cpue=outprod[,"CEmsy"]))
-plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,
-                        q90=TRUE,polys=TRUE,intens=127,hlines=NULL) {
+plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,q90=TRUE,
+                        polys=TRUE,intens=127,hlines=NULL,scencol=NULL) {
   # rundir=rundir;scenes=scenes;zone=zone;glbc=glbc;console=TRUE;q90=TRUE;
   # polys=TRUE;intens=127; hlines=list(catch=outprod[,"MSY"],harvestR=0,
   #  spawnB=outprod[,"Bmsy"],cpue=outprod[,"CEmsy"], expB=outprod[,"Bexmsy"])
@@ -1546,8 +1556,8 @@ plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,
     if (!console) {
       filen <- filenametopath(rundir,"zonedynamics.png")
       caption <- paste0("Outputs for each scenario summarized across the whole ",
-                        "zone. Plots of Catch, MatureB, HarvestR, exploitB, and ",
-                        "Recruits. Horizintal lines are Bmsy, MSY, and CEmsy.")
+                     " zone. Plots of Catch, MatureB, HarvestR, exploitB, and ",
+                  "Recruits. Horizintal lines are MSY, Bmsy, CEmsy, and eBmsy.")
     }
     plotprep(width=8,height=9,newdev=FALSE,filename=filen,verbose=FALSE)
     parset(plots=c(3,2),margin=c(0.3,0.4,0.05,0.05),outmargin=c(0,1,0,0),
@@ -1559,7 +1569,7 @@ plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,
     }
     projcatch <- varx  # save for phase plot
     doquantplot(varq,varname="Catch (t)",yrnames,scenes,q90=q90,polys=polys,
-                intens=intens,hlin=hlines[[1]])
+                intens=intens,hlin=hlines[[1]],scencol=scencol)
     for (i in 1:nscen) {
       varx[,,i] <- zone[[i]]$matureB[hyrs:yrs,]
       varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975),
@@ -1567,21 +1577,21 @@ plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,
     }
     projmatB <- varx  # save for phase plot
     doquantplot(varq,varname="Mature Biomass",yrnames,scenes,q90=q90,polys=polys,
-                intens=intens,hlin=hlines[[2]])
+                intens=intens,scencol=scencol)
     for (i in 1:nscen) {
       varx[,,i] <- zone[[i]]$harvestR[hyrs:yrs,]
       varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975),
                          na.rm=TRUE)
     }
     doquantplot(varq,varname="Harvest Rate",yrnames,scenes,q90=q90,polys=polys,
-                intens=intens)
+                intens=intens,scencol=scencol)
     for (i in 1:nscen) {
       varx[,,i] <- zone[[i]]$cpue[hyrs:yrs,]
       varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975),
                          na.rm=TRUE)
     }
     doquantplot(varq,varname="CPUE",yrnames,scenes,q90=q90,polys=polys,
-                intens=intens,hlin=hlines[[4]])
+                intens=intens,scencol=scencol)
     for (i in 1:nscen) {
       varx[,,i] <- zone[[i]]$exploitB[hyrs:yrs,]
       varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975),
@@ -1589,14 +1599,14 @@ plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,
     }
     projexpB <- varx
     doquantplot(varq,varname="Exploitable Biomass",yrnames,scenes,q90=q90,
-                polys=polys,intens=intens)
+                polys=polys,intens=intens,scencol=scencol)
     for (i in 1:nscen) {
       varx[,,i] <- zone[[i]]$recruit[hyrs:yrs,]
       varq[,,i] <- apply(varx[,,i],1,quantile,probs=c(0.025,0.05,0.5,0.95,0.975),
                          na.rm=TRUE)
     }
     doquantplot(varq,varname="Recruitment",yrnames,scenes,q90=q90,
-                polys=polys,intens=intens)
+                polys=polys,intens=intens,scencol=scencol)
     label <- paste0(scenes,collapse=",")
     legend("bottomright",legend=scenes,lwd=3,col=1:nscen,bty="n",cex=1.1)
     mtext("Zone Wide Dynamics",side=2,line=-0.2,outer=TRUE,cex=1.1)

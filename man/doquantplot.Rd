@@ -14,7 +14,8 @@ doquantplot(
   intens = 127,
   addleg = FALSE,
   locate = "bottomright",
-  hlin = NULL
+  hlin = NULL,
+  scencol = NULL
 )
 }
 \arguments{
@@ -42,6 +43,10 @@ a scale of 0 - 255. 127 is about 50 percent dense.}
 \item{locate}{where to place legend if there is one, default='bottomright'}
 
 \item{hlin}{a vector of values for each scenario or NULL}
+
+\item{scencol}{what sequence of colours should each scenario have. The
+default=NULL which implies the colour will reflect the sequence in
+which they are read in.}
 }
 \value{
 nothing but it does add polygons or lines to a plot

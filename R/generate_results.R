@@ -421,7 +421,7 @@ popgrowth <- function(rundir,zoneC,glb,console=TRUE,maxage=30,startsize=2.0) {
     outfile <- pathtopath(rundir,filen)
     plotprep(width=10,height=9,newdev=TRUE,filename=outfile,cex=0.9,
              verbose=FALSE)
-    parset(plots=pickbound(saupop[sau]),margin=c(0.25,0.3,0.05,0.05),
+    parset(plots=pickbound(saupop[sau]+1),margin=c(0.25,0.3,0.05,0.05),
            outmargin=c(1.5,1.5,0,0),byrow=FALSE)
     for (pop in 1:saupop[sau]) {
       if (is.null(nrow(popg))) p <- popg[1:3] else p <- popg[pop,1:3]
@@ -432,6 +432,10 @@ popgrowth <- function(rundir,zoneC,glb,console=TRUE,maxage=30,startsize=2.0) {
       plot(ages,growpop[1:(maxage+1),pop],type="l",lwd=2,xlab="",
            ylab=paste0("pop-",pop),panel.first = grid())
     }
+    maxy <- getmax(growpop)
+    plot(ages,growpop[1:(maxage+1),1],type="l",lwd=2,xlab="",
+         ylab=paste0("pop-",pop),ylim=c(0,maxy),panel.first = grid())
+    if (npop > 1) for (pop in 2:npop) lines(ages,growpop[1:(maxage+1),pop])
     label <- paste0("Age ",saunames[sau])
     mtext(label,side=1,line=-0.1,outer=TRUE,cex=1.2,font=7)
     mtext("Shell Length (mm)",side=2,line=0.25,outer=TRUE,cex=1.2,font=7)

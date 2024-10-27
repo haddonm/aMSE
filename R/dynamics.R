@@ -231,8 +231,8 @@ imperr <- function(catchsau,exb,sauindex,sigmab=1e-08) {
 #'     removed as catch during the year, a scalar
 #' @param lambda the non-linearity parameter. if = 1.0 then cpue linearly
 #'     related to expB, if < 1 then hyper-stability of cpue occurs.
-#' @param scalece the xoneC'pop'$scalece used to scale al cpue to the sau
-#'     nominla scale
+#' @param scalece the zoneC'pop'$scalece used to scale al cpue to the sau
+#'     nominal scale
 #'
 #' @return a list containing ExploitB, MatureB, Catch, Harvest, Nt,
 #'     ce, CatchN, and midyexpB used to update the given pop in yr + 1
@@ -291,9 +291,9 @@ oneyear <- function(MatWt,SelWt,selyr,Me,G,qest,WtL,inNt,inH,lambda,scalece) {
 #' @param selyr selectivity from zoneCC for the population and year
 #' @param Me natural morality from zoneCC for the population
 #' @param G growth transtion matrix from zoneCC for the population
-#' @param scalece the xoneC'pop'$scalece used to scale al cpue to the sau
-#'     nominla scale
-#' @param WtL the weight-at-alength from zoneCC for the population
+#' @param scalece the zoneC'pop'$scalece used to scale al cpue to the sau
+#'     nominal scale
+#' @param WtL the weight-at-length from zoneCC for the population
 #' @param inNt the numbers at size for the year previous to the year
 #'     of dynamics. These are projected into the active year.
 #' @param incat the literal annual catch from the population. Derived
