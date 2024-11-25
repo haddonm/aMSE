@@ -12,7 +12,7 @@
 #' @importFrom hplot parset plotprep pickbound RGB makepolygon saucompdata
 #' @importFrom makehtml addplot addtable dirExists filenametopath
 #' @importFrom makehtml getextension htmltable logfilename make_html pathend
-#' @importFrom makehtml pathtype setuphtml write_css write_head
+#' @importFrom makehtml pathtype setuphtml write_css write_head addtext
 NULL
 
 #' @title aMSE functions for Conditioning and Running an Invertebrate MSE

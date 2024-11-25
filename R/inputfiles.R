@@ -57,7 +57,7 @@ checkmsedata <- function(intxt,rundir,verbose=TRUE) { # intxt=indat;verbose=TRUE
 #'     template, which is the equivalent to the Tasmanian base-case. It is used
 #'     in the documentation to illustrate how to run aMSE. Generate this and
 #'     then modify the contents to suit the system you are attempting to
-#'     simulate. Defaults to 100 replicates. There needs to be as many recdevs
+#'     simulate. Defaults to 250 replicates. There needs to be as many recdevs
 #'     as there are conditioning catches (in the template = 58 rows. If they are
 #'     all set to -1, the default, then they will have no effect and recdevs
 #'     will be taken off the stock-recruitment curve with random deviates
@@ -121,7 +121,7 @@ ctrlfiletemplate <- function(indir,filename="controlEG.csv",devrec=0.0) {
        file=filename,append=TRUE)
    cat("\n\n",file=filename,append=TRUE)
    cat("zoneCOAST \n",file=filename,append=TRUE)
-   cat("replicates,  100, number of replicates, usually 250, 500 or more  \n",
+   cat("replicates,  250, number of replicates, usually 250, 500 or more  \n",
        file=filename, append=TRUE)
    cat("withsigR,  0.35, recruitment variability eg 0.5 \n",
        file=filename, append=TRUE)

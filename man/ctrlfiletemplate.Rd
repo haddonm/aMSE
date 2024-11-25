@@ -28,7 +28,7 @@ ctrlfiletemplate generates a standardized control file
     template, which is the equivalent to the Tasmanian base-case. It is used
     in the documentation to illustrate how to run aMSE. Generate this and
     then modify the contents to suit the system you are attempting to
-    simulate. Defaults to 100 replicates. There needs to be as many recdevs
+    simulate. Defaults to 250 replicates. There needs to be as many recdevs
     as there are conditioning catches (in the template = 58 rows. If they are
     all set to -1, the default, then they will have no effect and recdevs
     will be taken off the stock-recruitment curve with random deviates
