@@ -1,6 +1,129 @@
 
 
 
+
+library(aMSE)
+library(codeutils)
+library(hplot)
+
+
+outdir <- "C:/aMSE_scenarios/EG/"
+
+rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(2,4,5,6)
+ verbose=TRUE; intensity=100; zero=FALSE; altscenes=NULL
+ juris="";ribbonleg="topleft"; Q90=TRUE; scencol=c(1,2,3,4)
+# get files -------------------
+files2 <- files[pickfiles]
+nfile <- length(pickfiles)
+label <- vector(mode="character",length=nfile)
+for (i in 1:nfile) label[i] <- unlist(strsplit(files2[i],".",fixed=TRUE))[1]
+ans <- makelist(label) # vector(mode="list",length=nfile)
+dyn <- makelist(label)
+glbc <- makelist(label)
+ctrlc <- makelist(label)
+condCc <- makelist(label)
+prods <- makelist(label)
+scenes <- vector(mode="character",length=nfile)
+scores <- makelist(label)
+zone <- makelist(label)
+for (i in 1:nfile) { # i = 1
+  if (nchar(outdir) == 0) {
+    filename <- files2[i]
+  } else {
+    filename <- pathtopath(outdir,files2[i])
+  }
+  if (verbose)
+    cat("Loading ",files2[i]," which may take time, be patient  \n")
+  out <- NULL # so the function knows an 'out' exists
+  load(filename)
+  ans[[i]] <- out
+  dyn[[i]] <- out$sauout
+  glbc[[i]] <- out$glb
+  ctrlc[[i]] <- out$ctrl
+  condCc[[i]] <- out$condC
+  prods[[i]] <- t(out$sauprod)
+  scenes[i] <- out$ctrl$runlabel
+  scores[[i]] <- out$outhcr
+  zone[[i]] <- out$outzone
+}
+
+
+
+
+
+for (i in 1:8) print(getabdevs(catchS[1:58,i,1],years=yrs[1:58],n=7))
+
+sau <- 8  # = 11
+sauC <- catchS[59:88,sau,]
+tmp <- apply(sauC,2,getabdevs,years=yrs[59:88],n=7)
+tmp2 <- apply(sauC,2,getabdevs,years=yrs[59:88],n=7,smooth=FALSE)
+plotprep(width=8, height=5)
+parset(plots=c(2,1),margin=c(0.45,0.45,0.1,0.05))
+hist(tmp,breaks=seq(0,25,0.5),main=round(mean(tmp),3),xlab="Abs Deviations")
+hist(tmp2,breaks=seq(0,25,0.5),main=round(mean(tmp2),3),xlab="Abs Deviations")
+
+# test how well the movav works on replicates
+
+
+
+
+devout <- plotdevs(x,scenes,saunames,filen="")
+
+
+
+
+glb <- glbc[[1]]
+saunames <- glb$saunames
+nsau <- glb$nSAU
+nscen <- length(scenes)
+
+x <- makelist(scenes)
+for (scen in 1:length(scenes)) x[[scen]] <- dyn[[scen]]$catch[59:88,,]
+
+devout <- plotdevs(x,scenes,saunames,filen="")
+
+
+
+meandevs
+sddevs
+
+
+plotprep(width=8, height=9)
+parset(plots=c(4,2))
+for (i in 9:16) {
+  yval <- sauC[59:88,i]
+  years <- yrs[59:88]
+  plot1(x=years,y=yval,lwd=2,defpar=FALSE)
+  ma <- loess(yval ~ years)
+ # ma <- movav(yval,n=7)
+  lines(x=ma$x,y=ma$fitted,lwd=2,col=2)
+  abline(v=2020.5,lwd=1,col=1)
+
+}
+
+sauC[,1:8]
+
+
+tmp <- movav(rep1,n=7)
+
+plot1(yrs[1:58],rep1[1:58])
+lines(yrs[1:58],tmp[1:58],lwd=2,col=2)
+
+
+pick <- which(!is.na(tmp[1:58]))
+
+sum(abs(rep1[pick] - tmp[pick]))/length(pick)
+
+
+
+
+
+
+
+
+
+
+
 # naked do_MSE without producing all the plots etc
 #
 postfixdir <- "EG"

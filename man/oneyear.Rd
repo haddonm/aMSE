@@ -30,7 +30,7 @@ removed as catch during the year, a scalar}
 \item{lambda}{the non-linearity parameter. if = 1.0 then cpue linearly
 related to expB, if < 1 then hyper-stability of cpue occurs.}
 
-\item{scalece}{the zoneC'pop'$scalece used to scale al cpue to the sau
+\item{scalece}{the zoneC'pop'$scalece used to scale all cpue to the sau
 nominal scale}
 }
 \value{

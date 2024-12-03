@@ -3,7 +3,7 @@
 #' @importFrom graphics grid hist lines mtext par plot points title axis
 #' @importFrom graphics legend abline text layout boxplot polygon arrows
 #' @importFrom stats dnorm pnorm rlnorm rnorm quantile sd lm coef median
-#' @importFrom stats loess optim ccf
+#' @importFrom stats loess optim ccf filter
 #' @importFrom utils object.size browseURL packageDescription read.csv
 #' @importFrom utils write.table write.csv head tail winDialog
 #' @importFrom codeutils getmax getmin removeEmpty splitDate which.closest

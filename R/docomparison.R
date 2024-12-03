@@ -75,9 +75,9 @@
 do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
                           intensity=100,zero=FALSE,Q90=TRUE,altscenes=NULL,
                           juris="",ribbonleg="topleft",scencol=NULL,...) {
-  # rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(1,8)
+  # rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(1,5,6)
   #  verbose=TRUE; intensity=100; zero=FALSE; altscenes=NULL
-  #  juris="";ribbonleg="topleft"; Q90=TRUE
+  #  juris="";ribbonleg="topleft"; Q90=TRUE; scencol=c(1,2,4)
   # get files -------------------
   files2 <- files[pickfiles]
   nfile <- length(pickfiles)
@@ -215,6 +215,24 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
                   filen=paste0("Catch_div_MSY_",scenes[i],".png"),
                   label="Catch / MSY",hline=1,Q=90)
   }
+  # ScenarioPMs tab-------------------------------------------------
+  if (verbose) cat("Now doing the Scenario PMs  \n")
+  nscen <- length(scenes)
+  glb <- glbc[[1]]
+  saunames <- glb$saunames
+  nsau <- glb$nSAU
+  x <- makelist(scenes)
+  for (scen in 1:length(scenes)) x[[scen]] <- dyn[[scen]]$catch[59:88,,]
+  filename <- pathtopath(rundir,"catchprojection_deviates.png")
+  devout <- plotdevs(x,scenes,saunames,filen=filename)
+  addplot(filen=filename,rundir=rundir,category="ScenarioPMs",
+          caption="The deviates from a loess on catches in each replicate.")
+  tabfile <- "projmeandeviates_catch.csv"
+  addtable(devout$meandevs,filen=tabfile,rundir=rundir,category="ScenarioPMs",
+           caption="Mean deviations from a loess on catch values by sau and scenario.")
+  tabfile <- "proj_sddeviates_catch.csv"
+  addtable(devout$sddevs,filen=tabfile,rundir=rundir,category="ScenarioPMs",
+           caption="StDev of deviations from a loess on catch values by sau and scenario.")
   # zone tab----------------------------------------
   outprod <- tabulatezoneprod(rundir,prods,scenes)
   plotzonedyn(rundir,scenes,zone,glbc,console=FALSE,q90=Q90,polys=TRUE,
@@ -259,6 +277,6 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
   makecompareoutput(rundir=rundir,glbc,scenes,scenarionames,postfixdir,
                     filesused=files[pickfiles],openfile=TRUE,verbose=FALSE)
   return(invisible(list(scenes=scenes,ans=ans,quantscen=quantscen,dyn=dyn,
-                        prods=prods,scenprops=scenprops)))
+                        prods=prods,scenprops=scenprops,devout=devout)))
 } # end of do_comparison
 

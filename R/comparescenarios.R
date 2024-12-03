@@ -1003,6 +1003,42 @@ getcompout <- function(dyn,glb,scenes,pickvar="matureB",projonly=TRUE) { # out=r
   return(ans)
 } # end of getcompout
 
+#' @title getabdevs absolute deviations between a vector and its moving average
+#'
+#' @description getabdevs is used to calculate the absolute deviations between
+#'     a vector of numbers and either a loess fit to the vector or a moving
+#'     average across that vector. This provides a measure of variation akin
+#'     to a Average Annual Variation (aav) suitable for oscillating projections.
+#'     This function can be used with apply to summarize across replicates.
+#'
+#' @param x a vector of numbers to be tested, perhaps a single replicate
+#'     projection
+#' @param years the loess or moving average is relative to a set of years or
+#'     some other sequence. It must hve the same length as x
+#' @param smooth default = TRUE, which implies a standard loess curve will be
+#'     fitted to the curve before finding the deviations. If set FALSE, then
+#'     a moving average of length n will be used.
+#' @param n default = 7, the length of a moving average if one is used.
+#'
+#' @return a list of the avdev and sumdev across the vector
+#' @export
+#'
+#' @examples
+#' x <- runif(98,min=1,max=25)
+#' outdev <- getabdevs(x,1:98)
+getabdevs <- function(x, years,smooth=TRUE, n = 7) {
+  if (smooth) {
+    ma <- loess(x ~ years)
+    pick <- which(!is.na(ma))
+    sumdev <- sum(abs(x[pick] - ma$fitted[pick]))
+  } else {
+    ma <- movav(x,n=n)
+    pick <- which(!is.na(ma))
+    sumdev <- sum(abs(x[pick] - ma[pick]))
+  }
+  return(sumdev=sumdev)
+} # end of getdevs
+
 #' @title makecompareoutput generates HTML files when comnparing scenarios
 #'
 #' @description makecompareoutput simplifies taking the output from when
@@ -1094,6 +1130,99 @@ makelistobj <- function(res,objname) { # res=result$ans;objname="glb"
   for (i in 1:nscen) outlist[[i]] <- res[[scenes[i]]][[objname]]
   return(invisible(outlist))
 } # end of makelistobj
+
+#' @title movav generates a moving average of a vector
+#'
+#' @description movav generates a moving average of a vector of numbers. It
+#'     allows the length of the moving average to be set using 'n', and
+#'     whether the moving average starts at index 1 or is centred across the
+#'     vector, using 'centred'. Only odd numbered lengths for the moving
+#'     average are permitted to allow centring to be balanced. The output is
+#'     originall a time-series but is converted to a numeric vector.
+#'
+#' @param x a vector of numbers for which a moving average is wanted
+#' @param n the length of the moving average, default = 5
+#' @param centred should the moving average be centred across the vector or
+#'     start at index = 1, default = centred=TRUE
+#'
+#' @return a numeric vector containing a moving average of the input vector
+#'     or a printed warning if the length is an even number.
+#' @export
+#'
+#' @examples
+#' x <- runif(25,min=1,max=25)
+#' outav <- movav(x,n=5)
+#' cbind(x,outav)
+movav <- function(x, n = 5,centred=TRUE) {
+  if ((n %% 2) == 0) {
+    print("Only use odd numbers for moving averages, NULL returned. \n")
+    return(NULL)
+  } else {
+    loc <- ifelse(centred,2,1)
+    ma <- as.numeric(stats::filter(x, rep(1/n, n), sides = 2))
+    return(ma)
+  }
+} # end of movav
+
+#' @title plotdevs plots projection deviates for a variable across scnerios
+#'
+#' @description plotdevs provides a plot of a scenario Perfoamcne Measure. In
+#'     this case the PM are the deviations from a loess fit to  whatever input
+#'     variable has been selected from the dyn objects in do_comparison(). One
+#'     needs first generate a list of the selected variable from the the input
+#'     dyn objects (one from each scenario). A standard comparison would be on
+#'     the variation of catches through the years of the projection. But this
+#'     could be applied to any of the variables within the dyn object, which
+#'     includes matureB, exploitB, midyexpB, catch, acatch, harvestR, cpue,
+#'     recruit, deplsB, and depleB.
+#'
+#' @param invar the sub-object from each scenario as a list, see examples
+#' @param scenes a vector of names fr each scenario being compared
+#' @param saunames a vector of the names of each sau in the projections
+#' @param filen the filename and path if the plot is to be saved, default = "".
+#'     if a filename is given it should be a .png file
+#'
+#' @return a list f the mean deviates per sau and scenario, and a list of their
+#'     respective standard deviations. It also plots a graph
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # example syntax, assumes dynamics have been extracted from all scenarios
+#'    glb <- glbc[[1]]
+#'    saunames <- glb$saunames
+#'    nsau <- glb$nSAU
+#'    nscen <- length(scenes)
+#'    x <- makelist(scenes)
+#'    for (scen in 1:length(scenes)) x[[scen]] <- dyn[[scen]]$catch[59:88,,]
+#'    devout <- plotdevs(x,scenes,saunames,filen="")
+#' }
+plotdevs <- function(invar,scenes,saunames,filen=""){
+  nsau <- length(saunames)
+  nscen <- length(scenes)
+  meandevs <- matrix(0,nrow=nscen,ncol=nsau,dimnames=list(scenes,saunames))
+  sddevs <- meandevs
+  tmp <- invar[[1]][,1,]
+  yrs <- as.numeric(rownames(tmp))
+  plotprep(width=12,height=7,newdev=FALSE,filename=filen,verbose=FALSE)
+  parset(plots=c(nscen,nsau),margin=c(0.25,0.25,0.05,0.05),
+         outmargin = c(1.2,1.2,0.1,0.1),byrow=TRUE)
+  for (scen in 1:nscen) {
+    for (sau in 1:nsau) {
+      # scen = 1; sau=1
+      sauC <- invar[[scen]][,sau,]
+      devs <- apply(sauC,2,getabdevs,years=yrs,smooth=TRUE)
+      avdevs <- mean(devs,na.rm=TRUE)
+      meandevs[scen,sau] <- avdevs
+      sddevs[scen,sau] <- sd(devs,na.rm=TRUE)
+      hist(devs,breaks=20,main="",xlab="",ylab="")
+      mtext(round(avdevs,2),side=3,line=-1.1,cex=0.9,adj=1)
+      if (sau == 1) mtext(scenes[scen],side=2,line=1.25,cex=1.0)
+      if (scen == nscen) mtext(saunames[sau],side=1,line=1.25,cex=1)
+    }
+  }
+  return(list(meandevs=meandevs,sddevs=sddevs))
+} # end of plotdevs
 
 #' @title plotdynphase plots the medians of 2 dynamic variables as a phase diagram
 #'

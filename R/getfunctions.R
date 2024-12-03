@@ -109,7 +109,7 @@ getprojyrC <- function(catsau,glb,period=10) {
   return(result)
 } # end of getprojyrC
 
-#' @title getaav calculates annual absolute variation in catch
+#' @title getaav calculates annual absolute variation in catch as a percent
 #'
 #' @description getaav calculates the annual absolute change in catch
 #'     for an input vector of catches, which could be across a series
@@ -119,7 +119,7 @@ getprojyrC <- function(catsau,glb,period=10) {
 #'
 #' @param invect a vector of catches
 #'
-#' @return a single scalar value the AAV of the input catches
+#' @return a single scalar value the AAV of the input catches as a percent
 #' @export
 #'
 #' @examples
@@ -127,10 +127,10 @@ getprojyrC <- function(catsau,glb,period=10) {
 #'   getaav(catch)  # should equal 0.32
 getaav <- function(invect) { # invect=x
   nyr <- length(invect)
-  totC <- sum(invect,na.rm=T)
+  totC <- sum(invect,na.rm=TRUE)
   aac <- sum(abs(invect[2:nyr] - invect[1:(nyr-1)]))
   aav <- 0.0
-  if (totC > 0.0) aav <- aac/totC
+  if (totC > 0.0) aav <- 100*aac/totC
   return(aav)
 } # end of getaav
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/getfunctions.R
 \name{getaav}
 \alias{getaav}
-\title{getaav calculates annual absolute variation in catch}
+\title{getaav calculates annual absolute variation in catch as a percent}
 \usage{
 getaav(invect)
 }
@@ -10,7 +10,7 @@ getaav(invect)
 \item{invect}{a vector of catches}
 }
 \value{
-a single scalar value the AAV of the input catches
+a single scalar value the AAV of the input catches as a percent
 }
 \description{
 getaav calculates the annual absolute change in catch

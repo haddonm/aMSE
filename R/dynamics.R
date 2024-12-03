@@ -231,7 +231,7 @@ imperr <- function(catchsau,exb,sauindex,sigmab=1e-08) {
 #'     removed as catch during the year, a scalar
 #' @param lambda the non-linearity parameter. if = 1.0 then cpue linearly
 #'     related to expB, if < 1 then hyper-stability of cpue occurs.
-#' @param scalece the zoneC'pop'$scalece used to scale al cpue to the sau
+#' @param scalece the zoneC'pop'$scalece used to scale all cpue to the sau
 #'     nominal scale
 #'
 #' @return a list containing ExploitB, MatureB, Catch, Harvest, Nt,
