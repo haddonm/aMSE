@@ -2,7 +2,7 @@
 % Please edit documentation in R/comparescenarios.R
 \name{plotdevs}
 \alias{plotdevs}
-\title{plotdevs plots projection deviates for a variable across scnerios}
+\title{plotdevs plots projection deviates for a variable across scenerios}
 \usage{
 plotdevs(invar, scenes, saunames, filen = "")
 }
@@ -21,7 +21,7 @@ a list f the mean deviates per sau and scenario, and a list of their
     respective standard deviations. It also plots a graph
 }
 \description{
-plotdevs provides a plot of a scenario Perfoamcne Measure. In
+plotdevs provides a plot of a scenario Performance Measure. In
     this case the PM are the deviations from a loess fit to  whatever input
     variable has been selected from the dyn objects in do_comparison(). One
     needs first generate a list of the selected variable from the the input

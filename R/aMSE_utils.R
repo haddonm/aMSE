@@ -206,14 +206,15 @@ changevar <- function(filename,rundir,varname,newvalue,prompt=FALSE,verbose=TRUE
 copyto <- function(prefixdir,fromdir, todir, filelist,
                    makenew = TRUE,verbose=TRUE) {
   if (verbose) cat("\n\n")
-  fdir <- filenametopath(prefixdir,fromdir)
+  newfile <- filelist # make space for a vector of new filenames
+  fdir <- pathtopath(prefixdir,fromdir)
   if (!dir.exists(fdir)) stop(cat(fdir," does not exist!   \n\n"))
   nfile <- length(filelist)
   for (i in 1:nfile) {  # check if all files in list exist
-    filen <- filenametopath(fdir,filelist[i])
+    filen <- pathtopath(fdir,filelist[i])
     if (!file.exists(filen)) stop(cat(filen," does not exist \n"))
   }
-  tdir <- filenametopath(prefixdir,todir)
+  tdir <- pathtopath(prefixdir,todir)
   if (!dir.exists(tdir)) {
     if (verbose) cat(tdir," did not exist  \n")
     if (makenew) {
@@ -222,23 +223,24 @@ copyto <- function(prefixdir,fromdir, todir, filelist,
     }
   }
   for (i in 1:nfile) { # i = 1
-    filen <- filenametopath(fdir,filelist[i])
+    filen <- pathtopath(fdir,filelist[i])
     present <- grep(fromdir,filelist[i])
-    fileout <- filenametopath(tdir, filelist[i])
+    fileout <- pathtopath(tdir, filelist[i])
     if (length(present) > 0) {
-      newfile <- sub(fromdir,todir,filelist[i]) # alter filenames
-      fileout <- filenametopath(tdir, newfile)
+      newfile[i] <- sub(fromdir,todir,filelist[i]) # alter filenames
+      fileout <- pathtopath(tdir, newfile[i])
+     # if ((grep("lf_",filelist[i] > 0) fileout = filelist[i]
     }
     file.copy(filen, fileout, overwrite = TRUE, copy.date = TRUE)
   }
   if (verbose)
     for (i in 1:nfile) cat(filelist[i], " has been copied to ",todir,
-                           " as ",newfile,"\n")
+                           " as ",newfile[i],"\n")
   newfilelist <- dir(tdir)  # change saudata file name in controlfile
   pickC <- grep("control",newfilelist)
   if (length(pickC) == 0)
     stop(cat("No recognizable control file in ",tdir,"\n"))
-  filename <- filenametopath(tdir,newfilelist[pickC])
+  filename <- pathtopath(tdir,newfilelist[pickC])
   indat <- readLines(filename)
   pickD <- grep("saudata",newfilelist)
   if (length(pickD) == 0)
@@ -276,7 +278,7 @@ copyto <- function(prefixdir,fromdir, todir, filelist,
 #' print("wait on a suitable example")
 #' # findlinenumber(rundir=rundir,filename="controlsau.csv",inc=25)
 findlinenumber <- function(rundir,filename,inc=20) {  #
-  filen <- filenametopath(rundir,filename)
+  filen <- pathtopath(rundir,filename)
   dat <- readLines(filen)
   nline <- length(dat)
   cat(nline," lines long  \n")
@@ -780,7 +782,7 @@ sautopop <- function(x,sauindex) {
 #' @examples
 #' print("wait on suitable internal data sets")
 save_hsargs <- function(rundir,hsargs) {
-  filen <- filenametopath(rundir,"hsargs.txt")
+  filen <- pathtopath(rundir,"hsargs.txt")
   cat(names(hsargs)[1],hsargs[[1]],"\n",file=filen,append=FALSE)
   for (i in 2:length(hsargs)) #  i=15
     if (inherits(hsargs[[i]],what = c("matrix","data.frame","list"))) {
@@ -800,7 +802,7 @@ save_hsargs <- function(rundir,hsargs) {
           cat("hcrname not in hsargs  \n",file=filen,append=TRUE)
     }
   cat("______________________   \n\n\n\n",file=filen,append=TRUE)
-  resfile <- filenametopath(rundir,"resultTable.csv")
+  resfile <- pathtopath(rundir,"resultTable.csv")
   cat(c(filen,"HSperf",type="txtobj",as.character(Sys.time()),
         caption="HS argument Settings "," \n"),
       file=resfile,sep=",",append=TRUE)

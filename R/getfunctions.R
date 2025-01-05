@@ -115,19 +115,27 @@ getprojyrC <- function(catsau,glb,period=10) {
 #'     for an input vector of catches, which could be across a series
 #'     of years or even across different spatial units for a single
 #'     year (an unusual use).
-#'     The equation used is aav = 100 x sum(|Ct - Ct-1|)/(sum(Ct).
+#'     aav = 100 x sum(|C[2:nyr] - C[1:(nyr-1)]|)/(sum(C[2:nyr])
 #'
 #' @param invect a vector of catches
+#' @param detrend if the vector is detrended it will contain negative and well
+#'     as positive values. We therefore need to sum the absolute catch values
+#'     not just their values. default = FALSE
 #'
 #' @return a single scalar value the AAV of the input catches as a percent
 #' @export
 #'
 #' @examples
-#'   catch <- c(1,2,3,4,5,4,3,2,1)
-#'   getaav(catch)  # should equal 0.32
-getaav <- function(invect) { # invect=x
+#'   x <- c(1,2,3,4,5,4,3,2,1)
+#'   getaav(x)  # should equal 33.333
+#'   x <- c(-0.2477,0.6103,0.6974,-0.0532,-0.9385,-1.1290,-0.4327,0.5316,
+#'          0.8673,0.2584,-0.7192,-1.1418)
+#'   getaav(x,detrend=FALSE)    # = 0 !
+#'   getaav(x,detrend=TRUE)     # = 91.83538, plot x against 1:11 to see why
+getaav <- function(invect,detrend=FALSE) { # invect=detrend1; detrend=TRUE
   nyr <- length(invect)
-  totC <- sum(invect,na.rm=TRUE)
+  totC <- ifelse(detrend,sum(abs(invect[2:nyr]),na.rm=TRUE),
+                 sum(invect[2:nyr],na.rm=TRUE))
   aac <- sum(abs(invect[2:nyr] - invect[1:(nyr-1)]))
   aav <- 0.0
   if (totC > 0.0) aav <- 100*aac/totC

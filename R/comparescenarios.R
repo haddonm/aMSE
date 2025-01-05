@@ -1164,9 +1164,9 @@ movav <- function(x, n = 5,centred=TRUE) {
   }
 } # end of movav
 
-#' @title plotdevs plots projection deviates for a variable across scnerios
+#' @title plotdevs plots projection deviates for a variable across scenerios
 #'
-#' @description plotdevs provides a plot of a scenario Perfoamcne Measure. In
+#' @description plotdevs provides a plot of a scenario Performance Measure. In
 #'     this case the PM are the deviations from a loess fit to  whatever input
 #'     variable has been selected from the dyn objects in do_comparison(). One
 #'     needs first generate a list of the selected variable from the the input

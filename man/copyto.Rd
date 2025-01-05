@@ -40,4 +40,5 @@ copyto copies a vector of files (see examples) from one
  vectfiles <- c("controlM15h75.csv","saudataM15h75.csv","lf_WZ90-20.csv")
  copyto(prefixdir=prefixdir,fromdir="M15h75,todir="M15h5,filelist=vectfiles)
 }
+#  fromdir="EG";todir="EGtest"; makenew = TRUE;verbose=TRUE
 }

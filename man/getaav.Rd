@@ -4,10 +4,14 @@
 \alias{getaav}
 \title{getaav calculates annual absolute variation in catch as a percent}
 \usage{
-getaav(invect)
+getaav(invect, detrend = FALSE)
 }
 \arguments{
 \item{invect}{a vector of catches}
+
+\item{detrend}{if the vector is detrended it will contain negative and well
+as positive values. We therefore need to sum the absolute catch values
+not just their values. default = FALSE}
 }
 \value{
 a single scalar value the AAV of the input catches as a percent
@@ -17,9 +21,13 @@ getaav calculates the annual absolute change in catch
     for an input vector of catches, which could be across a series
     of years or even across different spatial units for a single
     year (an unusual use).
-    The equation used is aav = 100 x sum(|Ct - Ct-1|)/(sum(Ct).
+    aav = 100 x sum(|C[2:nyr] - C[1:(nyr-1)]|)/(sum(C[2:nyr])
 }
 \examples{
-  catch <- c(1,2,3,4,5,4,3,2,1)
-  getaav(catch)  # should equal 0.32
+  x <- c(1,2,3,4,5,4,3,2,1)
+  getaav(x)  # should equal 33.333
+  x <- c(-0.2477,0.6103,0.6974,-0.0532,-0.9385,-1.1290,-0.4327,0.5316,
+         0.8673,0.2584,-0.7192,-1.1418)
+  getaav(x,detrend=FALSE)    # = 0 !
+  getaav(x,detrend=TRUE)     # = 91.83538, plot x against 1:11 to see why
 }
