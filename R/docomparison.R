@@ -75,9 +75,9 @@
 do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
                           intensity=100,zero=FALSE,Q90=TRUE,altscenes=NULL,
                           juris="",ribbonleg="topleft",scencol=NULL,...) {
-  # rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(1,5,6)
+  # rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(1,2,3,4)
   #  verbose=TRUE; intensity=100; zero=FALSE; altscenes=NULL
-  #  juris="";ribbonleg="topleft"; Q90=TRUE; scencol=c(1,2,4)
+  #  juris="";ribbonleg="topleft"; Q90=TRUE; scencol=c(1,2,3,4)
   # get files -------------------
   files2 <- files[pickfiles]
   nfile <- length(pickfiles)
@@ -233,6 +233,21 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
   tabfile <- "proj_sddeviates_catch.csv"
   addtable(devout$sddevs,filen=tabfile,rundir=rundir,category="ScenarioPMs",
            caption="StDev of deviations from a loess on catch values by sau and scenario.")
+  pickyrs <- c(glb$hyrs+5,glb$hyrs+10) # 5 and 10 years
+  nyrs <- length(pickyrs)
+  res <- state_by_year(indyn=dyn,whichvar="catch",whichyrs=pickyrs,
+                       whichfun=mean,glb=glb)
+  for (whichyr in 1:nyrs) {
+    filename <- plotdynvarinyear(rundir=rundir,dyn=dyn,whichvar="catch",
+                                 whichyr=pickyrs[whichyr],glb,console=FALSE)
+    addplot(filen=filename,rundir=rundir,category="ScenarioPMs",
+            caption="Histograms of catch for each scen and sau across replicates")
+    realyr <- c(glb$hyrnames,glb$pyrnames)[pickyrs[whichyr]]
+    tabfile <- paste0("mean_catches_by_scenario_SAU_in_year_",realyr,".csv")
+    addtable(res[whichyr,,],filen=tabfile,rundir=rundir,category="ScenarioPMs",
+             caption=paste0("Mean catch of distribution of replicates by sau ",
+             "and scenario in year ",realyr))
+  }
   # zone tab----------------------------------------
   outprod <- tabulatezoneprod(rundir,prods,scenes)
   plotzonedyn(rundir,scenes,zone,glbc,console=FALSE,q90=Q90,polys=TRUE,

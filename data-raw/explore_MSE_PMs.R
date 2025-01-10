@@ -18,8 +18,8 @@ rundir <- pathtopath(prefixdir,postfixdir)
 outdir <- "C:/aMSE_scenarios/EG/"
 files <- dir(outdir)
 #printV(files)
-pickfiles=c(2,3,5)
-scencol=c(1,2,4)
+pickfiles=c(1,2,3,4)
+scencol=c(1,2,4,4)
 rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;
 verbose=TRUE; intensity=100; zero=FALSE; altscenes=c("NoMR","MR12","MR123")
 juris="";ribbonleg="topleft"; Q90=TRUE;
@@ -251,11 +251,48 @@ getaav(tmp$fitted)
 getaav(tmp$fitted)
 
 
+# general state-by-year function----------------------
+
+
+scenes <- result$scenes
+dyn <- result$dyn
+str1(dyn$EG)
+
+nscen <- length(dyn)
+glb <- result$ans$EG$glb
+nsau <- glb$nSAU
+saunames <- glb$saunames
+pickyrs <- c(63)
+if (length(pickyrs) > 1) {
+  outcomp <- makelist(scenes)
+} else {
+  outcomp <- array(0,dim=c(nyrs,nscen,nsau),dimnames=list(scenes,saunames))
+}
+
+for (scen in 1:nscen) { # scen=1
+  outcomp[[scen]] <- state_by_year(dyn[[scen]]$cpue,whichyrs=,whichfun=mean,glb=glb)
+}
+outcomp
 
 
 
+pickyrs <- c(glb$hyrs+5,glb$hyrs+10) # 5 and 10 years
+res <- state_by_year(indyn=dyn,whichvar="catch",whichyrs=pickyrs,
+                     whichfun=mean,glb=glb)
 
 
+
+for (yr in 1:length(pickyrs)) {
+  indexvar <- match("catch",names(dyn[[1]]))
+  for (scen in 1:nscen) { # scen = 1; yr = 1
+    getyr <- dyn[[scen]][[indexvar]][pickyrs[yr],,]
+  }
+
+}
+
+
+plotdynvarinyear(rundir=rundir,dyn=dyn,whichvar="catch",
+                 whichyr=c(63),glb,console=TRUE)
 
 
 
