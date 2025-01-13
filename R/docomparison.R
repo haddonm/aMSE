@@ -248,6 +248,31 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
              caption=paste0("Mean catch of distribution of replicates by sau ",
              "and scenario in year ",realyr))
   }
+  # Now do rate of change for 3 variables
+  pickvar <- "catch"
+  res <- getrateofchange(dyn=dyn,whichvar=pickvar,glb=glb)
+  filename <- plotrateofchange(rundir=rundir,res=res,whichvar=pickvar,glb=glb,
+                               console=FALSE)
+  addplot(filen=filename,rundir=rundir,category="ScenarioPMs",
+          caption="The rate of change of the median catches acroiss scenarios.")
+  pickvar <- "cpue"
+  res <- getrateofchange(dyn=dyn,whichvar=pickvar,glb=glb)
+  filename <- plotrateofchange(rundir=rundir,res=res,whichvar=pickvar,glb=glb,
+                               console=FALSE)
+  addplot(filen=filename,rundir=rundir,category="ScenarioPMs",
+          caption="The rate of change of the median cpue acroiss scenarios.")
+  pickvar <- "matureB"
+  res <- getrateofchange(dyn=dyn,whichvar=pickvar,glb=glb)
+  filename <- plotrateofchange(rundir=rundir,res=res,whichvar=pickvar,glb=glb,
+                               console=FALSE)
+  addplot(filen=filename,rundir=rundir,category="ScenarioPMs",
+          caption="The rate of change of the median matureB across scenarios.")
+  pickvar <- "harvestR"
+  res <- getrateofchange(dyn=dyn,whichvar=pickvar,glb=glb)
+  filename <- plotrateofchange(rundir=rundir,res=res,whichvar=pickvar,glb=glb,
+                               console=FALSE)
+  addplot(filen=filename,rundir=rundir,category="ScenarioPMs",
+          caption="The rate of change of the median harvestR across scenarios.")
   # zone tab----------------------------------------
   outprod <- tabulatezoneprod(rundir,prods,scenes)
   plotzonedyn(rundir,scenes,zone,glbc,console=FALSE,q90=Q90,polys=TRUE,

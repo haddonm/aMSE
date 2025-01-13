@@ -460,6 +460,48 @@ getprojyrs <- function(sauarr,hyrs,pyrs,startyr=hyrs) {
   stop(cat("Input error in getprojyrs, array in has incorrect dimensions \n"))
 } # end of getprojyrs
 
+#' @title getrateofchange estimates annual change rate of a variable in dynamics
+#'
+#' @description getrateof change
+#'
+#' @param dyn the dynamics objects from each scenario collected into a single
+#'     dyn object from the output of do_comparison
+#' @param whichvar which variable within the dyn object to characterize. The
+#'     variables it can work with include: matureB, exploitB, midyrexpB, catch,
+#'     acatch, harvestR, cpue, recruit, deplsB, and depleB.
+#' @param glb the globals object needed for the number and names of the sau,
+#'     and the years and their names.
+#'
+#' @returns a list of the differences, the percentager differences, and the
+#'     medians
+#' @export
+#'
+#' @examples
+#' # syntax  getrateofchange(dyn=dyn,whichvar="catch",glb=glb)
+getrateofchange <- function(dyn,whichvar,glb) {
+  # indyn=dyn; whichvar="catch";  glb=glb
+  nsau <- glb$nSAU
+  saunames <- glb$saunames
+  pyrs <- glb$pyrs
+  projyrs <- glb$pyrnames
+  nyrs <- glb$hyrs + pyrs
+  pyrindex <- (glb$hyrs + 1):(glb$hyrs + pyrs)
+  reps <- glb$reps
+  scenes <- names(dyn)
+  nscen <- length(scenes)
+  indexvar <- match(whichvar,names(dyn[[1]]))
+  res <- makelist(scenes)
+  scenmed <- matrix(0,nrow=pyrs,ncol=nsau,dimnames=list(projyrs,saunames))
+  for (scen in 1:nscen) {
+    pickvar <- dyn[[scen]][[indexvar]][pyrindex,,]
+    for (sau in 1:nsau) scenmed[,sau] <- apply(pickvar[,sau,],1,median)
+    differ <- apply(scenmed,2,diff)
+    pdiffer <- 100*differ/scenmed[1:(pyrs-1),]
+    res[[scen]] <- list(differ=differ,pdiffer=pdiffer,med=scenmed)
+  }
+  return(res)
+} # end of getrateofchange
+
 #' @title getsingleNum find a line of text and extracts a single number
 #'
 #' @description getsingleNum uses grep to find an input line. If the variable
@@ -706,7 +748,7 @@ getvar <- function(zoneC,invar) {
 #' @return a numpop vector of invar from the numpop popdefs in zoneC
 #' @export
 #'
-#' @seealso getlistvar
+#' @seealso \link{getlistvar}
 #'
 #' @examples
 #' data(zone)

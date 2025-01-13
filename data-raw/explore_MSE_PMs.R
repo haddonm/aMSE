@@ -19,7 +19,7 @@ outdir <- "C:/aMSE_scenarios/EG/"
 files <- dir(outdir)
 #printV(files)
 pickfiles=c(1,2,3,4)
-scencol=c(1,2,4,4)
+scencol=c(1,2,3,4)
 rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;
 verbose=TRUE; intensity=100; zero=FALSE; altscenes=c("NoMR","MR12","MR123")
 juris="";ribbonleg="topleft"; Q90=TRUE;
@@ -260,6 +260,8 @@ str1(dyn$EG)
 
 nscen <- length(dyn)
 glb <- result$ans$EG$glb
+yrnames <- c(glb$hyrnames + glb$pyrnames)
+nyrs <- length(yrnames)
 nsau <- glb$nSAU
 saunames <- glb$saunames
 pickyrs <- c(63)
@@ -269,9 +271,8 @@ if (length(pickyrs) > 1) {
   outcomp <- array(0,dim=c(nyrs,nscen,nsau),dimnames=list(scenes,saunames))
 }
 
-for (scen in 1:nscen) { # scen=1
-  outcomp[[scen]] <- state_by_year(dyn[[scen]]$cpue,whichyrs=,whichfun=mean,glb=glb)
-}
+outcomp[[scen]] <- state_by_year(dyn,cpue,whichyrs=,whichfun=mean,glb=glb)
+
 outcomp
 
 
@@ -293,6 +294,26 @@ for (yr in 1:length(pickyrs)) {
 
 plotdynvarinyear(rundir=rundir,dyn=dyn,whichvar="catch",
                  whichyr=c(63),glb,console=TRUE)
+
+
+# rate of change------------------------
+
+
+
+nscen <- length(scenes)
+glb <- glbc[[1]]
+saunames <- glb$saunames
+nsau <- glb$nSAU
+projyrs <- glb$pyrnames
+pyrs <- glb$pyrs
+
+
+pickvar <- "catch"
+
+res <- getrateofchange(dyn=dyn,whichvar=pickvar,glb=glb)
+
+plotrateofchange(rundir="",res=res,whichvar=pickvar,glb=glb,console=TRUE)
+
 
 
 

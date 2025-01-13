@@ -25,5 +25,5 @@ zoneC <- zone$zoneC
 getvect(zoneC,"steeph")
 }
 \seealso{
-getlistvar
+\link{getlistvar}
 }

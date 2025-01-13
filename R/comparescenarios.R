@@ -1548,6 +1548,76 @@ plotdynvarinyear <- function(rundir,dyn,whichvar,whichyr,glb,bins=15,
   return(invisible(fname1))
 } # end of plotdynvarinyear
 
+#' @title plotrateofchange plot the output from getrateofchange function
+#'
+#' @description plotrateofchange produces a plot of the percent changes within
+#'     the whichvar selected across all selected scenarios within do_comparison.
+#'     The outcome is placed within the ScenarioPMs tab. The variables it can
+#'     work with from dyn from teh output of do_comparison include: matureB,
+#'     exploitB, midyrexpB, catch, acatch, harvestR, cpue, recruit, deplsB,
+#'     and depleB.
+#'
+#' @param rundir the directory in which comparisons are being made. It is best
+#'     to be a separate directory form any particular scenario.
+#' @param res the output object from the getrateofchange function
+#' @param whichvar which variable within the dyn object to characterize
+#' @param glb the globals object needed for the number and names of the sau,
+#'     and the years and their names.
+#' @param console should each plot go to the console or be saved to rundir.
+#'     default = TRUE ie go to console
+#'
+#' @seealso \link{getrateofchange}, \link{do_comparison}
+#'
+#' @returns invisibly the filename used without the path
+#' @export
+#'
+#' @examples
+#' # syntax
+#' # pickvar <- "acatch"
+#' # res <- getrateofchange(dyn=dyn,whichvar=pickvar,glb=glb)
+#' # filen <- plotrateofchange(rundir=rundir,res=res,whichvar=pickvar,glb=glb)
+plotrateofchange <- function(rundir,res,whichvar,glb,console=TRUE) {
+  scenes <- names(res)
+  nscen <- length(scenes)
+  saunames <- glb$saunames
+  nsau <- glb$nSAU
+  projyrs <- glb$pyrnames
+  pyrs <- glb$pyrs
+  outy <- matrix(0,nrow=nsau,ncol=2,dimnames=list(saunames,c("low","high")))
+  outy[,1] <- 1e6
+  outy[,2] <- -1e6
+  for (sau in 1:nsau) {
+    for (scen in 1:nscen) {
+      tmp <- res[[scen]]$pdiffer[,sau]
+      yrge <- range(tmp)
+      outy[sau,1] <- ifelse((yrge[1] < outy[sau,1]),yrge[1],outy[sau,1])
+      outy[sau,2] <- ifelse((yrge[2] > outy[sau,2]),yrge[2],outy[sau,2])
+    }
+  }
+  outy[,1] <- floor(outy[,1])
+  outy[,2] <- ceiling(outy[,2])
+  outy
+  yrs <- as.numeric(projyrs[2:pyrs])
+  fname <- paste0(whichvar,"_rate_of_chnage_across_scenarios")
+  fname1 <- paste0(fname,".png")
+  filen <- pathtopath(rundir,fname1)
+  if (console) filen=""
+  plotprep(width=9,height=8,newdev=FALSE,filename=filen,verbose=FALSE)
+  parset(plots=c(4,2),margin=c(0.2,0.4,0.1,0.1),outmargin=c(0,1,0,0),byrow=FALSE)
+  for (sau in 1:nsau) {
+    tmp <- res[[1]]$pdiffer[,sau]
+    plot(yrs,tmp,type="l",lwd=2,col=1,ylab=saunames[sau],ylim=outy[sau,],xlab="")
+    abline(h=0,lwd=1,col=1)
+    for (scen in 2:nscen) {
+      tmp <- res[[scen]]$pdiffer[,sau]
+      lines(yrs,tmp,lwd=2,col=scen)
+    }
+    if (sau == 1) legend("topright",scenes,lwd=3,col=1:nscen,bty="n",cex=1)
+  }
+  label <- paste0("Percentage Change in median ",whichvar," across Scenarios.")
+  mtext(label,side=2,outer=TRUE,cex=1.2,line=-0.5)
+  return(invisible(fname1))
+} # end of plotrateofchange
 
 #' @title plotscene literally plots up the output from comparevar
 #'
