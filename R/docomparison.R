@@ -222,7 +222,8 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
   saunames <- glb$saunames
   nsau <- glb$nSAU
   x <- makelist(scenes)
-  for (scen in 1:length(scenes)) x[[scen]] <- dyn[[scen]]$catch[59:88,,]
+  whichyrs <- (glb$hyrs + 1):(glb$hyrs + glb$pyrs)
+  for (scen in 1:length(scenes)) x[[scen]] <- dyn[[scen]]$catch[whichyrs,,]
   filename <- pathtopath(rundir,"catchprojection_deviates.png")
   devout <- plotdevs(x,scenes,saunames,filen=filename)
   addplot(filen=filename,rundir=rundir,category="ScenarioPMs",
@@ -248,7 +249,7 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
              caption=paste0("Mean catch of distribution of replicates by sau ",
              "and scenario in year ",realyr))
   }
-  # Now do rate of change for 3 variables
+  # Now do rate of change for 4 variables: catch, cpue, matureB, and harvestR
   pickvar <- "catch"
   res <- getrateofchange(dyn=dyn,whichvar=pickvar,glb=glb)
   filename <- plotrateofchange(rundir=rundir,res=res,whichvar=pickvar,glb=glb,
