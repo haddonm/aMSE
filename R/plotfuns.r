@@ -974,7 +974,7 @@ plotpopprops <- function(x,rundir,glb,varnames,startyr,console=TRUE,bins=25) {
   npop <- glb$numpop
   n <- length(varnames)
   if (console) { filen="" } else {
-    filen <- filenametopath(rundir,"population_properties.png")
+    filen <- pathtopath(rundir,"population_properties.png")
   }
   plotprep(width=8,height=7,newdev=FALSE,filename=filen,verbose=FALSE)
   parset(pickbound(n),byrow=FALSE,outmargin=c(0,1,0,0),

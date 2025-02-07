@@ -282,12 +282,20 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
               expB=outprod[,"Bexmsy"]),scencol=scencol)
   # ribbon plots by sau and dynamic variable
   # Catch ribbon tab -------------------------------------------
+  zcatch <- makelist(scenes)
+  for (scen in 1:nscen) zcatch[[scen]] <- zone[[scen]]$catch
+  zoneribbon(rundir=rundir,scenes,invar=zcatch,glbc=glbc,varname="Catch",
+             category="Catch",console=FALSE,addmedian=0)
   catch <- scenebyvar(dyn,byvar="catch",glb=glbc,projonly = TRUE)
   catqnts <- sauquantbyscene(catch,glbc)
   sauribbon(rundir,scenes=scenes,varqnts=catqnts,
               glbc=glbc,varname="Catch",console=FALSE,
               q90=Q90,intens=intensity,addleg=ribbonleg)
   # cpue ribbon tab------------------------------------------
+  zcpue <- makelist(scenes)
+  for (scen in 1:nscen) zcpue[[scen]] <- zone[[scen]]$cpue
+  zoneribbon(rundir=rundir,scenes,invar=zcpue,glbc=glbc,varname="CPUE",
+             category="cpue",console=FALSE,addmedian=0)
   cpue <- scenebyvar(dyn,byvar="cpue",glb=glbc,projonly = TRUE)
   cpueqnts <- sauquantbyscene(cpue,glbc)
   sauribbon(rundir,scenes=scenes,varqnts=cpueqnts,

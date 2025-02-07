@@ -64,6 +64,7 @@ saunames <- glb$saunames
 nsau <- glb$nSAU
 projyrs <- glb$pyrnames
 pyrs <- glb$pyrs
+nscen <- length(scenes)
 
 catmult <- makelist(scenes)
 medcatmult <- array(0,dim=c(pyrs,nscen,nsau),
@@ -145,6 +146,7 @@ startyr
 str(dyn[[1]])
 
 
+
 nscen <- length(scenes)
 glb <- glbc[[1]]
 saunames <- glb$saunames
@@ -163,7 +165,6 @@ for (scen in 1:nscen) { # scen = 1
   }
 }
 str(aavbyrep)
-
 
 getlim <- function(invar,inc=2) { #  invar = aavbyrep[1,6,]; inc=2
   rge <- range(invar)
@@ -313,6 +314,24 @@ pickvar <- "catch"
 res <- getrateofchange(dyn=dyn,whichvar=pickvar,glb=glb)
 
 plotrateofchange(rundir="",res=res,whichvar=pickvar,glb=glb,console=TRUE)
+
+
+
+
+
+
+zcatch <- makelist(scenes)
+for (scen in 1:nscen) zcatch[[scen]] <- zone[[scen]]$catch
+varname="catch"
+q90=TRUE
+intens=127
+addmedian=0
+addleg <- "topleft"
+
+zoneribbon(rundir="",scenes,invar=zcatch,glbc=glbc,varname="Catch",console=FALSE,
+              addmedian=0)
+
+
 
 
 

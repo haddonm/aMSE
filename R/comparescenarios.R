@@ -1603,7 +1603,8 @@ plotrateofchange <- function(rundir,res,whichvar,glb,console=TRUE) {
   filen <- pathtopath(rundir,fname1)
   if (console) filen=""
   plotprep(width=9,height=8,newdev=FALSE,filename=filen,verbose=FALSE)
-  parset(plots=c(4,2),margin=c(0.2,0.4,0.1,0.1),outmargin=c(0,1,0,0),byrow=FALSE)
+  parset(plots=pickbound(nsau),margin=c(0.2,0.4,0.1,0.1),outmargin=c(0,1,0,0),
+         byrow=FALSE)
   for (sau in 1:nsau) {
     tmp <- res[[1]]$pdiffer[,sau]
     plot(yrs,tmp,type="l",lwd=2,col=1,ylab=saunames[sau],ylim=outy[sau,],xlab="")
@@ -2056,7 +2057,7 @@ sauribbon <- function(rundir,scenes,varqnts,glbc,varname,
       sauname <- glbc[[1]]$saunames[sau]
       if (!console) {
         filename <- paste0(sauname,"_",varname,"_ribbon.png")
-        filen <- filenametopath(rundir,filename)
+        filen <- pathtopath(rundir,filename)
         caption <- paste0(varname," ribbon plot for ",glbc[[1]]$saunames[sau])
       }
       if (defpar) {
@@ -2393,4 +2394,103 @@ tabulatezoneprod <- function(rundir,prods,scenes) {
   return(invisible(out))
 } # end of tabulatezoneprod
 
+
+#' @title zoneribbon a ribbon plot the quantiles x scenes for the input variable
+#'
+#' @description zoneribbon is used to produce a ribbon plot for the zone across
+#'     a set of scenarios for a given variable (cpue, catch, harvest rate, etc)
+#'     out of the zone object. After running do_comparison
+#'
+#' @param rundir the directory in which all results are held for a scenario or
+#'     comparison of scenarios
+#' @param scenes the names of the different scenarios being compared
+#' @param invar a list of the zone-scale replicate runs for the varname from
+#'     each scenario. the zone object is generated inside docomparison
+#' @param glbc the list of the global objects.
+#' @param varname just the name of the variable being plotted, to make sure the
+#'     figures all have the correct labelling
+#' @param category if a file is saved this argument identifies the webpage tab
+#'     into which the plot will be placed.
+#' @param console should the plot be sent to the console or saved for use in the
+#'     web-page output? default=TRUE, set to FALSE to save it
+#' @param q90 should the 90th quantiles be plotted? default=TRUE. If FALSE then
+#'     the 95th quantiles are used.
+#' @param intens if polys=TRUE then intens signifies the intensity of colour on
+#'     a scale of 0 - 255. 127 is about 50 percent dense.
+#' @param addleg add a legend or not. If not use "", if yes use any of topleft,
+#'     topright, bottomleft, or bottomright, default = bottomright.
+#' @param addmedian should each polygon also have its median plotted as a line.
+#'
+#' @seealso {
+#'   \link{doquantribbon}, \link{do_comp_outputs}
+#' }
+#'
+#' @return a list containing the quantiles for the varname for each of the
+#'     scenarios - invisibly
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'  # a possible run where scenarios 1, 13, and 14 are compared.
+#'    result <- do_comparison(rundir=rundir,postfixdir=postfixdir,outdir=outdir,
+#'                            files=files,pickfiles=c(1,2,3),verbose=TRUE)
+#' }
+zoneribbon <- function(rundir,scenes,invar,glbc,varname,category,
+                       console=TRUE,q90=TRUE,intens=127,addleg="topleft",
+                       addmedian=3) {
+# rundir=""; scenes=scenes;invar=zcpue;glbc=glbc;varname="CPUE";category="cpue"
+# console=TRUE; q90=TRUE;intens=127;addleg="topleft";addmedian=0
+  zonequant <- makelist(scenes)
+  glb <- glbc[[1]]
+  reps <- glb$reps
+  yrs <- glb$pyrnames
+  nyrs <- length(yrs)
+  nscen=length(scenes)
+  maxq <- 0
+  for (scen in 1:nscen) {  # scen=1
+    zpick <- invar[[scen]][(glb$hyrs+1):(glb$hyrs + glb$pyrs),]
+    maxy <- getmax(zpick)
+    zquant <- apply(zpick,1,quants)
+    zonequant[[scen]] <- zquant
+    if (q90) {
+      zquant <- zquant[c(2,3,4),]
+    } else {
+      zquant <- zquant[c(1,3,5)]
+    }
+    maxy <- getmax(zquant)
+    maxq <- ifelse((maxq < maxy),maxy,maxq)
+  }
+  filen=""
+  if (!console) {
+    filename <- paste0(varname,"_by_zone_ribbon.png")
+    filen <- pathtopath(rundir,filename)
+    caption <- paste0(varname," ribbon plot for Zones in ",
+                      paste0(scenes," ",collapse=""))
+  }
+  plotprep(width=8,height=4.5,newdev=FALSE,filename=filen,verbose=FALSE)
+  parset(cex=1.0,margin=c(0.35,0.5,0.05,0.05))
+  plot(yrs,zonequant[[1]][3,],type="l",lwd=0,col=0,ylim=c(0,maxq),xlab="",
+       ylab=paste0("Zonewide ",varname),panel.first=grid(),cex.lab=1.25,yaxs="i")
+  for (i in 1:nscen) { # i =2
+    if (q90) {
+      poldat <- makepolygon(zonequant[[i]][2,],zonequant[[i]][4,],yrs)
+      polygon(poldat,col=RGB(i,alpha=intens))
+    } else {
+      poldat <- makepolygon(zonequant[[i]][1,],zonequant[[i]][5,],yrs)
+      polygon(poldat,col=RGB(i,alpha=intens))
+    }
+    if (addmedian > 0) lines(yrs,zonequant[[i]][3,],lwd=addmedian,col=i)
+  }
+  if (nchar(addleg) > 0) {
+    if (addleg %in% c("topleft","topright","bottomleft","bottomright")) {
+      legend(addleg,legend=scenes,col=1:nscen,lwd=3,bty="n",cex=1.2)
+    } else {
+      cat("Inappropriate legend location given, see ?doquantribbon \n")
+    }
+  }
+  if (!console) {
+    addplot(filen=filen,rundir=rundir,category=category,caption=caption)
+  }
+  return(invisible(zonequant))
+} # end of zoneribbon
 
