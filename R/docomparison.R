@@ -234,6 +234,13 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
   tabfile <- "proj_sddeviates_catch.csv"
   addtable(devout$sddevs,filen=tabfile,rundir=rundir,category="ScenarioPMs",
            caption="StDev of deviations from a loess on catch values by sau and scenario.")
+  x <- makelist(scenes)
+  whichyrs <- (glb$hyrs + 1):(glb$hyrs + glb$pyrs)
+  for (scen in 1:length(scenes)) x[[scen]] <- zone[[scen]]$catch[whichyrs,]
+  filename <- pathtopath(rundir,"catch-projdevs-by-zone.png")
+  zdevout <- plotzonedevs(x,scenes,glb,filen=filename)
+  addplot(filen=filename,rundir=rundir,category="ScenarioPMs",
+          caption="The deviates from a loess on catches in each replicate by zone by scenario.")
   pickyrs <- c(glb$hyrs+5,glb$hyrs+10) # 5 and 10 years
   nyrs <- length(pickyrs)
   res <- state_by_year(indyn=dyn,whichvar="catch",whichyrs=pickyrs,
@@ -274,28 +281,59 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
                                console=FALSE)
   addplot(filen=filename,rundir=rundir,category="ScenarioPMs",
           caption="The rate of change of the median harvestR across scenarios.")
+  # zone scale rates of change
+  invar <- "catch"
+  res <- getzonechangerate(zone=zone,whichvar=invar,glb=glb)
+  filename <- plotzonechangerate(rundir=rundir,res=res,whichvar=invar,glb=glb,
+                                 console=FALSE)
+  addplot(filen=filename,rundir=rundir,category="ScenarioPMs",
+          caption="Rate of change of the zonal median catch across scenarios.")
+  invar <- "cpue"
+  res <- getzonechangerate(zone=zone,whichvar=invar,glb=glb)
+  filename <- plotzonechangerate(rundir=rundir,res=res,whichvar=invar,glb=glb,
+                                 console=FALSE)
+  addplot(filen=filename,rundir=rundir,category="ScenarioPMs",
+          caption="Rate of change of the zonal median CPUE across scenarios.")
+  invar <- "matureB"
+  res <- getzonechangerate(zone=zone,whichvar=invar,glb=glb)
+  filename <- plotzonechangerate(rundir=rundir,res=res,whichvar=invar,glb=glb,
+                                 console=FALSE)
+  addplot(filen=filename,rundir=rundir,category="ScenarioPMs",
+          caption="Rate of change of the zonal median Mature Biomass across scenarios.")
+  invar <- "harvestR"
+  res <- getzonechangerate(zone=zone,whichvar=invar,glb=glb)
+  filename <- plotzonechangerate(rundir=rundir,res=res,whichvar=invar,glb=glb,
+                                 console=FALSE)
+  addplot(filen=filename,rundir=rundir,category="ScenarioPMs",
+          caption="Rate of change of the zonal median harvestR across scenarios.")
   # zone tab----------------------------------------
+  if (verbose) cat("Now doing the Zone tab  \n")
   outprod <- tabulatezoneprod(rundir,prods,scenes)
+  zcatch <- makelist(scenes)
+  for (scen in 1:nscen) zcatch[[scen]] <- zone[[scen]]$catch
+  zoneribbon(rundir=rundir,scenes,invar=zcatch,glbc=glbc,varname="Catch",
+             category="zone",console=FALSE,addmedian=0)
+  zcpue <- makelist(scenes)
+  for (scen in 1:nscen) zcpue[[scen]] <- zone[[scen]]$cpue
+  zoneribbon(rundir=rundir,scenes,invar=zcpue,glbc=glbc,varname="CPUE",
+             category="zone",console=FALSE,addmedian=0)
+  zdeplsB <- makelist(scenes)
+  for (scen in 1:nscen) zdeplsB[[scen]] <- zone[[scen]]$deplsB
+  zoneribbon(rundir=rundir,scenes,invar=zdeplsB,glbc=glbc,varname="deplsB",
+             category="zone",console=FALSE,addmedian=0)
   plotzonedyn(rundir,scenes,zone,glbc,console=FALSE,q90=Q90,polys=TRUE,
               intens=intensity,hlines=list(catch=outprod[,"MSY"],
               spawnB=outprod[,"Bmsy"],harvestR=0,cpue=outprod[,"CEmsy"],
               expB=outprod[,"Bexmsy"]),scencol=scencol)
+
   # ribbon plots by sau and dynamic variable
   # Catch ribbon tab -------------------------------------------
-  zcatch <- makelist(scenes)
-  for (scen in 1:nscen) zcatch[[scen]] <- zone[[scen]]$catch
-  zoneribbon(rundir=rundir,scenes,invar=zcatch,glbc=glbc,varname="Catch",
-             category="Catch",console=FALSE,addmedian=0)
   catch <- scenebyvar(dyn,byvar="catch",glb=glbc,projonly = TRUE)
   catqnts <- sauquantbyscene(catch,glbc)
   sauribbon(rundir,scenes=scenes,varqnts=catqnts,
               glbc=glbc,varname="Catch",console=FALSE,
               q90=Q90,intens=intensity,addleg=ribbonleg)
   # cpue ribbon tab------------------------------------------
-  zcpue <- makelist(scenes)
-  for (scen in 1:nscen) zcpue[[scen]] <- zone[[scen]]$cpue
-  zoneribbon(rundir=rundir,scenes,invar=zcpue,glbc=glbc,varname="CPUE",
-             category="cpue",console=FALSE,addmedian=0)
   cpue <- scenebyvar(dyn,byvar="cpue",glb=glbc,projonly = TRUE)
   cpueqnts <- sauquantbyscene(cpue,glbc)
   sauribbon(rundir,scenes=scenes,varqnts=cpueqnts,

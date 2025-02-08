@@ -316,20 +316,58 @@ res <- getrateofchange(dyn=dyn,whichvar=pickvar,glb=glb)
 plotrateofchange(rundir="",res=res,whichvar=pickvar,glb=glb,console=TRUE)
 
 
+res <- getzonechangerate(zone=zone,whichvar="catch",glb=glb)
+
+str1(res)
+str1(res[[1]])
+
+plotzonechangerate <- function(rundir,res,whichvar,glb,console=TRUE) {
+  #  rundir=rundir;res=res;whichvar="catch";glb=glb;console=TRUE
+  scenes <- colnames(res$pdiffer)
+  nscen <- length(scenes)
+  yrs <- glb$pyrnames
+  nyrs <- glb$pyrs
+  tmp <- res$pdiffer
+  miny <- getmin(tmp)
+  maxy <- getmax(tmp)
+  fname <- paste0(whichvar,"_zonal_rate_of_change_across_scenarios")
+  fname1 <- paste0(fname,".png")
+  filen <- pathtopath(rundir,fname1)
+  if (console) filen=""
+  plotprep(width=8,height=4.5,newdev=FALSE,filename=filen,verbose=FALSE)
+  parset(margin=c(0.5,0.5,0.1,0.1))
+
+  label <- paste0("Percent Annual Change in zonal ",whichvar)
+  plot(yrs,tmp[,1],type="l",lwd=2,col=1,ylab=label,ylim=c(miny,maxy),xlab="",
+       panel.first=grid())
+  abline(h=0,lwd=1,col=1)
+  for (scen in 2:nscen) lines(yrs,tmp[,scen],lwd=2,col=scen)
+  legend("topright",scenes,lwd=3,col=1:nscen,bty="n",cex=1.2)
+  return(invisible(fname1))
+} # plotzonechangerate
+
+
+
+res <- getzonechangerate(zone=zone,whichvar="catch",glb=glb)
+filename <- plotzonechangerate(rundir=rundir,res=res,whichvar="catch",glb=glb,
+                               console=TRUE)
+filename
+
+invar <- "deplsB"
+res <- getzonechangerate(zone=zone,whichvar=invar,glb=glb)
+filename <- plotzonechangerate(rundir=rundir,res=res,whichvar=invar,glb=glb,
+                               console=TRUE)
+filename
 
 
 
 
-zcatch <- makelist(scenes)
-for (scen in 1:nscen) zcatch[[scen]] <- zone[[scen]]$catch
-varname="catch"
-q90=TRUE
-intens=127
-addmedian=0
-addleg <- "topleft"
 
-zoneribbon(rundir="",scenes,invar=zcatch,glbc=glbc,varname="Catch",console=FALSE,
-              addmedian=0)
+
+
+
+
+
 
 
 

@@ -801,6 +801,46 @@ getyr2maxce <- function(cpue,glb) {
   return(result)
 } # end of getyr2maxce
 
+#' @title getzonechangerate gets annual change rate of a variable across zones
+#'
+#' @description getzonechangerate estimates annual change rate of a variable
+#'     across scenarios by zone. It uses the zone object within docomparison
+#'
+#' @param zone the zone summary objects from each scenario collected into a
+#'     single zone object from the output of do_comparison
+#' @param whichvar which variable within the zone object to characterize. The
+#'     variables it can work with include: matureB, exploitB, midyrexpB, catch,
+#'     acatch, harvestR, cpue, recruit, deplsB, and depleB.
+#' @param glb one of the globals object from a scenario the number of
+#'     projection years MUST be the same.
+#'
+#' @returns a list of the differences, the percentager differences, and the
+#'     medians
+#' @export
+#'
+#' @examples
+#' # syntax  deltas <- getzonechangerate(zone=zone,whichvar="catch",glb=glb)
+getzonechangerate <- function(zone,whichvar,glb) {
+  # zone=zone; whichvar="catch";  glb=glb
+  yrs <- glb$pyrnames
+  nyrs <- glb$pyrs
+  pyrindex <- (glb$hyrs + 1):(glb$hyrs + nyrs)
+  reps <- glb$reps
+  scenes <- names(zone)
+  nscen <- length(scenes)
+  indexvar <- match(whichvar,names(zone[[1]]))
+  res <- makelist(scenes)
+  scenmed <- matrix(0,nrow=nyrs,ncol=nscen,dimnames=list(yrs,scenes))
+  differ <- pdiffer <- scenmed
+  for (scen in 1:nscen) { # scen = 1
+    pickvar <- zone[[scen]][[indexvar]][pyrindex,]
+    scenmed[,scen] <- apply(pickvar,1,median)
+    differ[,scen] <- c(diff(scenmed[,scen]),NA)
+    pdiffer[,scen] <- c(100*differ[1:(nyrs-1),scen]/scenmed[1:(nyrs-1),scen],NA)
+  }
+  return(invisible(list(differ=differ,pdiffer=pdiffer,scenmed=scenmed)))
+} # end of getzonechangerate
+
 #' @title getzoneLF extracts all LF data from a zone across pops and years
 #'
 #' @description getzoneLF extracts all LF data from a zone across

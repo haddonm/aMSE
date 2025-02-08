@@ -1762,6 +1762,124 @@ plotsceneproj <- function(rundir,inarr,glb,scene,filen="",label="",
   return(invisible(outmed))
 } # end of plotsceneproj
 
+#' @title plotzonechangerate plot the output from getzonechangerate function
+#'
+#' @description plotzonechangerate produces a plot of the percent changes within
+#'     the whichvar by zone selected across all selected scenarios within
+#'     do_comparison. The outcome is placed within the ScenarioPMs tab. The
+#'     variables it can work with from zone from the output of do_comparison
+#'     include: matureB, exploitB, midyrexpB, catch, acatch, harvestR, cpue,
+#'     recruit, deplsB, and depleB.
+#'
+#' @param rundir the directory in which comparisons are being made. It is best
+#'     to be a separate directory form any particular scenario.
+#' @param res the output object from the getzonechangerate function
+#' @param whichvar which variable within the dyn object to characterize
+#' @param glb the globals object needed for the number and names of the sau,
+#'     and the years and their names.
+#' @param console should each plot go to the console or be saved to rundir.
+#'     default = TRUE ie go to console
+#'
+#' @seealso \link{getzonechangerate}, \link{do_comparison}
+#'
+#' @returns invisibly the filename used without the path
+#' @export
+#'
+#' @examples
+#' # syntax
+#' # pickvar <- "acatch"
+#' # res <- getzonechangerate(zone=zone,whichvar=pickvar,glb=glb)
+#' # filen <- plotrateofchange(rundir=rundir,res=res,whichvar=pickvar,glb=glb)
+plotzonechangerate <- function(rundir,res,whichvar,glb,console=TRUE) {
+  #  rundir=rundir;res=res;whichvar="catch";glb=glb;console=TRUE
+  scenes <- colnames(res$pdiffer)
+  nscen <- length(scenes)
+  yrs <- glb$pyrnames
+  nyrs <- glb$pyrs
+  tmp <- res$pdiffer
+  miny <- getmin(tmp)
+  maxy <- getmax(tmp)
+  fname <- paste0(whichvar,"_zonal_rate_of_change_across_scenarios")
+  fname1 <- paste0(fname,".png")
+  filen <- pathtopath(rundir,fname1)
+  if (console) filen=""
+  plotprep(width=8,height=4.5,newdev=FALSE,filename=filen,verbose=FALSE)
+  parset(margin=c(0.5,0.5,0.1,0.1))
+
+  label <- paste0("Percent Annual Change in zonal ",whichvar)
+  plot(yrs,tmp[,1],type="l",lwd=2,col=1,ylab=label,ylim=c(miny,maxy),xlab="",
+       panel.first=grid())
+  abline(h=0,lwd=1,col=1)
+  for (scen in 2:nscen) lines(yrs,tmp[,scen],lwd=2,col=scen)
+  legend("topright",scenes,lwd=3,col=1:nscen,bty="n",cex=1.2)
+  return(invisible(fname1))
+} # plotzonechangerate
+
+#' @title plotzonedevs plots projection deviates for a variable across scenerios
+#'
+#' @description plotzonedevs provides a plot of a scenario Performance Measure.
+#'     In this case the PM are the deviations from a loess fit to whatever input
+#'     variable has been selected from the zone objects in do_comparison(). One
+#'     needs first generate a list of the selected variable from the the input
+#'     zone objects (one from each scenario). A standard comparison would be on
+#'     the variation of catches through the years of the projection. But this
+#'     could be applied to any of the variables within the zone object, which
+#'     includes matureB, exploitB, midyexpB, catch, acatch, harvestR, cpue,
+#'     recruit, deplsB, depleB. The final catchN and Nt would need separate
+#'     treatment.
+#'
+#' @param invar the sub-object from each scenario as a list, see examples
+#' @param scenes a vector of names fr each scenario being compared
+#' @param glb  a globals object from any scenario. This is to obtain the
+#'     number of projection years, which MUST be the same across
+#'     all scenarios (else the matrices will not line up).
+#' @param filen the filename and path if the plot is to be saved, default = "".
+#'     if a filename is given it should be a .png file
+#'
+#' @return a list of a matrix of the mean and sd devs per scenario, and a matrix
+#'      of the actual deviates, all returned invisibly. It also plots a graph
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # example syntax, assumes zone has been extracted from all scenarios
+#'    glb <- glbc[[1]]
+#'    nscen <- length(scenes)
+#'    whichyrs <- (glb$hyrs + 1):(glb$hyrs + glb$pyrs)
+#'    x <- makelist(scenes)
+#'    for (scen in 1:nscen) x[[scen]] <- zone[[scen]]$catch[whichyrs,]
+#'    devout <- plotzonedevs(x,scenes,glb,filen="")
+#' }
+plotzonedevs <- function(invar,scenes,glb,filen=""){
+  # invar=x;scenes=scenes;filen=""
+  nscen <- length(scenes)
+  yrs <- glb$pyrnames
+  nyrs <- length(yrs)
+  reps <- glb$reps
+  summarydevs <- matrix(0,nrow=nscen,ncol=2,
+                        dimnames=list(scenes,c("Mean","SD")))
+  devs <- matrix(0,nrow=reps,ncol=nscen,dimnames=list(1:reps,scenes))
+  for (scen in 1:nscen) {
+    # scen = 1
+    scenvar <- invar[[scen]]
+    devs[,scen] <- apply(scenvar,2,getabdevs,years=yrs,smooth=TRUE)
+    summarydevs[scen,"Mean"] <- mean(devs[,scen],na.rm=TRUE)
+    summarydevs[scen,"SD"] <- sd(devs[,scen],na.rm=TRUE)
+  }
+  left <- getmin(devs)
+  right <- getmax(devs)
+  plotprep(width=9,height=6,newdev=FALSE,filename=filen,verbose=FALSE)
+  parset(plots=pickbound(nscen),margin=c(0.5,0.5,0.1,0.1),byrow=TRUE)
+  for (scen in 1:nscen) {
+    hist(devs[,scen],breaks=20,main="",xlab="",ylab=scenes[scen],
+         xlim=c(left,right))
+    abline(v=summarydevs[scen,"Mean"],lwd=2,col=4)
+    label <- paste0(scenes[scen],"-",round(summarydevs[scen,"Mean"],2))
+    mtext(label,side=3,line=-1.1,cex=1.2)
+  }
+  return(invisible(list(summarydevs=summarydevs,devs=devs)))
+} # end of plotzonedevs
+
 #' @title plotzonedyn ribbonplot of zone catch, mature biomass, harvestR and CE
 #'
 #' @description plotzonedyn generates ribbonplots of the zone-wide total catches,
