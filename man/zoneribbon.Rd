@@ -15,7 +15,8 @@ zoneribbon(
   q90 = TRUE,
   intens = 127,
   addleg = "topleft",
-  addmedian = 3
+  addmedian = 3,
+  add1line = TRUE
 )
 }
 \arguments{
@@ -48,6 +49,9 @@ a scale of 0 - 255. 127 is about 50 percent dense.}
 topright, bottomleft, or bottomright, default = bottomright.}
 
 \item{addmedian}{should each polygon also have its median plotted as a line.}
+
+\item{add1line}{default = TRUE, adds a thicker dashed black line at 1.0,
+where the catch/msy ratio = 1.0}
 }
 \value{
 a list containing the quantiles for the varname for each of the

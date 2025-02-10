@@ -2117,6 +2117,7 @@ plotzoneyrtovar <- function(rundir,invar,varname,glbc,category,console=TRUE) {
   scenes <- colnames(invar)
   nscen <- length(scenes)
   nyrs <- glbc[[1]]$pyrs
+  reps <- glbc[[1]]$reps
   filen=""
   if (!console) {
     filen <- pathtopath(rundir,paste0("Zone_scale_years_to_",varname,".png"))
@@ -2129,12 +2130,17 @@ plotzoneyrtovar <- function(rundir,invar,varname,glbc,category,console=TRUE) {
   parset(plots=pickbound(nscen),cex=1.0,margin=c(0.35,0.5,0.2,0.05),
          outmargin=c(1,1,0,0))
   for (scen in 1:nscen) {  # scen = 1
-    histdat <- invar[,scen]
-    inthist(histdat,col="lightblue",border=1,width=0.8,xmin=1,xmax=nyrs,
-            ylab=scenes[scen],panel.first=grid())
-    mtext(paste0("NAs = ",numNA[scen]),side=3,outer=FALSE,cex=1.1,line=0)
+    if (numNA[scen] == reps) {
+      plotnull(msg="None at MSY",cex=1.2)
+    } else {
+      histdat <- invar[,scen]
+      inthist(x=histdat,col="lightblue",border=1,width=0.8,xmin=1,xmax=nyrs,
+              ylab=scenes[scen],panel.first=grid())
+      mtext(paste0("NAs = ",numNA[scen]),side=3,outer=FALSE,cex=1.1,line=0)
+    }
   }
-  mtext(paste0("Years to First Reach ",varname),side=1,outer=TRUE,cex=1.2,line=-0.2)
+  mtext(paste0("Years to First Reach ",varname),side=1,outer=TRUE,cex=1.2,
+        line=-0.2)
   mtext("Count of each Interval",side=2,outer=TRUE,cex=1.2,line=-0.2)
   if (!console) {
     addplot(filen=filen,rundir=rundir,category=category,caption=caption)
@@ -2678,7 +2684,7 @@ zonecatchvsmsy <- function(prods,zone,glbc) {
 #' @param addleg add a legend or not. If not use "", if yes use any of topleft,
 #'     topright, bottomleft, or bottomright, default = bottomright.
 #' @param addmedian should each polygon also have its median plotted as a line.
-#' @param add1line deffault = TRUE, adds a thicker dashed black line at 1.0,
+#' @param add1line default = TRUE, adds a thicker dashed black line at 1.0,
 #'     where the catch/msy ratio = 1.0
 #'
 #' @seealso {

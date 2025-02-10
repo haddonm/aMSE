@@ -160,30 +160,36 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
   # productivity tab---------------------------------
   tabulateproductivity(rundir,prods,scenes)
   # Final Scores tab---------------------------------
-  scenscore <- lapply(scores,"[[","finalsc")
-  if (!is.null(scenscore[[1]])) {
-    lengths <- numeric(nscenes)
-    for (i in 1:nscenes)
-      lengths[i] <- length(apply(scenscore[[i]][,1,],1,median))
-    maxlen <- max(lengths)
-    doplot <- ifelse(all(lengths == maxlen),TRUE,FALSE)
-  } else {
-    doplot <-  FALSE
-  }
-  if (doplot) {
+  scorenames <- sapply(scores,length)
+  allpos <-  (all(scorenames > 0))
+  if (is.na(allpos)) allpos <- FALSE
+  if ((allpos) & (max(scorenames) == min(scorenames))) {
+    scenscore <- lapply(scores,"[[","finalsc")
     if (!is.null(scenscore[[1]])) {
-      filename <- "compare_final_HSscores.png"
-      meds <- comparefinalscores(rundir,scores,scenes,legloc="bottomright",
-                                 filen=filename,category="Scores")
-      addplot(filen=filename,rundir=rundir,category="Scores",
-              caption="The HS final scores for each sau.")
-      tabulatefinalHSscores(rundir,meds,scenes,category="Scores")
+      lengths <- numeric(nscenes)
+      for (i in 1:nscenes)
+        lengths[i] <- length(apply(scenscore[[i]][,1,],1,median))
+      maxlen <- max(lengths)
+      doplot <- ifelse(all(lengths == maxlen),TRUE,FALSE)
     } else {
-      warning(cat("No Final Score or Different years of projection,",
-                  " no Score tab produced \n"))
+      doplot <-  FALSE
     }
-  }
+    if (doplot) {
+      if (!is.null(scenscore[[1]])) {
+        filename <- "compare_final_HSscores.png"
+        meds <- comparefinalscores(rundir,scores,scenes,legloc="bottomright",
+                                   filen=filename,category="Scores")
+        addplot(filen=filename,rundir=rundir,category="Scores",
+                caption="The HS final scores for each sau.")
+        tabulatefinalHSscores(rundir,meds,scenes,category="Scores")
+      } else {
+        warning(cat("No Final Score or Different years of projection,",
+                    " no Score tab produced \n"))
+      }
+    }
+  } # end of if finalscore if statement
   # HSPM tab--------------------------------------------
+  if (verbose) cat("Now doing the HSPM tab \n")
   outcatchHSPM <- calccatchHSPM(catch,glbc,scenes,aavcyrs=10)
   medHSPM <- outcatchHSPM$medians
   label <- names(medHSPM)
@@ -341,6 +347,7 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
 
   # ribbon plots by sau and dynamic variable
   # Catch ribbon tab -------------------------------------------
+  if (verbose) cat("Now doing the fnial tabs  \n")
   catch <- scenebyvar(dyn,byvar="catch",glb=glbc,projonly = TRUE)
   catqnts <- sauquantbyscene(catch,glbc)
   sauribbon(rundir,scenes=scenes,varqnts=catqnts,
