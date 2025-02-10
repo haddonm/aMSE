@@ -208,13 +208,26 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
   outcpue <- cpueboxbysau(rundir,cpue,glbc,scenes,filen="sau_maxceyr_box.png",
                           startyr=0,maxval=0)
   # C_vs_MSY tab-----------------------------------------
-  cdivmsy <- catchvsMSY(catch,glbc,prods,scenes)
+  if (verbose) cat("Now doing the C_vs_MSY tab  \n")
+  outzonecatch <- zonecatchvsmsy(prods,zone,glbc)  # first at zone scale
+  zcvsmsy <- outzonecatch$zcvsmsy
+  zoneribbon(rundir=rundir,scenes=names(zcvsmsy),invar=zcvsmsy,glbc=glbc,
+             varname="Zone-Catch-div-MSY",category="C_vs_MSY",console=FALSE,
+             q90=TRUE,intens=127,addleg="topleft",addmedian=0,add1line=TRUE)
+  zyrtomsy <- outzonecatch$zyrtomsy
+  plotzoneyrtovar(rundir=rundir,invar=zyrtomsy,varname="MSY",glbc=glbc,
+                  category="C_vs_MSY",console=FALSE)
+  # now at sau scale
+  cvMSYout <- catchvsMSY(catch,glbc,prods,scenes)
+  cdivmsy <- cvMSYout$cdivmsy
   nscen <- length(scenes)
   for (i in 1:nscen) {
     plotsceneproj(rundir,cdivmsy[[i]],glbc[[i]],scenes[i],
                   filen=paste0("Catch_div_MSY_",scenes[i],".png"),
                   label="Catch / MSY",hline=1,Q=90)
   }
+  yrtomsy <- cvMSYout$yrtomsy
+
   # ScenarioPMs tab-------------------------------------------------
   if (verbose) cat("Now doing the Scenario PMs  \n")
   nscen <- length(scenes)

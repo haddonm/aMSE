@@ -297,72 +297,77 @@ plotdynvarinyear(rundir=rundir,dyn=dyn,whichvar="catch",
                  whichyr=c(63),glb,console=TRUE)
 
 
-# rate of change------------------------
+# ratio with target------------------------
 
 
 
-nscen <- length(scenes)
-glb <- glbc[[1]]
-saunames <- glb$saunames
-nsau <- glb$nSAU
-projyrs <- glb$pyrnames
-pyrs <- glb$pyrs
+catch <- makelist(scenes)
+for (scen in 1:nscen) {
+  catch[[scen]] <- dyn[[scen]]$catch[(hyrs+1):(hyrs+nyrs),,]
+}
 
-
-pickvar <- "catch"
-
-res <- getrateofchange(dyn=dyn,whichvar=pickvar,glb=glb)
-
-plotrateofchange(rundir="",res=res,whichvar=pickvar,glb=glb,console=TRUE)
-
-
-res <- getzonechangerate(zone=zone,whichvar="catch",glb=glb)
-
-str1(res)
-str1(res[[1]])
-
-plotzonechangerate <- function(rundir,res,whichvar,glb,console=TRUE) {
-  #  rundir=rundir;res=res;whichvar="catch";glb=glb;console=TRUE
-  scenes <- colnames(res$pdiffer)
+catchvsMSY2 <- function(catch,glbc,prods,scenes) {
+# catch=catch; glbc=glbc;prods=prods;scenes=scenes
+  whenfirst <- function(x,value) which(x >= value)[1]
   nscen <- length(scenes)
+  cdivmsy <- makelist(scenes)
+  yrtomsy <-makelist(scenes)
+  glb <- glbc[[1]]
   yrs <- glb$pyrnames
   nyrs <- glb$pyrs
-  tmp <- res$pdiffer
-  miny <- getmin(tmp)
-  maxy <- getmax(tmp)
-  fname <- paste0(whichvar,"_zonal_rate_of_change_across_scenarios")
-  fname1 <- paste0(fname,".png")
-  filen <- pathtopath(rundir,fname1)
-  if (console) filen=""
-  plotprep(width=8,height=4.5,newdev=FALSE,filename=filen,verbose=FALSE)
-  parset(margin=c(0.5,0.5,0.1,0.1))
-
-  label <- paste0("Percent Annual Change in zonal ",whichvar)
-  plot(yrs,tmp[,1],type="l",lwd=2,col=1,ylab=label,ylim=c(miny,maxy),xlab="",
-       panel.first=grid())
-  abline(h=0,lwd=1,col=1)
-  for (scen in 2:nscen) lines(yrs,tmp[,scen],lwd=2,col=scen)
-  legend("topright",scenes,lwd=3,col=1:nscen,bty="n",cex=1.2)
-  return(invisible(fname1))
-} # plotzonechangerate
-
-
-
-res <- getzonechangerate(zone=zone,whichvar="catch",glb=glb)
-filename <- plotzonechangerate(rundir=rundir,res=res,whichvar="catch",glb=glb,
-                               console=TRUE)
-filename
-
-invar <- "deplsB"
-res <- getzonechangerate(zone=zone,whichvar=invar,glb=glb)
-filename <- plotzonechangerate(rundir=rundir,res=res,whichvar=invar,glb=glb,
-                               console=TRUE)
-filename
+  hyrs <- glb$hyrs
+  reps <- glb$reps
+  for (i in 1:nscen) {   # i = 1
+    glb <- glbc[[i]]
+    nsau <- glb$nSAU
+    tomsy <- matrix(0,nrow=reps,ncol=nsau,dimnames=list(1:reps,1:nsau))
+    cvsmsy <- getprojyrs(catch[[i]],glb$hyrs,glb$pyrs,startyr=glb$hyrs)
+    tmp <- cvsmsy
+    prodsc <- prods[[i]]
+    msy <- prodsc[,"MSY"]
+    for (sau in 1:nsau) {
+      cvsmsy[,sau,] <- tmp[,sau,]/msy[sau]
+      tomsy[,sau] <- apply(tmp[,sau,],2,whenfirst,value=msy[sau])
+    }
+    cdivmsy[[i]] <- cvsmsy
+    yrtomsy[[i]] <- tomsy
+  }
+  return(invisible(list(cdivmsy=cdivmsy,yrtomsy=yrtomsy)))
+}
 
 
+cvmsyout <- catchvsMSY(catch,glbc,prods,scenes)
+
+str1(cvmsyout[[2]])
+
+yrtomsy <- cvmsyout$yrtomsy
+
+sapply(yrtomsy,countgtzero)
+sapply(yrtomsy,countNAs)
+
+
+# uses zone, prods, and dyn
+# first sum the prods matrix to get zone stats
+
+
+outzonecatch <- zonecatchvsmsy(prods,zone,glbc)
+zcvsmsy <- outzonecatch$zcvsmsy
+zoneribbon(rundir=rundir,scenes=names(zcvsmsy),invar=zcvsmsy,glbc=glbc,
+           varname="Zone-Catch/MSY",category="C_vs_MSY",console=TRUE,q90=TRUE,
+           intens=127,addleg="topleft",addmedian=0,add1line=TRUE)
+
+
+outzonecatch <- zonecatchvsmsy(prods,zone,glbc)
 
 
 
+
+
+
+
+zyrtomsy <- outzonecatch$zyrtomsy
+plotzoneyrtovar(rundir=rundir,invar=zyrtomsy,varname="MSY",glbc=glbc,
+                category="C_vs_MSY",console=TRUE)
 
 
 

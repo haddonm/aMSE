@@ -307,17 +307,28 @@ catchHSPM <- function(rundir,hspm,glbc,scenes,filen="",aavcyrs=10,
 catchvsMSY <- function(catch,glbc,prods,scenes) {
   nscen <- length(scenes)
   cdivmsy <- makelist(scenes)
+  yrtomsy <-makelist(scenes)
+  glb <- glbc[[1]]
+  yrs <- glb$pyrnames
+  nyrs <- glb$pyrs
+  hyrs <- glb$hyrs
+  reps <- glb$reps
   for (i in 1:nscen) {   # i = 1
     glb <- glbc[[i]]
     nsau <- glb$nSAU
+    tomsy <- matrix(0,nrow=reps,ncol=nsau,dimnames=list(1:reps,1:nsau))
     cvsmsy <- getprojyrs(catch[[i]],glb$hyrs,glb$pyrs,startyr=glb$hyrs)
     tmp <- cvsmsy
     prodsc <- prods[[i]]
     msy <- prodsc[,"MSY"]
-    for (sau in 1:nsau) cvsmsy[,sau,] <- tmp[,sau,]/msy[sau]
+    for (sau in 1:nsau) {
+      cvsmsy[,sau,] <- tmp[,sau,]/msy[sau]
+      tomsy[,sau] <- apply(tmp[,sau,],2,whenfirst,value=msy[sau])
+    }
     cdivmsy[[i]] <- cvsmsy
+    yrtomsy[[i]] <- tomsy
   }
-  return(invisible(cdivmsy))
+  return(invisible(list(cdivmsy=cdivmsy,yrtomsy=yrtomsy)))
 } # end of catchvsMSY
 
 #' @title comparevar generates the quantiles for each of a set of input scenarios
@@ -2070,6 +2081,66 @@ plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,q90=TRUE,
   } # end of else statement
 } # end of plotzonedyn
 
+#' @title plotzoneyrtovar plots the time to invar at a zone scale
+#'
+#' @description plotzoneyrtovar it is common to want to know how long each
+#'     replicate in a scenario run takes to be >= to given value, eg when is the
+#'     catch/msy ratio first = 1. The zonecatchvsmsy function generates that
+#'     catch/msy information, this plots the histograms. Other varnames such
+#'     as matureB would be of interest when compared to Bmsy.
+#'
+#' @param rundir the directory in which all results are held for a scenario or
+#'     comparison of scenarios
+#' @param invar a list of the zone-scale replicate runs for the varname from
+#'     each scenario. the zone object is generated inside do_comparison
+#' @param varname just the name of the variable being plotted, to make sure the
+#'     figures all have the correct labelling
+#' @param glbc the list of the global objects generated within do_comparison
+#' @param category if a file is saved this argument identifies the webpage tab
+#'     into which the plot will be placed.
+#' @param console should the plot be sent to the console or saved for use in the
+#'     web-page output? default=TRUE, set to FALSE to save it
+#'
+#' @seealso{
+#'    \link{whenfirst},  \link{zonecatchvsmsy}, \link{do_comparison}
+#' }
+#'
+#' @returns nothing but it does generate a plot of nscen histograms
+#' @export
+#'
+#' @examples
+#' print("wait on example data")
+#' # syntax  plotzoneyrtovar(rundir=rundir,invar=zyrtomsy,varname="MSY",
+#' #                         glbc=glbc,category="C_vs_MSY",console=TRUE)
+plotzoneyrtovar <- function(rundir,invar,varname,glbc,category,console=TRUE) {
+  #  rundir=rundir; invar=zyrtomsy;varname="MSY";glbc=glbc;category="C_vs_MSY";console=TRUE
+  scenes <- colnames(invar)
+  nscen <- length(scenes)
+  nyrs <- glbc[[1]]$pyrs
+  filen=""
+  if (!console) {
+    filen <- pathtopath(rundir,paste0("Zone_scale_years_to_",varname,".png"))
+    caption <- paste0("Histograms of years to ",varname," for Zones in ",
+                      paste0(scenes," ",collapse=""))
+  }
+  numNA <- apply(invar,2,countNAs)
+
+  plotprep(width=9,height=6,newdev=FALSE,filename=filen,verbose=FALSE)
+  parset(plots=pickbound(nscen),cex=1.0,margin=c(0.35,0.5,0.2,0.05),
+         outmargin=c(1,1,0,0))
+  for (scen in 1:nscen) {  # scen = 1
+    histdat <- invar[,scen]
+    inthist(histdat,col="lightblue",border=1,width=0.8,xmin=1,xmax=nyrs,
+            ylab=scenes[scen],panel.first=grid())
+    mtext(paste0("NAs = ",numNA[scen]),side=3,outer=FALSE,cex=1.1,line=0)
+  }
+  mtext(paste0("Years to First Reach ",varname),side=1,outer=TRUE,cex=1.2,line=-0.2)
+  mtext("Count of each Interval",side=2,outer=TRUE,cex=1.2,line=-0.2)
+  if (!console) {
+    addplot(filen=filen,rundir=rundir,category=category,caption=caption)
+  }
+} # end of plotzoneyrtovar
+
 #' @title sauquantbyscene calcualtes the quantiles for all sau and all scenarios
 #'
 #' @description sauquantbyscene takes the output from the scenebyvar function
@@ -2512,6 +2583,75 @@ tabulatezoneprod <- function(rundir,prods,scenes) {
   return(invisible(out))
 } # end of tabulatezoneprod
 
+#' @title whenfirst returns the first occurrence of a value in a vector
+#'
+#' @description whenfirst is a utility function to be used primarily within an
+#'     apply function call. It could then search across all replicates for the
+#'     first occurrence of a value >= a given target value.
+#'
+#' @param x a vector of yearly values within a single replicate
+#' @param value the value to be searched for within x as in x >= value
+#'
+#' @returns a vector replicates long of the first year in which the value occurs
+#' @export
+#'
+#' @examples
+#' x <- seq(1,100,1)
+#' whenfirst(x,75)
+whenfirst <- function(x,value) {
+  return(which(x >= value)[1])
+}
+
+#' @title zonecatchvsmsy calc catch/msy and year-to-msy by zone by scenario
+#'
+#' @description zonecatchvsmsy uses the prods, zone, and glbc lists to
+#'     estimate the ratio of catch/MSY for each replicate of the zone catches,
+#'     plus it determines the first year in each replicate in which MSY is
+#'     achieved, If MSY is not met in a replicate an NA is returned. To compare
+#'     scenarios they must all have the same number of replicate projections
+#'     and must all have the same number of projection years
+#'
+#' @param prods a list of the production statistics matrix for each scenario,
+#'     this is the out$sauprod matrix stored for each scenario.
+#' @param zone the list of zone outputs for each scenario
+#' @param glbc the globals object for each scenario (needed in case the hyrs
+#'     differ between scenarios)
+#'
+#' @return an invisible list consisting of a list of the catch/msy by zone for
+#'     each scenario and a matrix of the year to first meeting the MSY in each
+#'     replicate zone catch projection in each scenario
+#' @export
+#'
+#' @examples
+#' print("wait on data sets")
+#' # syntax:  zonecatchvsmsy(prods,zone,glbc)
+zonecatchvsmsy <- function(prods,zone,glbc) {
+  scenes <- names(prods)
+  nscen <- length(scenes)
+  columns <- c("B0","Bmsy","MSY","Bexmsy")
+  zprod <- matrix(0,nrow=nscen,ncol=length(columns),
+                  dimnames=list(scenes,columns))
+  zcatch <- makelist(scenes)
+  glb <- glbc[[1]]
+  yrs <- glb$pyrnames
+  nyrs <- glb$pyrs    # all scenarios need same number of projection years
+  reps <- glb$reps    # and same number of replicates
+  for (scen in 1:nscen) { #  scen = 1
+    hyrs <- glbc[[scen]]$hyrs
+    pickprod <- prods[[scen]]
+    zprod[scen,] <- colSums(pickprod[,columns])
+    zcatch[[scen]] <- zone[[scen]]$catch[(hyrs+1):(hyrs+nyrs),]
+  }
+  zcvsmsy <- makelist(scenes)
+  zyrtomsy <- matrix(0,nrow=reps,ncol=nscen,dimnames=list(1:reps,scenes))
+  for (scen in 1:nscen) { # scen = 1
+    catches <- zcatch[[scen]]
+    msy <- zprod[scen,"MSY"]
+    zcvsmsy[[scen]] <- catches/msy
+    zyrtomsy[,scen] <- apply(catches,2,whenfirst,value=msy)
+  }
+  return(invisible(list(zcvsmsy=zcvsmsy,zyrtomsy=zyrtomsy)))
+} # end of zonecatchvsmsy
 
 #' @title zoneribbon a ribbon plot the quantiles x scenes for the input variable
 #'
@@ -2538,6 +2678,8 @@ tabulatezoneprod <- function(rundir,prods,scenes) {
 #' @param addleg add a legend or not. If not use "", if yes use any of topleft,
 #'     topright, bottomleft, or bottomright, default = bottomright.
 #' @param addmedian should each polygon also have its median plotted as a line.
+#' @param add1line deffault = TRUE, adds a thicker dashed black line at 1.0,
+#'     where the catch/msy ratio = 1.0
 #'
 #' @seealso {
 #'   \link{doquantribbon}, \link{do_comp_outputs}
@@ -2555,7 +2697,7 @@ tabulatezoneprod <- function(rundir,prods,scenes) {
 #' }
 zoneribbon <- function(rundir,scenes,invar,glbc,varname,category,
                        console=TRUE,q90=TRUE,intens=127,addleg="topleft",
-                       addmedian=3) {
+                       addmedian=3,add1line=TRUE) {
 # rundir=""; scenes=scenes;invar=zcpue;glbc=glbc;varname="CPUE";category="cpue"
 # console=TRUE; q90=TRUE;intens=127;addleg="topleft";addmedian=0
   zonequant <- makelist(scenes)
@@ -2566,7 +2708,10 @@ zoneribbon <- function(rundir,scenes,invar,glbc,varname,category,
   nscen=length(scenes)
   maxq <- 0
   for (scen in 1:nscen) {  # scen=1
-    zpick <- invar[[scen]][(glb$hyrs+1):(glb$hyrs + glb$pyrs),]
+    zpick <- invar[[scen]]
+    if (nrow(zpick) != nyrs) {
+      zpick <- invar[[scen]][(glb$hyrs+1):(glb$hyrs + glb$pyrs),]
+    }
     maxy <- getmax(zpick)
     zquant <- apply(zpick,1,quants)
     zonequant[[scen]] <- zquant
@@ -2599,6 +2744,7 @@ zoneribbon <- function(rundir,scenes,invar,glbc,varname,category,
     }
     if (addmedian > 0) lines(yrs,zonequant[[i]][3,],lwd=addmedian,col=i)
   }
+  if (add1line) abline(h=1,lwd=1,col=1,lty=2)
   if (nchar(addleg) > 0) {
     if (addleg %in% c("topleft","topright","bottomleft","bottomright")) {
       legend(addleg,legend=scenes,col=1:nscen,lwd=3,bty="n",cex=1.2)

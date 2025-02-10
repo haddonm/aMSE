@@ -423,7 +423,7 @@ getprojyraavc <- function(catches,glb) {
   return(result)
 } # end of getprojyaavc
 
-#' @title getprojyrs i sused to truncate an array to projected years
+#' @title getprojyrs i sused to truncate an array or matrix to projected years
 #'
 #' @description getprojyrs is used when calculating the harvest strategy
 #'     performance measures. To do that requires us to focus on the projection

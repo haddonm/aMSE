@@ -2,7 +2,7 @@
 % Please edit documentation in R/getfunctions.R
 \name{getprojyrs}
 \alias{getprojyrs}
-\title{getprojyrs i sused to truncate an array to projected years}
+\title{getprojyrs i sused to truncate an array or matrix to projected years}
 \usage{
 getprojyrs(sauarr, hyrs, pyrs, startyr = hyrs)
 }
