@@ -376,7 +376,7 @@ CBmsyphaseplot <- function(rundir,zone,prods,glbc,category="a",console=TRUE) {
   Cvsmsy <- makelist(scenes)
   catch <- makelist(scenes)
   spawnB <- makelist(scenes)
-  zonemsy <- numeric(3); names(zonemsy) <- scenes
+  zonemsy <- numeric(nscen); names(zonemsy) <- scenes
   zoneBmsy <- zonemsy
   for (scen in 1:nscen) {
     catch[[scen]] <- zone[[scen]]$catch[(hyrs+1):(hyrs+pyrs),]
