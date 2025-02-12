@@ -327,6 +327,8 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
           caption="Rate of change of the zonal median harvestR across scenarios.")
   # zone tab----------------------------------------
   if (verbose) cat("Now doing the Zone tab  \n")
+  outzonephaseplot <- CBmsyphaseplot(rundir=rundir,zone=zone,prods=prods,
+                                     glbc=glbc,category="zone",console=FALSE)
   outprod <- tabulatezoneprod(rundir,prods,scenes)
   zcatch <- makelist(scenes)
   for (scen in 1:nscen) zcatch[[scen]] <- zone[[scen]]$catch
@@ -347,7 +349,7 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
 
   # ribbon plots by sau and dynamic variable
   # Catch ribbon tab -------------------------------------------
-  if (verbose) cat("Now doing the fnial tabs  \n")
+  if (verbose) cat("Now doing the final tabs  \n")
   catch <- scenebyvar(dyn,byvar="catch",glb=glbc,projonly = TRUE)
   catqnts <- sauquantbyscene(catch,glbc)
   sauribbon(rundir,scenes=scenes,varqnts=catqnts,

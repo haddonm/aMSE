@@ -331,6 +331,124 @@ catchvsMSY <- function(catch,glbc,prods,scenes) {
   return(invisible(list(cdivmsy=cdivmsy,yrtomsy=yrtomsy)))
 } # end of catchvsMSY
 
+#' @title CBmsyphaseplot makes a zone scale phase plot of Cdivmsy vs BdivBmsy
+#'
+#' @description CBmsyphaseplot is used within do_comparison to compare harvest
+#'     strategy scenarios at the zone level by using phase plots of predicted
+#'     catches divided by MSY against predicted mature biomass divided by Bmsy.
+#'     Some HS can recommend taking catches >= MSY even though the biomass
+#'     available is not sufficient for such catches to be sustainable or allow
+#'     for rebuilding. The percent of replicates within the dangerous region
+#'     where catches >= MSY yet biomass is below Bmsy is given topleft. Top
+#'     right is the goodplace, with the  numbers being the minimum, median,
+#'     and maximum number of years it takes for both catches >= MSY AND
+#'     mature biomass >= Bmsy.
+#'
+#' @param rundir the directory in which all results are held for a scenario or
+#'     comparison of scenarios
+#' @param zone the list of zone outputs for each scenario
+#' @param prods a list of the production statistics matrix for each scenario,
+#'     this is the out$sauprod matrix stored for each scenario.
+#' @param glbc the globals object for each scenario (needed in case the hyrs
+#'     differ between scenarios)
+#' @param category the tab name within the internal website into which to
+#'     place he plot, default = 'a' to ensure it has something
+#' @param console should each plot go to the console or be saved to rundir.
+#'     default = TRUE ie go to console
+#'
+#' @seealso  \link{do_comparison}
+#'
+#' @returns an invisible list of lists - Cvsmsy, BvsBmsy, and goodplace
+#' @export
+#'
+#' @examples
+#' print("wait on example data sets")
+#' # CBmsyphaseplot(rundir=rundir,zone=zone,prods=prods,glbc=glbc,
+#' #                category="zone",console=FALSE)
+CBmsyphaseplot <- function(rundir,zone,prods,glbc,category="a",console=TRUE) {
+  scenes <- names(zone)
+  nscen <- length(scenes)
+  glb <- glbc[[1]]
+  hyrs <- glb$hyrs
+  pyrs <- glb$pyrs
+  reps <- glb$reps
+  BvsspawnB <- makelist(scenes)
+  Cvsmsy <- makelist(scenes)
+  catch <- makelist(scenes)
+  spawnB <- makelist(scenes)
+  zonemsy <- numeric(3); names(zonemsy) <- scenes
+  zoneBmsy <- zonemsy
+  for (scen in 1:nscen) {
+    catch[[scen]] <- zone[[scen]]$catch[(hyrs+1):(hyrs+pyrs),]
+    spawnB[[scen]] <- zone[[scen]]$matureB[(hyrs+1):(hyrs+pyrs),]
+    zonemsy[scen] <- sum(prods[[scen]][,"MSY"])
+    zoneBmsy[scen] <- sum(prods[[scen]][,"Bmsy"])
+  }
+  minC <- 1
+  maxC <- 0
+  minB <- 1
+  maxB <- 0
+  for (scen in 1:nscen) { # define the ratios and their ranges
+    msy <- zonemsy[scen]
+    Bmsy <- zoneBmsy[scen]
+    catches <- catch[[scen]]
+    Cvsmsy[[scen]] <- catches/msy
+    getC <- getmin(Cvsmsy[[scen]])
+    if (getC < minC) minC <- getC
+    getC <- getmax(Cvsmsy[[scen]])
+    if (getC > maxC) maxC <- getC
+    matureB <- spawnB[[scen]]
+    BvsspawnB[[scen]] <- matureB/Bmsy
+    getB <- getmin(BvsspawnB[[scen]])
+    if (getB < minB) minB <- getB
+    getB <- getmax(BvsspawnB[[scen]])
+    if (getB > maxB) maxB <- getB
+  }
+  filen=""
+  if (!console) {
+    filename <- "C-vs-MSY_B-vs-Bmsy_by_zone_phaseplot.png"
+    filen <- pathtopath(rundir,filename)
+    caption <- paste0("Phase plot of Cmsy and Bmsy ratio for the Zone scale",
+                      "topleft number is percent replicates catching >= MSY ",
+                      "when biomass is too low. Top right is minimum, median, ",
+                      "and maximum number of years for both to be >= MSY and ",
+                      ">= Bmsy, with the last number being the percent of ",
+                      "achieving >= Bmsy at the same time as catch >= MSY.")
+  }
+  goodplace <- makelist(scenes)
+  plotprep(width=9,height=10,newdev=FALSE,filename=filen,verbose=FALSE)
+  parset(plots=c(nscen,1),margin=c(0.5,0.5,0.1,0.1),cex=1.0)
+  for (scen in 1:nscen) {  # scen = 1
+    ylabel <- paste0("C vs MSY ",scenes[scen])
+    BM <- BvsspawnB[[scen]]
+    CM <- Cvsmsy[[scen]]
+    pickG <- which((BM >= 1.0) & (CM >= 1.0))
+    pickB <- which((BM < 1.0) & (CM >= 1.0))
+    plot(BM,CM,type="p",xlab="B vs Bmsy",
+         ylab=ylabel,xlim=c(minB,maxB),ylim=c(minC,maxC),panel.first=grid())
+    points(BM[pickG],CM[pickG],pch=16,col=3)
+    points(BM[pickB],CM[pickB],pch=16,col=2)
+    abline(v = 1, lwd=2,col=4)
+    abline(h = 1, lwd=2, col=4)
+    both <-  pickG %% pyrs
+    projyr <- which(both == 0)
+    if (length(projyr) > 0) both[projyr] <- pyrs
+    goodplace[[scen]] <- both
+    years <- ""
+    if (length(both) > 0)
+       years <- paste(min(both),median(both),max(both),collapse=" ")
+    toplab <- paste0(years,"   ",round(100*length(pickG)/(pyrs * reps),1),"    ")
+    mtext(toplab,side=3,outer=FALSE,line=-2,adj=1)
+    leftlab <- paste0("   ",round(100*length(pickB)/(pyrs * reps),1))
+    mtext(leftlab,side=3,outer=FALSE,line=-2,adj=0)
+  }
+  if (!console) {
+    addplot(filen=filen,rundir=rundir,category=category,caption=caption)
+  }
+  return(invisible(list(Cvsmsy=Cvsmsy,BvsBmsy=BvsspawnB,goodplace=goodplace)))
+} # end of CBmsyphaseplot
+
+
 #' @title comparevar generates the quantiles for each of a set of input scenarios
 #'
 #' @description comparevar is used when post-processing results and comparing
@@ -1609,7 +1727,7 @@ plotrateofchange <- function(rundir,res,whichvar,glb,console=TRUE) {
   outy[,2] <- ceiling(outy[,2])
   outy
   yrs <- as.numeric(projyrs[2:pyrs])
-  fname <- paste0(whichvar,"_rate_of_chnage_across_scenarios")
+  fname <- paste0(whichvar,"_rate_of_change_across_scenarios")
   fname1 <- paste0(fname,".png")
   filen <- pathtopath(rundir,fname1)
   if (console) filen=""

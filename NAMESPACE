@@ -2,6 +2,7 @@
 
 S3method(print,zone)
 S3method(print,zoneDefinition)
+export(CBmsyphaseplot)
 export(HSphaseplot)
 export(STM)
 export(WtatLen)

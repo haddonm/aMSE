@@ -12,14 +12,17 @@ suppressPackageStartupMessages({
   library(knitr)
 })
 dropdir <- getDBdir()
-prefixdir <- pathtopath(dropdir,"A_codeR/aMSEGuide/runs/")
-postfixdir <- "EGcompare"
+#prefixdir <- pathtopath(dropdir,"A_codeR/aMSEGuide/runs/")
+prefixdir <- pathtopath(dropdir,"/National abalone MSE/RData")
+postfixdir <- "EGcompareTas"
 rundir <- pathtopath(prefixdir,postfixdir)
-outdir <- "C:/aMSE_scenarios/EG/"
+#outdir <- "C:/aMSE_scenarios/EG/"
+outdir <- "C:/Users/malco/Dropbox/National abalone MSE/RData/"
 files <- dir(outdir)
-#printV(files)
-pickfiles=c(1,2,3,4)
-scencol=c(1,2,3,4)
+printV(files)
+#pickfiles=c(40,43,55)  # AVG
+pickfiles <- c(41,44,56)
+scencol=c(1,2,3)
 rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;
 verbose=TRUE; intensity=100; zero=FALSE; altscenes=c("NoMR","MR12","MR123")
 juris="";ribbonleg="topleft"; Q90=TRUE;
@@ -345,19 +348,85 @@ yrtomsy <- cvmsyout$yrtomsy
 sapply(yrtomsy,countgtzero)
 sapply(yrtomsy,countNAs)
 
-
+# catchvsmsy + SpawnB-----------------------------
 # uses zone, prods, and dyn
 # first sum the prods matrix to get zone stats
 
+str1(dyn[[1]])   # matureB
 
-outzonecatch <- zonecatchvsmsy(prods,zone,glbc)
-zcvsmsy <- outzonecatch$zcvsmsy
-zoneribbon(rundir=rundir,scenes=names(zcvsmsy),invar=zcvsmsy,glbc=glbc,
-           varname="Zone-Catch/MSY",category="C_vs_MSY",console=TRUE,q90=TRUE,
-           intens=127,addleg="topleft",addmedian=0,add1line=TRUE)
+prods[[1]]
+str1(zone[[1]])
+
+scenes <- names(zone)
+nscen <- length(scenes)
+
+glb <- glbc[[1]]
+hyrs <- glb$hyrs
+pyrs <- glb$pyrs
+reps <- glb$reps
+catch <- makelist(scenes)
+spawnB <- makelist(scenes)
+
+zonemsy <- numeric(3); names(zonemsy) <- scenes
+zoneBmsy <- zonemsy
+for (scen in 1:nscen) {
+  catch[[scen]] <- zone[[scen]]$catch[(hyrs+1):(hyrs+pyrs),]
+  spawnB[[scen]] <- zone[[scen]]$matureB[(hyrs+1):(hyrs+pyrs),]
+  zonemsy[scen] <- sum(prods[[scen]][,"MSY"])
+  zoneBmsy[scen] <- sum(prods[[scen]][,"Bmsy"])
+}
+
+str1(catch[[1]])
 
 
-outzonecatch <- zonecatchvsmsy(prods,zone,glbc)
+bins <- 20
+maxB <- 0
+maxC <- 0
+for (scen in 1:nscen) {  # scen = 2
+   msy <- zonemsy[scen]
+   catches <- catch[[scen]]
+   Cvsmsy <- catches/msy
+   outhC <- hist(Cvsmsy,breaks=bins,plot=FALSE)
+   bigC <- tail(outhC$breaks,1)
+   if (bigC > maxC) maxC <- bigC
+   Bmsy <- zoneBmsy[scen]
+   matureB <- spawnB[[scen]]
+   BvsspawnB <- matureB/Bmsy
+   outhB <- hist(BvsspawnB,breaks=bins,plot=FALSE)
+   bigB <- tail(outhB$breaks,1)
+   if (bigB > maxB) maxB <- bigB
+}
+plotprep(width=9,height=10)
+parset(plots=c(3,2),byrow=TRUE)
+for (scen in 1:nscen) {  # scen = 2
+  msy <- zonemsy[scen]
+  Bmsy <- zoneBmsy[scen]
+  catches <- catch[[scen]]
+  Cvsmsy <- catches/msy
+  propC <- 100*length(which(Cvsmsy >= 1.0))/(pyrs * reps)
+  matureB <- spawnB[[scen]]
+  BvsspawnB <- matureB/Bmsy
+  propB <- 100*length(which(BvsspawnB >= 1.0))/(pyrs * reps)
+  label <- paste0("       ",round(propB,1))
+  hist(BvsspawnB,breaks=bins,ylab=scenes[scen],xlab="prop-Bmsy",main="",
+       xlim=c(0,maxB))
+  abline(v=1,lwd=2,col=2)
+  mtext(label,side=3,outer=FALSE,line=-5,adj=0)
+  label <- paste0("       ",round(propC,1))
+  hist(Cvsmsy,breaks=bins,ylab=scenes[scen],xlab="C vs MSY",main="",
+       xlim=c(0,maxC))
+  abline(v=1,lwd=2,col=2)
+  mtext(label,side=3,outer=FALSE,line=-5,adj=0)
+}
+
+
+
+
+
+outzonephplot <- CBmsyphaseplot(rundir=rundir,zone=zone,prods=prods,glbc=glbc,console=TRUE)
+
+str1(outzonephplot)
+outzonephplot$goodplace
 
 
 
@@ -365,9 +434,10 @@ outzonecatch <- zonecatchvsmsy(prods,zone,glbc)
 
 
 
-zyrtomsy <- outzonecatch$zyrtomsy
-plotzoneyrtovar(rundir=rundir,invar=zyrtomsy,varname="MSY",glbc=glbc,
-                category="C_vs_MSY",console=TRUE)
+
+
+
+
 
 
 
