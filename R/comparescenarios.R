@@ -2170,7 +2170,7 @@ plotzonedyn <- function(rundir,scenes,zone,glbc,console=TRUE,q90=TRUE,
     expBbyBexmsy <- projexpB
     for (i in 1:nscen) {
       catbymsy[,,i] <- projcatch[,,i]/hlines$catch[i]
-      expBbyBexmsy[,,i] <- projmatB[,,i]/hlines$expB[i]
+      expBbyBexmsy[,,i] <- projexpB[,,i]/hlines$expB[i]
     }
     yrs <- c(tail(glb$hyrnames,1),glb$pyrnames)
     nyrs <- length(yrs)
