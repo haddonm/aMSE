@@ -480,7 +480,8 @@ plotproductivity <- function(rundir,product,glb,hsargs) {
   xval <- findmsy(product)
   numpop <- glb$numpop
   if (numpop <= 16) { # otherwise too much detail to see. Ok for SA not TAS
-  # Yield vs Spawning biomass
+  # by pop  popn<= 16-----
+    # Yield vs Spawning biomass-----
     filen <- filenametopath(rundir,"production_SpB.png")
     plotprod(product,xname="MatB",xlab="Spawning Biomass t",
              ylab="Production t",filename = filen,devoff=FALSE)
@@ -488,8 +489,7 @@ plotproductivity <- function(rundir,product,glb,hsargs) {
                       "spawning biomass. The vertical lines identify the ",
                       "Bmsy values.")
     addplot(filen,rundir=rundir,category="Production",caption)
-
-    # Yield vs Annual Harvest Rate
+    # Yield vs Annual Harvest Rate-----
     filen <- filenametopath(rundir,"production_AnnH.png")
     plotprod(product,xname="AnnH",xlab="Annual Harvest Rate",filename = filen,
              devoff=FALSE)
@@ -497,8 +497,7 @@ plotproductivity <- function(rundir,product,glb,hsargs) {
                       "Harvest Rate applied to each population. The ",
                       "vertical lines identify the Hmsy values.")
     addplot(filen,rundir=rundir,category="Production",caption)
-
-    # plot of Yield vs population depletion
+    # Yield vs depletion-----
     filen <- filenametopath(rundir,"production_Deplet.png")
     plotprod(product,xname="Deplet",xlab="Population Depletion Level",
              filename = filen,devoff=FALSE)
@@ -507,7 +506,6 @@ plotproductivity <- function(rundir,product,glb,hsargs) {
                 "level of each population. The vertical lines identify ",
                 "the Depletion level giving rise to the MSY.")
     addplot(filen,rundir=rundir,category="Production",caption)
-
     # plot of Yield vs population depletion but constrained to within
     # 0.2 and 0.35 levels, to illustrate nearly flat rpoduction curve
     # and more clearly identify the population depletion at MSY
@@ -522,6 +520,7 @@ plotproductivity <- function(rundir,product,glb,hsargs) {
     addplot(filen,rundir=rundir,category="Production",caption)
   } # end of numpop <= 16 if statement
   # what CPUE at Bmsy would be exhibited at MSY
+  # by SAU-----------------------
   filen <- filenametopath(rundir,"production_CPUE_at_Bmsy.png")
   nsau <- glb$nSAU
   npop <- glb$numpop
@@ -546,6 +545,7 @@ plotproductivity <- function(rundir,product,glb,hsargs) {
     saucpue[i,] <- tapply((product[i,"RelCE",] * wts[i,]),sauindex,sum,na.rm=TRUE)
   }
   label <- glb$saunames
+  # yield x cpue---------------
   plotprep(width=8,height=7,newdev=FALSE,filename=filen,verbose=FALSE)
   parset(plots=pickbound(nsau),margin=c(0.3,0.3,0.05,0.05),outmargin=c(1,1,0,0))
   for (i in 1:nsau) { # i=1
@@ -581,7 +581,7 @@ plotproductivity <- function(rundir,product,glb,hsargs) {
   if (!is.null(maxtarg)) caption <- paste0(caption,"The blue vertical line is ",
                                            "the maxtarg for that SAU.")
   addplot(filen,rundir=rundir,category="Production",caption)
-  # Now do total production
+  # SAU prod plots-------------------
   if (nsau > 1) {
     yield <- rowSums(product[,"Catch",])
     spb <- rowSums(product[,"MatB",])
@@ -632,6 +632,8 @@ plotproductivity <- function(rundir,product,glb,hsargs) {
               "harvest rate.")
   addplot(filen,rundir=rundir,category="Production",caption)
   zoneprod <- cbind(catch=yield,matB=spb,harv=Ht,deplsB=depletMSY)
+  # add zone production to sauprod
+
   # add sauprod table to production tab
   filen <- "Production_by_sau.csv"
   caption <- paste0("Productivity properties: B0, Bmsy, MSY, Dmsy, Cemsy,",
@@ -642,7 +644,7 @@ plotproductivity <- function(rundir,product,glb,hsargs) {
   caption <- paste0("Zone production: Catch, matureB, HarvestR, and Mature ",
                     "depletion level. MSY at H = ",Ht[pickmsy])
   addtable(zoneprod,filen,rundir=rundir,category="Production",caption)
-  return(invisible(sauprod))
+  return(invisible(list(sauprod=sauprod,zoneprod=zoneprod)))
 } # end of plotproductivity
 
 #' @title plotrecruitment literally plots stock-recruitment relationships

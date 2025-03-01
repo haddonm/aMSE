@@ -666,6 +666,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
    randomseed <- getsingleNum("randomseed",indat)
    randomseedP <- getsingleNum("randomseedP",indat)
    initLML <- getsingleNum("initLML",indat)
+   if (is.null(initLML)) initLML <- 0
    projyrs <- getsingleNum("PROJECT",indat)
    gauntlet <- getsingleNum("SLOTFISHERY",indat) # affects selectivity
    if (is.null(gauntlet)) gauntlet <- 0

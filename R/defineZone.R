@@ -162,7 +162,7 @@ doproduction <- function(zoneC,zoneD,glob,lowlim=0.0,uplim=0.35,inc=0.005) {
   nH <- length(initH)
   columns <- c("ExB","MatB","AnnH","Catch","Deplet","RelCE")
   results <- array(0,dim=c(nH,6,numpop),dimnames=list(initH,columns,1:numpop))
-  for (aH in 1:nH) { # aH=1 ; yr=2
+  for (aH in 1:nH) { # aH=1
     zoneP <- runthreeH(zoneC=zoneC,zoneD,inHarv=rep(initH[aH],numpop),glob)
     results[aH,"ExB",] <- zoneP$exploitB[1,]
     results[aH,"MatB",] <- zoneP$matureB[1,]

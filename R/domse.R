@@ -1,19 +1,19 @@
 #Tas context -----------------
-# postfixdir <- "EGconst"
+# postfixdir <- "EG"
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
-# hcrfun= consthcr  #mcdahcr   #  # consthcr   #constantrefhcr
+# hcrfun= constantrefhcr  #mcdahcr   #  # consthcr   #constantrefhcr
 # sampleCE=tasCPUE
 # sampleFIS=tasFIS
 # sampleNaS=tasNaS
-# getdata=constdata    #  tasdata    constdata
+# getdata=tasdata    #  tasdata    constdata
 # calcpopC=calcexpectpopC
 # varyrs=7
 # startyr=38
 # verbose=TRUE
 # ndiagprojs=4
-# makeouthcr=makeoutconst    #makeouthcr   #makeoutconst - only used with consthcr#
+# makeouthcr=makeouthcr    #makeouthcr   #makeoutconst - only used with consthcr#
 # fleetdyn=NULL
 # plotmultflags=plotmultandflags
 # scoreplot = plotfinalscores
@@ -23,9 +23,9 @@
 # mincount=100
 # includeNAS=FALSE
 # depensate=0
-# #pmwtSwitch = 4
-# #stablewts = c(0.65, 0.25, 0.1)
-# #hcrname="consthcr"  #"constantrefhcr"  #"mcdahcr"     #    #"consthcr"
+# pmwtSwitch = 4
+# stablewts = c(0.65, 0.25, 0.1)
+# hcrname="constantrefhcr"  #"constantrefhcr"  #"mcdahcr"     #    #"consthcr"
 # kobeRP = c(0.4,0.2,0.15)
 # interimout=""
 # nasInterval=5
@@ -401,7 +401,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   # projSAU tab----------------------------------------------------------
   if (verbose) cat("Starting the sau related plots \n")
   sauout <- sauplots(zoneDP,NAS,glb,rundir,B0,ExB0,startyr=startyr,
-                     addCI=TRUE,histCE=condC$histCE,hlines=sauprod)
+                     addCI=TRUE,histCE=condC$histCE,hlines=sauprod$sauprod)
   sauNAS <- list(Nt=sauout$Nt,catchN=sauout$catchN)
   sauout <- sauout[-c(12,11)]  # This removes the Nt and catchN from sauout
   if (verbose) {
