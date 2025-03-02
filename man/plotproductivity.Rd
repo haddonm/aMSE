@@ -20,7 +20,9 @@ there is no maxtarg, this implies no comparison and no adding to the plot}
 }
 \value{
 It produces five png files into rundir and returns sauprod, a matrix
-    of B0, Bmsy, MSY, Depletion-msy, CEmsy, Hmsy, and Bexmsy for each sau
+    of B0, Bmsy, MSY, Depletion-msy, CEmsy, Hmsy, and Bexmsy for each sau,
+    and zoneprod the productiivty matrix for the zone, and sauprodzone,
+    which is sauprod but with the zone totals added.
 }
 \description{
 plotproductivity characterizes each population's yield curve, it

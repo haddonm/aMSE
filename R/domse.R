@@ -219,6 +219,10 @@
 #'     if there are years that are to be removed then this should be a matrix
 #'     of years to delete vs sau, ie years as rows and sau as columns. All
 #'     sau need to be included. to compelte hte matrix 0 values can be used.
+#' @param selectyr which year's LML should be used to estimate the LML. This
+#'     should be a year index (eg in Tas 1-58). If set = 0, then the LML for
+#'     the glb$hyrs, the last year of conditioning data will be used.
+#'     default = 0
 #'
 #' @seealso{
 #'  \link{makeequilzone}, \link{dohistoricC}, \link{prepareprojection},
@@ -238,7 +242,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                    wtatL=c(80,200),mincount=100,includeNAS=FALSE,
                    depensate=0,kobeRP=c(0.4,0.2,0.15),nasInterval=5,
                    minsizecomp=c(100,135),uplimH=0.4,incH=0.005,
-                   deleteyrs=0) {
+                   deleteyrs=0,selectyr=0) {
   # generate equilibrium zone -----------------------------------------------
   starttime <- (Sys.time())
   setuphtml(rundir)
@@ -333,7 +337,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   sauCt <- popNAStosau(catchN,glb)
   compdat <- condC$compdat$lfs
   if (!is.null(compdat)) {
-    for (plotsau in 1:glb$nSAU) { # plotsau=2
+    for (plotsau in 1:glb$nSAU) { # plotsau=1
       if (length(ncol(deleteyrs)) == 0) delyrs=0 else delyrs=deleteyrs[,plotsau]
       lfs <- preparesizecomp(compdat[,,plotsau],mincount=mincount,
                              deleteyears=delyrs)

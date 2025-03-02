@@ -4,7 +4,15 @@
 \alias{doproduction}
 \title{doproduction estimates a production curve for each population}
 \usage{
-doproduction(zoneC, zoneD, glob, lowlim = 0, uplim = 0.35, inc = 0.005)
+doproduction(
+  zoneC,
+  zoneD,
+  glob,
+  selectyr,
+  lowlim = 0,
+  uplim = 0.35,
+  inc = 0.005
+)
 }
 \arguments{
 \item{zoneC}{the constants components of the simulated zone}
@@ -12,6 +20,10 @@ doproduction(zoneC, zoneD, glob, lowlim = 0, uplim = 0.35, inc = 0.005)
 \item{zoneD}{the dynamic components of the simulated zone}
 
 \item{glob}{the general global variables}
+
+\item{selectyr}{which year's LML should be used to estimate the LML. This
+is set in makeequilzone. If set = 0, the default, then the LML for
+the glb$hyrs, the last year of conditioning data will be used.}
 
 \item{lowlim}{the lower limit of harvest rate applied, default=0.0}
 

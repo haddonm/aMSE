@@ -8,6 +8,7 @@ setupzone(
   constants,
   zone1,
   doproduct,
+  selectyr,
   uplim = 0.4,
   inc = 0.005,
   verbose = TRUE
@@ -20,6 +21,10 @@ setupzone(
 
 \item{doproduct}{boolean, should the productivity calculations be made
 during the conditioning. defined in do_MSE and makeequilzone}
+
+\item{selectyr}{which year's LML should be used to estimate the LML. This
+is set in makeequilzone. If set = 0, the default, then the LML for
+the glb$hyrs, the last year of conditioning data will be used.}
 
 \item{uplim}{the upper limit of harvest rate applied, default=0.4}
 

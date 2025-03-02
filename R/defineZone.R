@@ -142,6 +142,9 @@ definepops <- function(inSAU,inSAUindex,const,glob) {
 #' @param zoneC the constants components of the simulated zone
 #' @param zoneD the dynamic components of the simulated zone
 #' @param glob the general global variables
+#' @param selectyr which year's LML should be used to estimate the LML. This
+#'     is set in makeequilzone. If set = 0, the default, then the LML for
+#'     the glb$hyrs, the last year of conditioning data will be used.
 #' @param lowlim the lower limit of harvest rate applied, default=0.0
 #' @param uplim the upper limit of harvest rate applied, default=0.35
 #' @param inc the harvest rate increment at each step, default=0.005
@@ -153,17 +156,19 @@ definepops <- function(inSAU,inSAUindex,const,glob) {
 #' @examples
 #' print("wait")
 #' #  zoneC=zoneC; zoneD=zoneD; glob=glb; lowlim=0.0;uplim=0.4;inc=0.01
-doproduction <- function(zoneC,zoneD,glob,lowlim=0.0,uplim=0.35,inc=0.005) {
+doproduction <- function(zoneC,zoneD,glob,selectyr,lowlim=0.0,uplim=0.35,
+                         inc=0.005) {
   numpop <- glob$numpop
   Nclass <- glob$Nclass
- # hyrs <- glob$hyrs
+  # hyrs <- glob$hyrs
   larvdisp <- glob$larvdisp
   initH <- seq(lowlim,uplim,inc)
   nH <- length(initH)
   columns <- c("ExB","MatB","AnnH","Catch","Deplet","RelCE")
   results <- array(0,dim=c(nH,6,numpop),dimnames=list(initH,columns,1:numpop))
-  for (aH in 1:nH) { # aH=1
-    zoneP <- runthreeH(zoneC=zoneC,zoneD,inHarv=rep(initH[aH],numpop),glob)
+  for (aH in 1:nH) { # aH=1 ; yr=2
+    zoneP <- runthreeH(zoneC=zoneC,zoneD=zoneD,inHarv=rep(initH[aH],numpop),
+                       glob=glob,selectyr=selectyr,maxiter=2)
     results[aH,"ExB",] <- zoneP$exploitB[1,]
     results[aH,"MatB",] <- zoneP$matureB[1,]
     results[aH,"AnnH",] <- zoneP$harvestR[1,]
@@ -173,6 +178,7 @@ doproduction <- function(zoneC,zoneD,glob,lowlim=0.0,uplim=0.35,inc=0.005) {
   } # end of yr loop
   return(results)
 } # end of doproduction
+
 
 #' @title driftrec adjusts the recruitment allowing for larval drift
 #'
@@ -522,6 +528,10 @@ makeabpop <- function(popparam,midpts,initLML) {
 #'     numpop populations
 #' @param doproduct boolean, should the productivity calculations be made
 #'     during the conditioning. Set to FALSE conditionOM
+#' @param selectyr which year's LML should be used to estimate the LML. This
+#'     should be a year index (eg in Tas 1-58). If set = 0, then the LML for
+#'     the glb$hyrs, the last year of conditioning data will be used.
+#'     default = 0
 #' @param uplimH defines the upper limit of harvest used when estimating the
 #'     productivity (also important when initial depletion is not 1.0). The
 #'     default = 0.4
@@ -529,14 +539,15 @@ makeabpop <- function(popparam,midpts,initLML) {
 #'     default = 0.005
 #' @param verbose Should progress comments be printed to console, default=TRUE
 #'
-#' @return a list of zoneC, zoneD, glb, constants, saudat,product, ctrl, and zone1
+#' @return a list of zoneC, zoneD, glb, constants, saudat,product, ctrl,
+#'     and zone1
 #' @export
 #'
 #' @examples
 #' print("wait on datafiles")
 #'  #  rundir=rundir;ctrlfile=controlfile;doproduct=TRUE; verbose=TRUE;uplimH=0.35;incH=0.005
 makeequilzone <- function(rundir,ctrlfile="control.csv",doproduct=TRUE,
-                          uplimH=0.4,incH=0.005,verbose=TRUE) {
+                          selectyr=0,uplimH=0.4,incH=0.005,verbose=TRUE) {
   zone1 <- readctrlfile(rundir,infile=ctrlfile,verbose=verbose)
   ctrl <- zone1$ctrl
   glb <- zone1$globals     # glb without the movement matrix
@@ -555,8 +566,8 @@ makeequilzone <- function(rundir,ctrlfile="control.csv",doproduct=TRUE,
     saudat <- constants
   }
   if (verbose) cat("Files read, now making zone \n")
-  out <- setupzone(constants,zone1,doproduct,uplim=uplimH,inc=incH,
-                   verbose=verbose) # make operating model
+  out <- setupzone(constants,zone1,doproduct,selectyr=selectyr,uplim=uplimH,
+                    inc=incH,verbose=verbose) # make operating model
   zoneC <- out$zoneC
   zoneD <- out$zoneD
   glb <- out$glb             # glb now has the movement matrix
@@ -574,7 +585,8 @@ makeequilzone <- function(rundir,ctrlfile="control.csv",doproduct=TRUE,
   # zoneC <- ans$zoneC
   # zoneD <- ans$zoneD
   equilzone <- list(zoneC=zoneC,zoneD=zoneD,glb=glb,constants=constants,
-                    saudat=saudat,product=product,ctrl=ctrl,zone1=zone1)
+                    saudat=saudat,product=product,selectyr=0,ctrl=ctrl,
+                    zone1=zone1)
   return(equilzone)
 } # end of makeequilzone
 
@@ -836,6 +848,9 @@ maturity <- function(ina,inb,lens) {
 #' @param zoneC the constant components of the simulated zone
 #' @param zoneD the dynamic components of the simulated zone
 #' @param glob the general global variables
+#' @param selectyr which year's LML should be used to estimate the LML. This
+#'     is set in makeequilzone. If set = 0, the default, then the LML for
+#'     the glb$hyrs, the last year of conditioning data will be used.
 #' @param lowlim the lower limit of harvest rate applied, default=0.0
 #' @param uplim the upper limit of harvest rate applied, default=0.4
 #' @param inc the harvest rate increment at each step, default=0.005
@@ -856,10 +871,11 @@ maturity <- function(ina,inb,lens) {
 #'   ans2 <- modzoneC(zoneC,zoneD,glb)
 #'   str(ans2,max.level=2)
 #' }   # zoneC=zoneC; zoneD=zoneD; glob=glb; lowlim=0.0;uplim=0.4;inc=0.01
-modzoneC <- function(zoneC,zoneD,glob,lowlim=0.0,uplim=0.4,inc=0.005) {
+modzoneC <- function(zoneC,zoneD,glob,selectyr,lowlim=0.0,uplim=0.4,inc=0.005) {
   numpop <- glob$numpop
   production <- doproduction(zoneC=zoneC,zoneD=zoneD,glob=glob,
-                             lowlim=lowlim,uplim=uplim,inc=inc)
+                             selectyr=selectyr,lowlim=lowlim,uplim=uplim,
+                             inc=inc)
   xval <- findmsy(production)
   for (pop in 1:numpop) {
     zoneC[[pop]]$MSY <- xval[pop,"Catch"]
@@ -1052,25 +1068,54 @@ resetexB0 <- function(zoneC,zoneD) {
   return(list(zoneC=zoneC,zoneD=zoneD))
 } # end of resetexB0
 
-# nsau <- glob$nSAU
-# sauindex <- glob$sauindex
-# lambda <- zoneC[[1]]$lambda  # constant across the zone
-# popexb0 <- getlistvar(zoneC,"ExB0")     # pop level expB
-# sauexb0 <- sumpop2sau(popexb0,sauindex) # sau level expB
-# for (sau in 1:nsau) { # sau=1
-#   pickpop <- which(sauindex == sau)
-#   npop <- length(pickpop)
-#   exb0 <- sauexb0[sau]
-#   maxcpue <- zoneC[[pickpop[1]]]$qest * (exb0 ^ lambda)
-#   for (popi in 1:npop) { # popi = 1 # populations in each sau
-#     zoneC[[pickpop[popi]]]$popdef["MaxCE"] <- maxcpue
-#     zoneC[[pickpop[popi]]]$qest <-
-#       as.numeric(maxcpue/(popexb0[pickpop[popi]] ^ lambda))
-#   }
-# }
-# for (pop in 1:numpop) {  # pop=1
-#   cpue[1,pop] <- zoneC[[pop]]$qest * (ExplB[1,pop] ^ lambda)
-# }
+#' @title runthreeH conducts the dynamics with constant catch 3 times
+#'
+#' @description runthreeH is used when searching numerically for an
+#'     equilibrium and it conducts the hyrs dynamics three times, each
+#'     time through it replaces year 1 with year hyrs. Thus if hyrs is
+#'     40 it conducts 3 * 39 years of dynamics (117 years). This is
+#'     not exported. It uses zoneC but always it does this inside
+#'     the environment of another function where zoneC can be found
+#'     Used inside doproduction. maxiter may need to be
+#'     increased when we introduce a larger movement rate between populations
+#'     for greenlip, or if the number of conditioning years are fewer than 45.
+#'
+#' @param zoneC the constants components of the simulated zone
+#' @param zoneD the dynamics portion of the zone, with matrices and
+#'     arrays for the dynamic variables of the dynamics of the
+#'     operating model
+#' @param inHarv a vector, length numpop, of annual harvest rates to be held
+#'     constant across all years.
+#' @param glob the globals variable from readzonefile
+#' @param selectyr which year's LML should be used to estimate the LML. This
+#'     is set in makeequilzone. If set = 0, the default, then the LML for
+#'     the glb$hyrs, the last year of conditioning data will be used.
+#' @param maxiter default=3; the number of runs through the equilibrium loop.
+#'
+#' @seealso{
+#'     \link{doproduction}, \link{testequil}
+#' }
+#'
+#' @return a list containing a revised dynamics list, zoneD
+#' @export
+#'
+#' @examples
+#' print("wait on built in data sets")
+#' # zoneC=zoneC; zoneD=zoneD; glob=glob; inHarv=rep(initH[aH],numpop); maxiter=2
+runthreeH <- function(zoneC,zoneD,inHarv,glob,selectyr,maxiter=2) {
+  npop <- glob$numpop
+  Nclass <- glob$Nclass
+  hyrs <- glob$hyrs
+  larvdisp <- glob$larvdisp
+  for (iter in 1:maxiter) { # iter=1; yr=2  # total loops = maxiter * (hyrs-1)
+    for (yr in 2:hyrs)  # selectivity from selectyr applied to equil pop
+      zoneD <- oneyearD(zoneC=zoneC,zoneD=zoneD,Ncl=Nclass,selectyr=selectyr,
+                        inHt=inHarv,year=yr,sigmar=1e-08,npop=npop,
+                        movem=glob$move)
+    zoneD <- restart(oldzoneD=zoneD,hyrs=hyrs,npop=npop,N=Nclass,zero=TRUE)
+  }
+  return(zoneD)
+} # end of runthreeH
 
 #' @title setupzone makes zone's constant, dynamic, and productivity parts
 #'
@@ -1083,6 +1128,9 @@ resetexB0 <- function(zoneC,zoneD) {
 #' @param zone1 the zonal object driving the construction
 #' @param doproduct boolean, should the productivity calculations be made
 #'     during the conditioning. defined in do_MSE and makeequilzone
+#' @param selectyr which year's LML should be used to estimate the LML. This
+#'     is set in makeequilzone. If set = 0, the default, then the LML for
+#'     the glb$hyrs, the last year of conditioning data will be used.
 #' @param uplim the upper limit of harvest rate applied, default=0.4
 #' @param inc the harvest rate increment at each step, default=0.005
 #' @param verbose Should progress comments be printed to console, default=TRUE
@@ -1101,8 +1149,9 @@ resetexB0 <- function(zoneC,zoneD) {
 #' str(zoneC[[1]])
 #' str(glb)
 #' }
-setupzone <- function(constants,zone1,doproduct,uplim=0.4,inc=0.005,verbose=TRUE) {
-  # constants=constants; zone1=zone1; doproduct=TRUE; uplim=0.35; inc=0.005; verbose=TRUE
+setupzone <- function(constants,zone1,doproduct,selectyr,
+                      uplim=0.4,inc=0.005,verbose=TRUE) {
+  # constants=constants; zone1=zone1; doproduct=TRUE; uplim=0.35; inc=0.005; verbose=TRUE; selectyr=0
   ans <- makezoneC(zone1,constants) # initiates zoneC
   zoneC <- ans$zoneC
   glb <- ans$glb
@@ -1114,14 +1163,17 @@ setupzone <- function(constants,zone1,doproduct,uplim=0.4,inc=0.005,verbose=TRUE
     if (verbose)
       cat("Now estimating population productivity between H ",inc," and ",
           uplim, "\n")
+    if (selectyr == 0) selectyr <- glb$hyrs
     # adds productivity, and MSY, MSYdepl to zoneC if doproduct=TRUE
-    ans <- modzoneC(zoneC=zoneC,zoneD=zoneD,glob=glb,uplim=uplim,inc=inc)
+    ans <- modzoneC(zoneC=zoneC,zoneD=zoneD,glob=glb,selectyr=selectyr,
+                    uplim=uplim,inc=inc)
     zoneC <- ans$zoneC  # zone constants
     product <- ans$product  # productivity by population
   }
   out <- list(zoneC=zoneC, zoneD=zoneD, product=product,glb=glb)
   return(out)
 } # end of setupzone
+
 
 
 #' @title STM Generates the Size Transition Matrix for Inverse Logistic

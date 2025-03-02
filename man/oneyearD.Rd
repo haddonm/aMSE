@@ -4,7 +4,7 @@
 \alias{oneyearD}
 \title{oneyearD conducts one year's dynamics on zoneD in the MSE}
 \usage{
-oneyearD(zoneC, zoneD, inHt, year, sigmar, Ncl, npop, movem)
+oneyearD(zoneC, zoneD, Ncl, selectyr, inHt, year, sigmar, npop, movem)
 }
 \arguments{
 \item{zoneC}{the constant portion of the zone with a list of
@@ -14,6 +14,12 @@ properties for each population}
 arrays for the dynamic variables of the dynamics of the
 operating model}
 
+\item{Ncl}{the number of size classes used to describe size}
+
+\item{selectyr}{which year's LML should be used to estimate the LML. This
+is set in makeequilzone. If set = 0, the default, then the LML for
+the glb$hyrs, the last year of conditioning data will be used.}
+
 \item{inHt}{a vector of harvest rates taken in the year from each
 population}
 
@@ -22,8 +28,6 @@ population}
 
 \item{sigmar}{the variation in recruitment dynamics, set to 1e-08
 when searching for equilibria.}
-
-\item{Ncl}{the number of size classes used to describe size}
 
 \item{npop}{the number of populations, the global numpop}
 

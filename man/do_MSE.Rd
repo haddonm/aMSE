@@ -34,7 +34,8 @@ do_MSE(
   minsizecomp = c(100, 135),
   uplimH = 0.4,
   incH = 0.005,
-  deleteyrs = 0
+  deleteyrs = 0,
+  selectyr = 0
 )
 }
 \arguments{
@@ -156,6 +157,11 @@ default = 0.005}
 if there are years that are to be removed then this should be a matrix
 of years to delete vs sau, ie years as rows and sau as columns. All
 sau need to be included. to compelte hte matrix 0 values can be used.}
+
+\item{selectyr}{which year's LML should be used to estimate the LML. This
+should be a year index (eg in Tas 1-58). If set = 0, then the LML for
+the glb$hyrs, the last year of conditioning data will be used.
+default = 0}
 }
 \value{
 a vary large list containing tottime, projtime, starttime, glb, ctrl,

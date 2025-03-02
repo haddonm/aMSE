@@ -35,7 +35,9 @@ depleteSAU resets the depletion level of the whole
     takes account of any larval dispersal. This function uses the
     production curve array to search for harvest rates that bound
     the target depletion and then re-searches across those bounds
-    using len intervals.
+    using len intervals. Within depleteSAU, the depletion within each sau
+    will take place using the LML for year 1 for each SAU. If something
+    other than this is required it will need re-coding.
 }
 \examples{
 \dontrun{

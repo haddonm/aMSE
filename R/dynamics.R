@@ -13,7 +13,9 @@
 #'     takes account of any larval dispersal. This function uses the
 #'     production curve array to search for harvest rates that bound
 #'     the target depletion and then re-searches across those bounds
-#'     using len intervals.
+#'     using len intervals. Within depleteSAU, the depletion within each sau
+#'     will take place using the LML for year 1 for each SAU. If something
+#'     other than this is required it will need re-coding.
 #'
 #' @param zoneC the constants components of the simulated zone
 #' @param zoneD the dynamic components of the simulated zone
@@ -38,7 +40,7 @@
 #'   zoneDD$deplsB[1,]
 #' }  # zoneC=zone$zoneC;zoneD=zone$zoneD;glob=zone$glb;initdepl=origdepl;product=zone$product;len=12
 depleteSAU <- function(zoneC,zoneD,glob,initdepl,product,len=15) {
-  #  zoneC=zoneC; zoneD=zoneD; glob=glb;  product=product; depl=initdepl;len=15
+  #  zoneC=zoneC; zoneD=zoneD; glob=glb;  product=production; initdepl=initdepl;len=15
   # use product to find bounds on H around the desired depletion level
   if (length(initdepl) != glob$nSAU) stop("Need a depletion for each population \n")
   npop <- glob$numpop  # need to deplete by pop
@@ -47,7 +49,7 @@ depleteSAU <- function(zoneC,zoneD,glob,initdepl,product,len=15) {
   popDepl <- harvests # need a matrix to hold the depletion levels
   initH <- as.numeric(rownames(product))
   # bound the harvest rates nearest to the desired depletion
-  for (pop in 1:npop) {
+  for (pop in 1:npop) { # pop = 1
     pick <- which.closest(depl[pop],product[,"Deplet",pop])
     if (pick == nrow(product)) {
       mssg <- paste0("Initial maximum harvest rate when estimating ",
@@ -64,7 +66,8 @@ depleteSAU <- function(zoneC,zoneD,glob,initdepl,product,len=15) {
     }
   }
   for (harv in 1:len) { # harv=1
-    zoneDD <- runthreeH(zoneC=zoneC,zoneD,inHarv=harvests[harv,],glob)
+    zoneDD <- runthreeH(zoneC=zoneC,zoneD,inHarv=harvests[harv,],glob,
+                        selectyr=1) # determines the selectivity for depletion
     popDepl[harv,] <- zoneDD$deplsB[1,]
   }
   pickharv <- numeric(npop)
@@ -72,7 +75,7 @@ depleteSAU <- function(zoneC,zoneD,glob,initdepl,product,len=15) {
     pickdepl <- which.closest(depl[pop],popDepl[,pop],index=TRUE)
     pickharv[pop] <- harvests[pickdepl,pop]
   }
-  zoneDD <- runthreeH(zoneC=zoneC,zoneD,inHarv=pickharv,glob)
+  zoneDD <- runthreeH(zoneC=zoneC,zoneD,inHarv=pickharv,glob,selectyr=1)
   return(zoneDD)
 } # end of depleteSAU
 
@@ -471,13 +474,17 @@ oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,movem,sigmar,
 #' @param zoneD the dynamics portion of the zone, with matrices and
 #'     arrays for the dynamic variables of the dynamics of the
 #'     operating model
+#' @param Ncl the number of size classes used to describe size
+#' @param selectyr which year's LML should be used to estimate the LML. This
+#'     is set in makeequilzone. If set = 0, the default, then the LML for
+#'     the glb$hyrs, the last year of conditioning data will be used.
 #' @param inHt a vector of harvest rates taken in the year from each
 #'     population
 #' @param year the year of the dynamics, would start in year 2 as year
 #'     1 is the year of initiation.
 #' @param sigmar the variation in recruitment dynamics, set to 1e-08
 #'     when searching for equilibria.
-#' @param Ncl the number of size classes used to describe size
+
 #' @param npop the number of populations, the global numpop
 #' @param movem the larval dispersal movement matrix
 #'
@@ -486,13 +493,13 @@ oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,movem,sigmar,
 #'
 #' @examples
 #'  print("wait on revised data")
-oneyearD <- function(zoneC,zoneD,inHt,year,sigmar,Ncl,npop,movem) {
-#  zoneC=zoneC;zoneD=zoneD;Ncl=Nclass;inHt=inHarv;year=yr;sigmar=1e-08;npop=npop;movem=glob$move
+oneyearD <- function(zoneC,zoneD,Ncl,selectyr,inHt,year,sigmar,npop,movem) {
+  #  zoneC=zoneC;zoneD=zoneD;Ncl=Nclass;inHt=inHarv;year=yr;sigmar=1e-08;npop=npop;movem=glob$move
   matb <- numeric(npop)
   for (popn in 1:npop) {  # year=2; popn=1
     pop <- zoneC[[popn]]
-    out <- oneyear(MatWt=pop$MatWt,SelWt=pop$SelWt[,year],
-                   selyr=pop$Select[,year],Me=pop$Me,G=pop$G,
+    out <- oneyear(MatWt=pop$MatWt,SelWt=pop$SelWt[,selectyr],
+                   selyr=pop$Select[,selectyr],Me=pop$Me,G=pop$G,
                    qest=pop$qest,WtL=pop$WtL,inNt=zoneD$Nt[,year-1,popn],
                    inH=inHt[popn],lambda=pop$lambda,scalece=pop$scalece)
     zoneD$exploitB[year,popn] <- out$ExploitB
@@ -517,6 +524,7 @@ oneyearD <- function(zoneC,zoneD,inHt,year,sigmar,Ncl,npop,movem) {
   zoneD$depleB[year,] <- zoneD$exploitB[year,]/getvar(zoneC,"ExB0")
   return(zoneD)
 } # end of oneyearD
+
 
 
 #' @title oneyearrec calculates the Beverton-Holt recruitment
@@ -721,49 +729,4 @@ restart <- function(oldzoneD,hyrs,npop,N,zero=TRUE) { # oldzoneD=zoneD; hyrs=hyr
   return(zoneD)
 } # end of restart
 
-#' @title runthreeH conducts the dynamics with constant catch 3 times
-#'
-#' @description runthreeH is used when searching numerically for an
-#'     equilibrium and it conducts the hyrs dynamics three times, each
-#'     time through it replaces year 1 with year hyrs. Thus if hyrs is
-#'     40 it conducts 3 * 39 years of dynamics (117 years). This is
-#'     not exported. It uses zoneC but always it does this inside
-#'     the environment of another function where zoneC can be found
-#'     Used inside doproduction. maxiter may need to be
-#'     increased when we introduce a larger movement rate between populations
-#'     for greenlip, or if the number of conditioning years are fewer than 45.
-#'
-#' @param zoneC the constants components of the simulated zone
-#' @param zoneD the dynamics portion of the zone, with matrices and
-#'     arrays for the dynamic variables of the dynamics of the
-#'     operating model
-#' @param inHarv a vector, length numpop, of annual harvest rates to be held
-#'     constant across all years.
-#' @param glob the globals variable from readzonefile
-#' @param maxiter default=3; the number of runs through the equilibrium loop.
-#'
-#' @seealso{
-#'     \link{doproduction}, \link{testequil}
-#' }
-#'
-#' @return a list containing a revised dynamics list, zoneD
-#' @export
-#'
-#' @examples
-#' print("wait on built in data sets")
-#' # zoneC=zoneC; zoneD=zoneD; glob=glob; inHarv=rep(initH[aH],numpop); maxiter=2
-runthreeH <- function(zoneC,zoneD,inHarv,glob,maxiter=2) {
-  npop <- glob$numpop
-  Nclass <- glob$Nclass
-  hyrs <- glob$hyrs
-  larvdisp <- glob$larvdisp
-  for (iter in 1:maxiter) { # iter=1; yr=2
-    for (yr in 2:hyrs)
-      zoneD <- oneyearD(zoneC=zoneC,zoneD=zoneD,Ncl=Nclass,
-                        inHt=inHarv,year=yr,sigmar=1e-08,npop=npop,
-                        movem=glob$move)
-    zoneD <- restart(oldzoneD=zoneD,hyrs=hyrs,npop=npop,N=Nclass,zero=TRUE)
-  }
-  return(zoneD)
-} # end of runthreeH
 

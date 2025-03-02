@@ -8,6 +8,7 @@ makeequilzone(
   rundir,
   ctrlfile = "control.csv",
   doproduct = TRUE,
+  selectyr = 0,
   uplimH = 0.4,
   incH = 0.005,
   verbose = TRUE
@@ -25,6 +26,11 @@ numpop populations}
 \item{doproduct}{boolean, should the productivity calculations be made
 during the conditioning. Set to FALSE conditionOM}
 
+\item{selectyr}{which year's LML should be used to estimate the LML. This
+should be a year index (eg in Tas 1-58). If set = 0, then the LML for
+the glb$hyrs, the last year of conditioning data will be used.
+default = 0}
+
 \item{uplimH}{defines the upper limit of harvest used when estimating the
 productivity (also important when initial depletion is not 1.0). The
 default = 0.4}
@@ -35,7 +41,8 @@ default = 0.005}
 \item{verbose}{Should progress comments be printed to console, default=TRUE}
 }
 \value{
-a list of zoneC, zoneD, glb, constants, saudat,product, ctrl, and zone1
+a list of zoneC, zoneD, glb, constants, saudat,product, ctrl,
+    and zone1
 }
 \description{
 makeequilzone is a high level function that merely hides the
