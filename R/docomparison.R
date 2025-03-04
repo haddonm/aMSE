@@ -107,7 +107,7 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
     glbc[[i]] <- out$glb
     ctrlc[[i]] <- out$ctrl
     condCc[[i]] <- out$condC
-    prods[[i]] <- t(out$sauprod)
+    prods[[i]] <- t(out$sauprod$sauprod)
     scenes[i] <- out$ctrl$runlabel
     scores[[i]] <- out$outhcr
     zone[[i]] <- out$outzone

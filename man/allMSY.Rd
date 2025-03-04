@@ -4,7 +4,15 @@
 \alias{allMSY}
 \title{allMSY estimates MSY by population, SAU, and Zone for each LML in data}
 \usage{
-allMSY(msydir, rundir, ctrlfile, uplim = 0.4, inc = 0.005, verbose = TRUE)
+allMSY(
+  msydir,
+  rundir,
+  ctrlfile,
+  uplim = 0.4,
+  inc = 0.005,
+  verbose = TRUE,
+  newLML = NULL
+)
 }
 \arguments{
 \item{msydir}{full path to the directory in which the results are to be
@@ -21,6 +29,9 @@ rundir so the file can be read}
 it will take.}
 
 \item{verbose}{should comments and warnings go to the console. Default=TRUE}
+
+\item{newLML}{the numerical value of a previously unused LML for which the
+productivity is required. Not yet implemented!}
 }
 \value{
 a list of the glb, ctrl, warning file path, and total time take

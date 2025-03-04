@@ -17,6 +17,8 @@
 #' @param inc the increment from 0 up to uplim. The smaller this is the longer
 #'     it will take.
 #' @param verbose should comments and warnings go to the console. Default=TRUE
+#' @param newLML the numerical value of a previously unused LML for which the
+#'     productivity is required. Not yet implemented!
 #'
 #' @returns a list of the glb, ctrl, warning file path, and total time take
 #'     (all required by makehtml), plus summarymsy a list of nlml lists of
@@ -26,10 +28,12 @@
 #'
 #' @examples
 #' print("no chance")
-allMSY <- function(msydir,rundir,ctrlfile,uplim=0.4,inc=0.005,verbose=TRUE) {
+allMSY <- function(msydir,rundir,ctrlfile,uplim=0.4,inc=0.005,verbose=TRUE,
+                   newLML=NULL) {
   ##   msydir=msydir;rundir=rundir;ctrlfile=controlfile;uplim=0.9;inc=0.01;verbose=TRUE
   starttime <- Sys.time()
   setuphtml(msydir)
+  if (!is.null(newLML)) lmlused <- newLML
   zone1 <- readctrlfile(rundir,infile=ctrlfile,verbose=verbose)
   ctrl <- zone1$ctrl
   glb <- zone1$globals     # glb without the movement matrix
