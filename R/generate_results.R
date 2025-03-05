@@ -597,9 +597,9 @@ plotproductivity <- function(rundir,product,glb,hsargs) {
   depletMSY <- spb/spb[1]
   pickmsy <- which.max(yield)
   maxy <- getmax(yield)
-  filen <- filenametopath(rundir,"production_SpB_Total.png")
-  plotprep(width=7,height=6,newdev=FALSE,filename=filen,verbose=FALSE)
-  parset(plots=c(3,2),cex=0.9)
+  filen <- pathtopath(rundir,"production_SpB_ExB_Total.png")
+  plotprep(width=7,height=8,newdev=FALSE,filename=filen,verbose=FALSE)
+  parset(plots=c(4,2),cex=0.9)
   plot(spb,yield,type="l",lwd=2,col=1,xlab="Spawning Biomass t",
        ylab="Production t",panel.first = grid(),
        ylim=c(0,maxy),yaxs="i")
@@ -609,6 +609,17 @@ plotproductivity <- function(rundir,product,glb,hsargs) {
        ylab="Spawning Biomass t",panel.first = grid(),
        ylim=c(0,getmax(spb)),yaxs="i")
   abline(h=spb[pickmsy],col=2,lwd=2)
+  abline(v=Ht[pickmsy],col=2,lwd=2)
+
+  plot(expB,yield,type="l",lwd=2,col=1,xlab="Exploitable Biomass t",
+       ylab="Production t",panel.first = grid(),
+       ylim=c(0,maxy),yaxs="i")
+  abline(v=expB[pickmsy],col=2,lwd=2)
+
+  plot(Ht,expB,type="l",lwd=2,xlab="Annual Harvest Rate",
+       ylab="Exploitable Biomass t",panel.first = grid(),
+       ylim=c(0,getmax(expB)),yaxs="i")
+  abline(h=expB[pickmsy],col=2,lwd=2)
   abline(v=Ht[pickmsy],col=2,lwd=2)
 
   plot(Ht,yield,type="l",lwd=2,col=1,xlab="Annual Harvest Rate",

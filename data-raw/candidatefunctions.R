@@ -887,3 +887,223 @@ legend("topright",legend=c(startyr,yrs[condy],yrs[nyrs]),
 if ((!console) & (setpar)) {
   addplot(filen,rundir=rundir,category="zonescale",caption)
 }
+
+
+
+
+# plotproduction------------------------------
+
+plotproductivity2 <- function(rundir,product,glb,hsargs) {
+  # rundir=rundir; product=production;glb=glb; hsargs=hsargs
+  maxtarg <- hsargs$maxtarg
+  xval <- findmsy(product)
+  numpop <- glb$numpop
+  if (numpop <= 16) { # otherwise too much detail to see. Ok for SA not TAS
+    # by pop  popn<= 16-----
+    # Yield vs Spawning biomass-----
+    filen <- filenametopath(rundir,"production_SpB.png")
+    plotprod(product,xname="MatB",xlab="Spawning Biomass t",
+             ylab="Production t",filename = filen,devoff=FALSE)
+    caption <- paste0("The production curve relative to each population's ",
+                      "spawning biomass. The vertical lines identify the ",
+                      "Bmsy values.")
+    addplot(filen,rundir=rundir,category="Production",caption)
+    # Yield vs Annual Harvest Rate-----
+    filen <- filenametopath(rundir,"production_AnnH.png")
+    plotprod(product,xname="AnnH",xlab="Annual Harvest Rate",filename = filen,
+             devoff=FALSE)
+    caption <- paste0("The production curve relative to the Annual ",
+                      "Harvest Rate applied to each population. The ",
+                      "vertical lines identify the Hmsy values.")
+    addplot(filen,rundir=rundir,category="Production",caption)
+    # Yield vs depletion-----
+    filen <- filenametopath(rundir,"production_Deplet.png")
+    plotprod(product,xname="Deplet",xlab="Population Depletion Level",
+             filename = filen,devoff=FALSE)
+    for (pop in 1:numpop) abline(v=xval[pop,"Deplet"],lwd=2,col=pop)
+    caption <- paste0("The production curve relative to the depletion ",
+                      "level of each population. The vertical lines identify ",
+                      "the Depletion level giving rise to the MSY.")
+    addplot(filen,rundir=rundir,category="Production",caption)
+    # plot of Yield vs population depletion but constrained to within
+    # 0.2 and 0.35 levels, to illustrate nearly flat rpoduction curve
+    # and more clearly identify the population depletion at MSY
+    filen <- filenametopath(rundir,"production_Deplet_0.2_0.35.png")
+    plotprod(product,xname="Deplet",xlab="Population Depletion Level",
+             xlimit=c(0.2,0.35),filename = filen,devoff=FALSE)
+    for (pop in 1:numpop) abline(v=xval[pop,"Deplet"],lwd=2,col=pop)
+    caption <- paste0("The production curve relative to the depletion ",
+                      "level of each population. Here the x-axis is ",
+                      "shortened to clarify the flatness of the production ",
+                      "curve about the MSY points.")
+    addplot(filen,rundir=rundir,category="Production",caption)
+  } # end of numpop <= 16 if statement
+  # what CPUE at Bmsy would be exhibited at MSY
+  # by SAU-----------------------
+  filen <- filenametopath(rundir,"production_CPUE_at_Bmsy.png")
+  nsau <- glb$nSAU
+  npop <- glb$numpop
+  nh <- dim(product)[1]
+  label <- dimnames(product)
+  harv <- as.numeric(label[[1]])
+  sauindex <- glb$sauindex
+  saunames <- glb$saunames
+  wts <- matrix(0,nrow=nh,ncol=npop,dimnames=list(label[[1]],label[[3]]))
+  sauyield <- matrix(0,nrow=nh,ncol=nsau,dimnames=list(label[[1]],saunames))
+  saumatB <- matrix(0,nrow=nh,ncol=nsau,dimnames=list(label[[1]],saunames))
+  sauexB <- saumatB
+  saucpue <- saumatB
+  # Now do sau production
+  for (i in 1:nh) {
+    saumatB[i,] <- tapply(product[i,"MatB",],sauindex,sum,na.rm=TRUE)
+    sauexB[i,] <- tapply(product[i,"ExB",],sauindex,sum,na.rm=TRUE)
+    sauyield[i,] <- tapply(product[i,"Catch",],sauindex,sum,na.rm=TRUE)
+    wts[i,] <- product[i,"Catch",]/sauyield[i,sauindex]
+    saucpue[i,] <- tapply((product[i,"RelCE",] * wts[i,]),sauindex,sum,na.rm=TRUE)
+  }
+  label <- glb$saunames
+  # yield x cpue---------------
+  rows <- c("B0","Bmsy","MSY","Dmsy","CEmsy","Hmsy","Bexmsy")
+  sauprod <- matrix(0,nrow=length(rows),ncol=nsau,dimnames=list(rows,saunames))
+  plotprep(width=8,height=7,newdev=FALSE,filename=filen,verbose=FALSE)
+  parset(plots=pickbound(nsau),margin=c(0.3,0.3,0.05,0.05),outmargin=c(1,1,0,0))
+  for (i in 1:nsau) { # i=1
+    ymax <- getmax(sauyield[,i])
+    if (!is.null(maxtarg)) {
+      xmax <- getmax(c(saucpue[2:nh,i],maxtarg[i]))
+      xmin <- getmin(c(saucpue[2:nh,i],maxtarg[i]))
+    } else {
+      xmax <- getmax(saucpue[2:nh,i])
+      xmin <- getmin(saucpue[2:nh,i])
+    }
+    pick <- which.max(sauyield[,i])
+    msyce <- saucpue[pick,i]
+    plot(saucpue[2:nh,i],sauyield[2:nh,i],type="l",lwd=2,xlab="",ylab="",
+         panel.first=grid(),ylim=c(0,ymax),yaxs="i",xlim=c(xmin,xmax))
+    abline(v=msyce,col=2,lwd=2)
+    if (!is.null(maxtarg)) abline(v=maxtarg[i],lwd=2,col=4)
+    msylab <- paste0("MSY = ",round(sauyield[pick,i],1))
+    text(0.7*max(saucpue[,i]),0.92*ymax,msylab,cex=1.2,pos=4)
+    text(0.8*max(saucpue[,i]),0.75*ymax,label[i],cex=1.5,pos=4)
+    text(1.1*msyce,0.15*ymax,round(msyce,2),cex=1.25,pos=4)
+    sauprod[,i] <- c(saumatB[1,i],saumatB[pick,i],sauyield[pick,i],
+                     (saumatB[pick,i]/saumatB[1,i]),saucpue[pick,i],
+                     harv[pick],sauexB[pick,i])
+  }
+  mtext("CPUE at Bmsy (note different scales)",side=1,outer=TRUE,cex=1.0,
+        line = -0.1)
+  mtext("Equilibrium Yield  (note different scales)",side=2,outer=TRUE,cex=1.0,
+        line=-0.2)
+  caption <- paste0("The equilibrium production vs CPUE for each SAU. The red ",
+                    "vertical lines and related number represent the expected",
+                    "CPUE when biomass is at Bmsy. ")
+  if (!is.null(maxtarg)) caption <- paste0(caption,"The blue vertical line is ",
+                                           "the maxtarg for that SAU.")
+  addplot(filen,rundir=rundir,category="Production",caption)
+  # SAU prod plots-------------------
+  if (nsau > 1) {
+    yield <- rowSums(product[,"Catch",])
+    spb <- rowSums(product[,"MatB",])
+    expB <- rowSums(product[,"ExB",])
+  } else {
+    yield <- product[,"Catch",]
+    spb <- product[,"MatB",]
+    expB <- product[,"ExB",]
+  }
+  Ht <- harv
+  depletMSY <- spb/spb[1]
+  pickmsy <- which.max(yield)
+  maxy <- getmax(yield)
+  filen <- pathtopath(rundir,"production_SpB_Total.png")
+  plotprep(width=7,height=8,newdev=FALSE,filename=filen,verbose=FALSE)
+  parset(plots=c(4,2),cex=0.9)
+  plot(spb,yield,type="l",lwd=2,col=1,xlab="Spawning Biomass t",
+       ylab="Production t",panel.first = grid(),
+       ylim=c(0,maxy),yaxs="i")
+  abline(v=spb[pickmsy],col=2,lwd=2)
+
+  plot(Ht,spb,type="l",lwd=2,xlab="Annual Harvest Rate",
+       ylab="Spawning Biomass t",panel.first = grid(),
+       ylim=c(0,getmax(spb)),yaxs="i")
+  abline(h=spb[pickmsy],col=2,lwd=2)
+  abline(v=Ht[pickmsy],col=2,lwd=2)
+
+  plot(expB,yield,type="l",lwd=2,col=1,xlab="Exploitable Biomass t",
+       ylab="Production t",panel.first = grid(),
+       ylim=c(0,maxy),yaxs="i")
+  abline(v=expB[pickmsy],col=2,lwd=2)
+
+  plot(Ht,expB,type="l",lwd=2,xlab="Annual Harvest Rate",
+       ylab="Exploitable Biomass t",panel.first = grid(),
+       ylim=c(0,getmax(expB)),yaxs="i")
+  abline(h=expB[pickmsy],col=2,lwd=2)
+  abline(v=Ht[pickmsy],col=2,lwd=2)
+
+  plot(Ht,yield,type="l",lwd=2,col=1,xlab="Annual Harvest Rate",
+       ylab="Production t",panel.first = grid(),
+       ylim=c(0,maxy),yaxs="i")
+  abline(v=Ht[pickmsy],col=2,lwd=2)
+
+  plot(spb,depletMSY,type="l",lwd=2,ylab="Total Depletion Level",
+       xlab="Spawning Biomass t",panel.first = grid(),
+       ylim=c(0,1.05),yaxs="i")
+  abline(h=depletMSY[pickmsy],col=2,lwd=2)
+  abline(v=spb[pickmsy],col=2,lwd=2)
+
+  plot(depletMSY,yield,type="l",lwd=2,col=1,xlab="Total Depletion Level",
+       ylab="Production t",panel.first = grid())
+  abline(v=depletMSY[pickmsy],col=2,lwd=2)
+
+  plot(Ht,depletMSY,type="l",lwd=2,col=1,xlab="Annual Harvest Rate",
+       ylab="Total Depletion Level",panel.first = grid(),
+       ylim=c(0,1.05),yaxs="i")
+  abline(h=depletMSY[pickmsy],col=2,lwd=2)
+  abline(v=Ht[pickmsy],col=2,lwd=2)
+
+
+  caption <- paste0("The production curves for the zone. Also the ",
+                    "relationships between spawning biomass depletion and ",
+                    "harvest rate.")
+  addplot(filen,rundir=rundir,category="Production",caption)
+  zoneprod <- cbind(catch=yield,matB=spb,harv=Ht,deplsB=depletMSY,
+                    expB=expB)
+  # add zone production to sauprod
+  zonemsy <- zoneprod[which.max(zoneprod[,"catch"]),]
+  Pzone <- numeric(nrow(sauprod)); names(Pzone) <- rownames(sauprod)
+  Pzone[c(1:4,6:7)] <- c(B0=zoneprod[1,"matB"],Bmsy=zonemsy["matB"],
+                         MSY=zonemsy["catch"],Dmsy=zonemsy["expB"],
+                         Hmsy=zonemsy["harv"],Bexmsy=zonemsy["expB"])
+  wts <- sauprod["MSY",]/Pzone["MSY"]; wts <- wts/sum(wts)
+  Pzone[5] <- sum(sauprod["CEmsy",]*wts)
+  # Pzone[c(1:3,6:7)] <- rowSums(sauprod[c(1:3,7),],na.rm=TRUE)
+  #
+  #  Pzone[4:6] <- rowSums(sauprod[4:6,]*wts)
+  sauprodzone <- cbind(sauprod,zone=Pzone)
+  # add sauprod table to production tab
+  filen <- "Production_by_sau.csv"
+  caption <- paste0("Productivity properties: B0, Bmsy, MSY, Dmsy, Cemsy,",
+                    " Hmsy, and Bexmsy for each sau and zone. CEmsy is the",
+                    " predicted CPUE by SAU at MSY weighted by the sauMSY. ",
+                    "They must,therefore be treated as approximate.")
+  addtable(sauprodzone,filen,rundir=rundir,category="Production",caption)
+  # add zone production table
+  filen <- "production_across_zone.csv"
+  caption <- paste0("Zone production: Catch, matureB, HarvestR, and Mature ",
+                    "depletion level. MSY at H = ",Ht[pickmsy])
+  addtable(zoneprod,filen,rundir=rundir,category="Production",caption)
+  return(invisible(list(sauprod=sauprod,zoneprod=zoneprod,
+                        sauprodzone=sauprodzone)))
+} # end of plotproductivity
+
+
+
+outdir <- "C:/aMSE_scenarios/EG/"
+out <- NULL
+load(file=pathtopath(outdir,"EGMRall.RData"))
+glb <- out$glb
+hsargs <- out$hsargs
+rundir <- out$ctrl$rundir
+product <- out$production
+
+plotproductivity2(rundir,product,glb,hsargs)
+
