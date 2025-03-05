@@ -852,4 +852,38 @@ extractRcode(indir="C:/Users/Malcolm/Dropbox/A_Code/aMSEGuide",
 
 
 
+# Zone phaseplot------------------------
 
+zonemeds <- out$zonesummary$zonemeds
+harv <- zonemeds[,"HarvestR"]
+depl <- zonemeds[,"depl"]
+console=FALSE
+filen=""
+targdepl=0.4
+limdepl=0.2
+limH=0.15   # F = M
+yrs <- as.numeric(rownames(zonemeds))
+nyrs <- length(yrs)
+startyr <- yrs[1]
+condy <- out$glb$hyrs
+
+
+plotprep(width=7,height=6,filename=filen,cex=0.9,verbose=FALSE)
+parset(cex.lab=1.25)
+
+maxH <- getmax(harv)
+maxdepl <- getmax(depl,mult=1.2)
+plot(depl,harv,type="p",pch=16,xlim=c(0,maxdepl),ylim=c(0,maxH),xaxs="i",yaxs="i",
+     xlab="Zone Scale Mature Biomass Depletion ",ylab="Harvest Rate")
+phaseplotpolygons(maxy=maxH,maxx=maxdepl,targx=targdepl,limx=limdepl,limy=limH)
+suppressWarnings(arrows(x0=depl[1:(nyrs-1)],y0=harv[1:(nyrs-1)],
+                        x1=depl[2:nyrs],y1=harv[2:nyrs],lwd=2,
+                        length=0.075,code=2))
+# when H values repeatedly zero one gets zero length arrows and a warning
+# this is not a problem so it is suppressed.
+points(depl[c(1,condy,nyrs)],harv[c(1,condy,nyrs)],pch=16,cex=3,col=c(1,6,4))
+legend("topright",legend=c(startyr,yrs[condy],yrs[nyrs]),
+       col=c(1,6,4),lwd=5,cex=1.5,bty="n")
+if ((!console) & (setpar)) {
+  addplot(filen,rundir=rundir,category="zonescale",caption)
+}

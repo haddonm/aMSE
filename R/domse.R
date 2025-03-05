@@ -243,7 +243,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                    depensate=0,kobeRP=c(0.4,0.2,0.15),nasInterval=5,
                    minsizecomp=c(100,135),uplimH=0.4,incH=0.005,
                    deleteyrs=0,selectyr=0) {
-  # generate equilibrium zone -----------------------------------------------
+# GENERATE EQUILIBRIUM ZONE -----------------------------------------------
   starttime <- (Sys.time())
   setuphtml(rundir)
   zone <- makeequilzone(rundir,controlfile,doproduct=TRUE,uplimH=uplimH,
@@ -273,6 +273,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
  # hsargs$saumsy <- sauprod[3,]
   # numbers-at-size tab------------------------------------------------------
   numbersatsize(rundir, glb, zoneD)
+# CONDITION THE OM---------------------------------
   #zoneDD tab -----------------------------------------------------
   if (any(condC$initdepl < 1)) {
     initdepl <- condC$initdepl
@@ -356,7 +357,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   # popgrowth tab ------------------------------implied size-at-age
   popgrowth(rundir=rundir,zoneC=zoneC,glb=glb,console=FALSE,maxage=30,
             startsize= 2.0)
-  # do projections ------------------------------------------------------------
+  # DO-PROJECTIONS ------------------------------------------------------------
   if (verbose) cat("Preparing for the projections \n")
   outpp <- prepareprojection(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
                              calcpopC=calcpopC,zoneDD=zoneDD,
@@ -382,6 +383,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
     cat("All projections finished ",timeinc,attr(timeinc,"units") ,"\n")
     cat("Now generating final plots and tables \n")
   }
+ # GENERATE SCENARIO OUTPUTS------------------------
   zoneDP=outproj$zoneDP
   hcrout <- outproj$hcrout
   outhcr <- outproj$outhcr
@@ -433,6 +435,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                        ExB0=sum(getvar(zoneC,"ExB0")))
   zonesummary <- plotZone(outzone,rundir,glb,startyr=startyr,
                           CIprobs=c(0.05,0.5,0.95),addfile=TRUE)
+
   # Fishery tab-----------------------------------------------
   if (verbose) cat("Plotting fishery information \n")
   if (glb$sauLML) {
