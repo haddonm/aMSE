@@ -8,7 +8,7 @@ allMSY(
   msydir,
   rundir,
   ctrlfile,
-  uplim = 0.4,
+  uplim = 0.375,
   inc = 0.005,
   verbose = TRUE,
   newLML = NULL

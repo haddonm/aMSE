@@ -651,9 +651,9 @@ prepareprojection <- function(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
   # calcpopC=calcpopC; varyrs=varyrs;lastsigR = ctrl$withsigR
   if (ctrl$randseedP > 0) set.seed(ctrl$randseedP)
   if (is.na(ctrl$randseedP)) set.seed()
-  projyrs <- glb$pyrs
-  projC <- modprojC(zoneC,glb,projC) # modify selectivity and SelWt in projC
-  zoneCR <- modzoneCSel(zoneC,projC$Sel,projC$SelWt,glb) #now zoneC
+#  projyrs <- glb$pyrs
+#  projC <- modprojC(zoneC,glb,projC) # modify selectivity and SelWt in projC
+  zoneCR <- zoneC #modzoneCSel(zoneC,projC$Sel,projC$SelWt,glb) #now zoneC
   zoneDP <- addrecvar(zoneDD=zoneDD,zoneC=zoneC,glob=glb,
                          condC=condC,ctrl=ctrl,varyrs=varyrs,
                          calcpopC,lastsigR=lastsigR)

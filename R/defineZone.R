@@ -466,7 +466,7 @@ makeabpop <- function(popparam,midpts,initLML) {
   #  popparam=popdef;midpts=midpts;initLML=initialLML
   #(DLMax,L50,L95,SigMax,SaMa,SaMb,Wta,Wtb,Me,L50C,L95C,R0 SelP[1],SelP[2],Nyrs,steeph,MaxCE,L50Mat block
   #   1    2   3    4      5    6   7   8   9 10   11   12  13     14      15   16     17    18     19
-  numYr <- popparam["Nyrs"]
+  numYr <-nrow(initLML) #popparam["Nyrs"]
   N <- length(midpts)
   G <- STM(popparam[1:4],midpts)  # c(DLMax, L50, L95, SigMax)
   mature <- maturity(popparam["SaMa"],popparam["SaMb"],midpts)
@@ -681,9 +681,16 @@ makezoneC <- function(zone,const) { # zone=zone1; const=constants
     } else {
       set.seed()
   }
-  initialLML <- cbind(year=glb$hyrnames,histLML=rep(zone$initLML,glb$hyrs))
-  rownames(initialLML) <- glb$hyrnames
-  if (zone$catches > 0) initialLML <- zone$condC$histyr
+  # initialLML <- cbind(year=glb$hyrnames,histLML=rep(zone$initLML,glb$hyrs))
+  # rownames(initialLML) <- glb$hyrnames
+  projlml <- cbind(glb$pyrnames,zone$projC$projLML[,"LML"])
+  rownames(projlml) <- glb$pyrnames; colnames(projlml) <- c("year","histLML")
+  if (zone$catches > 0) {
+    initialLML <- rbind(zone$condC$histyr,projlml)
+  } else {
+    stop(cat("controlfile requires historical LML and catches, even if only ",
+             "hypothetical \n"))
+  }
   if (zone$ctrl$bysau) {
     popdefs <- definepops(nSAU,SAUindex,const,glob=glb) # define pops
   } else {
@@ -1163,7 +1170,7 @@ setupzone <- function(constants,zone1,doproduct,selectyr,
     if (verbose)
       cat("Now estimating population productivity between H ",inc," and ",
           uplim, "\n")
-    if (selectyr == 0) selectyr <- glb$hyrs
+    if (selectyr == 0) selectyr <- glb$hyrs + glb$pyrs
     # adds productivity, and MSY, MSYdepl to zoneC if doproduct=TRUE
     ans <- modzoneC(zoneC=zoneC,zoneD=zoneD,glob=glb,selectyr=selectyr,
                     uplim=uplim,inc=inc)
@@ -1185,7 +1192,7 @@ setupzone <- function(constants,zone1,doproduct,selectyr,
 #'     Negative growth is disallowed. All columns in the matrix sum to one.
 #' @param p a vector of four parameters in the following order
 #'     MaxDL the maximum growth increment of the inverse logistic,
-#'     L50 the initial length at which the inflexion of the growth
+#'     L50 the initial length at which the inflection of the growth
 #'     increment curve occurs, L95 - the initial length that defines the
 #'     95th percentile of the growth increments, SigMax - the maximum
 #'     standard deviation of the normal distribution used to describe the
@@ -1197,7 +1204,7 @@ setupzone <- function(constants,zone1,doproduct,selectyr,
 #' @export
 #'
 #' @references Haddon, M., Mundy, C., and D. Tarbath (2008) Using an
-#'     inverse-logistic model to describe growth increments of blackip
+#'     inverse-logistic model to describe growth increments of blacklip
 #'     abalone (Haliotis rubra) in Tasmania. Fisheries Bulletin 106: 58-71
 #' @examples
 #'  param <- c(25.0,120.0,170.0,4.0)

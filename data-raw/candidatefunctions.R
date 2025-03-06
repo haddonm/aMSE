@@ -1107,3 +1107,15 @@ product <- out$production
 
 plotproductivity2(rundir,product,glb,hsargs)
 
+
+
+projC <- zone1$projC
+glb <- glb
+str1(zoneC)
+
+projC <- modprojC(zoneC,glb,projC)
+
+projC <- modprojC(zoneC,glb,projC) # modify selectivity and SelWt in projC
+zoneCR <- modzoneCSel(zoneC,projC$Sel,projC$SelWt,glb)
+
+

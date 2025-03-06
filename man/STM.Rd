@@ -9,7 +9,7 @@ STM(p, mids)
 \arguments{
 \item{p}{a vector of four parameters in the following order
 MaxDL the maximum growth increment of the inverse logistic,
-L50 the initial length at which the inflexion of the growth
+L50 the initial length at which the inflection of the growth
 increment curve occurs, L95 - the initial length that defines the
 95th percentile of the growth increments, SigMax - the maximum
 standard deviation of the normal distribution used to describe the
@@ -37,6 +37,6 @@ STM With the input of the four parameters inside a vector,
 }
 \references{
 Haddon, M., Mundy, C., and D. Tarbath (2008) Using an
-    inverse-logistic model to describe growth increments of blackip
+    inverse-logistic model to describe growth increments of blacklip
     abalone (Haliotis rubra) in Tasmania. Fisheries Bulletin 106: 58-71
 }

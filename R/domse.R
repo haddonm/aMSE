@@ -1,5 +1,5 @@
 #Tas context -----------------
-# postfixdir <- "EG"
+# postfixdir <- "EGMRall"
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
@@ -221,7 +221,7 @@
 #'     sau need to be included. to compelte hte matrix 0 values can be used.
 #' @param selectyr which year's LML should be used to estimate the LML. This
 #'     should be a year index (eg in Tas 1-58). If set = 0, then the LML for
-#'     the glb$hyrs, the last year of conditioning data will be used.
+#'     the glb$hyrs + glb$pyrs, the last year of projections data will be used.
 #'     default = 0
 #'
 #' @seealso{

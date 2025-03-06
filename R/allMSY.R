@@ -28,9 +28,9 @@
 #'
 #' @examples
 #' print("no chance")
-allMSY <- function(msydir,rundir,ctrlfile,uplim=0.4,inc=0.005,verbose=TRUE,
+allMSY <- function(msydir,rundir,ctrlfile,uplim=0.375,inc=0.005,verbose=TRUE,
                    newLML=NULL) {
-  ##   msydir=msydir;rundir=rundir;ctrlfile=controlfile;uplim=0.9;inc=0.01;verbose=TRUE
+  ##   msydir=msydir;rundir=rundir;ctrlfile=controlfile;uplim=0.375;inc=0.005;verbose=TRUE; newLML=NULL
   starttime <- Sys.time()
   setuphtml(msydir)
   if (!is.null(newLML)) lmlused <- newLML
