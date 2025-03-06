@@ -644,6 +644,7 @@ modzoneCSel <- function(zoneC,sel,selwt,glb) {
 #'
 #' @examples
 #' print("wait on data files")
+#' #  projC <- modprojC(zoneC,glb,projC) # modify selectivity and SelWt in projC
 prepareprojection <- function(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
                               zoneDD=zoneDD,ctrl=ctrl,varyrs=varyrs,
                               calcpopC=calcpopC,lastsigR = 0.3) {
@@ -652,7 +653,6 @@ prepareprojection <- function(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
   if (ctrl$randseedP > 0) set.seed(ctrl$randseedP)
   if (is.na(ctrl$randseedP)) set.seed()
 #  projyrs <- glb$pyrs
-#  projC <- modprojC(zoneC,glb,projC) # modify selectivity and SelWt in projC
   zoneCR <- zoneC #modzoneCSel(zoneC,projC$Sel,projC$SelWt,glb) #now zoneC
   zoneDP <- addrecvar(zoneDD=zoneDD,zoneC=zoneC,glob=glb,
                          condC=condC,ctrl=ctrl,varyrs=varyrs,

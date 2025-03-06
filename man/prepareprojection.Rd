@@ -63,4 +63,5 @@ prepareprojection is a high level function that restructures
 }
 \examples{
 print("wait on data files")
+#  projC <- modprojC(zoneC,glb,projC) # modify selectivity and SelWt in projC
 }

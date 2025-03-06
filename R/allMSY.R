@@ -24,6 +24,7 @@
 #'     (all required by makehtml), plus summarymsy a list of nlml lists of
 #'     sauprod, zoneprod, and sauprodzone for each LML. Finally, fro each LML,
 #'     inside outproduct is a copy of zoneC, zoneD, product, and glb.
+#`     Exploitablw biomass plpts included in the output now.
 #' @export
 #'
 #' @examples
@@ -156,8 +157,8 @@ allMSY <- function(msydir,rundir,ctrlfile,uplim=0.375,inc=0.005,verbose=TRUE,
     pickmsy <- which.max(yield)
     filen <- pathtopath(msydir,paste0("production_SpB_Zone","_LML_",lml[i],
                                       ".png"))
-    plotprep(width=7,height=6,newdev=FALSE,filename=filen,verbose=FALSE)
-    parset(plots=c(3,2),cex=0.9,outmargin=c(0,1.0,0,0))
+    plotprep(width=7,height=8,newdev=FALSE,filename=filen,verbose=FALSE)
+    parset(plots=c(4,2),cex=0.9,outmargin=c(0,1.0,0,0))
     plot(spb,yield,type="l",lwd=2,col=1,xlab="Spawning Biomass t",
          ylab="",panel.first = grid(),
          ylim=c(0,maxy),yaxs="i")
@@ -167,6 +168,18 @@ allMSY <- function(msydir,rundir,ctrlfile,uplim=0.375,inc=0.005,verbose=TRUE,
          ylab=paste0("SpBiom t","_LML_",lml[i]),panel.first = grid(),
          ylim=c(0,getmax(spb)),yaxs="i")
     abline(h=spb[pickmsy],col=2,lwd=2)
+    abline(v=Ht[pickmsy],col=2,lwd=2)
+
+
+    plot(expB,yield,type="l",lwd=2,col=1,xlab="Exploitable Biomass t",
+         ylab="",panel.first = grid(),
+         ylim=c(0,maxy),yaxs="i")
+    abline(v=expB[pickmsy],col=2,lwd=2)
+
+    plot(Ht,expB,type="l",lwd=2,xlab="Annual Harvest Rate",
+         ylab="ExpBiom t",panel.first = grid(),
+         ylim=c(0,getmax(expB)),yaxs="i")
+    abline(h=expB[pickmsy],col=2,lwd=2)
     abline(v=Ht[pickmsy],col=2,lwd=2)
 
     plot(Ht,yield,type="l",lwd=2,col=1,xlab="Annual Harvest Rate",
@@ -201,10 +214,11 @@ allMSY <- function(msydir,rundir,ctrlfile,uplim=0.375,inc=0.005,verbose=TRUE,
     # add zone production to sauprod
     zonemsy <- zoneprod[which.max(zoneprod[,"catch"]),]
     Pzone <- numeric(nrow(sauprod)); names(Pzone) <- rownames(sauprod)
-    Pzone[c(1:4,6:7)] <- c(B0=zoneprod[1,"matB"],Bmsy=zonemsy["matB"],
+    Pzone[c(1:3,6:7)] <- c(B0=zoneprod[1,"matB"],Bmsy=zonemsy["matB"],
                            MSY=zonemsy["catch"],Dmsy=zonemsy["expB"],
                            Hmsy=zonemsy["harv"],Bexmsy=zonemsy["expB"])
     wts <- sauprod["MSY",]/Pzone["MSY"]; wts <- wts/sum(wts)
+    Pzone[4] <- sum(sauprod["Dmsy",]*wts)
     Pzone[5] <- sum(sauprod["CEmsy",]*wts)
     # Pzone[c(1:3,6:7)] <- rowSums(sauprod[c(1:3,7),],na.rm=TRUE)
     #
