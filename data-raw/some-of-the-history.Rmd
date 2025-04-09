@@ -1,0 +1,46 @@
+
+
+
+# LATEST UPDATES
+
+* 2023-11-07 aMSE 0.1.15 Generalized the estimation of productivity to allow for alternative values of the starting H and upper limit to H to be applied to the dynamics while searching for the productivity curves. The production matrix is also used by dodepletion, so uplimH values > 0.4 were required (by SA). Only a small cahnge is now required in do_MSE, see the respective help.
+
+* 2023-10-17 aMSE 0.1.13 added poplevelplot() plots to the output. So far this includes catches and cpue. Population level plots can give insight into the effectiveness of the fleet dynamics and whether each population is being exploited.
+
+* 2023-10-18 aMSE 0.1.14 A catch-up event where I have added some population level plots, I have fixed up the use of plotmultflags so that the exploitable biomass depletion plots really are at the sau level bu changing the input expected.
+
+* 2023-08-01 aMSE 0.1.10 Added scoreplots and plotmultflags into the arguments for do_MSE rather than requiring the functions be called plotfinalscores() and plotmultandflags(), so any name can be given to them.
+
+* 2023-07-26 aMSE 0.1.9 Added tasphaseplots to the kobe plots for comparison.
+
+* 2023-07-24 aMSE 0.1.8 Revised use of TasHS and of comparescenarios, meta-rule flagging now working correctly. 
+
+* 2023-07-20 aMSE 0.1.7 Implemented the use of incremental updates of HS scores in a jurisdiction generic manner. Added a meta-rule flagging system.
+
+* 2023-07-10 aMSE 0.1.6 Modified TasHS and aMSE so that instead of using hsargs$startCE and hsargs$endCE to define a vector of reference years when using the constantrefhcr in Tasmania, one should now use a hsargs$refperiodCE which should be a vector of years describing the constant reference period to be used (assuming one is using the constantrefhcr). Within TasHS there is also a checkhsargs() function which provides a brief check of the hsargs being used (strictly that is still under development).
+
+* 2023-06-11 aMSE 0.1.5 Modified the condition plot and fixed up a few places where numbers were hard wired into the software. Introduced a new option to save output following projections (just in case of experiments with subsequent analyses crash - I'm looking at you SA). Now one can set interimout =c(outdir,postfixdir) and that should save a tempout into your outdir directory. See the help for do_MSE.
+
+* 2023-06-04 aMSE 0.1.4 Small modifications to generalize across jurisdictions and allow for the consthcr constant catch harvest strategy; also removed irrelavent messages when plotting the phase plot
+
+* 2023-06-03 aMSE 0.1.3 Modified to allow the mcdahcr and constrefhcr HCR to run successfully with the conditioned SA setup.
+
+* 2023-04-17 aMSE 0.1.2 Amended save_hsargs so it can handle data.frame within hsargs.
+
+* 2023-04-12 aMSE 0.1.1 Started generalizing the outputs from aMSE by beginning to separate functions that relate to specific jurisdiction outputs into a separate R package (in Tasmania it is currently called aMSEExtra). 
+
+* 2023-04-04 aMSE 0.1.0 Added curryear to hcrfun so all HS functions should now include curryear inthier arguments. Within doprojecitons() it is set to year inside the loop. This was needed to allow the SA HS to use its fleet dynamics model and is not needed in Tasmania, but is required in the argument list.
+
+* 2023-03-31 aMSE 0.0.25 Modified calcpopC througout to allow for SA's harvest strategy and fleet dynamics.
+
+* 2022-12-14 aMSE 0.0.24 Lots of minor edits and modifications aimed at improving the comparison of scenarios.
+
+* 2022-11-11 aMSE 0.0.23 Added a new tab = recruits, containing plots of the stock recruitment relationships at an sau and at a population within sau level. Added a table to the Tables tab.
+
+* 2022-11-10 aMSE 0.0.22 now have the capacity to introduce productivity events in specific projection years. This can now be done at sau specific levels. One defines the survivorship of recruits in each selected year and also the survivorship of all post-settlement animals. No changes are needed to one's control file if this option is not being used.
+
+* 2022-11-02 aMSE 0.0.21 added changes to how do_MSE responds to hsargs.
+
+* 2022-10-31 aMSE 0.0.20 added do_comp_outputs, scenebyvar, scenebyzone, projectiononly, and sauquantbyscene to assist with comparing scenarios.
+
+
