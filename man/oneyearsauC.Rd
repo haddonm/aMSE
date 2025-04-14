@@ -21,6 +21,7 @@ oneyearsauC(
   envyr,
   envsurv,
   envrec,
+  deltarec = NULL,
   fissettings = NULL,
   fisindexdata = NULL
 )
@@ -65,6 +66,12 @@ in envyr this is by popultion}
 
 \item{envrec}{if notNULL contains the proportion of stock recruitment
 in a given year that survives, by population}
+
+\item{deltarec}{default = NULL, should time-varying recruitment occur. This
+is implemented in the TIMEVARY section of the control file. if
+TIMEVARY, 1, then deltarec is a linear decline of recruitment from
+1 x predicted to whatever value is input in the line following the
+TIMEVARY keyword. eg deltarec,0.6 would be seq(1.0,0.6,length=pyrs)}
 
 \item{fissettings}{an object containing settings used when calculating
 indices for the FIS within oneyearcat inside oneyearsauC}

@@ -243,7 +243,7 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
     }
   }
   outhcr <- makehcrout(glb,hsargs)
-  for (year in startyr:endyr) { # iter=1; year=58
+  for (year in startyr:endyr) { # iter=1; year=59
     if (verbose) cat(yrnames[year]," ")
       for (iter in 1:reps) { # iter=1
       hcrdata <- getdata(sampleCE,sampleFIS,sampleNaS,
@@ -266,7 +266,7 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
                           popC=calcpopCout$popC,year=year,Ncl=Nclass,
                           sauindex=sauindex,movem=movem,sigmar=sigmar,
                           sigce=sigce,r0=r0,b0=b0,exb0=exb0,envyr=envyr,
-                          envsurv=survNt,envrec=proprec,
+                          envsurv=survNt,envrec=proprec,deltarec=glb$deltarec,
                           fissettings=fissettings,fisindexdata=fisindexdata)
       dyn <- outy$dyn
       saudyn <- poptosauCE(dyn["catch",],dyn["cpue",],sauindex)

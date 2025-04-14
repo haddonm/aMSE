@@ -28,6 +28,39 @@ getavrec <- function(rundir,datafile,nsau) {
   return(avrec)
 } # end of getavrec
 
+#' @title getB0 calculates the B0 from biological properties and R0
+#'
+#' @description getB0 calculates the B0 from biological properties of M,
+#'     maxage, maa, and waa, plus the input of R0 on the nominal scale (the
+#'     hypothetical unfished recruitment level). This is used in the 'dynamics'
+#'     function.
+#'
+#' @param inR0 the estimate of unfished recruitment
+#' @param inglb the glb object for maxage, M
+#' @param inprops the biological properties maa and waa
+#'
+#' @return a single number that is the estimate of B0
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' data(fishdat)
+#' glb <- fishdat$glb
+#' props <- fishdat$props
+#' getB0(1275000,glb,props) # shoud give 19429.76
+#' getB0(1000000,glb,props) # should give 15239.03
+#' }
+getB0 <- function(inR0,inglb,inprops) { # assumes glb inR0 = par["R0"]
+  maxage <- inglb$maxage
+  surv <- exp(-inglb$M)
+  Nt <- numeric(maxage+1)
+  Nt[1] <- 1  # calculate numbers-at-age per recruit
+  for (age in 1:(maxage-1)) Nt[age+1] <- Nt[age] * surv
+  Nt[maxage+1] <- (Nt[maxage] * surv)/(1-surv)
+  A0 <-  sum(inprops$maa * inprops$waa * Nt)/1000.0
+  B0 <- inR0 * A0
+  return(B0)
+}  # end of getB0
 
 #' @title getdynamics extracts the sau dynamics for a sau
 #'

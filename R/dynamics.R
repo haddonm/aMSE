@@ -399,6 +399,11 @@ oneyearcat <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
 #'     in envyr this is by popultion
 #' @param envrec if notNULL contains the proportion of stock recruitment
 #'     in a given year that survives, by population
+#' @param deltarec default = NULL, should time-varying recruitment occur. This
+#'     is implemented in the TIMEVARY section of the control file. if
+#'     TIMEVARY, 1, then deltarec is a linear decline of recruitment from
+#'     1 x predicted to whatever value is input in the line following the
+#'     TIMEVARY keyword. eg deltarec,0.6 would be seq(1.0,0.6,length=pyrs)
 #' @param fissettings an object containing settings used when calculating
 #'     indices for the FIS within oneyearcat inside oneyearsauC
 #' @param fisindexdata the FIS index data by SAU
@@ -420,7 +425,7 @@ oneyearcat <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
 #' # fissetting=NULL;fisindexdata=NULL
 oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,movem,sigmar,
                         sigce=1e-08,r0,b0,exb0,rdev=-1,envyr,envsurv,envrec,
-                        fissettings=NULL,fisindexdata=NULL) {
+                        deltarec=NULL,fissettings=NULL,fisindexdata=NULL) {
   npop <- length(popC)
   ans <- vector("list",npop)
   if (year %in% envyr) {
@@ -446,8 +451,16 @@ oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,movem,sigmar,
     recs <- oneyearrec(steep,r0,b0,dyn["matureb",],
                        sigR=sigmar/10,devR=rdev) * proprec
   } else {
-    if (rdev[1] > 0) rdev <- rdev[sauindex]
-    recs <- oneyearrec(steep,r0,b0,dyn["matureb",],sigR=sigmar,devR=rdev)
+    if (is.null(deltarec)) {
+      if (rdev[1] > 0) rdev <- rdev[sauindex]
+      recs <- oneyearrec(steep,r0,b0,dyn["matureb",],sigR=sigmar,devR=rdev)
+    } else {
+      rdev <- -1
+      whichyr <- as.numeric(names(deltarec))
+      pickyr <- which(whichyr == year)
+      recs <- oneyearrec(steep,r0,b0,dyn["matureb",],
+                         sigR=sigmar,devR=rdev) * deltarec[pickyr]
+    }
   }
   recruits <- as.numeric(movem %*% recs)
   deplsB <- dyn["matureb",]/b0

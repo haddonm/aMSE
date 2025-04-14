@@ -805,6 +805,17 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
          envimpact[["propNt"]] <- propNt
       }
    }  # end of use envimpact
+   # timevarying section
+   deltarec <- NULL
+   timevary <- getsingleNum("TIMEVARY",indat)
+   if (!is.null(timevary)) {
+     if (timevary > 0) {
+       begin <- grep("TIMEVARY",indat) + 1
+       downto <- getConst(indat[begin],nb=1,index=2)
+       deltarec <- seq(1.0,downto,length=projyrs)
+       names(deltarec) <- (hyrs+1):(hyrs+projyrs)
+     }
+   }
    # start of FIS input section
    yearFIS <- NULL
    fisindexdata <- NULL
@@ -890,7 +901,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
                    reps=reps,hyrs=hyrs,pyrs=projyrs,hyrnames=hyrnames,
                    pyrnames=pyrnames,saunames=SAUnames,SAUpop=SAUpop,
                    larvdisp=larvdisp,indexCE=indexCE,envimpact=envimpact,
-                   warnfile=warningfile,sauLML=sauLML)
+                   warnfile=warningfile,sauLML=sauLML,deltarec=deltarec)
    totans <- list(SAUnames,SAUpop,minc,cw,larvdisp,randomseed,
                   initLML,condC,projC,globals,outctrl,catches,projyrs)
    names(totans) <- c("SAUnames","SAUpop","minc","cw","larvdisp","randomseed",
