@@ -75,7 +75,7 @@
 do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
                           intensity=100,zero=FALSE,Q90=TRUE,altscenes=NULL,
                           juris="",ribbonleg="topleft",scencol=NULL,...) {
-  # rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(1,2,3,4)
+  # rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(2,3,4,5)
   #  verbose=TRUE; intensity=100; zero=FALSE; altscenes=NULL
   #  juris="";ribbonleg="topleft"; Q90=TRUE; scencol=c(1,2,3,4)
   # get files -------------------
@@ -349,37 +349,42 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
 
   # ribbon plots by sau and dynamic variable
   # Catch ribbon tab -------------------------------------------
-  if (verbose) cat("Now doing the final tabs  \n")
+  if (verbose) cat("Now doing the Catch tab  \n")
   catch <- scenebyvar(dyn,byvar="catch",glb=glbc,projonly = TRUE)
   catqnts <- sauquantbyscene(catch,glbc)
   sauribbon(rundir,scenes=scenes,varqnts=catqnts,
               glbc=glbc,varname="Catch",console=FALSE,
               q90=Q90,intens=intensity,addleg=ribbonleg)
   # cpue ribbon tab------------------------------------------
+  if (verbose) cat("Now doing the cpue tab  \n")
   cpue <- scenebyvar(dyn,byvar="cpue",glb=glbc,projonly = TRUE)
   cpueqnts <- sauquantbyscene(cpue,glbc)
   sauribbon(rundir,scenes=scenes,varqnts=cpueqnts,
               glbc=glbc,varname="cpue",console=FALSE,
               q90=Q90,intens=intensity,addleg=ribbonleg)
   # depletion spawnB ribbon tab--------------------------------------------
+  if (verbose) cat("Now doing the depletion spawnB tab  \n")
   deplsB <- scenebyvar(dyn,byvar="deplsB",glb=glbc,projonly=TRUE)
   deplsBqnts <- sauquantbyscene(deplsB,glbc)
   sauribbon(rundir,scenes=scenes,varqnts=deplsBqnts,
               glbc=glbc,varname="deplsB",console=FALSE,
               q90=Q90,intens=intensity,addleg=ribbonleg)
   # depletion exploitB ribbon tab--------------------------------------------
+  if (verbose) cat("Now doing the depletion exploitB tab  \n")
   depleB <- scenebyvar(dyn,byvar="depleB",glb=glbc,projonly=TRUE)
   depleBqnts <- sauquantbyscene(depleB,glbc)
   sauribbon(rundir,scenes=scenes,varqnts=depleBqnts,
               glbc=glbc,varname="depleB",console=FALSE,
               q90=Q90,intens=intensity,addleg=ribbonleg)
   # harvest rate tab-------------------------------------------------
+  if (verbose) cat("Now doing the harvestR tab  \n")
   harvestR <- scenebyvar(dyn,byvar="harvestR",glb=glbc,projonly=TRUE)
   hqnts <- sauquantbyscene(harvestR,glbc)
   sauribbon(rundir,scenes=scenes,varqnts=hqnts,
             glbc=glbc,varname="harvestR",console=FALSE,
             q90=Q90,intens=intensity,addleg=ribbonleg)
   # phaseplots tab --------------------------------------------------
+  if (verbose) cat("Now doing the phaseplots tab  \n")
   plotallphaseplots(rundir=rundir,dyn=dyn,prods,glb=glbc[[1]],scenes=scenes,width=9,
                     height=10,fnt=7,pntcex=1.5,zero=FALSE,
                     legloc="topright")

@@ -696,6 +696,7 @@ comparefinalscores <- function(rundir,scores,scenes,legloc="bottomright",
     makeplot(meds=meds,sau=saunames[i],scenes=scenes,legloc=legloc)
   }
   mtext("Median Final Scores",side=2,line=-0.1,outer=TRUE, cex=1.0)
+  if (nchar(filen) > 0) dev.off()
   return(invisible(meds))
 } # end of comparefinalscores
 
@@ -1483,6 +1484,7 @@ plotdevs <- function(invar,scenes,saunames,filen=""){
       if (scen == nscen) mtext(saunames[sau],side=1,line=1.25,cex=1)
     }
   }
+  if (nchar(filen) > 0) dev.off()
   return(list(meandevs=meandevs,sddevs=sddevs))
 } # end of plotdevs
 
@@ -1674,6 +1676,7 @@ plotdynvarinyear <- function(rundir,dyn,whichvar,whichyr,glb,bins=15,
     }
   }
   mtext(fname,side=2,outer=TRUE,line=1,cex=1.5)
+  if (!console) dev.off()
   return(invisible(fname1))
 } # end of plotdynvarinyear
 
@@ -1746,6 +1749,7 @@ plotrateofchange <- function(rundir,res,whichvar,glb,console=TRUE) {
   }
   label <- paste0("Percentage Change in median ",whichvar," across Scenarios.")
   mtext(label,side=2,outer=TRUE,cex=1.2,line=-0.5)
+  if (!console) dev.off()
   return(invisible(fname1))
 } # end of plotrateofchange
 
@@ -1816,6 +1820,7 @@ plotscene <- function(scenquant,glbc,var="cpue",ymin=0,filen="",
     }
   }
   mtext(var,side=2,line=-0.2,outer=TRUE,cex=1.2)
+  if (nchar(filen) > 0) dev.off()
 } # end of plotscene
 
 #' @title plotscenproj plots a 3D array of data by sau in a single plot
@@ -1941,6 +1946,7 @@ plotzonechangerate <- function(rundir,res,whichvar,glb,console=TRUE) {
   abline(h=0,lwd=1,col=1)
   for (scen in 2:nscen) lines(yrs,tmp[,scen],lwd=2,col=scen)
   legend("topright",scenes,lwd=3,col=1:nscen,bty="n",cex=1.2)
+  if (!console) dev.off()
   return(invisible(fname1))
 } # plotzonechangerate
 
@@ -2006,6 +2012,7 @@ plotzonedevs <- function(invar,scenes,glb,filen=""){
     label <- paste0(scenes[scen],"-",round(summarydevs[scen,"Mean"],2))
     mtext(label,side=3,line=-1.1,cex=1.2)
   }
+  if (nchar(filen) > 0) dev.off()
   return(invisible(list(summarydevs=summarydevs,devs=devs)))
 } # end of plotzonedevs
 
@@ -2374,7 +2381,7 @@ sauribbon <- function(rundir,scenes,varqnts,glbc,varname,
         caption <- paste0(varname," ribbon plot for ",glbc[[1]]$saunames[sau])
       }
       if (defpar) {
-        oldpar <- par(no.readonly=TRUE)
+    #    oldpar <- par(no.readonly=TRUE)
         plotprep(width=8,height=4,newdev=TRUE,filename=filen,verbose=FALSE)
         parset(cex=1.1,margin=c(0.35,0.5,0.05,0.05))
       }
@@ -2386,6 +2393,7 @@ sauribbon <- function(rundir,scenes,varqnts,glbc,varname,
       doquantribbon(qntvar,varname=varname,sauname=sauname,yrnames=glbc[[1]]$pyrnames,
                     scenes=scenes,q90=q90,intens=intens,addleg=addleg,
                     addmedian=addmedian)
+      if (nchar(filen) > 0) dev.off()
       if (!console) {
         addplot(filen=filen,rundir=rundir,category=varname,caption=caption)
       }
@@ -2393,7 +2401,7 @@ sauribbon <- function(rundir,scenes,varqnts,glbc,varname,
   } else {
     warning("Differing number of SAU, not ribbon plts produced. \n")
   }
-  if (defpar) return(invisible(oldpar))
+#  if (defpar) return(invisible(oldpar))
 } # end of sauribbon
 
 #' @title scenarioproperties tabulates important properties of each scenario
