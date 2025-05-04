@@ -42,3 +42,6 @@ inst/doc
 # clean out data-rw
 data-raw
 
+notPublic
+
+
