@@ -1,5 +1,5 @@
 #Tas context -----------------
-# postfixdir <- "EGMRall"
+# postfixdir <- "BCtest"
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
@@ -319,11 +319,6 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
            caption="Last ten years of population vs harvest rate.")
   addtable(round(saudat,5),"saudat.csv",rundir,category="zoneDD",
            caption="SAU constant definitions")
-  popdefs <- as.data.frame(t(getlistvar(zoneC,"popdef")))
-  popdefs[,c(1:6,8:18)] <- round(popdefs[,c(1:6,8:18)],3) #so SAU can be txt
-  popdefs[,"SAU"] <- glb$sauname[glb$sauindex]  #so SAU can be txt
-  addtable(popdefs,"popdefs.csv",rundir,category="zoneDD",
-           caption="Population vs Operating model parameter definitions")
   # condition tab----------------------------------------
   condout <- plotconditioning(zoneDD,glb,zoneC,condC$histCE,
                               histCatch=condC$histCatch,rundir,

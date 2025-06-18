@@ -744,6 +744,39 @@ plotconditioning <- function(zoneDD,glb,zoneC,histCE,histCatch,rundir,
   return(invisible(list(sauZone=sauZone,ssq=ssq)))
 } # end plotconditioning.
 
+#' @title plotdeltarec if timevary then generates a plot of recruitment change
+#'
+#' @description plotdeltarec This plots the relationship between year of
+#'     projection and the change in recruitment or settlement success brought
+#'     about by the TIMEVARY inputs
+#'
+#' @param glb the globals object
+#' @param console print to the console or to file, default = TRUE
+#'
+#' @returns nothing but plots a graph is TIMEVARY option is active
+#' @export
+#'
+#' @examples
+#' print("Wait on example data")
+plotdeltarec <- function(glb,console=TRUE) {
+  pyrs <- glb$pyrs
+  pyrnames <- glb$pyrnames
+  deltarec <- glb$deltarec
+  filen <- ""
+  rundir <- glb$rundir
+  if (!console) {
+    filen <- pathtopath(rundir,"deltarec_trend.png")
+    caption <- paste0("The proportional change in recruitment,deltarec, ",
+                      "through the projection years.")
+  }
+  maxy <- getmax(deltarec)
+  plotprep(width=9,height=5,newdev=TRUE,filename=filen,cex=0.9,verbose=FALSE)
+  parset(margin=c(0.5,0.5,0.1,0.1),cex=1.0)
+  plot(pyrnames,deltarec,type="l",lwd=2,xlab="",ylim=c(0,maxy),yaxs="i",
+       ylab="Proportion of Standard Recruitment",panel.first=grid())
+  if (!console) addplot(filen,rundir=rundir,category="Recruits",caption)
+} # end of plotdeltarec
+
 #' @title plothistcatch generates a plot of the historical catches by SAU
 #'
 #' @description plothistcatch generates a plot of histircal catches by SAU

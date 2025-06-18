@@ -128,6 +128,9 @@ biology_plots <- function(rundir, glb, zoneC, matL=c(30,210), Lwt=c(80,210)) {
   resultpop["steep",] <- popdefs["steeph",]
   resultpop["SaM",] <- -popdefs["SaMa",]/popdefs["SaMb",]
   plotrecruitment(rundir,resultpop,glb)
+  if (!is.null(glb$deltarec)) {
+    plotdeltarec(glb,console=FALSE)
+  }
   res <- as.data.frame(t(round(resultpop,3)))
   res[,"SAU"] <- getlistvar(zoneC,"SAU")
   filen <- "zonebiology.csv"
