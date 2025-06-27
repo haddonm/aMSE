@@ -115,7 +115,7 @@ depleteSAU <- function(zoneC,zoneD,glob,initdepl,product,len=15) {
 #' print("wait on some data sets")
 #' # dohistoric(zoneDD=zoneD,zoneC=zoneC,glob=glb,condC=condC,calcpopC=calcexpectpopC,
 #' #            fleetdyn=NULL,hsargs=hsargs,sigR=1e-08,sigB=1e-08)
-#' # zoneDD=zoneD;zoneC=zoneC;glob=glb;condC=condC;calcpopC=calcexpectpopC
+#' # zoneDD=zoneD;zoneC=zoneC;glob=glb;condC=condC;calcpopC=calcpopC
 #' #            fleetdyn=NULL;hsargs=hsargs;sigR=1e-08;sigB=1e-08
 dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,fleetdyn,hsargs,
                         sigR=1e-08,sigB=1e-08) {
@@ -152,7 +152,7 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,fleetdyn,hsargs,
                        sigmar=sigR,sigce=1e-08,r0=r0,b0=b0,exb0=exb0,rdev=rdev,
                        envyr=NULL,envsurv=NULL,envrec=NULL,
                        fissettings=condC$fissettings,
-                       fisindexdata=condC$fisindexdata)
+                       fisindexdata=condC$fisindexdata,harvest=glob$harvest)
     dyn <- out$dyn
     zoneDD$exploitB[year,] <- dyn["exploitb",]
     zoneDD$midyexpB[year,] <- dyn["midyexpB",]
@@ -169,6 +169,70 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,fleetdyn,hsargs,
   }
   return(zoneDD)
 } # end of dohistoricC
+
+#' @title findFs uses an iterative strategy for finding each year's F values
+#'
+#' @description findFs is used when searching for the instantaneous F that will
+#'     produce the required catch in a given year in an age- or size-structured
+#'     model when there are multiple gears, with different selectivity being
+#'     used. The outcome when applying instantaneous fishing mortality rates
+#'     across each year will be different from when one applies annual harvest
+#'     rates. Using instantaneous rates implies that fishing mortality occurs
+#'     continuously throughout each year, and annual harvest rates imply that
+#'     all fishing occurs in the middle of the year. With abalone these
+#'     assumptions also include with instantaneous rates the numbers-at-size in
+#'     the population undergo somatic growth before fishing occurs, then natural
+#'     and fishing mortality occurs through each year. With harvest rates we
+#'     have growth plus half of natural mortality occurring before fishing,
+#'     during which no natural mortality occurs, the fishing is followed by the
+#'     remaining half of the natural mortality. These different implications
+#'     can lead to real differences. With abalone, neither set of assumptions
+#'     best matches the fishery.
+#'
+#' @param cyr a vector of known catches in a given year for nfleets
+#' @param Nyr the numbers at size at the start of the given year or end of the
+#'     year before
+#' @param sel a matrix of the selectivity of the fishing gears
+#' @param aaw the weight-at-age or weight-at-size
+#' @param M the instantaneous natural mortality rate
+#' @param reps how many internal loops to use finding each F, default = 8
+#' @param wtdiv divisor for aaw to scale wata to tonnes of catch, default=1000
+#'
+#' @returns the fully selected fishing mortality rates
+#' @export
+#'
+#' @examples
+#' print("wait on example data sets")
+#' # cyr=obsC;Nyr=Nt[,yr-1];sel=as.matrix(sel[,pickft]);aaw=aaw;M=M;reps=reps
+#' # cyr=incat;Nyr=NumNe;sel=as.matrix(selyr);aaw=pop$WtL;M=pop$Me;reps=8;
+#' # wtdiv=1e6
+findFs <- function(cyr,Nyr,sel,aaw,M,reps=8,wtdiv=1000.0) {
+  sel <- as.matrix(sel)
+  nages <- length(sel[,1])
+  nfleet <- ncol(sel)
+  predCyr <- numeric(nfleet)
+  wata <- aaw/wtdiv
+  Byr <- sum((Nyr*sel*wata))
+  temp1 <- cyr / Byr
+  join1 <- 1/(1 + exp(30*(temp1 - 0.95)))
+  tempyr <- (join1 * temp1) + (0.95 * (1 - join1))
+  fFyr <- -log(1 - tempyr)
+  wtNyr <- wata * Nyr
+  sF <- matrix(0,nrow=nages,ncol=nfleet)
+  for (ft in 1:nfleet) sF[,ft] <- sel[,ft]*fFyr[ft]
+  for (ft in 1:nfleet)
+    predCyr[ft] <- sum((sF[,ft]/(sF[,ft] + M)) * wtNyr *
+                         (1 - exp(-(M + sF[,ft]))))
+  for (i in 1:reps) {
+    Zadj <- cyr/(predCyr)# + 0.0001)
+    fFyr <- Zadj * fFyr
+    for (ft in 1:nfleet) sF[,ft] <- sel[,ft]*fFyr[ft]
+    for (ft in 1:nfleet)
+      predCyr[ft] <- sum((sF[,ft]/(sF[,ft] + M)) * wtNyr *
+                           (1 - exp(-(M + sF[,ft]))))
+  }
+  return(fFyr)
+} # end of findFs
 
 #' @title imperr calculates population catches from sau catches with error
 #'
@@ -357,6 +421,94 @@ oneyearcat <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
   return(ans)
 } # End of oneyearcat
 
+#' @title oneyearcatF one year's catch dynamics for one abpop
+#'
+#' @description oneyearcatF does one year's dynamics for one input
+#'     population. Where the fishing is based on a given catch per
+#'     population, which would be determined by any harvest control
+#'     rule. It is used to step through populations of a zone.
+#'     Its dynamics are such that each population first undergoes
+#'     growth, then half natural mortality. This allows an estimate of
+#'     exploitable biomass before fishing occurs. The remaining
+#'     dynamics involve the removal of the catch, after estimating the
+#'     harvest rate from catch/exploitb, the application of the last
+#'     half of natural mortality and the addition of recruits. This
+#'     allows the exploitable biomass to be estimated after fishing.
+#'     The cpue uses the average of the pre-fishing and post-fishing
+#'     exploitB to smooth over any changes brought about by fishing.
+#'     The recruitment occurs in oneyearC so that larval dispersal can
+#'     be accounted for. oneyearcatF is not used independently of
+#'     oneyearC.
+#'
+#' @param MatWt maturity x Weight-at-size from zoneCC for the population and year
+#' @param SelWt selectivity x Weight-at-size from zoneCC for the population and year
+#' @param selyr selectivity from zoneCC for the population and year
+#' @param Me natural morality from zoneCC for the population
+#' @param G growth transtion matrix from zoneCC for the population
+#' @param scalece the zoneC'pop'$scalece used to scale al cpue to the sau
+#'     nominal scale
+#' @param WtL the weight-at-length from zoneCC for the population
+#' @param inNt the numbers at size for the year previous to the year
+#'     of dynamics. These are projected into the active year.
+#' @param incat the literal annual catch from the population. Derived
+#'     from the harvest control rule for each SAU, then allocated to
+#'     each population with respect to its relative catching
+#'     performance.
+#' @param sigce the process error variation associated with the
+#'     estimates of cpue from the model. Found in the ctrl object
+#'     as withsigCE. It is implemented as Log-Normal error on the
+#'     exploitable biomass value from the model
+#' @param lambda the hyper-stability term from zoneC
+#' @param qest the estimated catchability from sizemod from zoneC
+#' @param fissettings an object containing settings used when calculating
+#'     indices for the FIS within oneyearcatF inside oneyearsauC
+#' @param fisindexdata a function used to estimate the FIS index
+#'
+#' @seealso{
+#'  \link{dohistoricC}, \link{oneyearcat}, \link{oneyearrec}
+#' }
+#'
+#' @return a list containing a vector of ExploitB, MatureB, Catch, and ce, and
+#'     a matrix NaL containing Nt and CatchN used to update a pop in yr + 1
+#' @export
+#'
+#' @examples
+#' print("need to wait on built in data sets")
+#' print("Uses Instantaneous fishing mortality rates")
+#' # oneyearcatF(MatWt=pop$MatWt,SelWt=pop$SelWt[,year],selyr=pop$Select[,year],
+#' #          Me=pop$Me,G=pop$G,scalece=pop$scalece,WtL=pop$WtL,inNt=inN[,popn],
+#' #          incat=popC[popn],sigce=sigce,lambda=pop$lambda,qest=pop$qest,
+#' #          fissettings=NULL,fisindex=NULL)
+oneyearcatF <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
+                        lambda,qest,fissettings=NULL,fisindexdata=NULL) {
+  MatWt <- MatWt/1e6
+  SelectWt <- SelWt/1e06
+  Nclass <- length(selyr)
+  Ne <- numeric(Nclass)
+  Cat <- numeric(Nclass)
+  NumNe <- (G %*% inNt)
+  sel <- as.matrix(selyr)
+  midyexpB <- sum(SelectWt * NumNe)
+  yrF <- findFs(cyr=incat,Nyr=NumNe,sel=sel,aaw=WtL,M=Me,reps=8,wtdiv=1e6)
+  sF <- sel * yrF
+  Cat <- (sF/(Me + sF)) * NumNe * (1 - exp(-(Me + sF)))
+  Catch <- sum(WtL*Cat)/1e06
+  deadM <- (Me/(Me + sF)) * NumNe * (1 - exp(-(Me + sF)))
+  newNt <- (NumNe - Cat - deadM)
+  matureB <- sum(MatWt * newNt)
+  exploitB <- sum(SelectWt * newNt)
+  avExpB <- (midyexpB + exploitB)/2.0 #av start and end exploitB for cpue calcs
+  error <-  exp(rnorm(1,mean=0,sd=sigce) - (sigce^2.0)/2.0)
+  ce <- as.numeric((qest * (((scalece*avExpB) * error) ^ lambda)))
+  outfis <- NULL
+  if (!is.null(fissettings)) {
+    outfis <- fisindexdata(fissettings,inNt)
+  }
+  vect <- c(exploitb=avExpB,midyexpB=midyexpB,matureb=matureB,
+            catch=Catch,cpue=ce,yrF=yrF)
+  ans <- list(vect=vect,NaL=newNt,catchN=Cat,NumNe=NumNe,outfis=outfis)
+  return(ans)
+} # end of oneyearcatF
 
 #' @title oneyearsauC conducts one year's dynamics using catch not harvest
 #'
@@ -407,6 +559,8 @@ oneyearcat <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
 #' @param fissettings an object containing settings used when calculating
 #'     indices for the FIS within oneyearcat inside oneyearsauC
 #' @param fisindexdata the FIS index data by SAU
+#' @param harvest should harvest rates or instantaneous rates be used,
+#'     default = TRUE
 #'
 #' @seealso{
 #'  \link{dohistoricC}, \link{oneyearcat}, \link{oneyearrec},
@@ -418,31 +572,41 @@ oneyearcat <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
 #'
 #' @examples
 #' print("Wait on new data")
-#' #  zoneCC=zoneCP;inN=as.matrix(zoneDP$Nt[,year-1,,iter]);
-#' #  popC=calcpopCout$popC;year=year; Ncl=Nclass;sauindex=sauindex;
-#' #  movem=movem;sigmar=sigmar;sigce=sigce;r0=r0;b0=b0;exb0=exb0;
-#' #  envyr=envyr;envsurv=NULL;envrec=NULL
-#' # fissetting=NULL;fisindexdata=NULL
+#' # zoneCC=zoneC;inN=inN;popC=calcpopCout$popC;year=year
+#' # Ncl=glob$Nclass;sauindex=sauindex;movem=glob$move;sigmar=sigR;sigce=1e-08;
+#' # r0=r0;b0=b0;exb0=exb0;rdev=rdev;envyr=NULL;envsurv=NULL;envrec=NULL;
+#' # fissettings=condC$fissettingsfisindexdata=condC$fisindexdata;harvest=glob$harvest
 oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,movem,sigmar,
                         sigce=1e-08,r0,b0,exb0,rdev=-1,envyr,envsurv,envrec,
-                        deltarec=NULL,fissettings=NULL,fisindexdata=NULL) {
+                        deltarec=NULL,fissettings=NULL,fisindexdata=NULL,
+                        harvest=TRUE) {
   npop <- length(popC)
   ans <- vector("list",npop)
+  survP <- 1.0
   if (year %in% envyr) {
     pickeff <- which(envyr == year)
     survNt <- envsurv[pickeff,]
     proprec <- envrec[pickeff,]
+    survP <- survNt[popn]
   }
+
   for (popn in 1:npop) {  # popn=1
-    survP <- 1.0
-    if (year %in% envyr) survP <- survNt[popn]
     pop <- zoneCC[[popn]]
-    ans[[popn]] <- oneyearcat(MatWt=pop$MatWt,SelWt=pop$SelWt[,year],
-                              selyr=pop$Select[,year],Me=pop$Me,G=pop$G,
-                              scalece=pop$scalece,WtL=pop$WtL,
-                              inNt=(inN[,popn] * survP),incat=popC[popn],
-                              sigce=sigce,lambda=pop$lambda,qest=pop$qest,
+    if (!harvest) {
+      ans[[popn]] <- oneyearcatF(MatWt=pop$MatWt,SelWt=pop$SelWt[,year],
+                                selyr=pop$Select[,year],Me=pop$Me,G=pop$G,
+                                scalece=pop$scalece,WtL=pop$WtL,
+                                inNt=(inN[,popn] * survP),incat=popC[popn],
+                                sigce=sigce,lambda=pop$lambda,qest=pop$qest,
                               fissettings=fissettings,fisindexdata=fisindexdata)
+    } else {
+      ans[[popn]] <- oneyearcat(MatWt=pop$MatWt,SelWt=pop$SelWt[,year],
+                                selyr=pop$Select[,year],Me=pop$Me,G=pop$G,
+                                scalece=pop$scalece,WtL=pop$WtL,
+                                inNt=(inN[,popn] * survP),incat=popC[popn],
+                                sigce=sigce,lambda=pop$lambda,qest=pop$qest,
+                              fissettings=fissettings,fisindexdata=fisindexdata)
+    }
   }
   dyn <- sapply(ans,"[[","vect")
   steep <- getvect(zoneCC,"steeph") #sapply(zoneC,"[[","popdef")["steeph",]

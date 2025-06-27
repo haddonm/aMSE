@@ -1,5 +1,5 @@
 #Tas context -----------------
-# postfixdir <- "BCtest"
+# postfixdir <- "testBC"
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
