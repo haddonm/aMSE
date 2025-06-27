@@ -108,6 +108,80 @@ adjustavrec <- function(rundir,glb,ctrl,calcpopC,verbose=TRUE,
   }
 } # end of adjustavrec
 
+#' @title adjustqest recalibrates qest when conditioning for instantaneous Fs
+#'
+#' @description adjustqest is required when preparing or conditioning aMSE to
+#'     use instantaneous Fs instead of annual harvest rates. Because the
+#'     dynamics of the operation are very different the absolute predicted
+#'     values of CPUE are changed but mostly run parallel to those produced
+#'     when conditioned on harvest rates. This function runs through each SAU
+#'     and optimizes the match between predicted and observed CPUE solely by
+#'     changing the qest values. This should bring the conditioning very close
+#'     to where it was with the harvest rate conditioning. Further improvement
+#'     could be produced by using optiimzerecdevs (which, with hind sight,
+#'     should have been called adjustrecdevs - sigh).
+#'
+#' @param out the output from either do_condition or do_MSE
+#'
+#' @seealso{
+#'   \link{optimizerecdevs}, \link{adjustavrec}
+#' }
+#'
+#' @returns invisibly a list of obsce, predce, compce, cemult, qest, newqest,
+#'     and ssq
+#' @export
+#'
+#' @examples
+#' print("Run do_MSE on the Harvest Rate conditioned zone.")
+#' print("Then run adjustqest on the 'out' object from do_MSE.")
+#' print("That will write an extra line into the saudata...csv file.")
+#' print("put: harvest, 0, use harvest rates = 0, instant F = 1.")
+#' print("at the bottonm of the START section in the controlfile")
+#' print("Switch to become harvest = 1, and the qestF will be put into")
+#' print("the qest part of the saudat information and that should all work.")
+adjustqest <- function(out) {
+  minqfunc <- function(p,obs,comp) {
+    diffce <- comp * p
+    diff <- (obs - diffce)^2
+    ssq <- sum(diff,na.rm=TRUE)
+    return(ssq)
+  } # end of minqfunc
+  glb <- out$glb
+  rundir <- glb$rundir
+  postfixdir <- tail(unlist(strsplit(rundir,"/",fixed=TRUE)),1)
+  ctrlfile <- paste0("control",postfixdir,".csv")
+  zone1 <- readctrlfile(rundir,infile=ctrlfile,verbose=TRUE)
+  ctrl <- zone1$ctrl
+  glb <- zone1$globals     # glb without the movement matrix
+  datafile <- paste0(rundir,"/",ctrl$datafile)
+  dat <- readLines(con=datafile)
+  datlines <- length(dat)
+  origqest <- out$saudat["qest",]
+  predce <- out$sauout$cpue[1:58, ,1]
+  obsce <- out$condC$histCE
+  yearce <- out$condC$yearCE
+  pickyr <- match(yearce,as.numeric(rownames(predce)))
+  compce <- predce[pickyr,]
+  nsau <- glb$nSAU
+  cemult <- ssq <- numeric(nsau); names(cemult) <- glb$saunames
+  for (i in 1:nsau) {
+    result <- optimize(minqfunc,interval=c(0.75,1.2),
+                       obs=obsce[,i],comp=compce[,i])
+    cemult[i] <- result$minimum
+    ssq[i] <- result$objective
+  }
+  qest <- out$saudat["qest",]
+  newqest <- qest * cemult
+  pickline <- grep("qest",dat)
+  newline <- paste0("qestF,",paste0(newqest,collapse=","),",")
+  newdat <- c(dat[1:pickline],newline,dat[(pickline+1):datlines])
+  writeLines(newdat,con=datafile)
+  return(invisible(list(obsce=obsce,predce=predce,compce=compce,
+                        cemult=cemult,qest=qest,newqest=newqest,ssq=ssq)))
+} # end of adjustqest
+
+
+
 #' @title changecolumn alters a selected column of recdevs in the control file
 #'
 #' @description changecolumn is designed to be used when conditioning the OM

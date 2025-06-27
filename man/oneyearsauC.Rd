@@ -23,7 +23,8 @@ oneyearsauC(
   envrec,
   deltarec = NULL,
   fissettings = NULL,
-  fisindexdata = NULL
+  fisindexdata = NULL,
+  harvest = TRUE
 )
 }
 \arguments{
@@ -77,6 +78,9 @@ TIMEVARY keyword. eg deltarec,0.6 would be seq(1.0,0.6,length=pyrs)}
 indices for the FIS within oneyearcat inside oneyearsauC}
 
 \item{fisindexdata}{the FIS index data by SAU}
+
+\item{harvest}{should harvest rates or instantaneous rates be used,
+default = TRUE}
 }
 \value{
 a list containing a revised dynamics list
@@ -99,11 +103,10 @@ oneyearsauC conducts one year's dynamics in the simulation
 }
 \examples{
 print("Wait on new data")
-#  zoneCC=zoneCP;inN=as.matrix(zoneDP$Nt[,year-1,,iter]);
-#  popC=calcpopCout$popC;year=year; Ncl=Nclass;sauindex=sauindex;
-#  movem=movem;sigmar=sigmar;sigce=sigce;r0=r0;b0=b0;exb0=exb0;
-#  envyr=envyr;envsurv=NULL;envrec=NULL
-# fissetting=NULL;fisindexdata=NULL
+# zoneCC=zoneC;inN=inN;popC=calcpopCout$popC;year=year
+# Ncl=glob$Nclass;sauindex=sauindex;movem=glob$move;sigmar=sigR;sigce=1e-08;
+# r0=r0;b0=b0;exb0=exb0;rdev=rdev;envyr=NULL;envsurv=NULL;envrec=NULL;
+# fissettings=condC$fissettingsfisindexdata=condC$fisindexdata;harvest=glob$harvest
 }
 \seealso{
 {

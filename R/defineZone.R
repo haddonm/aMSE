@@ -545,7 +545,8 @@ makeabpop <- function(popparam,midpts,initLML) {
 #'
 #' @examples
 #' print("wait on datafiles")
-#'  #  rundir=rundir;ctrlfile=controlfile;doproduct=TRUE; verbose=TRUE;uplimH=0.35;incH=0.005
+#'  #  rundir=rundir;ctrlfile=controlfile;doproduct=FALSE; verbose=TRUE;
+#'  #  selectyr=0;uplimH=0.35;incH=0.005
 makeequilzone <- function(rundir,ctrlfile="control.csv",doproduct=TRUE,
                           selectyr=0,uplimH=0.4,incH=0.005,verbose=TRUE) {
   zone1 <- readctrlfile(rundir,infile=ctrlfile,verbose=verbose)
@@ -557,7 +558,8 @@ makeequilzone <- function(rundir,ctrlfile="control.csv",doproduct=TRUE,
   if (parsin) opar <- as.matrix(zone1$condC$optpars)
   if (is.null(bysau)) bysau <- 0
   if (bysau) {
-    saudata <- readsaudatafile(rundir,ctrl$datafile,optpar=opar,verbose=verbose)
+    saudata <- readsaudatafile(rundir,ctrl$datafile,optpar=opar,verbose=verbose,
+                               harvest=glb$harvest)
     constants <- saudata$constants
     saudat <- saudata$saudat
     zone1$condC$poprec <- saudata$poprec
@@ -776,7 +778,11 @@ makezone <- function(glob,zoneC) { # glob=glb; zoneC=zoneC;
     Nt[,1,pop] <- Minv %*% recr # initial unfished numbers-at-size
     MatB[1,pop] <- sum(zoneC[[pop]]$MatWt*Nt[,1,pop])/1e06
     zoneC[[pop]]$B0 <- MatB[1,pop] # mature biomass at start of year
-    newNt1 <- (hSurv * (G %*% Nt[,1,pop]))
+    if (glob$harvest) {
+      newNt1 <- (hSurv * (G %*% Nt[,1,pop]))
+    } else {
+      newNt1 <- (G %*% Nt[,1,pop])  # Note no hSurv
+    }
     newNt2 <- (hSurv * newNt1)
     popSel <- zoneC[[pop]]$SelWt[,1]
     preexB <- sum(popSel*newNt1)/1e06

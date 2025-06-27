@@ -627,7 +627,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
    filenames <- dir(rundir)
    if (length(grep(infile,filenames)) != 1)
       stop(cat(infile," not found in ",rundir," \n"))
-   filename <- filenametopath(rundir,infile)
+   filename <- pathtopath(rundir,infile)
    indat <- readLines(filename)   # reads the whole file as character strings
    begin <- grep("START",indat) + 1
    runlabel <- getStr(indat[begin],1)
@@ -641,6 +641,9 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
      optpars <- exp(read.csv(paramfile,header=TRUE,row.names=1))
      parsin <- TRUE
    }
+   harvest <- TRUE  # will there be an environmental event or events?
+   useharvest <- getsingleNum("harvest",indat)
+   if (!useharvest) harvest <- FALSE
  #  batch <- getsingleNum("batch",indat)  # deprecated
    reps <- getsingleNum("replicates",indat)
    withsigR <- getsingleNum("withsigR",indat)
@@ -902,7 +905,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
                    pyrnames=pyrnames,saunames=SAUnames,SAUpop=SAUpop,
                    larvdisp=larvdisp,indexCE=indexCE,envimpact=envimpact,
                    warnfile=warningfile,sauLML=sauLML,deltarec=deltarec,
-                   rundir=rundir)
+                   rundir=rundir,harvest=harvest)
    totans <- list(SAUnames,SAUpop,minc,cw,larvdisp,randomseed,
                   initLML,condC,projC,globals,outctrl,catches,projyrs)
    names(totans) <- c("SAUnames","SAUpop","minc","cw","larvdisp","randomseed",
@@ -969,6 +972,12 @@ readpopdatafile <- function(indir,infile) {
 #' @param optpar the optimum parameters from sizemod used to replace inputs for
 #'     the main parameters estimated.
 #' @param verbose Should progress comments be printed to console, default=FALSE
+#' @param harvest Should annual harvest rates or instantaneous fishing mortality
+#'     rates be used in the dynamics default = TRUE
+#'
+#' @seealso{
+#'    \link{adjustqest}
+#' }
 #'
 #' @return a list of the constants matrix with values for each population and
 #'     the original matrix of sau values from readsaudatafile
@@ -977,7 +986,8 @@ readpopdatafile <- function(indir,infile) {
 #' @examples
 #' print("wait on suitable data sets")
 #' # rundir=rundir; infile=ctrl$datafile;optpar=NULL;verbose=TRUE
-readsaudatafile <- function(rundir,infile,optpar=NULL,verbose=FALSE) {
+readsaudatafile <- function(rundir,infile,optpar=NULL,verbose=FALSE,
+                            harvest=TRUE) {
    filename <- filenametopath(rundir,infile)
    indat <- readLines(filename)   # reads the whole file as character strings
    changesMaxDL <- grep("sMaxDL",indat)
@@ -1001,17 +1011,15 @@ readsaudatafile <- function(rundir,infile,optpar=NULL,verbose=FALSE) {
              "sSigMax","LML","Wtb","sWtb","Wta","sWta","Me","sMe",
              "AvRec","sAvRec","defsteep","sdefsteep","L50C","sL50C",
              "deltaC","sdeltaC","MaxCEpars","sMaxCEpars","selL50p",
-             "selL95p","SaMa","L50Mat","sL50Mat","lambda","qest")
- #  numrow <- length(rows)
+             "selL95p","SaMa","L50Mat","sL50Mat","lambda","qest","qestF")
    npar <- length(rows)
-   ans <- matrix(0,nrow=npar,ncol=nsau)
+   ans <- matrix(0,nrow=npar,ncol=nsau,dimnames=list(rows,saunames))
    begin <- grep("PDFs",indat) + 1
    for (i in 1:npar) {
       ans[i,] <- getConst(indat[begin],nsau)
       begin <- begin + 1
    } # completed filling ans matrix
-   rownames(ans) <- rows
-   colnames(ans) <- saunames
+   if (harvest) ans["qest",] <- ans["qestF",]
    if (!is.null(optpar)) {
       sourcerows <- c("LnR0","MaxDL","L95","qest","seldelta")
       targetrow <- c("AvRec","DLMax","L50inc","qest","selL95p")
