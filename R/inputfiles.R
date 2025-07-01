@@ -641,9 +641,9 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
      optpars <- exp(read.csv(paramfile,header=TRUE,row.names=1))
      parsin <- TRUE
    }
-   harvest <- TRUE  # will there be an environmental event or events?
-   useharvest <- getsingleNum("harvest",indat)
-   if (!useharvest) harvest <- FALSE
+   useF <- 0  # use annual harvest rates of instantaneous Fs
+   useharvest <- getsingleNum("useF",indat)
+   if ((!is.null(useharvest)) && (useharvest != 0)) useF <- 1
  #  batch <- getsingleNum("batch",indat)  # deprecated
    reps <- getsingleNum("replicates",indat)
    withsigR <- getsingleNum("withsigR",indat)
@@ -905,7 +905,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
                    pyrnames=pyrnames,saunames=SAUnames,SAUpop=SAUpop,
                    larvdisp=larvdisp,indexCE=indexCE,envimpact=envimpact,
                    warnfile=warningfile,sauLML=sauLML,deltarec=deltarec,
-                   rundir=rundir,harvest=harvest)
+                   rundir=rundir,useF=useF)
    totans <- list(SAUnames,SAUpop,minc,cw,larvdisp,randomseed,
                   initLML,condC,projC,globals,outctrl,catches,projyrs)
    names(totans) <- c("SAUnames","SAUpop","minc","cw","larvdisp","randomseed",
@@ -972,8 +972,8 @@ readpopdatafile <- function(indir,infile) {
 #' @param optpar the optimum parameters from sizemod used to replace inputs for
 #'     the main parameters estimated.
 #' @param verbose Should progress comments be printed to console, default=FALSE
-#' @param harvest Should annual harvest rates or instantaneous fishing mortality
-#'     rates be used in the dynamics default = TRUE
+#' @param useF Should annual harvest rates or instantaneous fishing mortality
+#'     rates be used in the dynamics default = 0, ie use harvest rates
 #'
 #' @seealso{
 #'    \link{adjustqest}
@@ -987,7 +987,7 @@ readpopdatafile <- function(indir,infile) {
 #' print("wait on suitable data sets")
 #' # rundir=rundir; infile=ctrl$datafile;optpar=NULL;verbose=TRUE
 readsaudatafile <- function(rundir,infile,optpar=NULL,verbose=FALSE,
-                            harvest=TRUE) {
+                            useF=0) {
    filename <- filenametopath(rundir,infile)
    indat <- readLines(filename)   # reads the whole file as character strings
    changesMaxDL <- grep("sMaxDL",indat)
@@ -1019,7 +1019,7 @@ readsaudatafile <- function(rundir,infile,optpar=NULL,verbose=FALSE,
       ans[i,] <- getConst(indat[begin],nsau)
       begin <- begin + 1
    } # completed filling ans matrix
-   if (harvest) ans["qest",] <- ans["qestF",]
+   if (useF == 1) ans["qest",] <- ans["qestF",]
    if (!is.null(optpar)) {
       sourcerows <- c("LnR0","MaxDL","L95","qest","seldelta")
       targetrow <- c("AvRec","DLMax","L50inc","qest","selL95p")

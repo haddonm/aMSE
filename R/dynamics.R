@@ -152,7 +152,7 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,fleetdyn,hsargs,
                        sigmar=sigR,sigce=1e-08,r0=r0,b0=b0,exb0=exb0,rdev=rdev,
                        envyr=NULL,envsurv=NULL,envrec=NULL,
                        fissettings=condC$fissettings,
-                       fisindexdata=condC$fisindexdata,harvest=glob$harvest)
+                       fisindexdata=condC$fisindexdata,useF=glob$useF)
     dyn <- out$dyn
     zoneDD$exploitB[year,] <- dyn["exploitb",]
     zoneDD$midyexpB[year,] <- dyn["midyexpB",]
@@ -559,8 +559,8 @@ oneyearcatF <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
 #' @param fissettings an object containing settings used when calculating
 #'     indices for the FIS within oneyearcat inside oneyearsauC
 #' @param fisindexdata the FIS index data by SAU
-#' @param harvest should harvest rates or instantaneous rates be used,
-#'     default = TRUE
+#' @param useF should harvest rates or instantaneous rates be used,
+#'     default = 0, which means use harvest rates
 #'
 #' @seealso{
 #'  \link{dohistoricC}, \link{oneyearcat}, \link{oneyearrec},
@@ -575,11 +575,11 @@ oneyearcatF <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
 #' # zoneCC=zoneC;inN=inN;popC=calcpopCout$popC;year=year
 #' # Ncl=glob$Nclass;sauindex=sauindex;movem=glob$move;sigmar=sigR;sigce=1e-08;
 #' # r0=r0;b0=b0;exb0=exb0;rdev=rdev;envyr=NULL;envsurv=NULL;envrec=NULL;
-#' # fissettings=condC$fissettingsfisindexdata=condC$fisindexdata;harvest=glob$harvest
+#' # fissettings=condC$fissettingsfisindexdata=condC$fisindexdata;useF=glob$useF
 oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,movem,sigmar,
                         sigce=1e-08,r0,b0,exb0,rdev=-1,envyr,envsurv,envrec,
                         deltarec=NULL,fissettings=NULL,fisindexdata=NULL,
-                        harvest=TRUE) {
+                        useF=0) {
   npop <- length(popC)
   ans <- vector("list",npop)
   survP <- 1.0
@@ -592,7 +592,7 @@ oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,movem,sigmar,
 
   for (popn in 1:npop) {  # popn=1
     pop <- zoneCC[[popn]]
-    if (!harvest) {
+    if (useF == 1) {
       ans[[popn]] <- oneyearcatF(MatWt=pop$MatWt,SelWt=pop$SelWt[,year],
                                 selyr=pop$Select[,year],Me=pop$Me,G=pop$G,
                                 scalece=pop$scalece,WtL=pop$WtL,

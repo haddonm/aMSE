@@ -268,7 +268,7 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
                           sigce=sigce,r0=r0,b0=b0,exb0=exb0,envyr=envyr,
                           envsurv=survNt,envrec=proprec,deltarec=glb$deltarec,
                           fissettings=fissettings,fisindexdata=fisindexdata,
-                          harvest=glb$harvest)
+                          useF=glb$useF)
       dyn <- outy$dyn
       saudyn <- poptosauCE(dyn["catch",],dyn["cpue",],sauindex)
       zoneDP$exploitB[year,,iter] <- dyn["exploitb",]
@@ -555,7 +555,7 @@ addrecvar <- function(zoneDD,zoneC,glob,condC,ctrl,varyrs,calcpopC,
                          sigmar=lastsigR,sigce=1e-08,r0=r0,b0=b0,exb0=exb0,
                          rdev=condC$recdevs,envyr=NULL,envsurv=NULL,
                          fissettings=NULL,fisindexdata=NULL,
-                         harvest=glob$harvest)
+                         useF=glob$useF)
       dyn <- out$dyn
       saudyn <- poptosauCE(dyn["catch",],dyn["cpue",],sauindex)
       zoneDDR$exploitB[year,,iter] <- dyn["exploitb",]

@@ -4,7 +4,7 @@
 \alias{readsaudatafile}
 \title{readsaudatafile generates the constants matrix from sau data}
 \usage{
-readsaudatafile(rundir, infile, optpar = NULL, verbose = FALSE, harvest = TRUE)
+readsaudatafile(rundir, infile, optpar = NULL, verbose = FALSE, useF = 0)
 }
 \arguments{
 \item{rundir}{the directory in which the data file is to be found. This will
@@ -17,8 +17,8 @@ the main parameters estimated.}
 
 \item{verbose}{Should progress comments be printed to console, default=FALSE}
 
-\item{harvest}{Should annual harvest rates or instantaneous fishing mortality
-rates be used in the dynamics default = TRUE}
+\item{useF}{Should annual harvest rates or instantaneous fishing mortality
+rates be used in the dynamics default = 0, ie use harvest rates}
 }
 \value{
 a list of the constants matrix with values for each population and

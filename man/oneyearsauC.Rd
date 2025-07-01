@@ -24,7 +24,7 @@ oneyearsauC(
   deltarec = NULL,
   fissettings = NULL,
   fisindexdata = NULL,
-  harvest = TRUE
+  useF = 0
 )
 }
 \arguments{
@@ -79,8 +79,8 @@ indices for the FIS within oneyearcat inside oneyearsauC}
 
 \item{fisindexdata}{the FIS index data by SAU}
 
-\item{harvest}{should harvest rates or instantaneous rates be used,
-default = TRUE}
+\item{useF}{should harvest rates or instantaneous rates be used,
+default = 0, which means use harvest rates}
 }
 \value{
 a list containing a revised dynamics list
@@ -106,7 +106,7 @@ print("Wait on new data")
 # zoneCC=zoneC;inN=inN;popC=calcpopCout$popC;year=year
 # Ncl=glob$Nclass;sauindex=sauindex;movem=glob$move;sigmar=sigR;sigce=1e-08;
 # r0=r0;b0=b0;exb0=exb0;rdev=rdev;envyr=NULL;envsurv=NULL;envrec=NULL;
-# fissettings=condC$fissettingsfisindexdata=condC$fisindexdata;harvest=glob$harvest
+# fissettings=condC$fissettingsfisindexdata=condC$fisindexdata;useF=glob$useF
 }
 \seealso{
 {

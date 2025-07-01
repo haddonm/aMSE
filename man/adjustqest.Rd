@@ -29,9 +29,9 @@ adjustqest is required when preparing or conditioning aMSE to
 print("Run do_MSE on the Harvest Rate conditioned zone.")
 print("Then run adjustqest on the 'out' object from do_MSE.")
 print("That will write an extra line into the saudata...csv file.")
-print("put: harvest, 0, use harvest rates = 0, instant F = 1.")
+print("put: useF, 0, use harvest rates = 0, instant F = 1.")
 print("at the bottonm of the START section in the controlfile")
-print("Switch to become harvest = 1, and the qestF will be put into")
+print("Switch to become useF = 1, and the qestF will be put into")
 print("the qest part of the saudat information and that should all work.")
 }
 \seealso{

@@ -559,7 +559,7 @@ makeequilzone <- function(rundir,ctrlfile="control.csv",doproduct=TRUE,
   if (is.null(bysau)) bysau <- 0
   if (bysau) {
     saudata <- readsaudatafile(rundir,ctrl$datafile,optpar=opar,verbose=verbose,
-                               harvest=glb$harvest)
+                               useF=glb$useF)
     constants <- saudata$constants
     saudat <- saudata$saudat
     zone1$condC$poprec <- saudata$poprec
@@ -778,7 +778,7 @@ makezone <- function(glob,zoneC) { # glob=glb; zoneC=zoneC;
     Nt[,1,pop] <- Minv %*% recr # initial unfished numbers-at-size
     MatB[1,pop] <- sum(zoneC[[pop]]$MatWt*Nt[,1,pop])/1e06
     zoneC[[pop]]$B0 <- MatB[1,pop] # mature biomass at start of year
-    if (glob$harvest) {
+    if (glob$useF == 0) {
       newNt1 <- (hSurv * (G %*% Nt[,1,pop]))
     } else {
       newNt1 <- (G %*% Nt[,1,pop])  # Note no hSurv
