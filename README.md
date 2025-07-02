@@ -4,6 +4,7 @@
 # aMSE
 
 <!-- badges: start -->
+
 <!-- badges: end -->
 
 This is the codebase for an Abalone Management Strategy Evaluation
@@ -92,7 +93,7 @@ The version number of the first publicly available version is 1.0.0,
 with a date of 20-04-2025. This will alter if changes are made to the
 software.
 
-## Example
+## Constant Reference Years Harvest Strategy
 
 This is an example which illustrates the generation of an initial
 equilibrium, which then goes on to apply an early version of the
@@ -103,7 +104,7 @@ in a control file, which would contain the name of the biological data
 file describing each population.
 
 ``` r
-# a constant TAC example
+# The following is copied from aMSEGuide Chapter 3
 starttime <- (Sys.time())
 options("show.signif.stars"=FALSE,
         "stringsAsFactors"=FALSE,
@@ -118,74 +119,189 @@ suppressPackageStartupMessages({
   library(makehtml)   # from github.com/haddonm/makehtml used to display results
   library(knitr)      # from CRAN for generating tables
 })
-dbdir <- getDBdir()   # utility to define the dropbox directory
-# Obviously you should modify the rundir and datadir to suit your own setup
-prefixdir <- paste0(dbdir,"A_CodeUse/aMSEUse/scenarios/")
-postfixdir <- "M15h75"      # name your scenario, here natural mortality=0.15, steepness=0.75 
-rundir <- paste0(prefixdir,postfixdir) # files and results directory
-confirmdir(rundir)
-controlfile <- "controlM15h75.csv"    # name of the control file
-# equilibrium zone -------------------------------------------------------------
+# The next four code lines define my directory structure. 
+# OBVIOUSLY, modify the rundir definition to suit your own setup!!!
+dbdir <- getDBdir()   # utility to identify the dropbox directory
+prefixdir <- pathtopath(dbdir,"A_codeR/aMSEGuide/runs/")
+postfixdir <- "EG"     # a descriptive name for the rundir 
+rundir <- pathtopath(prefixdir,postfixdir) # define rundir
+startime <- Sys.time() # to document the time taken
+verbose <- TRUE        # send messages to the console about the run progress
+controlfile <- paste0("control",postfixdir,".csv") # match control file name
+outdir <- "C:/aMSE_scenarios/EG/"   # storage on a non-cloud hard-drive
+confirmdir(rundir,ask=FALSE)   # make rundir if it does not exist
+confirmdir(outdir,ask=FALSE)   # to be interactive needs ask = TRUE
 # You now need to ensure that there is, at least, a control??.csv, and a 
 # saudata??.csv file in the data directory plus some other data .csv files
-# depending on how conditioned you want the model to be. Templates for the
-# correct format can be produced using ctrlfiletemplate(), datafiletemplate().
+# Templates for the correct format can be produced using ctrlfiletemplate()
+# and datafiletemplate().
 # 
-# Of course, usually one would use data files, control.csv and a saudata.csv, which
-# is listed as the datafile within the control.csv. These must be stored in 
-# rundir. Read the Using_aMSE' section in the Documentation .docx file in the 
-# documentation. To see examples of code to run the MSE for a real question.
+# Of course, usually one would use data files, control.csv and a saudata.csv, 
+# which is listed as the datafile within the control.csv. These must be stored 
+# in rundir. Read the Using_aMSE' section in aMSEGuide.
+controlfile <- "controlEG.csv" # default example file name, change as needed
+# Now make the controlfile. Read the help file using ?ctrlfiletemplate. This
+# explains what the devrec argument is all about.
 
-# Define the arguments used in the harvest strategy
-hsargs <- list(mult=0.1,
-               wid = 4,
-               targqnt = 0.55,
-               maxtarg = c(150,150,150,150,150,150,150,150),
-               pmwts = c(0.65,0.25,0.1),
-               hcr = c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2),
-               hcrm3 = c(0.25,0.75,0.8,0.85,0.9,1,1.1,1.15,1.2,1.25),
-               startCE = 1992,
-               endCE = 2020,
-               metRunder = 2,
-               metRover = 2,
-               decrement=1,
-               pmwtSwitch = 4,
-               stablewts = c(0.4, 0.5, 0.1),
-               hcrname="constantrefhcr",
-               printmat=NULL)
+ctrlfiletemplate(indir=rundir,filename=controlfile,devrec=0)
+# Within controlfile, the default data file name is 'saudatapostfixdir.csv'. If
+# you want to call it something else (maybe aloysius.csv or machynlleth.csv?)
+# then edit the seventh line of the controlfile that holds the definition
+# of the name of the SAU data file, and change it in this code.
 
-hsargs <- checkhsargs(hsargs)
+datafiletemplate(indir=rundir,filename="saudataEG.csv")
+# The program also needs some length composition data. For this we are going 
+# to use one of the inbuilt data-sets called 'lfs' (see its help). The default
+# filen is already written into the controlfile. Change that as necessary.
 
-deleteyrs <- 0  # none removed in the western zone
+data(lfs)
+writecompdata(indir=rundir,lfs,filen="lf_WZ90-20.csv")
 
-# One would need to unhash this to get it to run (obviously)
+# Define the arguments used in the constantrefhcr harvest strategy
+hsargs <- list(mult=0.1, #expansion factor for cpue range when calc the targqnt
+               wid = 4, # number of years in the grad4 PM
+               targqnt = 0.55, # quantile defining the cpue target
+               maxtarg = c(150,150,150,150,150,150,150,150), # max cpue Target
+               pmwts = c(0.65,0.25,0.1),  # relative weights of PMs
+               hcr = c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2), # hcr mults
+               hcrm3 = c(0.25,0.75,0.8,0.85,0.9,1,1.1,1.2,1.25,1.3),# mr 3
+               startCE = 2000, # used in constant reference period HS
+               endCE = 2019,   # used in constant reference period HS
+               metRunder = 0,  # should the metarules be used. 0 = No
+               metRover = 0,   # use metarules 0 = No
+               decrement=1, # use fishery data up to the end of the time series
+               pmwtSwitch = 0, # n years after reaching the targCE to replace
+               stablewts = c(0.8, 0.15, 0.05), # pmwts with stablewts mr3
+               hcrname="constantrefhcr",     # the name of the HCR used
+               printmat=NULL) # something needed for some HS, not TAS
 
-#out <- do_MSE(rundir,controlfile,hsargs=hsargs,hcrfun=constantrefhcr,
-#              sampleCE=tasCPUE,sampleFIS=tasFIS,sampleNaS=tasNaS,
-#              getdata=tasdata,calcpopC=calcexpectpopC,makeouthcr=makeouthcr,
-#              fleetdyn=NULL,scoreplot=plotfinalscores,
-#              plotmultflags=plotmultandflags,interimout="",
-#              varyrs=7,startyr=38,verbose=TRUE,ndiagprojs=4,cutcatchN=56,
-#              matureL=c(40,170),wtatL=c(50,200),mincount=120,
-#              includeNAS = FALSE,depensate=0,kobeRP=c(0.4,0.2,0.15),
-#              nasInterval=1,minsizecomp=c(100,135),uplimH=0.375,incH=0.005,
-#              deleteyrs=deleteyrs,selectyr=0)
+hsargs <- checkhsargs(hsargs) # lists chosen options before run, only for TAS 
+# if you want to check your own set then include a suitable check function 
+# within your jurisdiction's HS source file or package (see EGHS as example).
 
-#makeoutput(out,rundir,postfixdir,controlfile,hsfile="TasHS Package",
-#           openfile=TRUE,verbose=FALSE)
+deleteyrs <- 0  # no years of data removed from the zone
 
+# ?do_MSE provides more detailed descriptions of each function argument
+# see EGHS package for help with the HS functions
+# do_MSE function can take a few minutes to run so be patient
+out <- do_MSE(rundir,controlfile, # already known
+              hsargs=hsargs,    # defined as global object
+              hcrfun=constantrefhcr,   # the main HS function
+              sampleCE=tasCPUE, # processes cpue data
+              sampleFIS=tasFIS, # processes FIS data (if any)
+              sampleNaS=tasNaS, # processes Numbers-at-Size data
+              getdata=tasdata,  # extracts the data from the zoneDP object
+              calcpopC=calcexpectpopC, #distributes catches to populations
+              makeouthcr=makeouthcr, # generates updateable HS output object
+              fleetdyn=NULL,   # only used in SA and VIC so far
+              scoreplot=plotfinalscores, # a function to plot HS scores
+              plotmultflags=plotmultandflags, # function to plot multipliers
+              interimout="", # save the results after projecting,
+              varyrs=7, # years prior to projections for random recdevs
+              startyr=48, # in plots of projections what year to start
+              verbose=TRUE, # send progress reports to the console
+              ndiagprojs=4, # individual trajectories in DiagProj plots
+              cutcatchN = 56,  # cut size-at-catch array < class = 112mm
+              matureL = c(70, 200), # length range for maturity plots
+              wtatL = c(50, 200),   # length range for weight-at-length plots
+              mincount = 120,   # minimum sample size in size-composition data
+              includeNAS = FALSE, #include the numbers-at-size in saved output?
+              depensate=0, #will depensation occur? see do_MSE help for details
+              kobeRP=c(0.4,0.2,0.15), # ref points for a kobe-like phase plot
+              nasInterval=5,  # year interval to use when plotting pred NaS 
+              minsizecomp=c(100,135), #min size for pred sizes, min for catches
+              uplimH=0.35,incH=0.005, #H range when estimating productivity 
+              deleteyrs=0)    # all length comp years used 
+
+makeoutput(out,rundir,postfixdir,controlfile,
+           hsfile="EGHS Package",openfile=TRUE,verbose=FALSE)
+
+# unhash this to save the output to your outdir
 # save(out,file=paste0(outdir,postfixdir,".RData"))
 ```
 
 After running the whole, even if you do not generate the results
-webpage, you could also try:
+webpage, to see the structure of the dynamic object generated by the
+projections you could try:
 
 ``` r
-#str(out$zoneDP,max.level=1)
-#str1(out$hcrout)
+str(out$zoneDP,max.level=1)
+str1(out$hcrout)
 ```
 
-To see the structure of the dynamic object generated by the projections.
+### Constant Catch Harvest Strategy
+
+Within EGHS there are two harvest control rules. The code above uses the
+constant reference years harvest strategy ‘constantrefhcr’. There is
+also the ‘consthr’ which simply implements a constant unvarying
+aspirational catch in each SAU each year. To run that you should first
+copy the required data files into a new directory. As before, setup the
+R code to match whatever directory structure you intend to use:
+
+``` r
+library(codeutils)
+library(aMSE)
+dropdir <-getDBdir()   # once again FIX this to suit your own directory setup.
+prefixdir <- pathtopath(dropdir,"/A_codeR/aMSETas/scenarios/")
+filelist=c("controlEG.csv","lf_WZ90-20.csv","saudataEG.csv")
+aMSE::copyto(prefixdir=prefixdir,fromdir="EG",todir="EGconst",
+              filelist=filelist)
+# this copies the files across and renames them appropriately.
+```
+
+The change in the harvest strategy is implemented in the hsargs rather
+than in the code, although it is necessary to let the do_MSE() funciton
+know of the change:
+
+``` r
+# amend the run code above with the following
+postfixdir <- "EGconst"
+verbose <- TRUE
+rundir <- pathtopath(prefixdir,postfixdir)
+controlfile <- paste0("control",postfixdir,".csv")
+outdir <- "C:/aMSE_scenarios/EG/"
+confirmdir(rundir,ask=FALSE)
+confirmdir(outdir,ask=FALSE)
+
+# current Tas HS
+hsargs <- list(mult=0.025, # cpue range expansion factor when calc the targqnt
+               wid = 4, # number of years in the grad4 PM
+               targqnt = 0.55, # quantile defining the cpue target
+               maxtarg = c(150,150,150,150,150,150,150,150), # max cpue Target
+               acatch =  c(22,48,26,125,105,210,175,47),#ONLY used for consthcr
+               pmwts = c(0.65,0.25,0.10),  # relative weights of PMs default
+               hcr = c(0.25,0.75,0.8,0.85,0.9,1,1.05,1.1,1.15,1.2), 
+               hcrm3 = c(0.25,0.75,0.8,0.85,0.9,1,1.1,1.2,1.25,1.3),
+               #hcr = c(1,1,1,1,1,1,1,1,1,1,1), # multipliers for constant catch
+               startCE = 2000, # used in constant reference period HS
+               endCE = 2019,   # used in constant reference period HS
+               #refperiodCE = 2000:2019, # use a vector of years instead
+               metRunder = 2,  # MR2 if CE below targ multTAC = 1
+               metRover = 2,   # MR1 CE>targ for 2+ yrs before multTAC increases
+               decrement=1, # use fishery data up to the end of the time series
+               pmwtSwitch = 4, # number of years after reaching the targCE to
+               stablewts = c(0.65, 0.25, 0.1), # replace pmwts with stablewts
+               hcrname="consthcr", # name of HCR: constantrefhcr / consthcr
+               printmat=NULL)
+
+hsargs <- checkhsargs(hsargs)
+
+out <- do_MSE(rundir,controlfile,hsargs=hsargs,hcrfun=consthcr,  # constantrefhcr,     #
+              sampleCE=tasCPUE,sampleFIS=tasFIS,sampleNaS=tasNaS,
+              getdata=constdata,calcpopC=calcexpectpopC,makeouthcr=makeoutconst,
+              fleetdyn=NULL,scoreplot=plotfinalscores,
+              plotmultflags=plotmultandflags,interimout="",
+              varyrs=7,startyr=38,verbose=TRUE,ndiagprojs=4,cutcatchN=56,
+              matureL=c(40,170),wtatL=c(50,200),mincount=120,
+              includeNAS = FALSE,depensate=0,kobeRP=c(0.4,0.2,0.15),
+              nasInterval=1,minsizecomp=c(100,135),uplimH=0.35,incH=0.005,
+              deleteyrs=0)
+
+makeoutput(out,rundir,postfixdir,controlfile,hsfile="EGHS Package",
+           openfile=TRUE,verbose=FALSE)
+```
+
+### Final Words
 
 See the *aMSEGuide* for detailed examples. This living document, which
 is also open to on-going development, provides many more details of the
