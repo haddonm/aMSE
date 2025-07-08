@@ -699,7 +699,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
    compdat=NULL
    indexCE <- NULL
    maxsize <- cw * Nclass
-   if (projyrs > 0) {
+   if (projyrs > 0) {   # Projection Definitions -------------------------
      if (sauLML) {
        columns <- c(SAUnames,paste0("max",SAUnames))
      } else {
@@ -743,7 +743,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
        }
      }
    } # end of projyrs if test
-   catches <- getsingleNum("CATCHES",indat)
+   catches <- getsingleNum("CATCHES",indat)   #  CATCHES--------------
    if (catches > 0) {
       if (catches > hyrs) hyrs <- catches # fix historical years duration
       begin <- grep("CondYears",indat)[1]
@@ -771,7 +771,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
       rownames(histyr) <- histyr[,1]
    } # end of catches loop
    hyrnames <- as.numeric(histyr[,1])
-   yrce <- getsingleNum("CEYRS",indat)
+   yrce <- getsingleNum("CEYRS",indat)  #   CPUE ---------
    if (yrce > 0) {
       begin <- grep("CEYRS",indat)
       histCE <- matrix(NA,nrow=yrce,ncol=nSAU)
@@ -789,7 +789,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
       if (projyrs > 0) pyrnames <- firstyear:(firstyear + projyrs - 1)
    } # end of if(yrce == 0)
    envimpact <- NULL  # will there be an environmental event or events?
-   environ <- getsingleNum("ENVIRON",indat)
+   environ <- getsingleNum("ENVIRON",indat)  #  ENVIRON ---------------
    if (!is.null(environ)) {
       if (environ > 0) {
          label <- c("eyr","proprec","propNt")
@@ -808,7 +808,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
          envimpact[["propNt"]] <- propNt
       }
    }  # end of use envimpact
-   # timevarying section
+   # TIMEVARYING ------------------------------
    deltarec <- NULL
    timevary <- getsingleNum("TIMEVARY",indat)
    if (!is.null(timevary)) {
@@ -819,7 +819,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
        names(deltarec) <- (hyrs+1):(hyrs+projyrs)
      }
    }
-   # start of FIS input section
+   # FIS input----------
    yearFIS <- NULL
    fisindexdata <- NULL
    fissettings <- NULL
@@ -884,7 +884,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
         }
      }
    }# end of recdev loop
-   # make output objects
+   # make output objects--------------------
    warningfile <- pathtopath(rundir,"warnings.txt")
    label <- paste0(Sys.time()," A listing of any warnings generated in aMSE run")
    cat(label,"\n",file=warningfile,append=FALSE)
@@ -912,7 +912,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
                      "initLML","condC","projC","globals","ctrl",
                      "catches","projyrs")
    return(totans)
-} # end of readctrlzone
+} # end of readctrlzone-----------
 
 
 #' @title readpopdatafile reads in a matrix of data defining each population

@@ -583,14 +583,13 @@ oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,movem,sigmar,
   npop <- length(popC)
   ans <- vector("list",npop)
   survP <- 1.0
-  if (year %in% envyr) {
-    pickeff <- which(envyr == year)
-    survNt <- envsurv[pickeff,]
-    proprec <- envrec[pickeff,]
-    survP <- survNt[popn]
-  }
-
   for (popn in 1:npop) {  # popn=1
+    if (year %in% envyr) {
+      pickeff <- which(envyr == year)
+      survNt <- envsurv[pickeff,]
+      proprec <- envrec[pickeff,]
+      survP <- survNt[popn]
+    }
     pop <- zoneCC[[popn]]
     if (useF == 1) {
       ans[[popn]] <- oneyearcatF(MatWt=pop$MatWt,SelWt=pop$SelWt[,year],
