@@ -390,7 +390,7 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
                     legloc="topright")
   makecompareoutput(rundir=rundir,glbc,scenes,scenarionames,postfixdir,
                     filesused=files[pickfiles],openfile=TRUE,verbose=FALSE)
-  return(invisible(list(scenes=scenes,ans=ans,quantscen=quantscen,dyn=dyn,
+  return(invisible(list(scenes=scenes,quantscen=quantscen,dyn=dyn,
                         prods=prods,scenprops=scenprops,devout=devout)))
 } # end of do_comparison
 
