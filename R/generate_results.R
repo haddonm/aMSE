@@ -739,7 +739,6 @@ plotrecruitment <- function(rundir,resultpop,glb) {
   legend("topleft",legend=saunames,col=1:nsau,lwd=3,bty="n")
   caption <- paste0("The Stock-Recruitment relationships for each sau.")
   addplot(filen,rundir=rundir,category="Recruits",caption)
-
   filen <- filenametopath(rundir,"Each_Populations_recruitment.png")
   plotprep(width=7, height=9,filename=filen,verbose=FALSE)
   parset(plots=pickbound(nsau),margin=c(0.3,0.4,0.05,0.1),

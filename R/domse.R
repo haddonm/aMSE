@@ -254,6 +254,8 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   }
   # declare main objects ----------------------------------------------------
   glb <- zone$glb
+  # if TIMEVARY = 1 modify the content of deltarec
+  if (!is.null(glb$deltarec)) glb <- updatedeltarec(glb,varyrs)
   ctrl <- zone$ctrl
   zoneC <- zone$zoneC
   zoneD <- zone$zoneD

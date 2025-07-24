@@ -759,20 +759,24 @@ plotconditioning <- function(zoneDD,glb,zoneC,histCE,histCatch,rundir,
 #' @examples
 #' print("Wait on example data")
 plotdeltarec <- function(glb,console=TRUE) {
+  deltarec <- glb$deltarec
+  nyr <- length(deltarec)
   pyrs <- glb$pyrs
   pyrnames <- glb$pyrnames
-  deltarec <- glb$deltarec
+  extrayrs <- nyr - pyrs
+  yrnames <- seq((pyrnames[1] - extrayrs),pyrnames[pyrs],1)
   filen <- ""
   rundir <- glb$rundir
   if (!console) {
     filen <- pathtopath(rundir,"deltarec_trend.png")
-    caption <- paste0("The proportional change in recruitment,deltarec, ",
-                      "through the projection years.")
+    caption <- paste0("The proportional change in recruitment, deltarec, ",
+                      "through the projection years, when timevarying ",
+                      "recruitment is implemented.")
   }
   maxy <- getmax(deltarec)
   plotprep(width=9,height=5,newdev=TRUE,filename=filen,cex=0.9,verbose=FALSE)
   parset(margin=c(0.5,0.5,0.1,0.1),cex=1.0)
-  plot(pyrnames,deltarec,type="l",lwd=2,xlab="",ylim=c(0,maxy),yaxs="i",
+  plot(yrnames,deltarec,type="l",lwd=2,xlab="",ylim=c(0,maxy),yaxs="i",
        ylab="Proportion of Standard Recruitment",panel.first=grid())
   if (!console) addplot(filen,rundir=rundir,category="Recruits",caption)
 } # end of plotdeltarec

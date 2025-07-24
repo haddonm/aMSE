@@ -193,9 +193,14 @@ str1(out$hcrout)
 Within EGHS there are two harvest control rules. The code above uses the constant reference years harvest strategy 'constantrefhcr'. There is also the 'consthr' which simply implements a constant unvarying aspirational catch in each SAU each year. To run that you should first copy the required data files into a new directory. As before, setup the R code to match whatever directory structure you intend to use:
 
 ```{r,  echo=TRUE, eval=FALSE}
-library(codeutils)
-library(aMSE)
-
+suppressPackageStartupMessages({
+  library(aMSE)       # from github.com/haddonm/aMSE MSE codebase
+  library(EGHS)       # from github.com/haddonm/EGHS example Tas harvest strategy
+  library(codeutils)  # from github.com/haddonm/codeutils a set of code utilities
+  library(hplot)      # from github.com/haddonm/hplot a set of plotting routines
+  library(makehtml)   # from github.com/haddonm/makehtml used to display results
+  library(knitr)      # from CRAN for generating tables
+})
 # ONCE AGAIN YOU WILL NEED TO SETUP YOUR OWN DIRECTORY STRUCTURE  TO DEFINE
 # THE prefixdir
 dropdir <-getDBdir()   
@@ -238,7 +243,7 @@ hsargs <- list(mult=0.025, # cpue range expansion factor when calc the targqnt
                hcrname="consthcr", # name of HCR: constantrefhcr / consthcr
                printmat=NULL)
 
-checkhsargs(hsargs)
+hsargs <- checkhsargs(hsargs)
 
 
 # NOTE THE CHANGE FROM tasdata TO constdata AND makeouthcr TO makeoutconst 

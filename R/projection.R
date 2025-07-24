@@ -487,7 +487,7 @@ sumpops <- function(invar,sauindex,saunames) { #invar=zoneDP$matureB
 #'     the sau and populations. Currently not needed by Tas but needed by SA
 #' @param hsargs the constants used to define the workings of the hcr
 #' @param sigR the initial recruitment variation default=1e-08
-#' @param sigB the initial biomass cpuie variation default = 1e-08
+#' @param sigB the initial biomass cpue variation default = 1e-08
 #' @param lastsigR the recruitment variation to be added to the final varyrs
 #'
 #' @return an initialized dynamics zone object for the projections with the
@@ -504,10 +504,10 @@ addrecvar <- function(zoneDD,zoneC,glob,condC,ctrl,varyrs,calcpopC,
   sauindex <- glob$sauindex
   histC <- condC$histCatch
   yrs <- condC$histyr[,"year"]
-  nyrs <- glob$hyrs
-  finalyr <- nyrs - varyrs
+  hyrs <- glob$hyrs
+  finalyr <- hyrs - varyrs
   pyrs <- glob$pyrs
-  totyr <- nyrs + pyrs
+  totyr <- hyrs + pyrs
   reps <- ctrl$reps
   zoneDDR <- makezoneDP(totyr,reps,glob)
   r0 <- getvar(zoneC,"R0") #sapply(zoneC,"[[","R0")
@@ -533,7 +533,7 @@ addrecvar <- function(zoneDD,zoneC,glob,condC,ctrl,varyrs,calcpopC,
     zoneDDR$TAC[i,] <- sum(saudyn$saucatch,na.rm=TRUE)
   }
   for (iter in 1:reps) { # iter = 1
-    for (year in (finalyr+1):nyrs) {  # year = finalyr + 1
+    for (year in (finalyr+1):hyrs) {  # year = finalyr + 1
       catchsau <- histC[year,]        # Use actual catches
       hcrout <- list(acatch=catchsau) # attention needed in other jurisdictions
       histCE <- condC$histCE

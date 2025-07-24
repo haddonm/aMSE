@@ -45,7 +45,7 @@ the sau and populations. Currently not needed by Tas but needed by SA}
 
 \item{sigR}{the initial recruitment variation default=1e-08}
 
-\item{sigB}{the initial biomass cpuie variation default = 1e-08}
+\item{sigB}{the initial biomass cpue variation default = 1e-08}
 
 \item{lastsigR}{the recruitment variation to be added to the final varyrs}
 }

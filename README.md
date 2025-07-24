@@ -239,9 +239,14 @@ copy the required data files into a new directory. As before, setup the
 R code to match whatever directory structure you intend to use:
 
 ``` r
-library(codeutils)
-library(aMSE)
-
+suppressPackageStartupMessages({
+  library(aMSE)       # from github.com/haddonm/aMSE MSE codebase
+  library(EGHS)       # from github.com/haddonm/EGHS example Tas harvest strategy
+  library(codeutils)  # from github.com/haddonm/codeutils a set of code utilities
+  library(hplot)      # from github.com/haddonm/hplot a set of plotting routines
+  library(makehtml)   # from github.com/haddonm/makehtml used to display results
+  library(knitr)      # from CRAN for generating tables
+})
 # ONCE AGAIN YOU WILL NEED TO SETUP YOUR OWN DIRECTORY STRUCTURE  TO DEFINE
 # THE prefixdir
 dropdir <-getDBdir()   
@@ -286,7 +291,7 @@ hsargs <- list(mult=0.025, # cpue range expansion factor when calc the targqnt
                hcrname="consthcr", # name of HCR: constantrefhcr / consthcr
                printmat=NULL)
 
-checkhsargs(hsargs)
+hsargs <- checkhsargs(hsargs)
 
 
 # NOTE THE CHANGE FROM tasdata TO constdata AND makeouthcr TO makeoutconst 
