@@ -92,7 +92,7 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
   scenes <- vector(mode="character",length=nfile)
   scores <- makelist(label)
   zone <- makelist(label)
-  for (i in 1:nfile) { # i = 1
+  for (i in 1:nfile) { # i = 2
     if (nchar(outdir) == 0) {
       filename <- files2[i]
     } else {

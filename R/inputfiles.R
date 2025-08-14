@@ -665,6 +665,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
    cw    <- getsingleNum("cw",indat) # class width
    Nclass <- getsingleNum("Nclass",indat) # number of classes
    midpts <- seq(minc,minc+((Nclass-1)*cw),cw)
+   maxsize <-  max(midpts)
    larvdisp <- getsingleNum("larvdisp",indat)
    randomseed <- getsingleNum("randomseed",indat)
    randomseedP <- getsingleNum("randomseedP",indat)
@@ -725,7 +726,13 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
        from <- grep("PROJLML",indat)
        for (i in 1:projyrs) {
          from <- from + 1
-         projLML[i,] <- c(getConst(indat[from],nb=1,index=2),maxsize)
+         projdat <- c(getConst(indat[from],nb=1,index=2),maxsize)
+         if (any(is.na(projdat))) {
+           label <- paste0(" projections called for but insufficient years of ",
+                           "projection LMLs provided.")
+           stop(cat(projyrs,label,"\n"))
+         }
+         projLML[i,] <- projdat
        }
      }
      if ((!gauntlet) & (sauLML)) {   # No slotfishery, SAU with different LML
@@ -754,8 +761,8 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
         histyr <- matrix(0,nrow=hyrs,ncol=(nSAU+1))
         colnames(histyr) <- c("year",paste0("hist",SAUnames))
       } else {
-        histyr <- matrix(0,nrow=hyrs,ncol=2)
-        colnames(histyr) <- c("year","histLML")
+        histyr <- matrix(0,nrow=hyrs,ncol=3)
+        colnames(histyr) <- c("year","histLML","MaxLML")
       }
       for (i in 1:hyrs) { # i=1
          begin <- begin + 1
@@ -764,7 +771,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
            histyr[i,] <- asnum[1:3]
            histCatch[i,] <- asnum[4:(nSAU*2 + 1)]
          } else {
-           histyr[i,] <- asnum[1:2]
+           histyr[i,] <- c(asnum[1:2],maxsize)
            histCatch[i,] <- asnum[3:(nSAU+2)]
          }
       }
@@ -894,7 +901,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
                  compdat=compdat,recdevs=recdevs,parsin=parsin,optpars=optpars,
                  sizecomp=sizecomp,lffiles=lffiles,poprec=NULL,yearFIS=yearFIS,
                  fisindexdata=fisindexdata,fissettings=fissettings)
-   projC <- list(projLML=projLML,projyrs=projyrs,
+   projC <- list(projLML=projLML,gauntlet=gauntlet,projyrs=projyrs,
                  Sel=NULL,SelWt=NULL,histCE=histCE)
    outctrl <- list(runlabel,datafile,infile,reps,randomseed,randomseedP,
                    withsigR,withsigB,withsigCE,catches,projyrs,bysau,rundir)
@@ -1402,9 +1409,6 @@ updatedeltarec <- function(glb,varyrs) {
   glb$deltarec <- newdelta
   return(glb)
 } # end of updatedeltarec
-
-
-
 
 #' @title writecompdata writes a size-composition file to indir
 #'

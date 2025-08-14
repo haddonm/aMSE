@@ -961,7 +961,7 @@ getzoneprod <- function(product) {
 #' @examples
 #' data(zone)
 #' ans <- getzoneprops(zone$zoneC,zone$zoneD,zone$glb)
-#' print(ans)
+#' print(ans)  #  zoneC=zoneC;zoneD=zoneDD;glb=glb;year=hyrs
 getzoneprops <- function(zoneC,zoneD,glb,year=1) {
   numpop <- glb$numpop
   Nclass <- glb$Nclass

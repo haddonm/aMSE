@@ -113,8 +113,8 @@ depleteSAU <- function(zoneC,zoneD,glob,initdepl,product,len=15) {
 #'
 #' @examples
 #' print("wait on some data sets")
-#' # dohistoric(zoneDD=zoneD,zoneC=zoneC,glob=glb,condC=condC,calcpopC=calcexpectpopC,
-#' #            fleetdyn=NULL,hsargs=hsargs,sigR=1e-08,sigB=1e-08)
+#' # dohistoric(zoneDD=zoneD;zoneC=zoneC;glob=glb;condC=condC;calcpopC=calcexpectpopC
+#' #            fleetdyn=NULL;hsargs=hsargs;sigR=1e-08;sigB=1e-08
 #' # zoneDD=zoneD;zoneC=zoneC;glob=glb;condC=condC;calcpopC=calcpopC
 #' #            fleetdyn=NULL;hsargs=hsargs;sigR=1e-08;sigB=1e-08
 dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,fleetdyn,hsargs,

@@ -29,5 +29,5 @@ getzoneprops extracts a set of properties for each
 \examples{
 data(zone)
 ans <- getzoneprops(zone$zoneC,zone$zoneD,zone$glb)
-print(ans)
+print(ans)  #  zoneC=zoneC;zoneD=zoneDD;glb=glb;year=hyrs
 }

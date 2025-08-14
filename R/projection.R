@@ -404,7 +404,7 @@ modprojC <- function(zoneC,glob,projC) { # zoneC=zoneC; glob=glb; projC=projC
   projC$Sel <- projSel
   projC$SelWt <- projSelWt
   return(projC=projC)
-}
+} # modprojC
 
 #' @title scaleto1 scales an input vector of CPUE to a mean of one x avCE
 #'
@@ -655,6 +655,9 @@ prepareprojection <- function(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
   if (ctrl$randseedP > 0) set.seed(ctrl$randseedP)
   if (is.na(ctrl$randseedP)) set.seed()
 #  projyrs <- glb$pyrs
+  if (projC$gauntlet == 1) {
+
+  }
   zoneCR <- zoneC #modzoneCSel(zoneC,projC$Sel,projC$SelWt,glb) #now zoneC
   zoneDP <- addrecvar(zoneDD=zoneDD,zoneC=zoneC,glob=glb,
                          condC=condC,ctrl=ctrl,varyrs=varyrs,

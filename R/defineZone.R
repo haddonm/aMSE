@@ -477,18 +477,28 @@ makeabpop <- function(popparam,midpts,initLML) {
   blk <- popparam["block"]
   selL50 <- popparam["SelP1"]
   selL95 <- popparam["SelP2"]
-  if (ncol(initLML) > 2) { # ensures correct sau LML selected if sauLML
+  if (ncol(initLML) > 3) { # ensures correct sau LML selected if sauLML
     pickLML <- grep(popparam["SAU"],colnames(initLML))
   } else {
-    pickLML <- 2
+    pickLML <- 2:3
   }
   histLML <- initLML[,pickLML]
-  verLML <- unique(histLML) # find unique LML in the vetor of LML
-  for (LML in verLML) {
-    Sel <- logistic((LML+selL50),selL95,midpts)
+  verLML <- unique(histLML) # find unique LML in the vector of LML
+  nlml <- nrow(verLML)
+  maxmids <- max(midpts)
+  for (i in 1:nlml) { # i = 1
+    uniLML <- verLML[i,]
+    LML <- uniLML["histLML"]
+    maxLML <- uniLML["MaxLML"]
+    if (maxLML == maxmids) {
+      Sel <- logistic((LML+selL50),selL95,midpts)
+    } else {
+      Sel <- logistic((LML+selL50),selL95,midpts,maxLML=maxLML)
+    }
     Sel <- Sel * emergent # include emergence to determine availability
-    pick <- which(histLML == LML)
-    zSelect[,pick] <- rep(Sel,length(pick))
+    picksel <- which((histLML[,"histLML"] == LML) &
+                       (histLML[,"MaxLML"] == maxLML))
+    zSelect[,picksel] <- Sel
   }
   zSelWt <- zSelect * WtL
   zLML <- histLML
@@ -670,6 +680,7 @@ makemove <- function(npop,recs,ld,sigmove=0.0) {
 #' }
 makezoneC <- function(zone,const) { # zone=zone1; const=constants
   glb <- zone$globals
+  gauntlet <- zone$projC$gauntlet
   nSAU <- glb$nSAU
   numpop <- glb$numpop
   midpts <- glb$midpts
@@ -685,8 +696,9 @@ makezoneC <- function(zone,const) { # zone=zone1; const=constants
   }
   # initialLML <- cbind(year=glb$hyrnames,histLML=rep(zone$initLML,glb$hyrs))
   # rownames(initialLML) <- glb$hyrnames
-  projlml <- cbind(glb$pyrnames,zone$projC$projLML[,"LML"])
-  rownames(projlml) <- glb$pyrnames; colnames(projlml) <- c("year","histLML")
+  projlml <- cbind(glb$pyrnames,zone$projC$projLML)
+  rownames(projlml) <- glb$pyrnames
+  colnames(projlml) <- c("year","histLML","MaxLML")
   if (zone$catches > 0) {
     initialLML <- rbind(zone$condC$histyr,projlml)
   } else {
@@ -1164,7 +1176,8 @@ runthreeH <- function(zoneC,zoneD,inHarv,glob,selectyr,maxiter=2) {
 #' }
 setupzone <- function(constants,zone1,doproduct,selectyr,
                       uplim=0.4,inc=0.005,verbose=TRUE) {
-  # constants=constants; zone1=zone1; doproduct=TRUE; uplim=0.35; inc=0.005; verbose=TRUE; selectyr=0
+  # constants=constants; zone1=zone1; doproduct=TRUE; uplim=0.35; inc=0.005;
+  # verbose=TRUE; selectyr=0
   ans <- makezoneC(zone1,constants) # initiates zoneC
   zoneC <- ans$zoneC
   glb <- ans$glb
