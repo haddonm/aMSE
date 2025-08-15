@@ -139,7 +139,8 @@ targdepl, default=0.4, limdepl, default=0.2, and the limH, default=0.15}
 \item{nasInterval}{default = 5, which selects the year just before
 projections and then the size-composition data for every such interval
 in years along the projection period. The years selected always include
-the last year of projection and the year just before projections started.}
+the last year of projection and the year just before projections started.
+Used by predsizecomp function inside do_MSE.}
 
 \item{minsizecomp}{a vector of two values, the first being the minimum size-
 class to be used when plotting the predicted size-composition of the

@@ -206,6 +206,7 @@
 #'     projections and then the size-composition data for every such interval
 #'     in years along the projection period. The years selected always include
 #'     the last year of projection and the year just before projections started.
+#'     Used by predsizecomp function inside do_MSE.
 #' @param minsizecomp a vector of two values, the first being the minimum size-
 #'     class to be used when plotting the predicted size-composition of the
 #'     stock, and the second being the minimum size-class when plotting the
@@ -413,13 +414,23 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   }
   # Add to numbers-at-size tab------------------------------------------------------
   if (verbose) cat("Starting size-composition plots \n")
-  for (sau in 1:glb$nSAU) # sau=1
+  nsau <- glb$nSAU
+  for (sau in 1:nsau) # sau=1
     predsizecomp(sau=sau, NSC=sauNAS$Nt, glb=glb, minSL=minsizecomp[1],
                  interval=nasInterval,prop=TRUE,console=FALSE,rundir=rundir)
-  for (sau in 1:glb$nSAU)
+  for (sau in 1:nsau)
     prob <- predsizecomp(sau=sau, NSC=sauNAS$catchN, glb=glb, minSL=minsizecomp[2],
                          interval=nasInterval,prop=TRUE,console=FALSE,rundir=rundir)
   if ((verbose) & (prob != "OK")) cat(prob,"\n")
+  saucomp <- getsaunas(NAS$catchN,glb)
+  saunames <- glb$saunames
+  for (sau in 1:nsau) {
+    prob <- plotcompdata(saucomp[cutcatchN:glb$Nclass,,sau],
+                         analysis=paste0("CatchN ",saunames[sau]),
+                         ylabel=paste0("Shell Length mm CatchN",saunames[sau]),
+                         console=FALSE,outdir=rundir)
+    addplot(filen=prob$filename,rundir=rundir,category="CatchN",caption=prob$caption)
+  }
   if (verbose) {
     incrtime1 <- Sys.time(); timeinc <- incrtime1 - incrtime2
     cat("Finished size-composition plots",timeinc,attr(timeinc,"units"),"\n")
@@ -529,7 +540,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   out <- list(tottime=tottime,runtime=projtime,starttime=starttime,glb=glb,
               ctrl=ctrl,zoneCP=zoneCP,zoneD=zoneD,zoneDD=zoneDD,zoneDP=zoneDP,
               NAS=NAS,projC=projC,condC=condC,sauout=sauout,outzone=outzone,
-              production=production,condout=condout,
+              production=production,condout=condout,saucomp=saucomp,
               HSstats=HSstats,saudat=saudat,constants=constants,hsargs=hsargs,
               sauprod=sauprod,zonesummary=zonesummary,
               kobedata=kobedata,outhcr=outhcr,scoremed=scoremed,

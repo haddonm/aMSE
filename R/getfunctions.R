@@ -567,6 +567,51 @@ getsingleNum <- function(varname,intxt) {
   }
 }
 
+#' @title getsaunas extracts mean number-at-size at the SAU scale
+#'
+#' @description getsaunas summarizes the mean number-at-size across replciates
+#'     at the SAU scale from the zone scale outputs. The input nas can be
+#'     either the catchN or the population Nt from the out put NAS object.
+#'
+#' @param nas the 4D array of the zone level catchN or Nt
+#' @param glb the globals object
+#'
+#' @returns a 3D array of numbers-at-size vs year vs SAU
+#' @export
+#'
+#' @examples
+#' print("wait on data")
+getsaunas <- function(nas,glb) { # nas=NAS$catchN; glb=glb; iter=1
+  # nas <- out$NAS$catchN
+  # glb <- out$glb
+  reps <- glb$reps
+  yrs <- (glb$hyrs + 1):(glb$hyrs + glb$pyrs)
+  nyrs <- length(yrs)
+  nsau <- glb$nSAU
+  saunames <- glb$saunames
+  yrnames <- glb$pyrnames
+  sauindex <- glb$sauindex
+  sizecl <- as.numeric(dimnames(nas)[[1]])
+  nsize <- length(sizecl)
+  saucomp <- array(0,dim=c(nsize,nyrs,nsau),
+                   dimnames=list(sizecl,yrnames,saunames))
+  for (sau in 1:nsau) { # sau = 1; yr = 1
+    pick <- which(sauindex == sau) # uses array indices
+    npick <- length(pick)
+    for (yr in 1:nyrs) {
+      popcomp <- nas[,yrs[yr],pick,]
+      comp <- rowSums(popcomp)
+      if (npick > 1) {
+        for (p in 2:npick) comp  <- comp  + rowSums(popcomp[,p,])
+      }
+      saucomp[,yr,sau] <- comp/reps
+    }
+  }
+  #    plotcompdata(saucomp[,,8],"test")
+  return(invisible(saucomp))
+} # end of getsaunas
+
+
 #' @title getsauzone summarizes zoneD into SAU and zone
 #'
 #' @description getsauzone rowsums the matrices of matureB, exploitB,
