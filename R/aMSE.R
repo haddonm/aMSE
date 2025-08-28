@@ -9,7 +9,7 @@
 #' @importFrom codeutils getmax getmin removeEmpty splitDate which.closest
 #' @importFrom codeutils digitsbyrow outfit %ni% quants makelist pathtopath
 #' @importFrom codeutils confirmdir getmatcolfromlist countNAs
-#' @importFrom hplot parset plotprep pickbound RGB makepolygon saucompdata
+#' @importFrom hplot parset plotprep pickbound RGB makepolygon plotcompdata
 #' @importFrom hplot inthist plotnull
 #' @importFrom makehtml addplot addtable dirExists filenametopath
 #' @importFrom makehtml getextension htmltable logfilename make_html pathend

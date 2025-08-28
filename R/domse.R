@@ -1,5 +1,5 @@
 #Tas context -----------------
-# postfixdir <- "testBC" #"slot147-180"
+# postfixdir <- "testEG" #"slot147-180"
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
@@ -348,10 +348,17 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                    catchN=sauCt[,,plotsau],start=NA,proportion=TRUE,
                    console=FALSE)
     }
-    # OrigComp tab--------------------------------------------
-    saucompdata(allcomp=compdat,glb=glb,horizline=140,console=FALSE,rundir=rundir,
-                ylabel="Size-Composition of Catches",tabname="OrigComp")
   }
+  # OrigComp tab--------------------------------------------
+  nsau <- glb$nSAU  #    sampsize <- round(colSums(compdata,na.rm=TRUE),1)
+  saunames <- glb$saunames
+  for (sau in 1:nsau) {  # sau=1
+    labely <- paste0("Size-Composition of Catches for ",saunames[sau])
+    ans <- plotcompdata(compdata=compdat[,,sau],analysis=saunames[sau],
+                        ylabel=labely,console=FALSE,outdir=rundir,
+                        barcol="red",bordercol=1,horizline=140)
+      addplot(ans$filename,rundir=rundir,category="OrigComp",ans$caption)
+   }
   # popgrowth tab ------------------------------implied size-at-age
   popgrowth(rundir=rundir,zoneC=zoneC,glb=glb,console=FALSE,maxage=30,
             startsize= 2.0)

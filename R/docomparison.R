@@ -333,15 +333,15 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
   zcatch <- makelist(scenes)
   for (scen in 1:nscen) zcatch[[scen]] <- zone[[scen]]$catch
   zoneribbon(rundir=rundir,scenes,invar=zcatch,glbc=glbc,varname="Catch",
-             category="zone",console=FALSE,addmedian=0)
+             category="zone",console=FALSE,addmedian=0,addleg="bottomright")
   zcpue <- makelist(scenes)
   for (scen in 1:nscen) zcpue[[scen]] <- zone[[scen]]$cpue
   zoneribbon(rundir=rundir,scenes,invar=zcpue,glbc=glbc,varname="CPUE",
-             category="zone",console=FALSE,addmedian=0)
+             category="zone",console=FALSE,addmedian=0,addleg="bottomright")
   zdeplsB <- makelist(scenes)
   for (scen in 1:nscen) zdeplsB[[scen]] <- zone[[scen]]$deplsB
   zoneribbon(rundir=rundir,scenes,invar=zdeplsB,glbc=glbc,varname="deplsB",
-             category="zone",console=FALSE,addmedian=0)
+             category="zone",console=FALSE,addmedian=0,addleg="bottomright")
   plotzonedyn(rundir,scenes,zone,glbc,console=FALSE,q90=Q90,polys=TRUE,
               intens=intensity,hlines=list(catch=outprod[,"MSY"],
               spawnB=outprod[,"Bmsy"],harvestR=0,cpue=outprod[,"CEmsy"],

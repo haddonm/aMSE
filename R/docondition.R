@@ -433,9 +433,9 @@ do_condition <- function(rundir,controlfile,calcpopC,
                   "  arrow to return to the home page.")
   addtable(round(pops,4),filen="popprops.csv",rundir=rundir,category="poptable",
            caption=label,big=TRUE)
-  saucompdata(allcomp=condC$compdat$lfs,glb=glb,horizline=140,console=FALSE,
-              rundir=rundir,ylabel="Size-Composition of Catches",
-              tabname="OrigComp")
+  # saucompdata(allcomp=condC$compdat$lfs,glb=glb,horizline=140,console=FALSE,
+  #             rundir=rundir,ylabel="Size-Composition of Catches",
+  #             tabname="OrigComp")
   # What size comp data is there
   palfs <- condC$compdat$palfs
   label <- paste0(ctrl$runlabel," Number of observations of numbers-at-size in ",
