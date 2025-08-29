@@ -20,7 +20,8 @@ predsizecomp(
 \item{sau}{which sau to plot, the index number not its name, in TAS western
 zone this would be between 1 : 8}
 
-\item{NSC}{the numbers-at-size matrix from sauout, either Nt or catchN}
+\item{NSC}{the numbers-at-size array from sauout, either Nt or catchN, with
+dimensions Nclass x allyr x sau x rep}
 
 \item{glb}{the globals object}
 
@@ -63,5 +64,5 @@ print("wait on suitable data")
 # sau=1;NSC=sauNAS$catchN; glb=glb; minSL=minsizecomp[2];omit=5
 # interval=nasInterval;prop=TRUE;console=TRUE;rundir=rundir
 # sau=sau; NSC=sauNAS$Nt; glb=glb; minSL=minsizecomp[1];omit=5
-# interval=nasInterval;prop=TRUE;console=FALSE;rundir=rundir;omit=5
+# interval=nasInterval;prop=TRUE;console=TRUE;rundir=rundir
 }

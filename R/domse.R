@@ -1,5 +1,5 @@
 #Tas context -----------------
-# postfixdir <- "testEG" #"slot147-180"
+# postfixdir <- "slot147-180"   #"testEG" #
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
@@ -419,24 +419,26 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
     incrtime2 <- Sys.time(); timeinc <- incrtime2 - incrtime1
     cat("Finished all sau plots ",timeinc,attr(timeinc,"units"),"\n")
   }
-  # Add to numbers-at-size tab------------------------------------------------------
+  # catchN tab------------------------------------------------------
   if (verbose) cat("Starting size-composition plots \n")
-  nsau <- glb$nSAU
+  nsau <- glb$nSAU  # first the stock size
   for (sau in 1:nsau) # sau=1
     predsizecomp(sau=sau, NSC=sauNAS$Nt, glb=glb, minSL=minsizecomp[1],
                  interval=nasInterval,prop=TRUE,console=FALSE,rundir=rundir)
   for (sau in 1:nsau)
-    prob <- predsizecomp(sau=sau, NSC=sauNAS$catchN, glb=glb, minSL=minsizecomp[2],
-                         interval=nasInterval,prop=TRUE,console=FALSE,rundir=rundir)
+    prob <- predsizecomp(sau=sau, NSC=sauNAS$catchN, glb=glb,
+                         minSL=minsizecomp[2],interval=nasInterval,prop=TRUE,
+                         console=FALSE,rundir=rundir)
   if ((verbose) & (prob != "OK")) cat(prob,"\n")
-  saucomp <- getsaunas(NAS$catchN,glb)
+  saucomp <- getsaunas(NAS$catchN,glb) # mean numbers-at-sizex yr across reps
   saunames <- glb$saunames
   for (sau in 1:nsau) {
+    labely <- paste0("Mean Shell Length mm across reps, CatchN ",saunames[sau])
     prob <- plotcompdata(saucomp[cutcatchN:glb$Nclass,,sau],
                          analysis=paste0("CatchN ",saunames[sau]),
-                         ylabel=paste0("Shell Length mm CatchN",saunames[sau]),
-                         console=FALSE,outdir=rundir)
-    addplot(filen=prob$filename,rundir=rundir,category="CatchN",caption=prob$caption)
+                         ylabel=labely,console=FALSE,outdir=rundir)
+    addplot(filen=prob$filename,rundir=rundir,category="CatchN",
+            caption=prob$caption)
   }
   if (verbose) {
     incrtime1 <- Sys.time(); timeinc <- incrtime1 - incrtime2

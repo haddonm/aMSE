@@ -1398,7 +1398,8 @@ poplevelplot <- function(rundir,sau,popvar,glb,label="",console=TRUE) {
 #'
 #' @param sau which sau to plot, the index number not its name, in TAS western
 #'     zone this would be between 1 : 8
-#' @param NSC the numbers-at-size matrix from sauout, either Nt or catchN
+#' @param NSC the numbers-at-size array from sauout, either Nt or catchN, with
+#'     dimensions Nclass x allyr x sau x rep
 #' @param glb the globals object
 #' @param minSL the minimum shell length to be plotted. This constrains each
 #'     plot so that details can be clearer. default=10mm which implies all
@@ -1426,7 +1427,7 @@ poplevelplot <- function(rundir,sau,popvar,glb,label="",console=TRUE) {
 #' # sau=1;NSC=sauNAS$catchN; glb=glb; minSL=minsizecomp[2];omit=5
 #' # interval=nasInterval;prop=TRUE;console=TRUE;rundir=rundir
 #' # sau=sau; NSC=sauNAS$Nt; glb=glb; minSL=minsizecomp[1];omit=5
-#' # interval=nasInterval;prop=TRUE;console=FALSE;rundir=rundir;omit=5
+#' # interval=nasInterval;prop=TRUE;console=TRUE;rundir=rundir
 predsizecomp <- function(sau,NSC,glb,minSL=10,interval=5,prop=TRUE,
                          console=TRUE,rundir="",omit=5) {
   outcome <- "OK"
@@ -1434,9 +1435,9 @@ predsizecomp <- function(sau,NSC,glb,minSL=10,interval=5,prop=TRUE,
   pickSC <- (omit+1):Nclass
   if (minSL > 0) {
     pickS <- which(glb$midpts >= minSL)
-    pickSC <- pickS[1]:Nclass  # which size classses
+    pickSC <- pickS[1]:Nclass  # which size classes
   }
-  pickyrs <- seq(glb$hyrs,(glb$hyrs+glb$pyrs),interval)  # which years
+  pickyrs <- seq((glb$hyrs),(glb$hyrs+glb$pyrs),interval)  # which years
   yrnames <- c(glb$hyrnames,glb$pyrnames)
   picknames <- yrnames[pickyrs]
   numyrs <- length(pickyrs)
@@ -1446,10 +1447,10 @@ predsizecomp <- function(sau,NSC,glb,minSL=10,interval=5,prop=TRUE,
   shlength <- as.numeric(dimnames(sauNt)[[1]])
   filen <- ""
   if (!console) {
-    if (sum(sauNt[1:40,1,1]) > 1) label="Stock_" else label = "Catch_"
-    nfile <- paste0(label,"Size_Composition_for_",glb$saunames[sau],".png")
+    if (sum(sauNt[1:40,1,1]) > 1) flabel="Stock" else flabel = "Catch"
+    nfile <- paste0(flabel,"_Size_Composition_for_",glb$saunames[sau],".png")
     filen <- pathtopath(rundir,nfile)
-    caption <- paste0(label,"size-composition for ",glb$saunames[sau])
+    caption <- paste0(flabel," size-composition for ",glb$saunames[sau])
   }
   plotprep(width=8,height=9,filename=filen,cex=0.9,verbose=FALSE)
   parset(plots=pickbound(numyrs+1),margin=c(0.25,0.45,0.1,0.1),byrow=FALSE,
@@ -1503,7 +1504,7 @@ predsizecomp <- function(sau,NSC,glb,minSL=10,interval=5,prop=TRUE,
   if (prop) label <- "Proportion"
   mtext(label,side=2,line=-0.2,outer=TRUE,cex=1.2)
   if (!console) {
-    addplot(filen,rundir=rundir,category="NumSize",caption)
+    addplot(filen,rundir=rundir,category=paste0(flabel,"Nproj"),caption)
   }
  return(invisible(outcome))
 } # end of predsizecomp
