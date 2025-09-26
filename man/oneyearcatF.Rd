@@ -16,9 +16,7 @@ oneyearcatF(
   incat,
   sigce,
   lambda,
-  qest,
-  fissettings = NULL,
-  fisindexdata = NULL
+  qest
 )
 }
 \arguments{
@@ -53,11 +51,6 @@ exploitable biomass value from the model}
 \item{lambda}{the hyper-stability term from zoneC}
 
 \item{qest}{the estimated catchability from sizemod from zoneC}
-
-\item{fissettings}{an object containing settings used when calculating
-indices for the FIS within oneyearcatF inside oneyearsauC}
-
-\item{fisindexdata}{a function used to estimate the FIS index}
 }
 \value{
 a list containing a vector of ExploitB, MatureB, Catch, and ce, and
@@ -86,8 +79,7 @@ print("need to wait on built in data sets")
 print("Uses Instantaneous fishing mortality rates")
 # oneyearcatF(MatWt=pop$MatWt,SelWt=pop$SelWt[,year],selyr=pop$Select[,year],
 #          Me=pop$Me,G=pop$G,scalece=pop$scalece,WtL=pop$WtL,inNt=inN[,popn],
-#          incat=popC[popn],sigce=sigce,lambda=pop$lambda,qest=pop$qest,
-#          fissettings=NULL,fisindex=NULL)
+#          incat=popC[popn],sigce=sigce,lambda=pop$lambda,qest=pop$qest)
 }
 \seealso{
 {

@@ -87,6 +87,7 @@ depleteSAU <- function(zoneC,zoneD,glob,initdepl,product,len=15) {
 #'     this by imposing the time-series of catches to each SAU/block. The
 #'     operation is through the use of oneyearC, which imposes one year's
 #'     catches, which are a vector of SAU catches for each year of the series.
+#'     if there are FIS data then predfis inside zoneDD will be updated.
 #'
 #' @param zoneDD The input unfished dynamic zone, zoneD, object
 #' @param zoneC the zone constants object, zoneC
@@ -119,6 +120,24 @@ depleteSAU <- function(zoneC,zoneD,glob,initdepl,product,len=15) {
 #' #            fleetdyn=NULL;hsargs=hsargs;sigR=1e-08;sigB=1e-08
 dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,fleetdyn,hsargs,
                         sigR=1e-08,sigB=1e-08) {
+  nsau <- glob$nSAU
+  if (glob$useFIS) { # prepare for using FIS
+    fisindex <- condC$fisindexdata[,1:nsau]
+    predfis <- fisindex
+    forfis <- hsargs$forfis
+    yearfis <- forfis$yearfis
+    nyrfis <- length(yearfis)
+    fisyears <- match(yearfis, glob$hyrnames)
+    sauWtL <- forfis$sauWtL
+    selfis <- forfis$selfis
+    fissau <- forfis$fissau
+    nfis <- length(fissau)
+    fisexB <- matrix(0,nrow=nyrfis,ncol=nsau,
+                     dimnames=list(yearfis,glob$saunames))
+    sauindex <- glob$sauindex
+    sauNumNe <- array(data=0,dim=c(glob$Nclass,nyrfis,nsau),
+                      dimnames=list(glob$midpts,yearfis,glob$saunames))
+  }
   histC <- condC$histCatch
   yrs <- condC$histyr[,"year"]
   histCE <- condC$histCE
@@ -129,13 +148,13 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,fleetdyn,hsargs,
   r0 <- getvar(zoneC,"R0") #sapply(zoneC,"[[","R0")
   b0 <- getvar(zoneC,"B0") #sapply(zoneC,"[[","B0")
   exb0 <- getvar(zoneC,"ExB0")
-  for (year in 2:nyrs) {  # year=2  # ignores the initial unfished year
+  for (year in 2:nyrs) {  # year=46  # ignores the initial unfished year
     catchsau <- histC[year,]
     if (yrs[year] %in% ceyrs) {
       pickyr <- which(yrs[year] == ceyrs)
       cpuesau <- histCE[pickyr,]
     } else {
-      cpuesau <- rep(NA,glob$nSAU)
+      cpuesau <- rep(NA,nsau)
     }
     rdev <- recdevs[year,]
     hcrout <- list(acatch=catchsau)
@@ -151,8 +170,7 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,fleetdyn,hsargs,
                        Ncl=glob$Nclass,sauindex=sauindex,movem=glob$move,
                        sigmar=sigR,sigce=1e-08,r0=r0,b0=b0,exb0=exb0,rdev=rdev,
                        envyr=NULL,envsurv=NULL,envrec=NULL,
-                       fissettings=condC$fissettings,
-                       fisindexdata=condC$fisindexdata,useF=glob$useF)
+                       useF=glob$useF)
     dyn <- out$dyn
     zoneDD$exploitB[year,] <- dyn["exploitb",]
     zoneDD$midyexpB[year,] <- dyn["midyexpB",]
@@ -166,6 +184,24 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,fleetdyn,hsargs,
     zoneDD$Nt[,year,] <- out$NaL
     zoneDD$catchN[,year,] <- out$catchN
     zoneDD$NumNe[,year,] <- out$NumNe
+    if ((glob$useFIS) & (year %in% fisyears)) {
+      for (i in 1:nfis) { #  year=46; sau = 5
+        sau <- fissau[i]
+        yr <- year - fisyears[1] + 1
+        pickC <- which(sauindex == sau)
+        sauNumNe[,yr,sau] <- rowSums(zoneDD$NumNe[,year,pickC])
+        fisexB[yr,sau] <- sum(sauWtL[,i] * selfis[,yr] *
+                              sauNumNe[,yr,sau])/1e06
+      }
+    }
+  } # year loop
+  if (glob$useFIS) { # calculate estimated predfis
+    for (i in 1:nfis) { # sau = fissau[1]
+      sau <- fissau[i]
+      qfis <- exp(mean(log(fisindex[,sau]/fisexB[,sau]),na.rm=TRUE))
+      predfis[,sau] <- qfis * fisexB[,sau]
+    }
+    zoneDD$predfis <- predfis
   }
   return(zoneDD)
 } # end of dohistoricC
@@ -373,9 +409,6 @@ oneyear <- function(MatWt,SelWt,selyr,Me,G,qest,WtL,inNt,inH,lambda,scalece) {
 #'     exploitable biomass value from the model
 #' @param lambda the hyper-stability term from zoneC
 #' @param qest the estimated catchability from sizemod from zoneC
-#' @param fissettings an object containing settings used when calculating
-#'     indices for the FIS within oneyearcat inside oneyearsauC
-#' @param fisindexdata a function used to estimate the FIS index
 #'
 #' @seealso{
 #'  \link{dohistoricC}, \link{oneyearcat}, \link{oneyearrec}
@@ -389,10 +422,12 @@ oneyear <- function(MatWt,SelWt,selyr,Me,G,qest,WtL,inNt,inH,lambda,scalece) {
 #' print("need to wait on built in data sets")
 #' # oneyearcat(MatWt=pop$MatWt,SelWt=pop$SelWt[,year],selyr=pop$Select[,year],
 #' #            Me=pop$Me,G=pop$G,scalece=pop$scalece,WtL=pop$WtL,inNt=inN[,popn],
-#' #            incat=popC[popn],sigce=sigce,lambda=pop$lambda,qest=pop$qest,
-#' #            fissettings=NULL,fisindex=NULL)
+#' #            incat=popC[popn],sigce=sigce,lambda=pop$lambda,qest=pop$qest)
+#' # MatWt=pop$MatWt;SelWt=pop$SelWt[,year];selyr=pop$Select[,year]
+#' # Me=pop$Me;G=pop$G;scalece=pop$scalece;WtL=pop$WtL;inNt=inN[,popn]
+#' # incat=popC[popn];sigce=sigce;lambda=pop$lambda;qest=pop$qest
 oneyearcat <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
-                       lambda,qest,fissettings=NULL,fisindexdata=NULL) {
+                       lambda,qest) {
   MatWt <- MatWt/1e06
   SelectWt <- SelWt/1e06
   Nclass <- length(selyr)
@@ -411,13 +446,9 @@ oneyearcat <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
   Catch <- sum(WtL*Cat)/1e06
   error <-  exp(rnorm(1,mean=0,sd=sigce) - (sigce^2.0)/2.0)
   ce <- as.numeric((qest * (((scalece*avExpB) * error) ^ lambda)))
-  outfis <- NULL
-  if (!is.null(fissettings)) {
-    outfis <- fisindexdata(fissettings,inNt)
-  }
   vect <- c(exploitb=avExpB,midyexpB=midyexpB,matureb=MatureB,
             catch=Catch,cpue=ce)
-  ans <- list(vect=vect,NaL=newNt,catchN=Cat,NumNe=NumNe,outfis=outfis)
+  ans <- list(vect=vect,NaL=newNt,catchN=Cat,NumNe=NumNe)
   return(ans)
 } # End of oneyearcat
 
@@ -460,9 +491,6 @@ oneyearcat <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
 #'     exploitable biomass value from the model
 #' @param lambda the hyper-stability term from zoneC
 #' @param qest the estimated catchability from sizemod from zoneC
-#' @param fissettings an object containing settings used when calculating
-#'     indices for the FIS within oneyearcatF inside oneyearsauC
-#' @param fisindexdata a function used to estimate the FIS index
 #'
 #' @seealso{
 #'  \link{dohistoricC}, \link{oneyearcat}, \link{oneyearrec}
@@ -477,10 +505,9 @@ oneyearcat <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
 #' print("Uses Instantaneous fishing mortality rates")
 #' # oneyearcatF(MatWt=pop$MatWt,SelWt=pop$SelWt[,year],selyr=pop$Select[,year],
 #' #          Me=pop$Me,G=pop$G,scalece=pop$scalece,WtL=pop$WtL,inNt=inN[,popn],
-#' #          incat=popC[popn],sigce=sigce,lambda=pop$lambda,qest=pop$qest,
-#' #          fissettings=NULL,fisindex=NULL)
+#' #          incat=popC[popn],sigce=sigce,lambda=pop$lambda,qest=pop$qest)
 oneyearcatF <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
-                        lambda,qest,fissettings=NULL,fisindexdata=NULL) {
+                        lambda,qest) {
   MatWt <- MatWt/1e6
   SelectWt <- SelWt/1e06
   Nclass <- length(selyr)
@@ -500,13 +527,9 @@ oneyearcatF <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
   avExpB <- (midyexpB + exploitB)/2.0 #av start and end exploitB for cpue calcs
   error <-  exp(rnorm(1,mean=0,sd=sigce) - (sigce^2.0)/2.0)
   ce <- as.numeric((qest * (((scalece*avExpB) * error) ^ lambda)))
-  outfis <- NULL
-  if (!is.null(fissettings)) {
-    outfis <- fisindexdata(fissettings,inNt)
-  }
   vect <- c(exploitb=avExpB,midyexpB=midyexpB,matureb=matureB,
             catch=Catch,cpue=ce,yrF=yrF)
-  ans <- list(vect=vect,NaL=newNt,catchN=Cat,NumNe=NumNe,outfis=outfis)
+  ans <- list(vect=vect,NaL=newNt,catchN=Cat,NumNe=NumNe)
   return(ans)
 } # end of oneyearcatF
 
@@ -556,9 +579,7 @@ oneyearcatF <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
 #'     TIMEVARY, 1, then deltarec is a linear decline of recruitment from
 #'     1 x predicted to whatever value is input in the line following the
 #'     TIMEVARY keyword. eg deltarec,0.6 would be seq(1.0,0.6,length=pyrs)
-#' @param fissettings an object containing settings used when calculating
-#'     indices for the FIS within oneyearcat inside oneyearsauC
-#' @param fisindexdata the FIS index data by SAU
+#'
 #' @param useF should harvest rates or instantaneous rates be used,
 #'     default = 0, which means use harvest rates
 #'
@@ -575,11 +596,10 @@ oneyearcatF <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
 #' # zoneCC=zoneC;inN=inN;popC=calcpopCout$popC;year=year
 #' # Ncl=glob$Nclass;sauindex=sauindex;movem=glob$move;sigmar=sigR;sigce=1e-08;
 #' # r0=r0;b0=b0;exb0=exb0;rdev=rdev;envyr=NULL;envsurv=NULL;envrec=NULL;
-#' # fissettings=condC$fissettingsfisindexdata=condC$fisindexdata;useF=glob$useF
+#' # fisindexdata=condC$fisindexdata;useF=glob$useF
 oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,movem,sigmar,
                         sigce=1e-08,r0,b0,exb0,rdev=-1,envyr,envsurv,envrec,
-                        deltarec=NULL,fissettings=NULL,fisindexdata=NULL,
-                        useF=0) {
+                        deltarec=NULL,useF=0) {
   npop <- length(popC)
   ans <- vector("list",npop)
   survP <- 1.0
@@ -596,15 +616,13 @@ oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,movem,sigmar,
                                 selyr=pop$Select[,year],Me=pop$Me,G=pop$G,
                                 scalece=pop$scalece,WtL=pop$WtL,
                                 inNt=(inN[,popn] * survP),incat=popC[popn],
-                                sigce=sigce,lambda=pop$lambda,qest=pop$qest,
-                              fissettings=fissettings,fisindexdata=fisindexdata)
+                                sigce=sigce,lambda=pop$lambda,qest=pop$qest)
     } else {
       ans[[popn]] <- oneyearcat(MatWt=pop$MatWt,SelWt=pop$SelWt[,year],
                                 selyr=pop$Select[,year],Me=pop$Me,G=pop$G,
                                 scalece=pop$scalece,WtL=pop$WtL,
                                 inNt=(inN[,popn] * survP),incat=popC[popn],
-                                sigce=sigce,lambda=pop$lambda,qest=pop$qest,
-                              fissettings=fissettings,fisindexdata=fisindexdata)
+                                sigce=sigce,lambda=pop$lambda,qest=pop$qest)
     }
   }
   dyn <- sapply(ans,"[[","vect")

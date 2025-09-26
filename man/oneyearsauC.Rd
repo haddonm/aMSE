@@ -22,8 +22,6 @@ oneyearsauC(
   envsurv,
   envrec,
   deltarec = NULL,
-  fissettings = NULL,
-  fisindexdata = NULL,
   useF = 0
 )
 }
@@ -74,11 +72,6 @@ TIMEVARY, 1, then deltarec is a linear decline of recruitment from
 1 x predicted to whatever value is input in the line following the
 TIMEVARY keyword. eg deltarec,0.6 would be seq(1.0,0.6,length=pyrs)}
 
-\item{fissettings}{an object containing settings used when calculating
-indices for the FIS within oneyearcat inside oneyearsauC}
-
-\item{fisindexdata}{the FIS index data by SAU}
-
 \item{useF}{should harvest rates or instantaneous rates be used,
 default = 0, which means use harvest rates}
 }
@@ -106,7 +99,7 @@ print("Wait on new data")
 # zoneCC=zoneC;inN=inN;popC=calcpopCout$popC;year=year
 # Ncl=glob$Nclass;sauindex=sauindex;movem=glob$move;sigmar=sigR;sigce=1e-08;
 # r0=r0;b0=b0;exb0=exb0;rdev=rdev;envyr=NULL;envsurv=NULL;envrec=NULL;
-# fissettings=condC$fissettingsfisindexdata=condC$fisindexdata;useF=glob$useF
+# fisindexdata=condC$fisindexdata;useF=glob$useF
 }
 \seealso{
 {

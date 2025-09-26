@@ -781,6 +781,58 @@ plotdeltarec <- function(glb,console=TRUE) {
   if (!console) addplot(filen,rundir=rundir,category="Recruits",caption)
 } # end of plotdeltarec
 
+#' @title plotfisfit compares the observed fis with the predicted for each sau
+#'
+#' @description plotfisfit plots the observed and predicted FIS for each SAU
+#'
+#' @param condC object holding observed fisheries data including the fisindex
+#' @param predfis the predicted fis values during conditioning
+#' @param forfis the sauWts, selfis, yearfis, and fissau added to hsargs within
+#'     do_MSE
+#' @param rundir the output directory for a scenario, default = ''
+#' @param console should plot go to the console or to rundir, default = TRUE
+#'
+#' @returns a martix of observed and predicted FIS values for each SAU, it
+#'     also generates a plot.
+#'
+#' @export
+#'
+#' @examples
+#' # syntax plotfisfit(condC=condC,predfis=zoneDD$predfis,forfis=hsargs$forfis,
+#' #                   rundir=rundir,console=FALSE)
+#' # condC=condC;predfis=zoneDD$predfis;forfis=hsargs$forfis;rundir="";console=TRUE
+plotfisfit <- function(condC,predfis,forfis,rundir="",console=TRUE) {
+  yearfis <- forfis$yearfis
+  fissau <- forfis$fissau
+  nfis <- length(fissau)
+  fisindex <- condC$fisindexdata
+  plts <- pickbound(nfis)
+  filen <- ""
+  if (!console) {
+    nfile <- paste0("Fit_of_FIS_to_obsFIS.png")
+    filen <- filenametopath(rundir,nfile)
+    caption <- "Comparison ObsFIS and Predicted FIS for each SAU with FIS data."
+  }
+  plotprep(width=8,height=(plts[1] * 3),newdev=TRUE,filename=filen,cex=1.0,
+           verbose=FALSE)
+  parset(plots=plts)
+  for (i in 1:nfis) {
+    sau <- fissau[i]
+    maxy <- getmax(c(predfis[,sau],fisindex[,sau]))
+    labely <- paste0("SAU ",fissau[i])
+    plot(yearfis,fisindex[,sau],type="p",cex=1.5,pch=16,ylim=c(0,maxy),
+         ylab=labely,xlab="",panel.first = grid())
+    lines(yearfis,predfis[,sau],lwd=2,col=1)
+  }
+  if (!console) {
+    addplot(filen,rundir=rundir,category="FIS",caption)
+  }
+  fisdat <- cbind(fisindex[,fissau],predfis[,fissau])
+  colnames(fisdat) <- c(paste0(colnames(fisindex[,fissau]),"obs"),
+                        paste0(colnames(fisindex[,fissau]),"pred"))
+  return(invisible(fisdat))
+} # end of plotfisfit
+
 #' @title plothistcatch generates a plot of the historical catches by SAU
 #'
 #' @description plothistcatch generates a plot of histircal catches by SAU
@@ -936,6 +988,86 @@ plothsstats <- function(rundir,hsstats,glb,average=FALSE) {
                     " for each SAU and the complete zone")
   addplot(filen,rundir=rundir,category="HSperf",caption)
 } # end of plothsstats
+
+#' @title plotindices combines CPUE and FIS plots for each SAU with a FIS
+#'
+#' @description plotindices if any SAU has FIS data then this generates a plot
+#'     that combines both COPUE and FIS data in each SAU and puts them on the
+#'     same scale. It does this by dividing each time-series through by the
+#'     arithmetic mean of each time-series.
+#'
+#' @param zoneDD The zoneDD object contains the dynamics up to but not including
+#'     the projections.
+#' @param glb the globals object, contains useFIS as a boolean
+#' @param condC contains the historical catches and CPUE and any fisindex data
+#' @param hsargs the flexible input arguments to do_MSE, that includes fispar
+#'     which has the FIS selectivity parameters L50, and the delta parameter, as
+#'     well as the LML during the FIS operations.
+#' @param rundir the output directory for a scenario, default = ''
+#' @param console should plot go to the console or to rundir, default = TRUE
+#'
+#' @returns a list of the ratio of the observed fis and predicted fis relative
+#'     to their respective means, its also generates a plot.
+#'
+#' @export
+#'
+#' @examples
+#' print("wait on data sets")
+plotindices <- function(zoneDD,glb,condC,hsargs,rundir="",console=TRUE) {
+  nsau <- glb$nSAU
+  sauindex <- glb$sauindex
+  predce <- zoneDD$cpue
+  predcatch <- zoneDD$catch
+  predfis <- zoneDD$predfis
+  histCE <- condC$histCE
+  yrs <- as.numeric(rownames(histCE))
+  forfis <- hsargs$forfis
+  yearfis <- forfis$yearfis
+  fissau <- forfis$fissau
+  fisindex <- condC$fisindexdata
+  pickyrs <- match(yrs,glb$hyrnames)
+  nyr <- length(pickyrs)
+  predce <- zoneDD$cpue[pickyrs,]
+  predcatch <- zoneDD$catch[pickyrs,]
+  predcpue <- matrix(0,nrow=nyr,ncol=nsau,dimnames=list(yrs,glb$saunames))
+  for (yr in 1:nyr) { #  yr=2
+    predcpue[yr,] <- poptosauCE(predcatch[yr,],predce[yr,],sauindex)$saucpue
+  }
+  saulab <- paste0("SAU_",fissau)
+  fispred <- fisobs <- matrix(0,nrow=length(yearfis),ncol=length(fissau),
+                              dimnames=list(yearfis,saulab))
+  plts <- pickbound(length(fissau))
+  filen <- ""
+  if (!console) {
+    nfile <- paste0("Comparison_of_CPUE_with_FIS.png")
+    filen <- filenametopath(rundir,nfile)
+    caption <- "Comparison CPUE and FIS for each SAU with FIS data."
+  }
+  plotprep(width=8,height=(plts[1] * 2.75),newdev=TRUE,filename=filen,cex=1.0,
+           verbose=FALSE)
+  parset(plots=plts)
+  picky <- match(yearfis,yrs)
+  index <- 0
+  for (sau in fissau) {
+    index <-  index + 1
+    ce <- histCE[,sau]/mean(histCE[picky,sau])
+    cpue <- predcpue[,sau]/mean(predcpue[picky,sau])
+    fispred[,index] <- predfis[,sau]/mean(predfis[,sau],na.rm=TRUE)
+    fisobs[,index] <- fisindex[,sau]/mean(fisindex[,sau],na.rm=TRUE)
+    maxy <- getmax(c(ce,cpue,fispred[,index],fisobs[,index]))
+    labely <- paste0("SAU ",fissau[index])
+    plot(yrs,ce,type="p",cex=1.5,pch=16,ylim=c(0,maxy),ylab=labely,xlab="",
+         panel.first = grid())
+    lines(yrs,cpue,lwd=2,col=1)
+    lines(yearfis,fispred[,index],lwd=2,col=2)
+    points(yearfis,fisobs[,index],cex=1.5,pch=16,col=2)
+  }
+  legend("bottomleft",c("CPUE","FIS"),col=c(1,2),lwd=3,bty="n",cex=1.25)
+  if (!console) {
+    addplot(filen,rundir=rundir,category="FIS",caption)
+  }
+  return(invisible(list(fispred=fispred,fisobs=fisobs)))
+} # end of plotindices
 
 #' @title plotNt plots the size-composition for each SAU
 #'

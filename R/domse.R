@@ -1,5 +1,5 @@
 #Tas context -----------------
-# postfixdir <- "slot147-180"   #"testEG" #
+# postfixdir <- "BCtest" #
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
@@ -32,8 +32,6 @@
 # minsizecomp=c(100,135)
 # uplimH=0.35
 # incH=0.005
-# fissettings=NULL
-# fisindexdata=NULL
 # deleteyrs=0
 # # # # #
 
@@ -67,7 +65,6 @@
 # minsizecomp=c(100,135)
 # uplimH = 0.9
 # incH = 0.01
-# fissettings=NULL
 # fisindex=NULL
 # deleteyrs=0
 #
@@ -253,6 +250,9 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
     incrtime1 <- Sys.time(); timeinc <- incrtime1 - starttime
     cat("makeequilzone ",timeinc,attr(timeinc,"units"),"\n")
   }
+  #    savefile <- paste0(rundir,"/zone.RData")
+  #    save(zone,file=savefile)
+  #    load(file=savefile)
   # declare main objects ----------------------------------------------------
   glb <- zone$glb
   # if TIMEVARY = 1 modify the content of deltarec
@@ -266,6 +266,10 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   production <- zone$product
   projC <- zone$zone1$projC
   condC <- zone$zone1$condC
+  if (glb$useFIS) { # develop sau based FIS metrics
+    hsargs$forfis <- prepareforfis(condC$fisindexdata,constants,glb,
+                                  hsargs$fispar)
+  }
   # biology, recruits, and production tabs -------------------------------------------------
   outbiol <- biology_plots(rundir, glb, zoneC, matL=matureL,Lwt=wtatL)
   filen <- "population_defined_properties.csv"
@@ -331,6 +335,12 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
     cat("Conditioning plots completed ",timeinc,attr(timeinc,"units") ,"\n")
   }
   saurecdevs(condC$recdevs,glb,rundir,filen="saurecdevs.png")
+  if (glb$useFIS) {
+    fisout <- plotindices(zoneDD=zoneDD,glb=glb,condC=condC,hsargs=hsargs,
+                          rundir=rundir,console=FALSE)
+    plotfisfit(condC=condC,predfis=zoneDD$predfis,forfis=hsargs$forfis,
+               rundir=rundir,console=FALSE)
+  }
   # predictedcatchN tab-----------------------------------------
   catchN <- zoneDD$catchN
   sauCt <- popNAStosau(catchN,glb)
@@ -381,7 +391,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                            sampleFIS=sampleFIS,sampleNaS=sampleNaS,
                            getdata=getdata,calcpopC=calcpopC,
                            makehcrout=makeouthcr,fleetdyn=fleetdyn,verbose=TRUE,
-                           fissettings=condC$fissettings,yearFIS=condC$yearFIS,
+                           yearFIS=condC$yearFIS,
                            fisindexdata=condC$fisindexdata)
   if (verbose) {
     incrtime1 <- Sys.time(); timeinc <- incrtime1 - incrtime2
@@ -482,8 +492,8 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   HSstats <- list(sum10=sum10,sum5=sum5)
   #save(HSstats,file=paste0(rundir,"/HSstats.RData"))
   #save(glb,file=paste0(rundir,"/glb.RData"))
-  save_hsargs(rundir,hsargs)   # prints hsargs to HSPerfs tab
-  if (verbose) cat("hsargs.txt saved to rundir \n")
+  save(hsargs,file=pathtopath(rundir,"hsargs.RData"))
+  if (verbose) cat("hsargs saved as RData file to rundir \n")
   scoremed <- NULL
   nSAU <- glb$nSAU
   if (hsargs$hcrname != "consthcr") {

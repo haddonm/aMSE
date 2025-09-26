@@ -606,8 +606,6 @@ datafiletemplate <- function(indir,filename="saudataEG.csv") {
 #'     file present in rundir containing information regarding the
 #'     run.
 #' @param verbose Should progress comments be printed to console, default=TRUE
-#' @param fisreadfun a function to read in the fissettings.csv file if a FIS
-#'     is being used.
 #'
 #' @return the control list for the run
 #' @export
@@ -621,9 +619,8 @@ datafiletemplate <- function(indir,filename="saudataEG.csv") {
 #' ctrl <- readctrlfile(rundir)
 #' print(ctrl)
 #' }
-readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
-                         fisreadfun=NULL) {
-   # rundir=rundir; infile=controlfile; verbose=TRUE; fisreadfun=NULL
+readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE) {
+   # rundir=rundir; infile=controlfile; verbose=TRUE
    filenames <- dir(rundir)
    if (length(grep(infile,filenames)) != 1)
       stop(cat(infile," not found in ",rundir," \n"))
@@ -830,25 +827,33 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
    # FIS input----------
    yearFIS <- NULL
    fisindexdata <- NULL
-   fissettings <- NULL
+   useFIS <- FALSE
    yrfis <- getsingleNum("FISINDEX",indat)
    if (!is.null(yrfis)) {
      if (yrfis > 0) {
        begin <- grep("FISINDEX",indat)
-       fisindexdata <- matrix(NA,nrow=yrfis,ncol=nSAU)
-       yearFIS <- numeric(yrce)
-       colnames(fisindexdata) <- SAUnames
+       fisindexdata <- matrix(NA,nrow=yrfis,ncol=(nSAU+1))
+       yearFIS <- numeric(yrfis)
+       colnames(fisindexdata) <- c(SAUnames,"LML")
        for (i in 1:yrfis) {
          begin <- begin + 1  # start reading from 1 line below FISINDEX
          cenum <- as.numeric(unlist(strsplit(indat[begin],",")))
          yearFIS[i] <- cenum[1]
-         fisindexdata[i,] <- cenum[2:(nSAU+1)]
+         fisindexdata[i,] <- cenum[2:(nSAU+2)]
        }
-       rownames(fisindex) <- yearFIS
-       begin <- grep("FISSETTINGS",indat)
-       if (length(begin) > 0) {
-         fissettingfile <- removeEmpty(unlist(strsplit(indat[begin],",")))[2]
-         fissettings <- fisreadfun(rundir,fissettingfile)
+       rownames(fisindexdata) <- yearFIS
+     }
+     useFIS <- TRUE
+     picksau <- which(colSums(fisindexdata,na.rm=TRUE) > 0)
+     nfis <- length(picksau)
+     fisse <- numeric(nfis); names(fisse) <- colnames(fisindexdata)[picksau]
+     if (nfis > 0) {
+       for (i in 1:nfis) { # i = 1
+         index <- picksau[i]
+         picky <- which(fisindexdata[,index] > 0)
+         dat <- cbind(yearFIS[picky],fisindexdata[picky,index])
+         colnames(dat) <- c("year","cpue")
+         fisse[i] <- getrmse(dat)$rmse
        }
      }
    } # end of !is.null(yrfis)
@@ -900,7 +905,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
                  histCE=histCE,yearCE=yearCE,initdepl=initdepl,
                  compdat=compdat,recdevs=recdevs,parsin=parsin,optpars=optpars,
                  sizecomp=sizecomp,lffiles=lffiles,poprec=NULL,yearFIS=yearFIS,
-                 fisindexdata=fisindexdata,fissettings=fissettings)
+                 fisindexdata=fisindexdata)
    projC <- list(projLML=projLML,gauntlet=gauntlet,projyrs=projyrs,
                  Sel=NULL,SelWt=NULL,histCE=histCE)
    outctrl <- list(runlabel,datafile,infile,reps,randomseed,randomseedP,
@@ -913,7 +918,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE,
                    pyrnames=pyrnames,saunames=SAUnames,SAUpop=SAUpop,
                    larvdisp=larvdisp,indexCE=indexCE,envimpact=envimpact,
                    warnfile=warningfile,sauLML=sauLML,deltarec=deltarec,
-                   rundir=rundir,useF=useF)
+                   rundir=rundir,useF=useF,useFIS=useFIS,fisse=fisse)
    totans <- list(SAUnames,SAUpop,minc,cw,larvdisp,randomseed,
                   initLML,condC,projC,globals,outctrl,catches,projyrs)
    names(totans) <- c("SAUnames","SAUpop","minc","cw","larvdisp","randomseed",

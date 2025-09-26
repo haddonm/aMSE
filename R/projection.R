@@ -184,8 +184,6 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 #' @param fleetdyn a function that calculates the distribution of catch across
 #'     the sau and populations. Currently not needed by Tas but needed by SA
 #' @param verbose should the iterations be counted on the console?
-#' @param fissettings an object containing settings used when calculating
-#'     indices for the FIS within oneyearcat inside oneyearsauC
 #' @param yearFIS a vector holding the years of the FIS survey
 #' @param fisindexdata the fisindex data by SAU
 #' @param ... the ellipsis used in case any of the functions hcrfun, sampleCE,
@@ -204,12 +202,12 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 #' print("wait on suitable internal data sets")
 doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
                           sampleCE,sampleFIS,sampleNaS,getdata,calcpopC,
-                          makehcrout,fleetdyn,verbose=FALSE,fissettings=NULL,
-                          yearFIS=NULL,fisindexdata=NULL,...) {
+                          makehcrout,fleetdyn,verbose=FALSE,yearFIS=NULL,
+                          fisindexdata=NULL,...) {
   # ctrl=ctrl; zoneDP=zoneDP; zoneCP=zoneCP; glb=glb; hcrfun=hcrfun; hsargs=hsargs
   # sampleCE=tasCPUE; sampleFIS=tasFIS; sampleNaS=tasNaS;  getdata=constdata#tasdata
   # calcpopC=calcexpectpopC; verbose=TRUE; fleetdyn=NULL;makehcrout=makeoutconst#makeouthcr
-  # fissettings=NULL;fisindexdata=NULL;yearFIS=NULL
+  # yearFIS=NULL; fisindexdata=NULL
   reps <- ctrl$reps
   sigmar <- ctrl$withsigR
   sigmab <- ctrl$withsigB
@@ -267,7 +265,6 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
                           sauindex=sauindex,movem=movem,sigmar=sigmar,
                           sigce=sigce,r0=r0,b0=b0,exb0=exb0,envyr=envyr,
                           envsurv=survNt,envrec=proprec,deltarec=glb$deltarec,
-                          fissettings=fissettings,fisindexdata=fisindexdata,
                           useF=glb$useF)
       dyn <- outy$dyn
       saudyn <- poptosauCE(dyn["catch",],dyn["cpue",],sauindex)
@@ -554,7 +551,6 @@ addrecvar <- function(zoneDD,zoneC,glob,condC,ctrl,varyrs,calcpopC,
                          Ncl=glob$Nclass,sauindex=sauindex,movem=glob$move,
                          sigmar=lastsigR,sigce=1e-08,r0=r0,b0=b0,exb0=exb0,
                          rdev=condC$recdevs,envyr=NULL,envsurv=NULL,
-                         fissettings=NULL,fisindexdata=NULL,
                          useF=glob$useF)
       dyn <- out$dyn
       saudyn <- poptosauCE(dyn["catch",],dyn["cpue",],sauindex)

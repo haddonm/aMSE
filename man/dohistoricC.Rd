@@ -50,6 +50,7 @@ dohistoricC is used during the conditioning of the zone/region
     this by imposing the time-series of catches to each SAU/block. The
     operation is through the use of oneyearC, which imposes one year's
     catches, which are a vector of SAU catches for each year of the series.
+    if there are FIS data then predfis inside zoneDD will be updated.
 }
 \examples{
 print("wait on some data sets")

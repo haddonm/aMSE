@@ -540,6 +540,72 @@ getrateofchange <- function(dyn,whichvar,glb) {
   return(res)
 } # end of getrateofchange
 
+#' @title getrmse calculates the rmse of the input 'cpue' series
+#'
+#' @description getrmse calculates the root mean square error (rmse) of the
+#'     input invar series (defaults to 'cpue') against an input 'year' time
+#'     series. This is primarily designed to generate an alternative estimate
+#'     of the intrinsic variability of a cpue time-series to that which may be
+#'     obtained from a cpue standardization. This enables one to use the Francis
+#'     2011 weighting scheme for indices of relative abundance, which he derived
+#'     from Clarke and Hare, 2006.
+#'
+#' @references Clark, W.G., and S.R. Hare (2006) Assessment and management of
+#'     Pacific halibut: data, methods, and policy. \emph{Scientific Report 83.
+#'     International Pacific Halibut Commission}, Seattle, Washington. 104p.
+#'
+#' @references Francis, R.I.C.C. (2011) Data weighting in statistical fisheries
+#'     stock assessment models. \emph{Canadian Journal of Fisheries and Aquatic
+#'     Sciences} \bold{68}: 1124-1138.
+#'
+#'
+#' @param indat the matrix, spmdat, or data.frame containing both a 'year'
+#'     column and an invar column (default to 'cpue')
+#' @param invar the column name of the variable whose rmse is wanted; defaults
+#'     to 'cpue'
+#' @param inyr the column name that points to the 'year' name
+#' @param natlog should we estimate the rmse of log-transformed data. default
+#'     = TRUE because we are usually dealing with cpue.
+#' @return a list of the rmse and the loess predicted values of the invar
+#'     for each year in the time-series
+#' @export
+#'
+#' @examples
+#' year <- 1986:1994
+#' cpue <- c(1.2006,1.3547,1.0585,1.0846,0.9738,1.0437,0.7759,1.0532,1.284)
+#' dat <- as.matrix(cbind(year,cpue))
+#' getrmse(dat,invar="cpue")  # should be 0.08265127
+#' getrmse(dat,invar="cpue")$rmse
+getrmse <- function(indat,invar="cpue",inyr="year",natlog=TRUE){
+  if (iscol(inyr,indat) & iscol(invar,indat)) {
+    nyr <- dim(indat)[1]
+    predictedCE <- rep(NA,nyr)
+    varloc <- grep(invar,colnames(indat))
+    nvar <- length(varloc)
+    if (nvar > 1) {
+      obsvar <- rep(NA,nyr)
+      for (i in 1:nvar) {
+        pick <- which(indat[,varloc[i]] > 0)
+        obsvar[pick] <- indat[pick,varloc[i]]
+      }
+    } else {
+      obsvar <- indat[,varloc]
+    }
+    picky <- which(obsvar > 0)
+    if (natlog) {
+      model <- loess(log(obsvar[picky]) ~ indat[picky,inyr])
+    } else {
+      model <- loess(obsvar[picky] ~ indat[picky,inyr])
+    }
+    predictedCE[picky] <- model$fitted
+    rmse <- sqrt(sum(model$residuals^2)/model$n)
+    return(list(rmse=rmse,predictedCE=predictedCE,loessmod=model))
+  } else {
+    warning("Input data should contain both 'year' and 'cpue'  \n")
+  }
+} # end of getrmseCE
+
+
 #' @title getsingleNum find a line of text and extracts a single number
 #'
 #' @description getsingleNum uses grep to find an input line. If the variable

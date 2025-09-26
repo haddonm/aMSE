@@ -8,7 +8,7 @@
 #' @importFrom utils write.table write.csv head tail winDialog
 #' @importFrom codeutils getmax getmin removeEmpty splitDate which.closest
 #' @importFrom codeutils digitsbyrow outfit %ni% quants makelist pathtopath
-#' @importFrom codeutils confirmdir getmatcolfromlist countNAs
+#' @importFrom codeutils confirmdir getmatcolfromlist countNAs iscol
 #' @importFrom hplot parset plotprep pickbound RGB makepolygon plotcompdata
 #' @importFrom hplot inthist plotnull
 #' @importFrom makehtml addplot addtable dirExists filenametopath

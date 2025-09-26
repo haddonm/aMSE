@@ -19,7 +19,6 @@ doprojections(
   makehcrout,
   fleetdyn,
   verbose = FALSE,
-  fissettings = NULL,
   yearFIS = NULL,
   fisindexdata = NULL,
   ...
@@ -65,9 +64,6 @@ then have a function that returns NULL.}
 the sau and populations. Currently not needed by Tas but needed by SA}
 
 \item{verbose}{should the iterations be counted on the console?}
-
-\item{fissettings}{an object containing settings used when calculating
-indices for the FIS within oneyearcat inside oneyearsauC}
 
 \item{yearFIS}{a vector holding the years of the FIS survey}
 

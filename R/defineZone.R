@@ -555,8 +555,8 @@ makeabpop <- function(popparam,midpts,initLML) {
 #'
 #' @examples
 #' print("wait on datafiles")
-#'  #  rundir=rundir;ctrlfile=controlfile;doproduct=FALSE; verbose=TRUE;
-#'  #  selectyr=0;uplimH=0.35;incH=0.005
+#'  #  rundir=rundir;ctrlfile=controlfile; verbose=TRUE;
+#'  #  selectyr=0;uplimH=0.35;incH=0.005;doproduct=FALSE;
 makeequilzone <- function(rundir,ctrlfile="control.csv",doproduct=TRUE,
                           selectyr=0,uplimH=0.4,incH=0.005,verbose=TRUE) {
   zone1 <- readctrlfile(rundir,infile=ctrlfile,verbose=verbose)
@@ -831,7 +831,7 @@ makezone <- function(glob,zoneC) { # glob=glb; zoneC=zoneC;
   ans <- list(SAU=SAU,matureB=MatB,exploitB=ExplB,midyexpB=midyexpB,
               catch=Catch,harvestR=Harvest,cpue=cpue,recruit=Recruit,
               deplsB=deplSpB,depleB=deplExB,catchN=CatchN,Nt=Nt,NumNe=NumNe,
-              outfis=NULL)
+              predfis=NULL)  # predfis is a placeholder
   return(list(zoneD=ans,zoneC=zoneC))
 } # end of makezone
 

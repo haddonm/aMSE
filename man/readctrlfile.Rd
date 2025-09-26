@@ -4,7 +4,7 @@
 \alias{readctrlfile}
 \title{readctrlfile reads the rundir scenario's control file}
 \usage{
-readctrlfile(rundir, infile = "control.csv", verbose = TRUE, fisreadfun = NULL)
+readctrlfile(rundir, infile = "control.csv", verbose = TRUE)
 }
 \arguments{
 \item{rundir}{the directory in which all files relating to a
@@ -15,9 +15,6 @@ file present in rundir containing information regarding the
 run.}
 
 \item{verbose}{Should progress comments be printed to console, default=TRUE}
-
-\item{fisreadfun}{a function to read in the fissettings.csv file if a FIS
-is being used.}
 }
 \value{
 the control list for the run
