@@ -608,53 +608,6 @@ prepareDDNt <- function(inNt,incatchN,glb) { # Nt=zoneDD$Nt; catchN=zoneDD$catch
   return(list(Nt=Nt,catchN=catchN))
 } # end of prepareDDNt
 
-#' @title prepareforfis generates WtL and Sel for a FIS if one occurs
-#'
-#' @description prepareforfis in the unlikely event that one has a FIS for at
-#'     least some of the SAU in the abalone zone, then it will need special
-#'     treatment. Whether it should be included in the MSE and more importantly
-#'     in the HCR is a matter for a jurisdictions fishery policy and each
-#'     scientist's conscience. Currently, the implementation assumes that the
-#'     FIS index represents the exploitable biomass (using the FIS Selectivity)
-#'     in a linear fashion. So, spatial issues and hyperstability in the
-#'     sampling are omitted (did I mention the scientist's conscience?).
-#'
-#' @param fisindexdata the FIS index of relative abundance obtained from the
-#'     condC object
-#' @param constants the constants object, which is used to determine the
-#'     weight-at-length parameters of the SAu from teh populations.
-#' @param glb the globals object
-#' @param fispar the fispar containing selectivity parameters fisL50, delta,
-#'     and the fisLML for the historical years
-#'
-#' @returns a list of WtL by sau with fis data, selectivity by year, yearfis
-#'     the range of years with fis, and fissau a vector of sau in fisindexdata.
-#' @export
-#'
-#' @examples
-#' print("wait on suitable internal data sets")
-#' # fisindexdata=condC$fisindexdata; fispar=hsargs$fispar
-prepareforfis <- function(fisindexdata,constants,glb,fispar) {
-  fissau <- which(colSums(fisindexdata[,1:glb$nSAU],na.rm=TRUE) > 0)
-  sauindex <-  glb$sauindex
-  nfis <- length(fissau)
-  wta <- tapply(constants["Wta",],sauindex,mean,na.rm=TRUE)[fissau]
-  wtb <- tapply(constants["Wtb",],sauindex,mean,na.rm=TRUE)[fissau]
-  sauWtL <- NULL
-  yearfis <- as.numeric(rownames(fisindexdata))
-  nyrfis <- length(yearfis)
-  for (i in 1:nfis) sauWtL <- cbind(sauWtL,WtatLen(wta[i],wtb[i],glb$midpts))
-  fisLML <- fisindexdata[,"LML"]
-  selfis <- matrix(0,nrow=glb$Nclass,ncol=nyrfis,
-                   dimnames=list(glb$midpts,yearfis))
-  for (i in 1:nyrfis) {
-    selfis[,i] <- logistic(fispar["selL50"],fispar["delta"],lens=glb$midpts,
-                           knifeedge = fisLML[i])
-  }
-  return(list(sauWtL=sauWtL,selfis=selfis,yearfis=yearfis,fissau=fissau))
-} # end of prepareforfis
-
-
 #' @title projectiononly converts hyrs+pyrs_sau_reps to pyrs_sau_reps array
 #'
 #' @description projectiononly is a utility function that takes an output 3D
@@ -1098,7 +1051,8 @@ uniquepairs <- function(x,col1=2,col2=3,yrs="year") {
 #'
 #' @examples
 #' print("wait on suitable internal data sets ")
-zonetosau <- function(inzone,NAS=NULL,glb, B0, ExB0) { # inzone=zoneDP; NAS=NAS; glb=glb; B0=B0; ExB0=ExB0
+zonetosau <- function(inzone,NAS=NULL,glb, B0, ExB0) {
+  # inzone=zoneDP; NAS=NAS; glb=glb; B0=B0; ExB0=ExB0
   nsau <- glb$nSAU
   sauindex <- glb$sauindex
   saunames <- glb$saunames

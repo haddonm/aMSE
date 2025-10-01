@@ -13,6 +13,8 @@ prepareprojection(
   ctrl = ctrl,
   varyrs = varyrs,
   calcpopC = calcpopC,
+  fleetdyn = NULL,
+  hsargs,
   lastsigR = 0.3
 )
 }
@@ -34,6 +36,11 @@ fishery}
 
 \item{calcpopC}{a function that takes the output from hcrfun and gernerates
 the actual catch per population expected in the current year.}
+
+\item{fleetdyn}{a function that calculates the distribution of catch across
+the sau and populations. Currently not needed by Tas but needed by SA}
+
+\item{hsargs}{the constants used to define the workings of the hcr}
 
 \item{lastsigR}{recruitment variation for when it is applied for varyrs}
 }

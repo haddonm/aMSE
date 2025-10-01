@@ -784,6 +784,7 @@ plotdeltarec <- function(glb,console=TRUE) {
 #' @title plotfisfit compares the observed fis with the predicted for each sau
 #'
 #' @description plotfisfit plots the observed and predicted FIS for each SAU
+#'     combioned with a residual plot in each case (sau)
 #'
 #' @param condC object holding observed fisheries data including the fisindex
 #' @param predfis the predicted fis values during conditioning
@@ -792,7 +793,7 @@ plotdeltarec <- function(glb,console=TRUE) {
 #' @param rundir the output directory for a scenario, default = ''
 #' @param console should plot go to the console or to rundir, default = TRUE
 #'
-#' @returns a martix of observed and predicted FIS values for each SAU, it
+#' @returns a matrix of observed and predicted FIS values for each SAU, it
 #'     also generates a plot.
 #'
 #' @export
@@ -807,26 +808,34 @@ plotfisfit <- function(condC,predfis,forfis,rundir="",console=TRUE) {
   nfis <- length(fissau)
   fisindex <- condC$fisindexdata
   plts <- pickbound(nfis)
-  filen <- ""
-  if (!console) {
-    nfile <- paste0("Fit_of_FIS_to_obsFIS.png")
-    filen <- filenametopath(rundir,nfile)
-    caption <- "Comparison ObsFIS and Predicted FIS for each SAU with FIS data."
-  }
-  plotprep(width=8,height=(plts[1] * 3),newdev=TRUE,filename=filen,cex=1.0,
-           verbose=FALSE)
-  parset(plots=plts)
+  fissaunames <- names(fissau)
   for (i in 1:nfis) {
+    filen <- ""
+    if (!console) {
+      nfile <- paste0(fissaunames[i],"_Fit_of_FIS_to_obsFIS.png")
+      filen <- filenametopath(rundir,nfile)
+      caption <- paste0("Comparison ObsFIS and Predicted FIS for each SAU ",
+                        "with FIS data for ",fissaunames[i])
+    }
+    plotprep(width=8,height=6,newdev=TRUE,filename=filen,cex=1.0,
+             verbose=FALSE)
+    parset(plots=c(2,1))
     sau <- fissau[i]
     maxy <- getmax(c(predfis[,sau],fisindex[,sau]))
     labely <- paste0("SAU ",fissau[i])
     plot(yearfis,fisindex[,sau],type="p",cex=1.5,pch=16,ylim=c(0,maxy),
          ylab=labely,xlab="",panel.first = grid())
     lines(yearfis,predfis[,sau],lwd=2,col=1)
-  }
-  if (!console) {
-    addplot(filen,rundir=rundir,category="FIS",caption)
-  }
+    resid <- fisindex[,sau] - predfis[,sau]
+    maxy <- getmax(resid)
+    miny <- getmin(resid)
+    plot(yearfis,resid,type="p",cex=1.5,pch=16,ylim=c(miny,maxy),
+         ylab=labely,xlab="",panel.first = grid())
+    abline(h=0,lwd=1,col=1)
+    if (!console) {
+      addplot(filen,rundir=rundir,category="FIS",caption)
+    }
+  } # end nfis loop
   fisdat <- cbind(fisindex[,fissau],predfis[,fissau])
   colnames(fisdat) <- c(paste0(colnames(fisindex[,fissau]),"obs"),
                         paste0(colnames(fisindex[,fissau]),"pred"))
@@ -1160,7 +1169,57 @@ plotpopprops <- function(x,rundir,glb,varnames,startyr,console=TRUE,bins=25) {
   }
 } # end of plotpopprops
 
-
+#' @title plotfisfit compares the observed fis with the predicted for each sau
+#'
+#' @description plotfisfit plots the observed and predicted FIS for each SAU
+#'     combioned with a residual plot in each case (sau)
+#'
+#' @param predfis the predicted fis values during conditioning
+#' @param glb the globals object
+#' @param forfis the sauWts, selfis, yearfis, and fissau added to hsargs within
+#'     do_MSE
+#' @param rundir the output directory for a scenario, default = ''
+#' @param console should plot go to the console or to rundir, default = TRUE
+#'
+#' @returns Nothing but it does generate a plot for each SAU with FIS data
+#'
+#' @export
+#'
+#' @examples
+#' # syntax plotpredfis(predfis=zoneDD$predfis,glb=glb,forfis=hsargs$forfis,
+#' #                   rundir=rundir,console=FALSE)
+#' # predfis=zoneDD$predfis;glb=glb;forfis=hsargs$forfis;rundir="";console=TRUE
+plotpredfis <- function(predfis,glb,forfis,rundir="",console=TRUE) {
+  fisstart <- forfis$fisstart
+  fissau <- forfis$fissau
+  nfis <- length(fissau)
+  fisnames <- names(fissau)
+  allyr <- glb$hyrs + glb$pyrs
+  reps <- glb$reps
+  for (i in 1:nfis) { # i = 2
+    filen <- ""
+    if (!console) {
+      nfile <- paste0(fisnames[i],"_predicted_FIS_Trajectory.png")
+      filen <- filenametopath(rundir,nfile)
+    }
+    sau <- fissau[i]
+    predfissau <- predfis[fisstart[2]:allyr,sau,]
+    yrs <- as.numeric(rownames(predfissau))
+    maxy <- getmax(predfissau)
+    labely <- paste0("Predicted FIS Index for ",fisnames[i])
+    medfis <- apply(predfissau,1,median)
+    plotprep(width=7,height=4,newdev=TRUE,filename=filen,cex=1.0,
+             verbose=FALSE)
+    parset(cex=1.0)
+    plot(yrs,predfissau[,1],type="l",lwd=1,col="grey",ylim=c(0,maxy),xlab="",
+         ylab=labely,panel.first=grid())
+    for (iter in 2:reps) lines(yrs,predfissau[,iter],lwd=1,col="grey")
+    lines(yrs,medfis,lwd=2,col=2)
+    if (!console) {
+      addplot(filen,rundir=rundir,category="FIS",caption=labely)
+    }
+  } # end of nfis loop
+} # end of plotpredfis
 
 #' @title plotprod graphs a selected productivity variable
 #'

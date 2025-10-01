@@ -824,13 +824,16 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE) {
        names(deltarec) <- (hyrs+1):(hyrs+projyrs)
      }
    }
-   # FIS input----------
+# FIS input----------
    yearFIS <- NULL
    fisindexdata <- NULL
    useFIS <- FALSE
+   qfis <- NULL
+   fisse <- NULL
    yrfis <- getsingleNum("FISINDEX",indat)
    if (!is.null(yrfis)) {
      if (yrfis > 0) {
+       useFIS <- TRUE
        begin <- grep("FISINDEX",indat)
        fisindexdata <- matrix(NA,nrow=yrfis,ncol=(nSAU+1))
        yearFIS <- numeric(yrfis)
@@ -843,7 +846,6 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE) {
        }
        rownames(fisindexdata) <- yearFIS
      }
-     useFIS <- TRUE
      picksau <- which(colSums(fisindexdata,na.rm=TRUE) > 0)
      nfis <- length(picksau)
      fisse <- numeric(nfis); names(fisse) <- colnames(fisindexdata)[picksau]
@@ -855,6 +857,13 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE) {
          colnames(dat) <- c("year","cpue")
          fisse[i] <- getrmse(dat)$rmse
        }
+     }
+     qfis <- getsingleNum("qfis",indat)
+     if (is.null(qfis)) {
+       qfis <- 0
+     } else {
+       begin <- grep("qfis",indat)
+       qfis <- as.numeric(unlist(strsplit(indat[begin+1],",")))
      }
    } # end of !is.null(yrfis)
    # get sizecomp data---------------------
@@ -905,7 +914,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE) {
                  histCE=histCE,yearCE=yearCE,initdepl=initdepl,
                  compdat=compdat,recdevs=recdevs,parsin=parsin,optpars=optpars,
                  sizecomp=sizecomp,lffiles=lffiles,poprec=NULL,yearFIS=yearFIS,
-                 fisindexdata=fisindexdata)
+                 fisindexdata=fisindexdata,qfis=qfis)
    projC <- list(projLML=projLML,gauntlet=gauntlet,projyrs=projyrs,
                  Sel=NULL,SelWt=NULL,histCE=histCE)
    outctrl <- list(runlabel,datafile,infile,reps,randomseed,randomseedP,

@@ -1,5 +1,5 @@
 #Tas context -----------------
-# postfixdir <- "BCtest" #
+# postfixdir <- "BCtestFIS" #
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
@@ -27,12 +27,14 @@
 # stablewts = c(0.65, 0.25, 0.1)
 # hcrname="constantrefhcr"  #"constantrefhcr"  #"mcdahcr"     #    #"consthcr"
 # kobeRP = c(0.4,0.2,0.15)
-# interimout=""
+# interimout=rundir
 # nasInterval=5
 # minsizecomp=c(100,135)
 # uplimH=0.35
 # incH=0.005
 # deleteyrs=0
+# prepareforfis=prepTASforfis
+# calcpredfis=estpredfis
 # # # # #
 
 # SA context -------------
@@ -216,11 +218,15 @@
 #' @param deleteyrs default = 0, meaning delete no years from the sizecomp data.
 #'     if there are years that are to be removed then this should be a matrix
 #'     of years to delete vs sau, ie years as rows and sau as columns. All
-#'     sau need to be included. to compelte hte matrix 0 values can be used.
+#'     sau need to be included. to complete the matrix 0 values can be used.
 #' @param selectyr which year's LML should be used to estimate the LML. This
 #'     should be a year index (eg in Tas 1-58). If set = 0, then the LML for
 #'     the glb$hyrs + glb$pyrs, the last year of projections data will be used.
 #'     default = 0
+#' @param prepareforfis a function defined by a Jurisdiction that takes in the
+#'     qfis, and other arguments defined by a juridiction
+#' @param calcpredfis a function defined by a Jurisdiction that calculates the
+#'     predicted fisindex, using arguments defined by a juridiction
 #'
 #' @seealso{
 #'  \link{makeequilzone}, \link{dohistoricC}, \link{prepareprojection},
@@ -240,19 +246,28 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                    wtatL=c(80,200),mincount=100,includeNAS=FALSE,
                    depensate=0,kobeRP=c(0.4,0.2,0.15),nasInterval=5,
                    minsizecomp=c(100,135),uplimH=0.4,incH=0.005,
-                   deleteyrs=0,selectyr=0) {
+                   deleteyrs=0,selectyr=0,prepareforfis=NULL,calcpredfis=NULL) {
 # GENERATE EQUILIBRIUM ZONE -----------------------------------------------
   starttime <- (Sys.time())
   setuphtml(rundir)
-  zone <- makeequilzone(rundir,controlfile,doproduct=TRUE,uplimH=uplimH,
-                        incH=incH,verbose=verbose)
+  if (interimout  == rundir) {
+    outfile <- pathtopath(rundir,paste0("zone.Rdata"))
+    if (file.exists(outfile)) {
+        load(file=outfile)
+      } else {
+        zone <- makeequilzone(rundir,controlfile,doproduct=TRUE,uplimH=uplimH,
+                              incH=incH,verbose=verbose)
+        save(zone,file=outfile)
+        if (verbose) cat("Interim output file saved \n")
+    }
+  } else {
+    zone <- makeequilzone(rundir,controlfile,doproduct=TRUE,uplimH=uplimH,
+                          incH=incH,verbose=verbose)
+  }
   if (verbose) {
     incrtime1 <- Sys.time(); timeinc <- incrtime1 - starttime
     cat("makeequilzone ",timeinc,attr(timeinc,"units"),"\n")
   }
-  #    savefile <- paste0(rundir,"/zone.RData")
-  #    save(zone,file=savefile)
-  #    load(file=savefile)
   # declare main objects ----------------------------------------------------
   glb <- zone$glb
   # if TIMEVARY = 1 modify the content of deltarec
@@ -335,11 +350,13 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
     cat("Conditioning plots completed ",timeinc,attr(timeinc,"units") ,"\n")
   }
   saurecdevs(condC$recdevs,glb,rundir,filen="saurecdevs.png")
+  # FIS tab------------------------------
   if (glb$useFIS) {
     fisout <- plotindices(zoneDD=zoneDD,glb=glb,condC=condC,hsargs=hsargs,
                           rundir=rundir,console=FALSE)
     plotfisfit(condC=condC,predfis=zoneDD$predfis,forfis=hsargs$forfis,
                rundir=rundir,console=FALSE)
+    if (verbose) cat("FIS plots completed \n")
   }
   # predictedcatchN tab-----------------------------------------
   catchN <- zoneDD$catchN
@@ -375,8 +392,9 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   # DO-PROJECTIONS ------------------------------------------------------------
   if (verbose) cat("Preparing for the projections \n")
   outpp <- prepareprojection(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
-                             calcpopC=calcpopC,zoneDD=zoneDD,
-                             ctrl=ctrl,varyrs=varyrs,lastsigR = ctrl$withsigR)
+                             zoneDD=zoneDD,ctrl=ctrl,varyrs=varyrs,
+                             calcpopC=calcpopC,hsargs=hsargs,
+                             lastsigR = ctrl$withsigR)
   zoneDP <- outpp$zoneDP
   projC <- outpp$projC
   zoneCP <- outpp$zoneCP
@@ -391,22 +409,21 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                            sampleFIS=sampleFIS,sampleNaS=sampleNaS,
                            getdata=getdata,calcpopC=calcpopC,
                            makehcrout=makeouthcr,fleetdyn=fleetdyn,verbose=TRUE,
-                           yearFIS=condC$yearFIS,
-                           fisindexdata=condC$fisindexdata)
+                           yearFIS=condC$yearFIS[1],calcpredfis = calcpredfis)
   if (verbose) {
     incrtime1 <- Sys.time(); timeinc <- incrtime1 - incrtime2
     cat("All projections finished ",timeinc,attr(timeinc,"units") ,"\n")
     cat("Now generating final plots and tables \n")
   }
  # GENERATE SCENARIO OUTPUTS------------------------
-  zoneDP=outproj$zoneDP
+  zoneDP <- outproj$zoneDP
   hcrout <- outproj$hcrout
   outhcr <- outproj$outhcr
-  NAS <- list(Nt=zoneDP$Nt,catchN=zoneDP$catchN)
-  zoneDP <- zoneDP[-c(17,16,15)]  # This removes the Nt etc from zoneDP
-  if (nchar(interimout) > 0) {
+  NAS <- list(Nt=zoneDP$Nt,catchN=zoneDP$catchN,sauNumNe=zoneDP$sauNumNe)
+  zoneDP <- zoneDP[-c(20,19,18,12)]  # This removes the Nt etc from zoneDP
+  if ((nchar(interimout) > 0) & (interimout != rundir)) {
     confirmdir(interimout,ask=verbose)
-    outfile <- pathtopath(interimout[1],paste0("temp",interimout[2],".Rdata"))
+    outfile <- pathtopath(interimout[1],paste0("temp_projections.Rdata"))
     if (includeNAS) {
       postprojout <- list(zoneCP=zoneCP,hcrout=hcrout,zoneDP=zoneDP,glb=glb,
                          ctrl=ctrl,condC=condC,constants=constants,NAS=NAS)
@@ -419,6 +436,11 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   }
   B0 <- getvar(zoneC,"B0")
   ExB0 <- getvar(zoneC,"ExB0")
+  # add to FIS tab?------------------------------------
+  if (glb$useFIS) {
+    plotpredfis(predfis=zoneDP$predfis,glb=glb,forfis=hsargs$forfis,
+                rundir=rundir,console=FALSE)
+  }
   # projSAU tab----------------------------------------------------------
   if (verbose) cat("Starting the sau related plots \n")
   sauout <- sauplots(zoneDP,NAS,glb,rundir,B0,ExB0,startyr=startyr,
@@ -527,7 +549,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   names(popmedcpue) <- glb$saunames
   popmeddepleB <- vector(mode="list",length=nSAU)
   names(popmeddepleB) <- glb$saunames
-  for (sau in 1:nSAU) { # sau = 1
+  for (sau in 1:nSAU) { # sau = 2
     saumed <- poplevelplot(rundir=rundir,sau=sau,popvar=zoneDP$catch,glb=glb,
                  label="Catch",console=FALSE)
     popmedcatch[[sau]] <- saumed

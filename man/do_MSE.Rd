@@ -35,7 +35,9 @@ do_MSE(
   uplimH = 0.4,
   incH = 0.005,
   deleteyrs = 0,
-  selectyr = 0
+  selectyr = 0,
+  prepareforfis = NULL,
+  calcpredfis = NULL
 )
 }
 \arguments{
@@ -157,12 +159,18 @@ default = 0.005}
 \item{deleteyrs}{default = 0, meaning delete no years from the sizecomp data.
 if there are years that are to be removed then this should be a matrix
 of years to delete vs sau, ie years as rows and sau as columns. All
-sau need to be included. to compelte hte matrix 0 values can be used.}
+sau need to be included. to complete the matrix 0 values can be used.}
 
 \item{selectyr}{which year's LML should be used to estimate the LML. This
 should be a year index (eg in Tas 1-58). If set = 0, then the LML for
 the glb$hyrs + glb$pyrs, the last year of projections data will be used.
 default = 0}
+
+\item{prepareforfis}{a function defined by a Jurisdiction that takes in the
+qfis, and other arguments defined by a juridiction}
+
+\item{calcpredfis}{a function defined by a Jurisdiction that calculates the
+predicted fisindex, using arguments defined by a juridiction}
 }
 \value{
 a vary large list containing tottime, projtime, starttime, glb, ctrl,

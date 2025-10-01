@@ -20,7 +20,7 @@ doprojections(
   fleetdyn,
   verbose = FALSE,
   yearFIS = NULL,
-  fisindexdata = NULL,
+  calcpredfis = NULL,
   ...
 )
 }
@@ -67,7 +67,10 @@ the sau and populations. Currently not needed by Tas but needed by SA}
 
 \item{yearFIS}{a vector holding the years of the FIS survey}
 
-\item{fisindexdata}{the fisindex data by SAU}
+\item{calcpredfis}{the jurisdiction specific function used to calculate the
+predicted fisindex presumably from the observed fisindex. It is expected
+to update teh values of zoneDP$sauNumNe[,year,,iter],
+zoneDP$fisexB[year,,iter], and zoneDP$predfis[year,,iter]}
 
 \item{...}{the ellipsis used in case any of the functions hcrfun, sampleCE,
 sampleFIS, sampleNas, and getdata require extra arguments not included

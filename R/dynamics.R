@@ -1,5 +1,4 @@
 
-
 #' @title depleteSAU resets zoneD, approximately to an input depletion level
 #'
 #' @description depleteSAU resets the depletion level of the whole
@@ -132,6 +131,8 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,fleetdyn,hsargs,
     selfis <- forfis$selfis
     fissau <- forfis$fissau
     nfis <- length(fissau)
+    qfis <- condC$qfis
+    if ((qfis == 0) | (length(qfis) < nfis)) qfis <- numeric(nfis)
     fisexB <- matrix(0,nrow=nyrfis,ncol=nsau,
                      dimnames=list(yearfis,glob$saunames))
     sauindex <- glob$sauindex
@@ -184,24 +185,30 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,fleetdyn,hsargs,
     zoneDD$Nt[,year,] <- out$NaL
     zoneDD$catchN[,year,] <- out$catchN
     zoneDD$NumNe[,year,] <- out$NumNe
-    if ((glob$useFIS) & (year %in% fisyears)) {
-      for (i in 1:nfis) { #  year=46; sau = 5
-        sau <- fissau[i]
-        yr <- year - fisyears[1] + 1
-        pickC <- which(sauindex == sau)
-        sauNumNe[,yr,sau] <- rowSums(zoneDD$NumNe[,year,pickC])
-        fisexB[yr,sau] <- sum(sauWtL[,i] * selfis[,yr] *
-                              sauNumNe[,yr,sau])/1e06
+    if (glob$useFIS) {
+      if (year %in% fisyears) {
+        for (i in 1:nfis) { #  year=46; sau = 5
+          sau <- fissau[i]
+          yr <- year - fisyears[1] + 1
+          pickC <- which(sauindex == sau)
+          sauNumNe[,yr,sau] <- rowSums(zoneDD$NumNe[,year,pickC])
+          fisexB[yr,sau] <- sum(sauWtL[,i] * selfis[,yr] *
+                                sauNumNe[,yr,sau])/1e06
+        }
       }
     }
   } # year loop
   if (glob$useFIS) { # calculate estimated predfis
     for (i in 1:nfis) { # sau = fissau[1]
       sau <- fissau[i]
-      qfis <- exp(mean(log(fisindex[,sau]/fisexB[,sau]),na.rm=TRUE))
-      predfis[,sau] <- qfis * fisexB[,sau]
+      if (qfis[i] == 0) {
+        qfis[i] <- exp(mean(log(fisindex[,sau]/fisexB[,sau]),na.rm=TRUE))
+      }
+      predfis[,sau] <- qfis[i] * fisexB[,sau]
     }
+    zoneDD$fisindex <- fisindex
     zoneDD$predfis <- predfis
+    zoneDD$qfis <- qfis
   }
   return(zoneDD)
 } # end of dohistoricC
