@@ -36,8 +36,9 @@ do_MSE(
   incH = 0.005,
   deleteyrs = 0,
   selectyr = 0,
+  calcFIS = NULL,
   prepareforfis = NULL,
-  calcpredfis = NULL
+  makefisproj = NULL
 )
 }
 \arguments{
@@ -166,11 +167,15 @@ should be a year index (eg in Tas 1-58). If set = 0, then the LML for
 the glb$hyrs + glb$pyrs, the last year of projections data will be used.
 default = 0}
 
-\item{prepareforfis}{a function defined by a Jurisdiction that takes in the
-qfis, and other arguments defined by a juridiction}
+\item{calcFIS}{default = NULL. jurisdictional function required to calculate
+the annual fisindex, only used when FIS data available}
 
-\item{calcpredfis}{a function defined by a Jurisdiction that calculates the
-predicted fisindex, using arguments defined by a juridiction}
+\item{prepareforfis}{default = NULL. jurisdictional function required to
+prepare for using FIS data, only used when FIS data available}
+
+\item{makefisproj}{default = NULL. jurisdictional function required to
+prepare the constants needed for using FIS data in theprojections, only
+used when FIS data available.}
 }
 \value{
 a vary large list containing tottime, projtime, starttime, glb, ctrl,

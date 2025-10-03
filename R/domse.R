@@ -33,7 +33,6 @@
 # uplimH=0.35
 # incH=0.005
 # deleteyrs=0
-# prepareforfis=prepTASforfis
 # calcpredfis=estpredfis
 # # # # #
 
@@ -223,10 +222,13 @@
 #'     should be a year index (eg in Tas 1-58). If set = 0, then the LML for
 #'     the glb$hyrs + glb$pyrs, the last year of projections data will be used.
 #'     default = 0
-#' @param prepareforfis a function defined by a Jurisdiction that takes in the
-#'     qfis, and other arguments defined by a juridiction
-#' @param calcpredfis a function defined by a Jurisdiction that calculates the
-#'     predicted fisindex, using arguments defined by a juridiction
+#' @param calcFIS default = NULL. jurisdictional function required to calculate
+#'     the annual fisindex, only used when FIS data available
+#' @param prepareforfis default = NULL. jurisdictional function required to
+#'     prepare for using FIS data, only used when FIS data available
+#' @param makefisproj default = NULL. jurisdictional function required to
+#'     prepare the constants needed for using FIS data in theprojections, only
+#'     used when FIS data available.
 #'
 #' @seealso{
 #'  \link{makeequilzone}, \link{dohistoricC}, \link{prepareprojection},
@@ -246,7 +248,8 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                    wtatL=c(80,200),mincount=100,includeNAS=FALSE,
                    depensate=0,kobeRP=c(0.4,0.2,0.15),nasInterval=5,
                    minsizecomp=c(100,135),uplimH=0.4,incH=0.005,
-                   deleteyrs=0,selectyr=0,prepareforfis=NULL,calcpredfis=NULL) {
+                   deleteyrs=0,selectyr=0,calcFIS=NULL,prepareforfis=NULL,
+                   makefisproj=NULL) {
 # GENERATE EQUILIBRIUM ZONE -----------------------------------------------
   starttime <- (Sys.time())
   setuphtml(rundir)
@@ -281,9 +284,9 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   production <- zone$product
   projC <- zone$zone1$projC
   condC <- zone$zone1$condC
+  hsargs$forfis <- NULL
   if (glb$useFIS) { # develop sau based FIS metrics
-    hsargs$forfis <- prepareforfis(condC$fisindexdata,constants,glb,
-                                  hsargs$fispar)
+    hsargs$forfis <- prepareforfis(condC$fisindexdata,glb,hsargs$fispar)
   }
   # biology, recruits, and production tabs -------------------------------------------------
   outbiol <- biology_plots(rundir, glb, zoneC, matL=matureL,Lwt=wtatL)
@@ -305,12 +308,12 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   if (verbose) cat("Conditioning on the Fishery data  \n")
   zoneDD <- dohistoricC(zoneD,zoneC,glob=glb,condC,calcpopC=calcpopC,
                         fleetdyn=fleetdyn,hsargs=hsargs,sigR=1e-08,sigB=1e-08)
-
+# cbind(zoneDD$fisindex[,5],zoneDD$predfis[,5])
   if (verbose) {
     incrtime2 <- Sys.time(); timeinc <- incrtime2 - incrtime1
     cat("dohistoricC ",timeinc,attr(timeinc,"units"),"\n")
   }
-  #pop properties
+    #pop properties
   popprops <- as.data.frame(sapply(zoneC,"[[","popdef"))
   columns <- NULL
   for (sau in 1:glb$nSAU)
@@ -409,7 +412,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                            sampleFIS=sampleFIS,sampleNaS=sampleNaS,
                            getdata=getdata,calcpopC=calcpopC,
                            makehcrout=makeouthcr,fleetdyn=fleetdyn,verbose=TRUE,
-                           yearFIS=condC$yearFIS[1],calcpredfis = calcpredfis)
+                           makefisproj=makefisproj)
   if (verbose) {
     incrtime1 <- Sys.time(); timeinc <- incrtime1 - incrtime2
     cat("All projections finished ",timeinc,attr(timeinc,"units") ,"\n")
@@ -420,7 +423,9 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   hcrout <- outproj$hcrout
   outhcr <- outproj$outhcr
   NAS <- list(Nt=zoneDP$Nt,catchN=zoneDP$catchN,sauNumNe=zoneDP$sauNumNe)
-  zoneDP <- zoneDP[-c(20,19,18,12)]  # This removes the Nt etc from zoneDP
+  pickNAS <-
+    sort(which(names(zoneDP) %in% c("Nt","catchN","NumNe","sauNumNe")),decreasing=TRUE)
+  zoneDP <- zoneDP[-pickNAS]  # This removes the Nt etc from zoneDP
   if ((nchar(interimout) > 0) & (interimout != rundir)) {
     confirmdir(interimout,ask=verbose)
     outfile <- pathtopath(interimout[1],paste0("temp_projections.Rdata"))
@@ -586,7 +591,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
               sauprod=sauprod,zonesummary=zonesummary,
               kobedata=kobedata,outhcr=outhcr,scoremed=scoremed,
               popmedcatch=popmedcatch,popmedcpue=popmedcpue,
-              popmeddepleB=popmeddepleB,pops=pops)
+              popmeddepleB=popmeddepleB,pops=pops,fisproj=outproj$fisproj)
   return(out)
 } # end of do_MSE
 

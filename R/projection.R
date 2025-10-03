@@ -184,12 +184,10 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 #' @param fleetdyn a function that calculates the distribution of catch across
 #'     the sau and populations. Currently not needed by Tas but needed by SA
 #' @param verbose should the iterations be counted on the console?
-#' @param yearFIS a vector holding the years of the FIS survey
-#' @param calcpredfis the jurisdiction specific function used to calculate the
-#'     predicted fisindex presumably from the observed fisindex. It is expected
-#'     to update teh values of zoneDP$sauNumNe[,year,,iter],
-#'     zoneDP$fisexB[year,,iter], and zoneDP$predfis[year,,iter]
-#'
+#' @param makefisproj a jurisdiction specific function entered into do_MSE
+#'     default = NULL.
+#' @param calcFIS default = NULL jurisdictional function required to calculate
+#'     the annual fisindex, only used when FIS data available
 #' @param ... the ellipsis used in case any of the functions hcrfun, sampleCE,
 #'     sampleFIS, sampleNas, and getdata require extra arguments not included
 #'     in the default named collection
@@ -206,22 +204,13 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 #' print("wait on suitable internal data sets")
 doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
                           sampleCE,sampleFIS,sampleNaS,getdata,calcpopC,
-                          makehcrout,fleetdyn,verbose=FALSE,yearFIS=NULL,
-                          calcpredfis=NULL,...) {
-  # ctrl=ctrl; zoneDP=zoneDP; zoneCP=zoneCP; glb=glb; hsargs=hsargs
-  # sampleCE=tasCPUE; sampleFIS=tasFIS; sampleNaS=tasNaS;  getdata=tasdata
-  # calcpopC=calcexpectpopC; verbose=TRUE; fleetdyn=NULL;makehcrout=makeouthcr
-  # yearFIS=condC$yearFIS[1]; hcrfun= constantrefhcr; calcpredfis=estpredfis
+                          makehcrout,fleetdyn,verbose=FALSE,
+                          makefisproj=NULL,calcFIS=NULL,...) {
+# ctrl=ctrl; zoneDP=zoneDP; zoneCP=zoneCP; glb=glb; hsargs=hsargs
+# sampleCE=tasCPUE; sampleFIS=sadFIS; sampleNaS=tasNaS;  getdata=sadData
+# calcpopC=calcexpectpopC; verbose=TRUE; fleetdyn=NULL;makehcrout=sadmakeouthcr
+# yearFIS=condC$yearFIS[1]; hcrfun= sadconstantrefhcr;
   useFIS <- glb$useFIS
-  if (useFIS) { # prepare for using FIS
-    forfis <- hsargs$forfis
-    sauWtL <- forfis$sauWtL
-    tmp <- forfis$selfis
-    selfis <- tmp[,ncol(tmp)]
-    saufis <- forfis$fissau
-    nfis <- length(saufis)
-    fisq <- zoneDP$qfis
-  }
   reps <- ctrl$reps
   sigmar <- ctrl$withsigR
   sigmab <- ctrl$withsigB
@@ -254,6 +243,8 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
       proprec[i,] <- envimpact[["proprec"]][i,sauindex]
     }
   }
+  fisproj <- NULL  # prepare an argument for sadData and sadFIS
+  if (glb$useFIS) fisproj <- makefisproj(zoneDP,hsargs,glb)
   outhcr <- makehcrout(glb,hsargs)
   for (year in startyr:endyr) { # iter=1; year=59
     if (verbose) cat(yrnames[year]," ")
@@ -264,9 +255,9 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
                          saucatch=as.matrix(zoneDP$catsau[,,iter]),
                          sauNAS=list(Nt=zoneDP$Nt[,,,iter],
                          catchN=zoneDP$catchN[,,,iter],
-                         NumNe=zoneDP$NumNe[,,,iter]),year=year,
+                         zoneDP$sauNumNe[,,,iter]),year=year,iter=iter,
                          decrement=hsargs$decrement,startCE=hsargs$startCE,
-                         startfis=yearFIS)
+                         fisindex=zoneDP$fisindex,fisproj=fisproj)
       hcrout <- hcrfun(hcrdata,hsargs,glb=glb,projyear=year,outhcr=outhcr,
                        iter=iter)
       outhcr <- hcrout$outhcr  # needed so it is updated each iteration
@@ -300,19 +291,16 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
       zoneDP$NumNe[,year,,iter] <- outy$NumNe
       zoneDP$TAC[year,iter] <- hcrout$TAC
       if (useFIS) {
-        outfis <- calcpredfis(fisq=fisq,sauNumNe=zoneDP$sauNumNe[,year,,iter],
-                              NumNe <- zoneDP$NumNe[,year,,iter],
-                              fisexB=zoneDP$fisexB[year,,iter],
-                              predfis=zoneDP$predfis[year,,iter],
-                              forfis=hsargs$forfis,
-                              sauindex=sauindex,year=year,iter=iter)
-        zoneDP$sauNumNe[,year,,iter] <- outfis$sauNumNe
-        zoneDP$fisexB[year,,iter] <- outfis$fisexB
-        zoneDP$predfis[year,,iter] <- outfis$predfis
+        fissau <- fisproj$fissau
+        outfis <- calcFIS(inNumNe=zoneDP$NumNe[,year,,iter],fisproj=fisproj)
+        zoneDP$sauNumNe[,year,fissau,iter] <- outfis$sauNum
+        zoneDP$fisNums[year,fissau,iter] <- outfis$fisNums
+        zoneDP$fisindex[year,fissau,iter] <- outfis$fisindex
+        zoneDP$predfis[year,fissau,iter] <- outfis$predfis
       } # end of last useFIS loop
     } # year loop
   }   # iter loop
-  return(list(zoneDP=zoneDP,outhcr=outhcr,hcrout=hcrout))
+  return(list(zoneDP=zoneDP,outhcr=outhcr,hcrout=hcrout,fisproj=fisproj))
 } # end of doprojections
 
 #' @title makezoneDP generates the container for the projection dynamics
@@ -351,15 +339,7 @@ makezoneDP <- function(allyr,iter,glb) { #  projyr=nyrs;iter=reps;glb=glob
   cpue <- array(0,dim=c(allyr,numpop,iter),dimnames=namedims)
   cesau <- array(0,dim=c(allyr,nSAU,iter),
                  dimnames=list(yrnames,saunames,1:iter))
-  predfis <- fisindex <- fisexB <- sauNumNe <- NULL
-  if (glb$useFIS) {  # only present if a FIS is used
-    fisexB <- array(0,dim=c(allyr,nSAU,iter),
-                    dimnames=list(yrnames,saunames,1:iter))
-    predfis <- array(0,dim=c(allyr,nSAU,iter),
-                    dimnames=list(yrnames,saunames,1:iter))
-    sauNumNe <-array(data=0,dim=c(N,allyr,nSAU,iter),
-                      dimnames=list(glb$midpts,yrnames,glb$saunames,1:iter))
-  }
+  predfis <- fisindex <- fisNums <- sauNumNe <- NULL
   catsau <- array(0,dim=c(allyr,nSAU,iter),
                   dimnames=list(yrnames,saunames,1:iter))
   recruit <- array(0,dim=c(allyr,numpop,iter),dimnames=namedims)
@@ -369,11 +349,23 @@ makezoneDP <- function(allyr,iter,glb) { #  projyr=nyrs;iter=reps;glb=glob
   Nt <- array(data=0,dim=c(N,allyr,numpop,iter),dimnames=namendims)
   NumNe <- array(data=0,dim=c(N,allyr,numpop,iter),dimnames=namendims)
   TAC <- array(0,dim=c(allyr,iter),dimnames=list(yrnames,1:iter))
-  zoneDP <- list(SAU=SAU,matureB=MatB,exploitB=ExplB,midyexpB=midyexpB,catch=catch,
-                 acatch=acatch,harvestR=harvest,cpue=cpue,cesau=cesau,
-                 predfis=predfis,fisexB=fisexB,sauNumNe=sauNumNe,catsau=catsau,
+  fisindex <- sauNumNe <- NULL
+  zoneDP <- list(SAU=SAU,matureB=MatB,exploitB=ExplB,midyexpB=midyexpB,
+                 catch=catch,acatch=acatch,harvestR=harvest,cpue=cpue,
+                 cesau=cesau,fisindex=fisindex,catsau=catsau,
                  recruit=recruit,deplsB=deplSpB,depleB=deplExB,TAC=TAC,Nt=Nt,
-                 NumNe=NumNe,catchN=catchN)
+                 NumNe=NumNe,catchN=catchN,sauNumNe=sauNumNe)
+  if (glb$useFIS) {  # only present if a FIS is used
+    predfis <- fisNums <- fisindex <- array(0,dim=c(allyr,nSAU,iter),
+                                        dimnames=list(yrnames,saunames,1:iter))
+    sauNumNe <-array(data=0,dim=c(N,allyr,nSAU,iter),
+                     dimnames=list(glb$midpts,yrnames,glb$saunames,1:iter))
+    zoneDP <- list(SAU=SAU,matureB=MatB,exploitB=ExplB,midyexpB=midyexpB,
+                   catch=catch,acatch=acatch,harvestR=harvest,cpue=cpue,
+                   cesau=cesau,fisindex=fisindex,predfis=predfis,catsau=catsau,
+                   recruit=recruit,deplsB=deplSpB,depleB=deplExB,TAC=TAC,Nt=Nt,
+                   NumNe=NumNe,catchN=catchN,fisNums=fisNums,sauNumNe=sauNumNe)
+  }
   return(zoneDP=zoneDP)
 } # end of makezoneDP
 
@@ -530,18 +522,19 @@ sumpops <- function(invar,sauindex,saunames) { #invar=zoneDP$matureB
 #' print("wait on suitable data-sets")
 addrecvar <- function(zoneDD,zoneC,glob,condC,ctrl,varyrs,calcpopC,
                       fleetdyn,hsargs,sigR=1e-08,sigB=1e-08,lastsigR=0.3) {
-  #  zoneDD=zoneDD;zoneC=zoneC;glob=glb; calcpopC=calcpopC
-  #  condC=condC;ctrl=ctrl;varyrs=7;lastsigR=lastsigR;
-  #  sigR=1e-08; sigB=1e-08; fleetdyn=NULL
+   # zoneDD=zoneDD;zoneC=zoneC;glob=glb; calcpopC=calcpopC
+   # condC=condC;ctrl=ctrl;varyrs=7;lastsigR=0.3;
+   # sigR=1e-08; sigB=1e-08; fleetdyn=NULL
   if (glob$useFIS) { # prepare for using FIS
     forfis <- hsargs$forfis
-    sauWtL <- forfis$sauWtL
     yearfis <- forfis$yearfis
     lastsel <- length(yearfis)
     selfis <- forfis$selfis[,lastsel]
     fissau <- forfis$fissau
     nfis <- length(fissau)
     qfis <- zoneDD$qfis
+    startfis <- forfis$fisstart[2]
+    fispar <- hsargs$fispar
   }
   sauindex <- glob$sauindex
   histC <- condC$histCatch
@@ -551,30 +544,31 @@ addrecvar <- function(zoneDD,zoneC,glob,condC,ctrl,varyrs,calcpopC,
   pyrs <- glob$pyrs
   totyr <- hyrs + pyrs
   reps <- ctrl$reps
-  zoneDDR <- makezoneDP(totyr,reps,glob)
+  zoneDDR <- makezoneDP(totyr,reps,glob) # this is the big one
   r0 <- getvar(zoneC,"R0") #sapply(zoneC,"[[","R0")
   b0 <- getvar(zoneC,"B0") #sapply(zoneC,"[[","B0")
-  exb0 <- getvar(zoneC,"ExB0")
+  exb0 <- getvar(zoneC,"ExB0")  # now copy across all that does not change
   zoneDDR$matureB[1:finalyr,,] <- zoneDD$matureB[1:finalyr,]
   zoneDDR$exploitB[1:finalyr,,] <- zoneDD$exploitB[1:finalyr,]
   zoneDDR$midyexpB[1:finalyr,,] <- zoneDD$midyexpB[1:finalyr,]
   zoneDDR$catch[1:finalyr,,] <- zoneDD$catch[1:finalyr,]
   zoneDDR$harvestR[1:finalyr,,] <- zoneDD$harvestR[1:finalyr,]
   zoneDDR$cpue[1:finalyr,,] <- zoneDD$cpue[1:finalyr,]
-  if (glob$useFIS) {
-    picktmp <- match(yearfis,yrs[1:finalyr])
-    picky <- picktmp[!is.na(picktmp)]
-    lenpicky <- length(picky)    # load initial predfis in all fis years
-    for (i in 1:reps) zoneDDR$predfis[picky,,i] <- zoneDD$predfis[1:lenpicky,]
-    zoneDDR$qfis <- qfis
-  }
   zoneDDR$recruit[1:finalyr,,] <- zoneDD$recruit[1:finalyr,]
   zoneDDR$deplsB[1:finalyr,,] <- zoneDD$deplsB[1:finalyr,]
   zoneDDR$depleB[1:finalyr,,] <- zoneDD$depleB[1:finalyr,]
   zoneDDR$catchN[,1:finalyr,,] <- zoneDD$catchN[,1:finalyr,]
   zoneDDR$Nt[,1:finalyr,,] <- zoneDD$Nt[,1:finalyr,]
   zoneDDR$NumNe[,1:finalyr,,] <- zoneDD$NumNe[,1:finalyr,]
-  for (i in 1:finalyr) { # i = 1
+  if (glob$useFIS) {
+    zoneDDR$fisindex[startfis:hyrs,,] <- zoneDD$fisindex
+    zoneDDR$qfis <- qfis
+    DDfinalyr <- nrow(zoneDD$fisindex) - varyrs
+    zoneDDR$sauNumNe[,startfis:finalyr,,] <- zoneDD$sauNumNe[,1:DDfinalyr,]
+    zoneDDR$fisNums[startfis:finalyr,,] <- zoneDD$fisNums[1:DDfinalyr,]
+    zoneDDR$predfis[startfis:finalyr,,] <- zoneDD$predfis[1:DDfinalyr,]
+  }
+  for (i in 1:finalyr) { # i = 1  # now include recruitment variation
     zoneDDR$acatch[i,,] <- tapply(zoneDD$catch[i,],sauindex,sum,na.rm=TRUE)
     saudyn <- poptosauCE(zoneDD$catch[i,],zoneDD$cpue[i,],sauindex)
     zoneDDR$cesau[i,,] <- saudyn$saucpue
@@ -587,7 +581,6 @@ addrecvar <- function(zoneDD,zoneC,glob,condC,ctrl,varyrs,calcpopC,
       hcrout <- list(acatch=catchsau) # attention needed in other jurisdictions
       histCE <- condC$histCE
       ceyrs <- condC$yearCE
-      catchsau <- histC[year,]
       if (yrs[year] %in% ceyrs) {
         pickyr <- which(yrs[year] == ceyrs)
         cpuesau <- histCE[pickyr,]
@@ -623,15 +616,15 @@ addrecvar <- function(zoneDD,zoneC,glob,condC,ctrl,varyrs,calcpopC,
       zoneDDR$catchN[,year,,iter] <- out$catchN
       zoneDDR$NumNe[,year,,iter] <- out$NumNe
       if (glob$useFIS) {
-        for (i in 1:nfis) { #  year=46; sau = 5
+        for (i in 1:nfis) { #  year=46; sau = 5; i = 1
           sau <- fissau[i]  # update the predfis with added recvar
           pickC <- which(sauindex == sau)
           zoneDDR$sauNumNe[,year,sau,iter] <-
                                 rowSums(zoneDDR$NumNe[,year,pickC,iter])
-          zoneDDR$fisexB[year,sau,iter] <- sum(sauWtL[,i] * selfis *
-                                   zoneDDR$sauNumNe[,year,sau,iter])/1e06
+          zoneDDR$fisNums[year,sau,iter] <- sum(selfis *
+                                   zoneDDR$sauNumNe[,year,sau,iter])
           zoneDDR$predfis[year,sau,iter] <-
-                                   qfis[i] * zoneDDR$fisexB[year,sau,iter]
+                                   qfis[i] * zoneDDR$fisNums[year,sau,iter]
         }
       } # last useFIS loop
     }  # year loop

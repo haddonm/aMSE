@@ -19,8 +19,8 @@ doprojections(
   makehcrout,
   fleetdyn,
   verbose = FALSE,
-  yearFIS = NULL,
-  calcpredfis = NULL,
+  makefisproj = NULL,
+  calcFIS = NULL,
   ...
 )
 }
@@ -65,12 +65,11 @@ the sau and populations. Currently not needed by Tas but needed by SA}
 
 \item{verbose}{should the iterations be counted on the console?}
 
-\item{yearFIS}{a vector holding the years of the FIS survey}
+\item{makefisproj}{a jurisdiction specific function entered into do_MSE
+default = NULL.}
 
-\item{calcpredfis}{the jurisdiction specific function used to calculate the
-predicted fisindex presumably from the observed fisindex. It is expected
-to update teh values of zoneDP$sauNumNe[,year,,iter],
-zoneDP$fisexB[year,,iter], and zoneDP$predfis[year,,iter]}
+\item{calcFIS}{default = NULL jurisdictional function required to calculate
+the annual fisindex, only used when FIS data available}
 
 \item{...}{the ellipsis used in case any of the functions hcrfun, sampleCE,
 sampleFIS, sampleNas, and getdata require extra arguments not included

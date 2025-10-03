@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotfuns.r
 \name{plotpredfis}
 \alias{plotpredfis}
-\title{plotfisfit compares the observed fis with the predicted for each sau}
+\title{plotpredfis compares the observed fis with the predicted for each sau}
 \usage{
 plotpredfis(predfis, glb, forfis, rundir = "", console = TRUE)
 }
@@ -22,7 +22,7 @@ do_MSE}
 Nothing but it does generate a plot for each SAU with FIS data
 }
 \description{
-plotfisfit plots the observed and predicted FIS for each SAU
+plotpredfis plots the observed and predicted FIS for each SAU
     combioned with a residual plot in each case (sau)
 }
 \examples{

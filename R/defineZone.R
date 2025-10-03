@@ -831,7 +831,7 @@ makezone <- function(glob,zoneC) { # glob=glb; zoneC=zoneC;
   ans <- list(SAU=SAU,matureB=MatB,exploitB=ExplB,midyexpB=midyexpB,
               catch=Catch,harvestR=Harvest,cpue=cpue,recruit=Recruit,
               deplsB=deplSpB,depleB=deplExB,catchN=CatchN,Nt=Nt,NumNe=NumNe,
-              predfis=NULL)  # predfis is a placeholder
+              fisindex=NULL) # fisindex default to NULL in absence of FIS
   return(list(zoneD=ans,zoneC=zoneC))
 } # end of makezone
 
@@ -971,6 +971,7 @@ popsdefine <- function(const,glob) {
   if (any(test < 0)) stop("L95 < L50 - adjust the input data file  \n")
   return(popdefs)
 } # end of popsdefinepops
+
 
 
 #' @title print.zoneDefinition S3 method for printing zonedef summary

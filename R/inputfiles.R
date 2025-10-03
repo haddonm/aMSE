@@ -846,7 +846,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE) {
        }
        rownames(fisindexdata) <- yearFIS
      }
-     picksau <- which(colSums(fisindexdata,na.rm=TRUE) > 0)
+     picksau <- which(colSums(fisindexdata[,1:nSAU],na.rm=TRUE) > 0)
      nfis <- length(picksau)
      fisse <- numeric(nfis); names(fisse) <- colnames(fisindexdata)[picksau]
      if (nfis > 0) {
@@ -858,13 +858,7 @@ readctrlfile <- function(rundir,infile="control.csv",verbose=TRUE) {
          fisse[i] <- getrmse(dat)$rmse
        }
      }
-     qfis <- getsingleNum("qfis",indat)
-     if (is.null(qfis)) {
-       qfis <- 0
-     } else {
-       begin <- grep("qfis",indat)
-       qfis <- as.numeric(unlist(strsplit(indat[begin+1],",")))
-     }
+     qfis <- numeric(nfis)  # define a space for qfis
    } # end of !is.null(yrfis)
    # get sizecomp data---------------------
    lffiles <- NULL

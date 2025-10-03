@@ -120,24 +120,23 @@ depleteSAU <- function(zoneC,zoneD,glob,initdepl,product,len=15) {
 dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,fleetdyn,hsargs,
                         sigR=1e-08,sigB=1e-08) {
   nsau <- glob$nSAU
-  if (glob$useFIS) { # prepare for using FIS
+  if (glob$useFIS) { # prepare for using FIS.
     fisindex <- condC$fisindexdata[,1:nsau]
-    predfis <- fisindex
+    predfis <- fisindex  # just to make space
     forfis <- hsargs$forfis
     yearfis <- forfis$yearfis
-    nyrfis <- length(yearfis)
-    fisyears <- match(yearfis, glob$hyrnames)
-    sauWtL <- forfis$sauWtL
+    nyrfis <- length(yearfis) # years from fisstart to hyrs
+    fisyears <- forfis$whichyrfis # index for actual years where fis occurred
+    fisyrnames <- yearfis[fisyears - fisyears[1] + 1]
     selfis <- forfis$selfis
     fissau <- forfis$fissau
     nfis <- length(fissau)
     qfis <- condC$qfis
-    if ((qfis == 0) | (length(qfis) < nfis)) qfis <- numeric(nfis)
-    fisexB <- matrix(0,nrow=nyrfis,ncol=nsau,
-                     dimnames=list(yearfis,glob$saunames))
     sauindex <- glob$sauindex
     sauNumNe <- array(data=0,dim=c(glob$Nclass,nyrfis,nsau),
                       dimnames=list(glob$midpts,yearfis,glob$saunames))
+    fisNums <- matrix(0,nrow=nyrfis,ncol=nsau,
+                      dimnames=list(yearfis,glob$saunames))
   }
   histC <- condC$histCatch
   yrs <- condC$histyr[,"year"]
@@ -149,6 +148,7 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,fleetdyn,hsargs,
   r0 <- getvar(zoneC,"R0") #sapply(zoneC,"[[","R0")
   b0 <- getvar(zoneC,"B0") #sapply(zoneC,"[[","B0")
   exb0 <- getvar(zoneC,"ExB0")
+ # zoneDD$fisindex <- NULL # default when no fis
   for (year in 2:nyrs) {  # year=46  # ignores the initial unfished year
     catchsau <- histC[year,]
     if (yrs[year] %in% ceyrs) {
@@ -186,15 +186,12 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,fleetdyn,hsargs,
     zoneDD$catchN[,year,] <- out$catchN
     zoneDD$NumNe[,year,] <- out$NumNe
     if (glob$useFIS) {
-      if (year %in% fisyears) {
-        for (i in 1:nfis) { #  year=46; sau = 5
-          sau <- fissau[i]
-          yr <- year - fisyears[1] + 1
-          pickC <- which(sauindex == sau)
-          sauNumNe[,yr,sau] <- rowSums(zoneDD$NumNe[,year,pickC])
-          fisexB[yr,sau] <- sum(sauWtL[,i] * selfis[,yr] *
-                                sauNumNe[,yr,sau])/1e06
-        }
+      for (i in 1:nfis) { #  year=46; sau = 5; i=1
+        sau <- fissau[i]
+        yr <- year - fisyears[1] + 1  # recalibrate matrix indices
+        pickC <- which(sauindex == sau)
+        sauNumNe[,yr,sau] <- rowSums(zoneDD$NumNe[,year,pickC])
+        fisNums[yr,sau] <- sum(selfis[,yr] * sauNumNe[,yr,sau])
       }
     }
   } # year loop
@@ -202,13 +199,16 @@ dohistoricC <- function(zoneDD,zoneC,glob,condC,calcpopC,fleetdyn,hsargs,
     for (i in 1:nfis) { # sau = fissau[1]
       sau <- fissau[i]
       if (qfis[i] == 0) {
-        qfis[i] <- exp(mean(log(fisindex[,sau]/fisexB[,sau]),na.rm=TRUE))
+        qfis[i] <- exp(mean(log(fisindex[,sau]/fisNums[,sau]),
+                            na.rm=TRUE))
       }
-      predfis[,sau] <- qfis[i] * fisexB[,sau]
+      predfis[,sau] <- qfis[i] * fisNums[,sau]
     }
     zoneDD$fisindex <- fisindex
     zoneDD$predfis <- predfis
     zoneDD$qfis <- qfis
+    zoneDD$sauNumNe <- sauNumNe
+    zoneDD$fisNums <- fisNums
   }
   return(zoneDD)
 } # end of dohistoricC

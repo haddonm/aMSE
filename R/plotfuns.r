@@ -809,7 +809,7 @@ plotfisfit <- function(condC,predfis,forfis,rundir="",console=TRUE) {
   fisindex <- condC$fisindexdata
   plts <- pickbound(nfis)
   fissaunames <- names(fissau)
-  for (i in 1:nfis) {
+  for (i in 1:nfis) { # i =1
     filen <- ""
     if (!console) {
       nfile <- paste0(fissaunames[i],"_Fit_of_FIS_to_obsFIS.png")
@@ -841,6 +841,7 @@ plotfisfit <- function(condC,predfis,forfis,rundir="",console=TRUE) {
                         paste0(colnames(fisindex[,fissau]),"pred"))
   return(invisible(fisdat))
 } # end of plotfisfit
+
 
 #' @title plothistcatch generates a plot of the historical catches by SAU
 #'
@@ -1169,9 +1170,9 @@ plotpopprops <- function(x,rundir,glb,varnames,startyr,console=TRUE,bins=25) {
   }
 } # end of plotpopprops
 
-#' @title plotfisfit compares the observed fis with the predicted for each sau
+#' @title plotpredfis compares the observed fis with the predicted for each sau
 #'
-#' @description plotfisfit plots the observed and predicted FIS for each SAU
+#' @description plotpredfis plots the observed and predicted FIS for each SAU
 #'     combioned with a residual plot in each case (sau)
 #'
 #' @param predfis the predicted fis values during conditioning
