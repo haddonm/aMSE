@@ -399,6 +399,13 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                              calcpopC=calcpopC,hsargs=hsargs,
                              lastsigR = ctrl$withsigR)
   zoneDP <- outpp$zoneDP
+
+  ## new from CM
+  temp <- zoneDP$acatch
+  temp[] <- 0
+  zoneDP$flagstate <- zoneDP$closedyrs <- zoneDP$recovyrs <- temp
+  rm(temp)
+
   projC <- outpp$projC
   zoneCP <- outpp$zoneCP
   if (verbose) {

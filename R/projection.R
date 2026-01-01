@@ -252,6 +252,9 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
       hcrdata <- getdata(sampleCE,sampleFIS,sampleNaS,
                          sauCPUE=as.matrix(zoneDP$cesau[,,iter]),
                          sauacatch=as.matrix(zoneDP$acatch[,,iter]),
+                         sauflagstate=as.matrix(zoneDP$flagstate[,,iter]), #CM added for recov Plan
+                         sauclosedyrs=as.matrix(zoneDP$closedyrs[,,iter]), #CM added for recov Plan
+                         saurecovyrs=as.matrix(zoneDP$recovyrs[,,iter]), #CM added for recov Plan
                          saucatch=as.matrix(zoneDP$catsau[,,iter]),
                          sauNAS=list(Nt=zoneDP$Nt[,,,iter],
                          catchN=zoneDP$catchN[,,,iter],
@@ -279,6 +282,11 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
       zoneDP$matureB[year,,iter] <- dyn["matureb",]
       zoneDP$catch[year,,iter] <- dyn["catch",]
       zoneDP$acatch[year,,iter] <- calcpopCout$acatch
+
+      zoneDP$flagstate[year,,iter] <- calcpopCout$flagstate #CM added for recov Plan
+      zoneDP$closedyrs[year,,iter] <- calcpopCout$closedyrs #CM added for recov Plan
+      zoneDP$recovyrs[year,,iter] <- calcpopCout$recovyrs #CM added for recov Plan
+
       zoneDP$catsau[year,,iter] <- saudyn$saucatch
       zoneDP$harvestR[year,,iter] <- dyn["catch",]/dyn["midyexpB",]
       zoneDP$cpue[year,,iter] <- dyn["cpue",]
