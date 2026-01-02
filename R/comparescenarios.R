@@ -1708,6 +1708,7 @@ plotdynvarinyear <- function(rundir,dyn,whichvar,whichyr,glb,bins=15,
 #' # pickvar <- "acatch"
 #' # res <- getrateofchange(dyn=dyn,whichvar=pickvar,glb=glb)
 #' # filen <- plotrateofchange(rundir=rundir,res=res,whichvar=pickvar,glb=glb)
+#' # rundir=rundir; res=res;whichvar=pickvar;glb=glb;console=TRUE
 plotrateofchange <- function(rundir,res,whichvar,glb,console=TRUE) {
   scenes <- names(res)
   nscen <- length(scenes)
@@ -1721,28 +1722,41 @@ plotrateofchange <- function(rundir,res,whichvar,glb,console=TRUE) {
   for (sau in 1:nsau) {
     for (scen in 1:nscen) {
       tmp <- res[[scen]]$pdiffer[,sau]
-      yrge <- range(tmp)
+      if (any(tmp %in% c(NaN,Inf))) {
+        picknum <- which(tmp %in% c(NaN,Inf))
+        yrge <- range(tmp[-picknum])
+      } else {
+        yrge <- range(tmp,na.rm=TRUE)
+      }
       outy[sau,1] <- ifelse((yrge[1] < outy[sau,1]),yrge[1],outy[sau,1])
       outy[sau,2] <- ifelse((yrge[2] > outy[sau,2]),yrge[2],outy[sau,2])
     }
   }
   outy[,1] <- floor(outy[,1])
   outy[,2] <- ceiling(outy[,2])
-  outy
+#  outy
   yrs <- as.numeric(projyrs[2:pyrs])
   fname <- paste0(whichvar,"_rate_of_change_across_scenarios")
   fname1 <- paste0(fname,".png")
   filen <- pathtopath(rundir,fname1)
   if (console) filen=""
-  plotprep(width=9,height=8,newdev=FALSE,filename=filen,verbose=FALSE)
+  plotprep(width=9,height=8,newdev=TRUE,filename=filen,verbose=FALSE)
   parset(plots=pickbound(nsau),margin=c(0.2,0.4,0.1,0.1),outmargin=c(0,1,0,0),
          byrow=FALSE)
-  for (sau in 1:nsau) {
+  for (sau in 1:nsau) { # sau=8
     tmp <- res[[1]]$pdiffer[,sau]
+    if (any(tmp %in% c(NaN,Inf))) {
+      picknum <- which(tmp %in% c(NaN,Inf))
+      tmp[picknum] <- outy[sau,1]
+    }
     plot(yrs,tmp,type="l",lwd=2,col=1,ylab=saunames[sau],ylim=outy[sau,],xlab="")
     abline(h=0,lwd=1,col=1)
     for (scen in 2:nscen) {
       tmp <- res[[scen]]$pdiffer[,sau]
+      if (any(tmp %in% c(NaN,Inf))) {
+        picknum <- which(tmp %in% c(NaN,Inf))
+        tmp[picknum] <- outy[sau,1]
+      }
       lines(yrs,tmp,lwd=2,col=scen)
     }
     if (sau == 1) legend("topright",scenes,lwd=3,col=1:nscen,bty="n",cex=1)

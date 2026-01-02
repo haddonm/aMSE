@@ -36,6 +36,7 @@ plotrateofchange produces a plot of the percent changes within
 # pickvar <- "acatch"
 # res <- getrateofchange(dyn=dyn,whichvar=pickvar,glb=glb)
 # filen <- plotrateofchange(rundir=rundir,res=res,whichvar=pickvar,glb=glb)
+# rundir=rundir; res=res;whichvar=pickvar;glb=glb;console=TRUE
 }
 \seealso{
 \link{getrateofchange}, \link{do_comparison}

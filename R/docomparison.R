@@ -75,9 +75,9 @@
 do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
                           intensity=100,zero=FALSE,Q90=TRUE,altscenes=NULL,
                           juris="",ribbonleg="topleft",scencol=NULL,...) {
-  # rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(2,3,4,5)
+  # rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(1,2)
   #  verbose=TRUE; intensity=100; zero=FALSE; altscenes=NULL
-  #  juris="";ribbonleg="topleft"; Q90=TRUE; scencol=c(1,2,3,4)
+  #  juris="";ribbonleg="topleft"; Q90=TRUE; scencol=c(1,2)
   # get files -------------------
   files2 <- files[pickfiles]
   nfile <- length(pickfiles)

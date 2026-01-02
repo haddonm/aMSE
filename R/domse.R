@@ -422,7 +422,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                            makefisproj=makefisproj)
   if (verbose) {
     incrtime1 <- Sys.time(); timeinc <- incrtime1 - incrtime2
-    cat("All projections finished ",timeinc,attr(timeinc,"units") ,"\n")
+    cat("\n All projections finished ",timeinc,attr(timeinc,"units") ,"\n")
     cat("Now generating final plots and tables \n")
   }
  # GENERATE SCENARIO OUTPUTS------------------------

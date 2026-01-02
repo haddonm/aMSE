@@ -53,5 +53,5 @@ makeequilzone is a high level function that merely hides the
 \examples{
 print("wait on datafiles")
  #  rundir=rundir;ctrlfile=controlfile; verbose=TRUE;
- #  selectyr=0;uplimH=0.35;incH=0.005;doproduct=FALSE;
+ #  selectyr=0;uplimH=0.35;incH=0.005;doproduct=TRUE;
 }

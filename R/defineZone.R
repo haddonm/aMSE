@@ -556,7 +556,7 @@ makeabpop <- function(popparam,midpts,initLML) {
 #' @examples
 #' print("wait on datafiles")
 #'  #  rundir=rundir;ctrlfile=controlfile; verbose=TRUE;
-#'  #  selectyr=0;uplimH=0.35;incH=0.005;doproduct=FALSE;
+#'  #  selectyr=0;uplimH=0.35;incH=0.005;doproduct=TRUE;
 makeequilzone <- function(rundir,ctrlfile="control.csv",doproduct=TRUE,
                           selectyr=0,uplimH=0.4,incH=0.005,verbose=TRUE) {
   zone1 <- readctrlfile(rundir,infile=ctrlfile,verbose=verbose)
@@ -698,7 +698,7 @@ makezoneC <- function(zone,const) { # zone=zone1; const=constants
   # rownames(initialLML) <- glb$hyrnames
   projlml <- cbind(glb$pyrnames,zone$projC$projLML)
   rownames(projlml) <- glb$pyrnames
-  colnames(projlml) <- c("year","histLML","MaxLML")
+  if (ncol(projlml) == 3) colnames(projlml) <- c("year","histLML","MaxLML")
   if (zone$catches > 0) {
     initialLML <- rbind(zone$condC$histyr,projlml)
   } else {
