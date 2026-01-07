@@ -9,6 +9,7 @@ makeequilzone(
   ctrlfile = "control.csv",
   doproduct = TRUE,
   selectyr = 0,
+  lowlim = 0.005,
   uplimH = 0.4,
   incH = 0.005,
   verbose = TRUE
@@ -30,6 +31,10 @@ during the conditioning. Set to FALSE conditionOM}
 should be a year index (eg in Tas 1-58). If set = 0, then the LML for
 the glb$hyrs, the last year of conditioning data will be used.
 default = 0}
+
+\item{lowlim}{defines the lower limit of harvest rate used when estimating
+the productivity The default = 0.005 but during testing could be
+increased to perhaps 0.2 to speed things up.}
 
 \item{uplimH}{defines the upper limit of harvest used when estimating the
 productivity (also important when initial depletion is not 1.0). The

@@ -542,6 +542,9 @@ makeabpop <- function(popparam,midpts,initLML) {
 #'     should be a year index (eg in Tas 1-58). If set = 0, then the LML for
 #'     the glb$hyrs, the last year of conditioning data will be used.
 #'     default = 0
+#' @param lowlim defines the lower limit of harvest rate used when estimating
+#'     the productivity The default = 0.005 but during testing could be
+#'     increased to perhaps 0.2 to speed things up.
 #' @param uplimH defines the upper limit of harvest used when estimating the
 #'     productivity (also important when initial depletion is not 1.0). The
 #'     default = 0.4
@@ -558,7 +561,8 @@ makeabpop <- function(popparam,midpts,initLML) {
 #'  #  rundir=rundir;ctrlfile=controlfile; verbose=TRUE;
 #'  #  selectyr=0;uplimH=0.35;incH=0.005;doproduct=TRUE;
 makeequilzone <- function(rundir,ctrlfile="control.csv",doproduct=TRUE,
-                          selectyr=0,uplimH=0.4,incH=0.005,verbose=TRUE) {
+                          selectyr=0,lowlim=0.005,uplimH=0.4,incH=0.005,
+                          verbose=TRUE) {
   zone1 <- readctrlfile(rundir,infile=ctrlfile,verbose=verbose)
   ctrl <- zone1$ctrl
   glb <- zone1$globals     # glb without the movement matrix
@@ -578,8 +582,8 @@ makeequilzone <- function(rundir,ctrlfile="control.csv",doproduct=TRUE,
     saudat <- constants
   }
   if (verbose) cat("Files read, now making zone \n")
-  out <- setupzone(constants,zone1,doproduct,selectyr=selectyr,uplim=uplimH,
-                    inc=incH,verbose=verbose) # make operating model
+  out <- setupzone(constants,zone1,doproduct,selectyr=selectyr,lowlim=lowlim,
+                   uplim=uplimH,inc=incH,verbose=verbose) # make OM
   zoneC <- out$zoneC
   zoneD <- out$zoneD
   glb <- out$glb             # glb now has the movement matrix
@@ -876,7 +880,7 @@ maturity <- function(ina,inb,lens) {
 #' @param selectyr which year's LML should be used to estimate the LML. This
 #'     is set in makeequilzone. If set = 0, the default, then the LML for
 #'     the glb$hyrs, the last year of conditioning data will be used.
-#' @param lowlim the lower limit of harvest rate applied, default=0.0
+#' @param lowlim the lower limit of harvest rate applied, default=0.005
 #' @param uplim the upper limit of harvest rate applied, default=0.4
 #' @param inc the harvest rate increment at each step, default=0.005
 #'
@@ -896,7 +900,7 @@ maturity <- function(ina,inb,lens) {
 #'   ans2 <- modzoneC(zoneC,zoneD,glb)
 #'   str(ans2,max.level=2)
 #' }   # zoneC=zoneC; zoneD=zoneD; glob=glb; lowlim=0.0;uplim=0.4;inc=0.01
-modzoneC <- function(zoneC,zoneD,glob,selectyr,lowlim=0.0,uplim=0.4,inc=0.005) {
+modzoneC <- function(zoneC,zoneD,glob,selectyr,lowlim=0.005,uplim=0.4,inc=0.005) {
   numpop <- glob$numpop
   production <- doproduction(zoneC=zoneC,zoneD=zoneD,glob=glob,
                              selectyr=selectyr,lowlim=lowlim,uplim=uplim,
@@ -1157,6 +1161,9 @@ runthreeH <- function(zoneC,zoneD,inHarv,glob,selectyr,maxiter=2) {
 #' @param selectyr which year's LML should be used to estimate the LML. This
 #'     is set in makeequilzone. If set = 0, the default, then the LML for
 #'     the glb$hyrs, the last year of conditioning data will be used.
+#' @param lowlim defines the lower limit of harvest rate used when estimating
+#'     the productivity The default = 0.005 but during testing could be
+#'     increased to perhaps 0.2 to speed things up.
 #' @param uplim the upper limit of harvest rate applied, default=0.4
 #' @param inc the harvest rate increment at each step, default=0.005
 #' @param verbose Should progress comments be printed to console, default=TRUE
@@ -1176,7 +1183,7 @@ runthreeH <- function(zoneC,zoneD,inHarv,glob,selectyr,maxiter=2) {
 #' str(glb)
 #' }
 setupzone <- function(constants,zone1,doproduct,selectyr,
-                      uplim=0.4,inc=0.005,verbose=TRUE) {
+                      lowlim=0.005,uplim=0.4,inc=0.005,verbose=TRUE) {
   # constants=constants; zone1=zone1; doproduct=TRUE; uplim=0.35; inc=0.005;
   # verbose=TRUE; selectyr=0
   ans <- makezoneC(zone1,constants) # initiates zoneC
@@ -1188,12 +1195,12 @@ setupzone <- function(constants,zone1,doproduct,selectyr,
   product <- NULL
   if (doproduct) {
     if (verbose)
-      cat("Now estimating population productivity between H ",inc," and ",
-          uplim, "\n")
+      cat("Now estimating population productivity between H ",lowlim," and ",
+          uplim, " in steps of ",inc, "\n")
     if (selectyr == 0) selectyr <- glb$hyrs + glb$pyrs
     # adds productivity, and MSY, MSYdepl to zoneC if doproduct=TRUE
     ans <- modzoneC(zoneC=zoneC,zoneD=zoneD,glob=glb,selectyr=selectyr,
-                    uplim=uplim,inc=inc)
+                    lowlim=lowlim,uplim=uplim,inc=inc)
     zoneC <- ans$zoneC  # zone constants
     product <- ans$product  # productivity by population
   }

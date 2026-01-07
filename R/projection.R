@@ -283,9 +283,9 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
       zoneDP$catch[year,,iter] <- dyn["catch",]
       zoneDP$acatch[year,,iter] <- calcpopCout$acatch
 
-      zoneDP$flagstate[year,,iter] <- calcpopCout$flagstate #CM added for recov Plan
-      zoneDP$closedyrs[year,,iter] <- calcpopCout$closedyrs #CM added for recov Plan
-      zoneDP$recovyrs[year,,iter] <- calcpopCout$recovyrs #CM added for recov Plan
+      zoneDP$flagstate[year,,iter] <- calcpopCout$flagstate #CM added for recov
+      zoneDP$closedyrs[year,,iter] <- calcpopCout$closedyrs #CM added for recov
+      zoneDP$recovyrs[year,,iter] <- calcpopCout$recovyrs   #CM added for recov
 
       zoneDP$catsau[year,,iter] <- saudyn$saucatch
       zoneDP$harvestR[year,,iter] <- dyn["catch",]/dyn["midyexpB",]
@@ -335,24 +335,24 @@ makezoneDP <- function(allyr,iter,glb) { #  projyr=nyrs;iter=reps;glb=glob
   N <- glb$Nclass
   SAU <- glb$SAUnum
   yrnames <- c(glb$hyrnames,glb$pyrnames)
-  namedims <- list(yrnames,1:numpop,1:iter)
-  namendims <- list(glb$midpts,yrnames,1:numpop,1:iter)
+  namedims <- list(yrnames,1:numpop,1:iter) # by pop
+  saudims <- list(yrnames,1:nSAU,1:iter)    # by SAU
+  namendims <- list(glb$midpts,yrnames,1:numpop,1:iter) # by midpts x pop
   MatB <- array(0,dim=c(allyr,numpop,iter),dimnames=namedims)
   ExplB <- array(0,dim=c(allyr,numpop,iter),dimnames=namedims)
   midyexpB <- array(0,dim=c(allyr,numpop,iter),dimnames=namedims)
   catch <- array(0,dim=c(allyr,numpop,iter),dimnames=namedims)
-  acatch <- array(0,dim=c(allyr,nSAU,iter),
-                  dimnames=list(yrnames,saunames,1:iter)) #aspirational catches
   harvest <- array(0,dim=c(allyr,numpop,iter),dimnames=namedims)
   cpue <- array(0,dim=c(allyr,numpop,iter),dimnames=namedims)
-  cesau <- array(0,dim=c(allyr,nSAU,iter),
-                 dimnames=list(yrnames,saunames,1:iter))
-  predfis <- fisindex <- fisNums <- sauNumNe <- NULL
-  catsau <- array(0,dim=c(allyr,nSAU,iter),
-                  dimnames=list(yrnames,saunames,1:iter))
   recruit <- array(0,dim=c(allyr,numpop,iter),dimnames=namedims)
   deplSpB <- array(0,dim=c(allyr,numpop,iter),dimnames=namedims)
   deplExB <- array(0,dim=c(allyr,numpop,iter),dimnames=namedims)
+  acatch <- array(0,dim=c(allyr,nSAU,iter), dimnames=saudims)
+  catsau <- array(0,dim=c(allyr,nSAU,iter),dimnames=saudims)
+  cesau <- array(0,dim=c(allyr,nSAU,iter),dimnames=saudims)
+  recovyrs <- array(0,dim=c(allyr,nSAU,iter),dimnames=saudims)
+  closedyrs <- flagstate <- recovyrs
+  predfis <- fisindex <- fisNums <- sauNumNe <- NULL
   catchN <- array(data=0,dim=c(N,allyr,numpop,iter),dimnames=namendims)
   Nt <- array(data=0,dim=c(N,allyr,numpop,iter),dimnames=namendims)
   NumNe <- array(data=0,dim=c(N,allyr,numpop,iter),dimnames=namendims)
@@ -361,18 +361,20 @@ makezoneDP <- function(allyr,iter,glb) { #  projyr=nyrs;iter=reps;glb=glob
   zoneDP <- list(SAU=SAU,matureB=MatB,exploitB=ExplB,midyexpB=midyexpB,
                  catch=catch,acatch=acatch,harvestR=harvest,cpue=cpue,
                  cesau=cesau,fisindex=fisindex,catsau=catsau,
-                 recruit=recruit,deplsB=deplSpB,depleB=deplExB,TAC=TAC,Nt=Nt,
-                 NumNe=NumNe,catchN=catchN,sauNumNe=sauNumNe)
+                 recruit=recruit,deplsB=deplSpB,depleB=deplExB,TAC=TAC,
+                 recovyrs=recovyrs,closedyrs=closedyrs,flagstate=flagstate,
+                 Nt=Nt,NumNe=NumNe,catchN=catchN,sauNumNe=sauNumNe)
   if (glb$useFIS) {  # only present if a FIS is used
-    predfis <- fisNums <- fisindex <- array(0,dim=c(allyr,nSAU,iter),
-                                        dimnames=list(yrnames,saunames,1:iter))
+    predfis <- array(0,dim=c(allyr,nSAU,iter),dimnames=saudims)
+    fisNums <- fisindex <- predfis
     sauNumNe <-array(data=0,dim=c(N,allyr,nSAU,iter),
                      dimnames=list(glb$midpts,yrnames,glb$saunames,1:iter))
     zoneDP <- list(SAU=SAU,matureB=MatB,exploitB=ExplB,midyexpB=midyexpB,
                    catch=catch,acatch=acatch,harvestR=harvest,cpue=cpue,
                    cesau=cesau,fisindex=fisindex,predfis=predfis,catsau=catsau,
-                   recruit=recruit,deplsB=deplSpB,depleB=deplExB,TAC=TAC,Nt=Nt,
-                   NumNe=NumNe,catchN=catchN,fisNums=fisNums,sauNumNe=sauNumNe)
+                   recruit=recruit,deplsB=deplSpB,depleB=deplExB,TAC=TAC,
+                   recovyrs=recovyrs,closedyrs=closedyrs,flagstate=flagstate,
+                   Nt=Nt,NumNe=NumNe,catchN=catchN,sauNumNe=sauNumNe)
   }
   return(zoneDP=zoneDP)
 } # end of makezoneDP

@@ -1,4 +1,43 @@
 
+#' @title anyclosed determines if any SAU experienced closure in the projections
+#'
+#' @description anyclosed is used to determine whether any of the SAU have a
+#'     closure during any of the replicates. It identifies which replicates for
+#'     each SAU experienced a closure so that their dynamics within zoneDP can
+#'     be compared with the dynamics of those replicates that did not have a
+#'     closure. Currently, the assumption is that there can only ever be a
+#'     single closure in any single replicate.
+#'
+#' @param zoneDP the zoneDP object following projections
+#' @param glb the globals object
+#'
+#' @returns a list of a boolean, closed, and a list of the replicates within
+#'     each SAU that had a closure where the components of that list are
+#'     either NULL or a vector of indices.
+#' @export
+#'
+#' @examples
+#' # syntax outclosed <- anyclosed(out$zoneDP,out$glb)
+anyclosed <- function(zoneDP,glb) {
+  reps <- glb$reps
+  nsau <- glb$nSAU
+  saunames <- glb$saunames
+  pickclosed <- makelist(saunames)
+  closedyrs <- zoneDP$closedyrs[glb$hyrs:(glb$hyrs + glb$pyrs),,]
+  for(sau in 1:nsau) { # sau = 1
+    tmp <- apply(closedyrs[,sau,],2,countgtzero)
+    pickc <- which(tmp > 0)
+    if (length(pickc) > 0) {
+      pickclosed[[sau]] <- pickc
+    } else {
+      pickclosed[[sau]] <- NULL
+    }
+  }
+  closed <- FALSE
+  if (sum(unlist(lapply(pickclosed,length))) > 0) closed <- TRUE
+  return(invisible(list(closed=closed,pickclosed=pickclosed)))
+}  # end of anyclosed
+
 #' @title biology_plots generates a series of stored plots and tables
 #'
 #' @description biology_plots generates the yield vs spawning biomass,

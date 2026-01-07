@@ -1,9 +1,9 @@
 #Tas context -----------------
-# postfixdir <- "BCtestFIS" #
+# postfixdir <- "newTasHS" #
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
-# hcrfun= constantrefhcr  #mcdahcr   #  # consthcr   #constantrefhcr
+# hcrfun= newcrhcr #constantrefhcr  #mcdahcr   #  # consthcr   #constantrefhcr
 # sampleCE=tasCPUE
 # sampleFIS=tasFIS
 # sampleNaS=tasNaS
@@ -25,15 +25,16 @@
 # depensate=0
 # pmwtSwitch = 4
 # stablewts = c(0.65, 0.25, 0.1)
-# hcrname="constantrefhcr"  #"constantrefhcr"  #"mcdahcr"     #    #"consthcr"
+# hcrname=  "newTasHS" #"constantrefhcr"  #"constantrefhcr"  #"mcdahcr"     #    #"consthcr"
 # kobeRP = c(0.4,0.2,0.15)
 # interimout=rundir
 # nasInterval=5
 # minsizecomp=c(100,135)
+# lowlim=0.2
 # uplimH=0.35
 # incH=0.005
 # deleteyrs=0
-# calcpredfis=estpredfis
+# calcfis=NULL
 # # # # #
 
 # SA context -------------
@@ -209,6 +210,9 @@
 #'     class to be used when plotting the predicted size-composition of the
 #'     stock, and the second being the minimum size-class when plotting the
 #'     numbers-at-size in the catch. The default=c(100,135)
+#' @param lowlim defines the lower limit of harvest rate used when estimating
+#'     the productivity The default = 0.005 but during testing could be
+#'     increased to perhaps 0.2 to speed things up.
 #' @param uplimH defines the upper limit of harvest rate used when estimating
 #'     the productivity (also important when initial depletion is not 1.0). The
 #'     default = 0.4
@@ -247,7 +251,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                    verbose=FALSE,ndiagprojs=3,cutcatchN=56,matureL=c(70,200),
                    wtatL=c(80,200),mincount=100,includeNAS=FALSE,
                    depensate=0,kobeRP=c(0.4,0.2,0.15),nasInterval=5,
-                   minsizecomp=c(100,135),uplimH=0.4,incH=0.005,
+                   minsizecomp=c(100,135),lowlim=0.005,uplimH=0.4,incH=0.005,
                    deleteyrs=0,selectyr=0,calcFIS=NULL,prepareforfis=NULL,
                    makefisproj=NULL) {
 # GENERATE EQUILIBRIUM ZONE -----------------------------------------------
@@ -258,14 +262,14 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
     if (file.exists(outfile)) {
         load(file=outfile)
       } else {
-        zone <- makeequilzone(rundir,controlfile,doproduct=TRUE,uplimH=uplimH,
-                              incH=incH,verbose=verbose)
+        zone <- makeequilzone(rundir,controlfile,doproduct=TRUE,lowlim=lowlim,
+                              uplimH=uplimH,incH=incH,verbose=verbose)
         save(zone,file=outfile)
         if (verbose) cat("Interim output file saved \n")
     }
   } else {
-    zone <- makeequilzone(rundir,controlfile,doproduct=TRUE,uplimH=uplimH,
-                          incH=incH,verbose=verbose)
+    zone <- makeequilzone(rundir,controlfile,doproduct=TRUE,lowlim=lowlim,
+                          uplimH=uplimH,incH=incH,verbose=verbose)
   }
   if (verbose) {
     incrtime1 <- Sys.time(); timeinc <- incrtime1 - starttime
@@ -399,13 +403,6 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                              calcpopC=calcpopC,hsargs=hsargs,
                              lastsigR = ctrl$withsigR)
   zoneDP <- outpp$zoneDP
-
-  ## new from CM
-  temp <- zoneDP$acatch
-  temp[] <- 0
-  zoneDP$flagstate <- zoneDP$closedyrs <- zoneDP$recovyrs <- temp
-  rm(temp)
-
   projC <- outpp$projC
   zoneCP <- outpp$zoneCP
   if (verbose) {
@@ -462,6 +459,57 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   if (verbose) {
     incrtime2 <- Sys.time(); timeinc <- incrtime2 - incrtime1
     cat("Finished all sau plots ",timeinc,attr(timeinc,"units"),"\n")
+  }
+  # closure tab---------------------------------------------------------
+  outclosed <- anyclosed(zoneDP,glb)
+  if (outclosed$closed) {
+    if (verbose) cat("Starting the closures tab \n")
+     pickclosed <- outclosed$pickclosed
+     tmp <- unlist(lapply(pickclosed,is.null))
+     pickC <- which(tmp == FALSE)
+     nclose <- length(pickC)
+     saunames <- glb$saunames
+     useyrs <- glb$hyrs:(glb$hyrs + glb$pyrs)
+     yrs <- c(glb$pyrnames[1]-1,glb$pyrnames)
+     reps <- glb$reps
+     for (i in 1:nclose) { # i = 6
+       namesau <- saunames[pickC[i]]
+       filename <- paste0("comp_closed_",namesau,".png")
+       filen <- pathtopath(rundir,filename)  # filen=""
+       plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
+       parset(plots=c(4,2))
+       # cpue
+       cpue <- sauout$cpue[useyrs,,]
+       label <- paste0("CPUE ",namesau)
+       whichclosed <- pickclosed[[pickC[i]]]
+       plotclosed(invar=cpue,whichclosed=whichclosed,sau=pickC[i],yrs=yrs,
+                  reps=reps,label=label)
+       # catch
+       catch <- sauout$catch[useyrs,,]
+       label <- paste0("Catch ",namesau)
+       whichclosed <- pickclosed[[pickC[i]]]
+       plotclosed(invar=catch,whichclosed=whichclosed,sau=pickC[i],yrs=yrs,
+                  reps=reps,label=label,
+                  hline=sauprod$sauprod["MSY",pickC[i]]*hsargs$LRP)
+       #deplsB
+       deplsB <- sauout$deplsB[useyrs,,]
+       label <- paste0("DepletionSB ",namesau)
+       whichclosed <- pickclosed[[pickC[i]]]
+       plotclosed(invar=deplsB,whichclosed=whichclosed,sau=pickC[i],yrs=yrs,
+                  reps=reps,label=label)
+       #harvestR
+       harvestR <- sauout$harvestR[useyrs,,]
+       label <- paste0("harvestR ",namesau)
+       whichclosed <- pickclosed[[pickC[i]]]
+       plotclosed(invar=harvestR,whichclosed=whichclosed,sau=pickC[i],yrs=yrs,
+                  reps=reps,label=label)
+       caption <- paste0("The cpue, catch, deplsB, and hsrvestR  projections ",
+                         "for each SAU comparing the closed replicates with ",
+                         "those that remained open.")
+       addplot(filen,rundir=rundir,category="closure",caption)
+     } # end of nclose loop
+  } else {
+    if (verbose) cat("No closures occurred, no closures tab \n")
   }
   # catchN tab------------------------------------------------------
   if (verbose) cat("Starting size-composition plots \n")

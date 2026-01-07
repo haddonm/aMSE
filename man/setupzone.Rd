@@ -9,6 +9,7 @@ setupzone(
   zone1,
   doproduct,
   selectyr,
+  lowlim = 0.005,
   uplim = 0.4,
   inc = 0.005,
   verbose = TRUE
@@ -25,6 +26,10 @@ during the conditioning. defined in do_MSE and makeequilzone}
 \item{selectyr}{which year's LML should be used to estimate the LML. This
 is set in makeequilzone. If set = 0, the default, then the LML for
 the glb$hyrs, the last year of conditioning data will be used.}
+
+\item{lowlim}{defines the lower limit of harvest rate used when estimating
+the productivity The default = 0.005 but during testing could be
+increased to perhaps 0.2 to speed things up.}
 
 \item{uplim}{the upper limit of harvest rate applied, default=0.4}
 

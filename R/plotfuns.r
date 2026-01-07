@@ -272,7 +272,7 @@ dosau <- function(inzone,glb,picksau,histCE,histCatch,yrnames,recdev) {
 dosauplot <- function(ylabel,postrep,glb,startyr,addCI=FALSE,
                       CIprobs=c(0.05,0.5,0.95),histCE=NULL,addCE=FALSE,
                       hlin=NULL) {
-  # ylabel="Catch";postrep=zonePsau[["harvestR"]];glb=glb; addCE=FALSE
+  # ylabel="Catch";postrep=sauout[["harvestR"]];glb=glb; addCE=FALSE
   # startyr=startyr;histCE=NULL; CIprobs=c(0.05,0.5,0.95); addCI=NULL
   label <- glb$saunames
   nsau <- glb$nSAU
@@ -651,6 +651,49 @@ phaseplotpolygons <- function(maxy,maxx=1.0,targx=0.4,limx=0.2,limy=0.175) {
   abline(h=limy,lwd=2,col=1)
   abline(v=targx,lwd=2,col=1)
 } # end of phaseplotpolygons
+
+#' @title plotclosed generates two plots of the closed and open replicates
+#'
+#' @description plotclosed is used if any sau experiences clsosures at any time
+#'     in any replicate. For a selected variable from sauout, which includes
+#'     matureB, exploitB, midyexpB, catch, acatch, harvestR, cpue, recruit,
+#'     deplsB, and depleB, it plots replicates that included closures and then
+#'     plots those without closures for the the same sau. The outputs are sent
+#'     to the closure tab. If no closures then no closure tab. Each pair of
+#'     plots have the same y-axis scale to make comparisons simpler.
+#'
+#' @param invar which variable from sauout to plot
+#' @param whichclosed which replicates are closed
+#' @param sau which sau are we plotting
+#' @param yrs what years to plot hyrs : (hyrs + pyrs)
+#' @param reps the total number of replicates from glb
+#' @param label the ylabel usually invarname + sauname
+#' @param hline shoudl a horizontal reference line be included. default = 0
+#'
+#' @returns nothing but it does generate two plots
+#' @export
+#'
+#' @examples
+#' # syntax plotclosed(invar=cpue,whichclosed=whichclosed,sau=pickC[i],yrs=yrs,
+#' #                   label=label)
+plotclosed <- function(invar,whichclosed,sau,yrs,reps,label,hline=0) {
+  numC <- length(whichclosed)
+  usevar1 <- invar[,sau,whichclosed]
+  usevar2 <- invar[,sau,-whichclosed]
+  maxy1 <- getmax(usevar1)
+  maxy2 <- getmax(usevar2)
+  maxy <- max(maxy1,maxy2)
+  plot(yrs,usevar1[,1],type="l",col="grey",xlab="",ylab=label,
+       ylim=c(0,maxy),yaxs="i",panel.first=grid())
+  if (numC > 1) for (i in 2:numC) lines(yrs,usevar1[,i],lwd=1,col="grey")
+  if (hline > 0) abline(h=hline,lwd=2,col=2)
+  plot(yrs,usevar2[,1],type="l",col="grey",xlab="",ylab=label,
+       ylim=c(0,maxy),yaxs="i",panel.first=grid())
+  if ((reps - numC) > 1) {
+    for (i in 2:(reps - numC)) lines(yrs,usevar2[,i],lwd=1,col="grey")
+  }
+  if (hline > 0) abline(h=hline,lwd=2,col=2)
+} # end of plotclosed
 
 #' @title plotCNt plots the historical conditioning Nt or catchN for all years
 #'

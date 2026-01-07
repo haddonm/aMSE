@@ -32,6 +32,7 @@ do_MSE(
   kobeRP = c(0.4, 0.2, 0.15),
   nasInterval = 5,
   minsizecomp = c(100, 135),
+  lowlim = 0.005,
   uplimH = 0.4,
   incH = 0.005,
   deleteyrs = 0,
@@ -149,6 +150,10 @@ Used by predsizecomp function inside do_MSE.}
 class to be used when plotting the predicted size-composition of the
 stock, and the second being the minimum size-class when plotting the
 numbers-at-size in the catch. The default=c(100,135)}
+
+\item{lowlim}{defines the lower limit of harvest rate used when estimating
+the productivity The default = 0.005 but during testing could be
+increased to perhaps 0.2 to speed things up.}
 
 \item{uplimH}{defines the upper limit of harvest rate used when estimating
 the productivity (also important when initial depletion is not 1.0). The

@@ -4,7 +4,15 @@
 \alias{modzoneC}
 \title{modzoneC runs the zone 3 x hyrs to equilibrium}
 \usage{
-modzoneC(zoneC, zoneD, glob, selectyr, lowlim = 0, uplim = 0.4, inc = 0.005)
+modzoneC(
+  zoneC,
+  zoneD,
+  glob,
+  selectyr,
+  lowlim = 0.005,
+  uplim = 0.4,
+  inc = 0.005
+)
 }
 \arguments{
 \item{zoneC}{the constant components of the simulated zone}
@@ -17,7 +25,7 @@ modzoneC(zoneC, zoneD, glob, selectyr, lowlim = 0, uplim = 0.4, inc = 0.005)
 is set in makeequilzone. If set = 0, the default, then the LML for
 the glb$hyrs, the last year of conditioning data will be used.}
 
-\item{lowlim}{the lower limit of harvest rate applied, default=0.0}
+\item{lowlim}{the lower limit of harvest rate applied, default=0.005}
 
 \item{uplim}{the upper limit of harvest rate applied, default=0.4}
 
