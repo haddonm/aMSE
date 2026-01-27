@@ -679,20 +679,21 @@ phaseplotpolygons <- function(maxy,maxx=1.0,targx=0.4,limx=0.2,limy=0.175) {
 plotclosed <- function(invar,whichclosed,sau,yrs,reps,label,hline=0) {
   numC <- length(whichclosed)
   usevar1 <- invar[,sau,whichclosed]
-  usevar2 <- invar[,sau,-whichclosed]
   maxy1 <- getmax(usevar1)
-  maxy2 <- getmax(usevar2)
-  maxy <- max(maxy1,maxy2)
   plot(yrs,usevar1[,1],type="l",col="grey",xlab="",ylab=label,
-       ylim=c(0,maxy),yaxs="i",panel.first=grid())
+       ylim=c(0,maxy1),yaxs="i",panel.first=grid())
   if (numC > 1) for (i in 2:numC) lines(yrs,usevar1[,i],lwd=1,col="grey")
   if (hline > 0) abline(h=hline,lwd=2,col=2)
-  plot(yrs,usevar2[,1],type="l",col="grey",xlab="",ylab=label,
-       ylim=c(0,maxy),yaxs="i",panel.first=grid())
-  if ((reps - numC) > 1) {
-    for (i in 2:(reps - numC)) lines(yrs,usevar2[,i],lwd=1,col="grey")
-  }
-  if (hline > 0) abline(h=hline,lwd=2,col=2)
+  if (numC < reps) {
+    usevar2 <- invar[,sau,-whichclosed]
+    maxy2 <- getmax(usevar2)
+    plot(yrs,usevar2[,1],type="l",col="grey",xlab="",ylab=label,
+         ylim=c(0,maxy2),yaxs="i",panel.first=grid())
+    if ((reps - numC) > 1) {
+      for (i in 2:(reps - numC)) lines(yrs,usevar2[,i],lwd=1,col="grey")
+    }
+    if (hline > 0) abline(h=hline,lwd=2,col=2)
+  } else { plotnull(msg="All replicates closed")}
 } # end of plotclosed
 
 #' @title plotCNt plots the historical conditioning Nt or catchN for all years
