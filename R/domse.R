@@ -462,7 +462,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   }
   # closure tab---------------------------------------------------------
   outclosed <- anyclosed(zoneDP,glb)
-  if (outclosed$closed) {
+  if (outclosed$closed) { # check if any are closed
     if (verbose) cat("Starting the closures tab \n")
      pickclosed <- outclosed$pickclosed
      tmp <- unlist(lapply(pickclosed,is.null))
@@ -476,7 +476,8 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
        namesau <- saunames[pickC[i]]
        filename <- paste0("comp_closed_",namesau,".png")
        filen <- pathtopath(rundir,filename)  # filen=""
-       plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,verbose=FALSE)
+       plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,
+                verbose=FALSE)
        parset(plots=c(4,2))
        # cpue
        cpue <- sauout$cpue[useyrs,,]

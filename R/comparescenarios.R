@@ -1790,6 +1790,7 @@ plotrateofchange <- function(rundir,res,whichvar,glb,console=TRUE) {
 #'
 #' @examples
 #'  print("wait on internal datasets")
+#'  #
 plotscene <- function(scenquant,glbc,var="cpue",ymin=0,filen="",
                       legloc="topleft",legplot=1,qnt=90) {
   scenes <- names(scenquant)

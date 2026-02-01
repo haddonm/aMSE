@@ -45,4 +45,5 @@ plotscene takes the output from comparevar and plots the
 }
 \examples{
  print("wait on internal datasets")
+ #
 }

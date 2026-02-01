@@ -252,9 +252,9 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
       hcrdata <- getdata(sampleCE,sampleFIS,sampleNaS,
                          sauCPUE=as.matrix(zoneDP$cesau[,,iter]),
                          sauacatch=as.matrix(zoneDP$acatch[,,iter]),
-                         sauflagstate=as.matrix(zoneDP$flagstate[,,iter]), #CM added for recov Plan
-                         sauclosedyrs=as.matrix(zoneDP$closedyrs[,,iter]), #CM added for recov Plan
-                         saurecovyrs=as.matrix(zoneDP$recovyrs[,,iter]), #CM added for recov Plan
+                         sauflagstate=as.matrix(zoneDP$flagstate[,,iter]), #CM + for recov Plan
+                         sauclosedyrs=as.matrix(zoneDP$closedyrs[,,iter]), #CM + for recov Plan
+                         saurecovyrs=as.matrix(zoneDP$recovyrs[,,iter]), #CM + for recov Plan
                          saucatch=as.matrix(zoneDP$catsau[,,iter]),
                          sauNAS=list(Nt=zoneDP$Nt[,,,iter],
                          catchN=zoneDP$catchN[,,,iter],
