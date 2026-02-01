@@ -206,10 +206,6 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
                           sampleCE,sampleFIS,sampleNaS,getdata,calcpopC,
                           makehcrout,fleetdyn,verbose=FALSE,
                           makefisproj=NULL,calcFIS=NULL,...) {
-# ctrl=ctrl; zoneDP=zoneDP; zoneCP=zoneCP; glb=glb; hsargs=hsargs
-# sampleCE=tasCPUE; sampleFIS=sadFIS; sampleNaS=tasNaS;  getdata=sadData
-# calcpopC=calcexpectpopC; verbose=TRUE; fleetdyn=NULL;makehcrout=sadmakeouthcr
-# yearFIS=condC$yearFIS[1]; hcrfun= sadconstantrefhcr;
   useFIS <- glb$useFIS
   reps <- ctrl$reps
   sigmar <- ctrl$withsigR
@@ -246,7 +242,7 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
   fisproj <- NULL  # prepare an argument for sadData and sadFIS
   if (glb$useFIS) fisproj <- makefisproj(zoneDP,hsargs,glb)
   outhcr <- makehcrout(glb,hsargs)
-  for (year in startyr:endyr) { # iter=1; year=59
+  for (year in startyr:endyr) { # iter=1; year=61
     if (verbose) cat(yrnames[year]," ")
       for (iter in 1:reps) { # iter=1
       hcrdata <- getdata(sampleCE,sampleFIS,sampleNaS,

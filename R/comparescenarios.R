@@ -1793,6 +1793,8 @@ plotrateofchange <- function(rundir,res,whichvar,glb,console=TRUE) {
 #'  #
 plotscene <- function(scenquant,glbc,var="cpue",ymin=0,filen="",
                       legloc="topleft",legplot=1,qnt=90) {
+  # scenquant=compscen$quantscen;glbc=glbc;var=invar;ymin=0;filen=filename
+  # legloc="topleft";legplot=1;qnt=90
   scenes <- names(scenquant)
   nscen <- length(scenes)
   saunames <- names(scenquant[[1]])
@@ -1802,7 +1804,7 @@ plotscene <- function(scenquant,glbc,var="cpue",ymin=0,filen="",
   maxy <- matrix(0,nrow=nscen,ncol=nsau)
   for (i in 1:nscen) {
     qval <- scenquant[[i]]
-    for (j in 1:nsau) maxy[i,j] <- max(qval[[j]])
+    for (j in 1:nsau) maxy[i,j] <- getmax(qval[[j]],mult=1.0)
   }
   ymax <- apply(maxy,2,max)
   doplots=pickbound(nsau)

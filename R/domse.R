@@ -30,6 +30,7 @@
 # interimout=rundir
 # nasInterval=5
 # minsizecomp=c(100,135)
+# closedC=0
 # lowlim=0.2
 # uplimH=0.35
 # incH=0.005
