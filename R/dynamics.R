@@ -779,7 +779,7 @@ oneyearrec <- function(steep,R0,B0,Bsp,sigR,devR=-1,depensate=0) { #
   } else {
     epsilon <- exp(rnorm(length(Bsp),mean=0,sd=sigR) - (sigR * sigR)/2)
   }
-  if ((depensate > 0)) { # not yet implemented
+  if ((depensate > 0) & (Bsp/B0 < depensate)) { # linear implemented
     bcurr <- B0 * depensate
     thres <- ((4*steep*R0*bcurr)/((1-steep)*B0+(5*steep-1)*bcurr))
     rec <- ((Bsp/B0)/depensate) * thres * epsilon
