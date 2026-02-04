@@ -586,9 +586,10 @@ oneyearcatF <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
 #'     TIMEVARY, 1, then deltarec is a linear decline of recruitment from
 #'     1 x predicted to whatever value is input in the line following the
 #'     TIMEVARY keyword. eg deltarec,0.6 would be seq(1.0,0.6,length=pyrs)
-#'
 #' @param useF should harvest rates or instantaneous rates be used,
 #'     default = 0, which means use harvest rates
+#' @param depensate = at what depletion level should depensation occur. default
+#'     = 0 = no depensation
 #'
 #' @seealso{
 #'  \link{dohistoricC}, \link{oneyearcat}, \link{oneyearrec},
@@ -600,13 +601,9 @@ oneyearcatF <- function(MatWt,SelWt,selyr,Me,G,scalece,WtL,inNt,incat,sigce,
 #'
 #' @examples
 #' print("Wait on new data")
-#' # zoneCC=zoneC;inN=inN;popC=calcpopCout$popC;year=year
-#' # Ncl=glob$Nclass;sauindex=sauindex;movem=glob$move;sigmar=sigR;sigce=1e-08;
-#' # r0=r0;b0=b0;exb0=exb0;rdev=rdev;envyr=NULL;envsurv=NULL;envrec=NULL;
-#' # fisindexdata=condC$fisindexdata;useF=glob$useF
 oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,movem,sigmar,
                         sigce=1e-08,r0,b0,exb0,rdev=-1,envyr,envsurv,envrec,
-                        deltarec=NULL,useF=0) {
+                        deltarec=NULL,useF=0,depensate=0) {
   npop <- length(popC)
   ans <- vector("list",npop)
   survP <- 1.0
@@ -631,23 +628,25 @@ oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,movem,sigmar,
                                 inNt=(inN[,popn] * survP),incat=popC[popn],
                                 sigce=sigce,lambda=pop$lambda,qest=pop$qest)
     }
-  }
+  } # end of pop loop
   dyn <- sapply(ans,"[[","vect")
   steep <- getvect(zoneCC,"steeph") #sapply(zoneC,"[[","popdef")["steeph",]
   if (year %in% envyr) {
     rdev <- -1
     recs <- oneyearrec(steep,r0,b0,dyn["matureb",],
-                       sigR=sigmar/10,devR=rdev) * proprec
+                       sigR=sigmar/10,devR=rdev,depensate=depensate) * proprec
   } else {
     if (is.null(deltarec)) {
       if (rdev[1] > 0) rdev <- rdev[sauindex]
-      recs <- oneyearrec(steep,r0,b0,dyn["matureb",],sigR=sigmar,devR=rdev)
+      recs <- oneyearrec(steep,r0,b0,dyn["matureb",],sigR=sigmar,devR=rdev,
+                         depensate=depensate)
     } else {
       rdev <- -1
       whichyr <- as.numeric(names(deltarec))
       pickyr <- which(whichyr == year)
       recs <- oneyearrec(steep,r0,b0,dyn["matureb",],
-                         sigR=sigmar,devR=rdev) * deltarec[pickyr]
+                         sigR=sigmar,devR=rdev,depensate=depensate) *
+                         deltarec[pickyr]
     }
   }
   recruits <- as.numeric(movem %*% recs)
@@ -668,7 +667,7 @@ oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,movem,sigmar,
 #'     of activity included in each of its components. This uses zoneC
 #'     but always within the environment of another function in which
 #'     zoneC (as zoneC) can be found. Used in runthreeH, and hence
-#'     in doproduction, and in testequil.
+#'     in doproduction, and in testequil. Only used with equilbrium stock
 #'
 #' @param zoneC the constant portion of the zone with a list of
 #'     properties for each population
@@ -685,7 +684,6 @@ oneyearsauC <- function(zoneCC,inN,popC,year,Ncl,sauindex,movem,sigmar,
 #'     1 is the year of initiation.
 #' @param sigmar the variation in recruitment dynamics, set to 1e-08
 #'     when searching for equilibria.
-
 #' @param npop the number of populations, the global numpop
 #' @param movem the larval dispersal movement matrix
 #'
@@ -716,8 +714,8 @@ oneyearD <- function(zoneC,zoneD,Ncl,selectyr,inHt,year,sigmar,npop,movem) {
   }
   steep <- getvect(zoneC,"steeph") #sapply(zoneC,"[[","popdef")["steeph",]
   r0 <- getvar(zoneC,"R0") #sapply(zoneC,"[[","R0")
-  b0 <- getvar(zoneC,"B0") #sapply(zoneC,"[[","B0")
-  recs <- oneyearrec(steep,r0,b0,matb,sigR=sigmar,devR=-1) #initial equilibrium
+  b0 <- getvar(zoneC,"B0") #sapply(zoneC,"[[","B0") # below initial equilibrium
+  recs <- oneyearrec(steep,r0,b0,matb,sigR=sigmar,devR=-1,depensate=0)
   newrecs <- movem %*% recs
   zoneD$recruit[year,] <- newrecs
   zoneD$Nt[1,year,] <- newrecs
@@ -742,7 +740,7 @@ oneyearD <- function(zoneC,zoneD,Ncl,selectyr,inHt,year,sigmar,npop,movem) {
 #' @param steep the steepness for the population; scalar
 #' @param R0 the unfished recruitment levels for the population; scalar
 #' @param B0 the unfished spawning biomass; scalar
-#' @param Bsp the current spawning biomass; scalar
+#' @param Bsp the current spawning biomass; scalar or vector
 #' @param sigR standard deviation of the recruitment residuals;
 #'     scalar. set this to 1e-08 to avoid recruitment variability
 #' @param devR if recruitment deviates are available then they should be input
@@ -772,19 +770,22 @@ oneyearD <- function(zoneC,zoneD,Ncl,selectyr,inHt,year,sigmar,npop,movem) {
 #' insigmar <- 0.3
 #' oneyearrec(steep,R0,B0,Bsp,insigmar)
 #' }
-#' # steep=steep;R0=r0;B0=b0;Bsp=matb;sigR=sigmar;devR=-1
+#' # steep=steep;R0=r0;B0=b0;Bsp=dyn["matureb",];sigR=sigmar;devR=-1
 oneyearrec <- function(steep,R0,B0,Bsp,sigR,devR=-1,depensate=0) { #
   if (devR[1] > 0) {
     epsilon <- devR
   } else {
-    epsilon <- exp(rnorm(length(Bsp),mean=0,sd=sigR) - (sigR * sigR)/2)
+    epsilon <- exp(rnorm(length(Bsp),mean=0,sd=sigR)) #- (sigR * sigR)/2)
   }
-  if ((depensate > 0) & (Bsp/B0 < depensate)) { # linear implemented
-    bcurr <- B0 * depensate
-    thres <- ((4*steep*R0*bcurr)/((1-steep)*B0+(5*steep-1)*bcurr))
-    rec <- ((Bsp/B0)/depensate) * thres * epsilon
-  } else {
-    rec <- ((4*steep*R0*Bsp)/((1-steep)*B0+(5*steep-1)*Bsp)) * epsilon
+  rec <- ((4*steep*R0*Bsp)/((1-steep)*B0+(5*steep-1)*Bsp)) * epsilon
+  if (depensate > 0) {
+    pickD <- which(Bsp/B0 < depensate)
+    if (length(pickD) > 0) {
+      bcurr <- B0 * depensate
+      thres <- ((4*steep*R0*bcurr)/((1-steep)*B0+(5*steep-1)*bcurr))
+      rec[pickD] <- ((Bsp[pickD]/B0[pickD])/depensate) *
+                      thres[pickD] * epsilon[pickD]
+    }
   }
   return(rec)
 } # end of oneyearrec

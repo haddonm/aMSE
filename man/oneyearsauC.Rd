@@ -22,7 +22,8 @@ oneyearsauC(
   envsurv,
   envrec,
   deltarec = NULL,
-  useF = 0
+  useF = 0,
+  depensate = 0
 )
 }
 \arguments{
@@ -74,6 +75,9 @@ TIMEVARY keyword. eg deltarec,0.6 would be seq(1.0,0.6,length=pyrs)}
 
 \item{useF}{should harvest rates or instantaneous rates be used,
 default = 0, which means use harvest rates}
+
+\item{depensate}{= at what depletion level should depensation occur. default
+= 0 = no depensation}
 }
 \value{
 a list containing a revised dynamics list
@@ -96,10 +100,6 @@ oneyearsauC conducts one year's dynamics in the simulation
 }
 \examples{
 print("Wait on new data")
-# zoneCC=zoneC;inN=inN;popC=calcpopCout$popC;year=year
-# Ncl=glob$Nclass;sauindex=sauindex;movem=glob$move;sigmar=sigR;sigce=1e-08;
-# r0=r0;b0=b0;exb0=exb0;rdev=rdev;envyr=NULL;envsurv=NULL;envrec=NULL;
-# fisindexdata=condC$fisindexdata;useF=glob$useF
 }
 \seealso{
 {

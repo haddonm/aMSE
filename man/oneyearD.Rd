@@ -42,7 +42,7 @@ oneyearD conducts one year's dynamics on zoneD in the MSE
     of activity included in each of its components. This uses zoneC
     but always within the environment of another function in which
     zoneC (as zoneC) can be found. Used in runthreeH, and hence
-    in doproduction, and in testequil.
+    in doproduction, and in testequil. Only used with equilbrium stock
 }
 \examples{
  print("wait on revised data")

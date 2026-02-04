@@ -21,6 +21,7 @@ doprojections(
   verbose = FALSE,
   makefisproj = NULL,
   calcFIS = NULL,
+  depensate = 0,
   ...
 )
 }
@@ -70,6 +71,9 @@ default = NULL.}
 
 \item{calcFIS}{default = NULL jurisdictional function required to calculate
 the annual fisindex, only used when FIS data available}
+
+\item{depensate}{= at what depletion level should depensation occur. default
+= 0 = no depensation}
 
 \item{...}{the ellipsis used in case any of the functions hcrfun, sampleCE,
 sampleFIS, sampleNas, and getdata require extra arguments not included

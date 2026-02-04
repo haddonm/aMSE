@@ -16,7 +16,8 @@ addrecvar(
   hsargs,
   sigR = 1e-08,
   sigB = 1e-08,
-  lastsigR = 0.3
+  lastsigR = 0.3,
+  depensate = 0
 )
 }
 \arguments{
@@ -48,6 +49,9 @@ the sau and populations. Currently not needed by Tas but needed by SA}
 \item{sigB}{the initial biomass cpue variation default = 1e-08}
 
 \item{lastsigR}{the recruitment variation to be added to the final varyrs}
+
+\item{depensate}{at what depletion level should depensation occur. default
+= 0 = no depensation}
 }
 \value{
 an initialized dynamics zone object for the projections with the

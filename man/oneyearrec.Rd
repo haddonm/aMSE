@@ -13,7 +13,7 @@ oneyearrec(steep, R0, B0, Bsp, sigR, devR = -1, depensate = 0)
 
 \item{B0}{the unfished spawning biomass; scalar}
 
-\item{Bsp}{the current spawning biomass; scalar}
+\item{Bsp}{the current spawning biomass; scalar or vector}
 
 \item{sigR}{standard deviation of the recruitment residuals;
 scalar. set this to 1e-08 to avoid recruitment variability}
@@ -52,7 +52,7 @@ Bsp <- 147
 insigmar <- 0.3
 oneyearrec(steep,R0,B0,Bsp,insigmar)
 }
-# steep=steep;R0=r0;B0=b0;Bsp=matb;sigR=sigmar;devR=-1
+# steep=steep;R0=r0;B0=b0;Bsp=dyn["matureb",];sigR=sigmar;devR=-1
 }
 \seealso{
 {

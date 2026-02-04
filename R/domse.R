@@ -1,5 +1,5 @@
 #Tas context -----------------
-# postfixdir <- "newTasHS" #
+# postfixdir <- "newTasHS5rdep" #
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
@@ -22,7 +22,7 @@
 # wtatL = c(80,200)
 # mincount=100
 # includeNAS=FALSE
-# depensate=0
+# depensate=0.2
 # pmwtSwitch = 4
 # stablewts = c(0.65, 0.25, 0.1)
 # hcrname=  "newTasHS" #"constantrefhcr"  #"constantrefhcr"  #"mcdahcr"     #    #"consthcr"
@@ -402,7 +402,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   outpp <- prepareprojection(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
                              zoneDD=zoneDD,ctrl=ctrl,varyrs=varyrs,
                              calcpopC=calcpopC,hsargs=hsargs,
-                             lastsigR = ctrl$withsigR)
+                             lastsigR = ctrl$withsigR,depensate=0)
   zoneDP <- outpp$zoneDP
   projC <- outpp$projC
   zoneCP <- outpp$zoneCP
@@ -417,7 +417,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
                            sampleFIS=sampleFIS,sampleNaS=sampleNaS,
                            getdata=getdata,calcpopC=calcpopC,
                            makehcrout=makeouthcr,fleetdyn=fleetdyn,verbose=TRUE,
-                           makefisproj=makefisproj)
+                           makefisproj=makefisproj,depensate=depensate)
   if (verbose) {
     incrtime1 <- Sys.time(); timeinc <- incrtime1 - incrtime2
     cat("\n All projections finished ",timeinc,attr(timeinc,"units") ,"\n")

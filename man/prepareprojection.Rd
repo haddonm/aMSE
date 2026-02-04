@@ -15,7 +15,8 @@ prepareprojection(
   calcpopC = calcpopC,
   fleetdyn = NULL,
   hsargs,
-  lastsigR = 0.3
+  lastsigR = 0.3,
+  depensate = 0
 )
 }
 \arguments{
@@ -43,6 +44,8 @@ the sau and populations. Currently not needed by Tas but needed by SA}
 \item{hsargs}{the constants used to define the workings of the hcr}
 
 \item{lastsigR}{recruitment variation for when it is applied for varyrs}
+
+\item{depensate}{at what depletion level will depensation operate, default=0}
 }
 \value{
 a list of the dynamic zone object as a list of arrays of projyrs x

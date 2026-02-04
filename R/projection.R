@@ -188,6 +188,8 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 #'     default = NULL.
 #' @param calcFIS default = NULL jurisdictional function required to calculate
 #'     the annual fisindex, only used when FIS data available
+#' @param depensate = at what depletion level should depensation occur. default
+#'     = 0 = no depensation
 #' @param ... the ellipsis used in case any of the functions hcrfun, sampleCE,
 #'     sampleFIS, sampleNas, and getdata require extra arguments not included
 #'     in the default named collection
@@ -205,7 +207,7 @@ calcsau <-  function(invar,saunames,ref0) {# for deplsb depleB
 doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
                           sampleCE,sampleFIS,sampleNaS,getdata,calcpopC,
                           makehcrout,fleetdyn,verbose=FALSE,
-                          makefisproj=NULL,calcFIS=NULL,...) {
+                          makefisproj=NULL,calcFIS=NULL,depensate=0,...) {
   useFIS <- glb$useFIS
   reps <- ctrl$reps
   sigmar <- ctrl$withsigR
@@ -242,7 +244,7 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
   fisproj <- NULL  # prepare an argument for sadData and sadFIS
   if (glb$useFIS) fisproj <- makefisproj(zoneDP,hsargs,glb)
   outhcr <- makehcrout(glb,hsargs)
-  for (year in startyr:endyr) { # iter=1; year=61
+  for (year in startyr:endyr) { # iter=1; year=59
     if (verbose) cat(yrnames[year]," ")
       for (iter in 1:reps) { # iter=1
       hcrdata <- getdata(sampleCE,sampleFIS,sampleNaS,
@@ -270,7 +272,7 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
                           sauindex=sauindex,movem=movem,sigmar=sigmar,
                           sigce=sigce,r0=r0,b0=b0,exb0=exb0,envyr=envyr,
                           envsurv=survNt,envrec=proprec,deltarec=glb$deltarec,
-                          useF=glb$useF)
+                          useF=glb$useF,depensate=depensate)
       dyn <- outy$dyn
       saudyn <- poptosauCE(dyn["catch",],dyn["cpue",],sauindex)
       zoneDP$exploitB[year,,iter] <- dyn["exploitb",]
@@ -519,6 +521,8 @@ sumpops <- function(invar,sauindex,saunames) { #invar=zoneDP$matureB
 #' @param sigR the initial recruitment variation default=1e-08
 #' @param sigB the initial biomass cpue variation default = 1e-08
 #' @param lastsigR the recruitment variation to be added to the final varyrs
+#' @param depensate at what depletion level should depensation occur. default
+#'     = 0 = no depensation
 #'
 #' @return an initialized dynamics zone object for the projections with the
 #'     first year populated
@@ -527,7 +531,8 @@ sumpops <- function(invar,sauindex,saunames) { #invar=zoneDP$matureB
 #' @examples
 #' print("wait on suitable data-sets")
 addrecvar <- function(zoneDD,zoneC,glob,condC,ctrl,varyrs,calcpopC,
-                      fleetdyn,hsargs,sigR=1e-08,sigB=1e-08,lastsigR=0.3) {
+                      fleetdyn,hsargs,sigR=1e-08,sigB=1e-08,lastsigR=0.3,
+                      depensate=0) {
    # zoneDD=zoneDD;zoneC=zoneC;glob=glb; calcpopC=calcpopC
    # condC=condC;ctrl=ctrl;varyrs=7;lastsigR=0.3;
    # sigR=1e-08; sigB=1e-08; fleetdyn=NULL
@@ -602,7 +607,7 @@ addrecvar <- function(zoneDD,zoneC,glob,condC,ctrl,varyrs,calcpopC,
                          Ncl=glob$Nclass,sauindex=sauindex,movem=glob$move,
                          sigmar=lastsigR,sigce=1e-08,r0=r0,b0=b0,exb0=exb0,
                          rdev=condC$recdevs,envyr=NULL,envsurv=NULL,
-                         useF=glob$useF)
+                         useF=glob$useF,depensate=depensate)
       dyn <- out$dyn
       saudyn <- poptosauCE(dyn["catch",],dyn["cpue",],sauindex)
       zoneDDR$exploitB[year,,iter] <- dyn["exploitb",]
@@ -701,6 +706,7 @@ modzoneCSel <- function(zoneC,sel,selwt,glb) {
 #'     the sau and populations. Currently not needed by Tas but needed by SA
 #' @param hsargs the constants used to define the workings of the hcr
 #' @param lastsigR recruitment variation for when it is applied for varyrs
+#' @param depensate at what depletion level will depensation operate, default=0
 #'
 #' @return a list of the dynamic zone object as a list of arrays of projyrs x
 #'     populations x replicates, plus the revised projC and revised zoneC
@@ -711,12 +717,12 @@ modzoneCSel <- function(zoneC,sel,selwt,glb) {
 #' #  projC <- modprojC(zoneC,glb,projC) # modify selectivity and SelWt in projC
 prepareprojection <- function(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
                               zoneDD=zoneDD,ctrl=ctrl,varyrs=varyrs,
-                              calcpopC=calcpopC,fleetdyn=NULL,hsargs,lastsigR = 0.3) {
+                              calcpopC=calcpopC,fleetdyn=NULL,hsargs,
+                              lastsigR = 0.3,depensate=0) {
   # projC=projC;condC=condC;zoneC=zoneC;glb=glb;zoneDD=zoneDD;ctrl=ctrl
-  # calcpopC=calcpopC; varyrs=varyrs;lastsigR = ctrl$withsigR
+  # calcpopC=calcpopC; varyrs=varyrs;lastsigR = ctrl$withsigR;depensate=depensate
   if (ctrl$randseedP > 0) set.seed(ctrl$randseedP)
   if (is.na(ctrl$randseedP)) set.seed()
-#  projyrs <- glb$pyrs
   if (projC$gauntlet == 1) {
 
   }
@@ -724,8 +730,8 @@ prepareprojection <- function(projC=projC,condC=condC,zoneC=zoneC,glb=glb,
   zoneDP <- addrecvar(zoneDD=zoneDD,zoneC=zoneC,glob=glb,
                       condC=condC,ctrl=ctrl,varyrs=varyrs,
                       calcpopC,fleetdyn=fleetdyn,hsargs=hsargs,
-                      lastsigR=lastsigR)
+                      lastsigR=lastsigR,depensate=0)
   return(list(zoneDP=zoneDP,projC=projC,zoneCP=zoneCR))
-} # end of prepareprojection
+} # end of prepareprojection <- list(zoneDP=zoneDP,projC=projC,zoneCP=zoneCR)
 
 
