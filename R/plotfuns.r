@@ -677,6 +677,7 @@ phaseplotpolygons <- function(maxy,maxx=1.0,targx=0.4,limx=0.2,limy=0.175) {
 #' # syntax plotclosed(invar=cpue,whichclosed=whichclosed,sau=pickC[i],yrs=yrs,
 #' #                   label=label)
 plotclosed <- function(invar,whichclosed,sau,yrs,reps,label,hline=0) {
+#  invar=cpue;whichclosed=whichclosed;sau=pickC[i];yrs=yrs;reps=reps;label=label;hline=0
   numC <- length(whichclosed)
   usevar1 <- invar[,sau,whichclosed]
   maxy1 <- getmax(usevar1)
@@ -685,7 +686,7 @@ plotclosed <- function(invar,whichclosed,sau,yrs,reps,label,hline=0) {
   if (numC > 1) for (i in 2:numC) lines(yrs,usevar1[,i],lwd=1,col="grey")
   if (hline > 0) abline(h=hline,lwd=2,col=2)
   if (numC < reps) {
-    usevar2 <- invar[,sau,-whichclosed]
+    usevar2 <- as.matrix(invar[,sau,-whichclosed])
     maxy2 <- getmax(usevar2)
     plot(yrs,usevar2[,1],type="l",col="grey",xlab="",ylab=label,
          ylim=c(0,maxy2),yaxs="i",panel.first=grid())

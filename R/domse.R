@@ -1,5 +1,5 @@
 #Tas context -----------------
-# postfixdir <- "newTasHS5rdep" #
+# postfixdir <- "Tas3_event" #
 # rundir <- rundir
 # controlfile=controlfile
 # hsargs=hsargs
@@ -473,11 +473,11 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
      useyrs <- glb$hyrs:(glb$hyrs + glb$pyrs)
      yrs <- c(glb$pyrnames[1]-1,glb$pyrnames)
      reps <- glb$reps
-     for (i in 1:nclose) { # i = 6
+     for (i in 1:nclose) { # i = 5
        namesau <- saunames[pickC[i]]
        filename <- paste0("comp_closed_",namesau,".png")
        filen <- pathtopath(rundir,filename)  # filen=""
-       plotprep(width=8,height=8,newdev=FALSE,filename=filen,cex=0.9,
+       plotprep(width=8,height=8,newdev=TRUE,filename=filen,cex=0.9,
                 verbose=FALSE)
        parset(plots=c(4,2))
        # cpue
