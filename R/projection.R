@@ -279,11 +279,16 @@ doprojections <- function(ctrl,zoneDP,zoneCP,glb,hcrfun,hsargs,
       zoneDP$midyexpB[year,,iter] <- dyn["midyexpB",]
       zoneDP$matureB[year,,iter] <- dyn["matureb",]
       zoneDP$catch[year,,iter] <- dyn["catch",]
-      zoneDP$acatch[year,,iter] <- calcpopCout$acatch
 
-      zoneDP$flagstate[year,,iter] <- calcpopCout$flagstate #CM added for recov
-      zoneDP$closedyrs[year,,iter] <- calcpopCout$closedyrs #CM added for recov
-      zoneDP$recovyrs[year,,iter] <- calcpopCout$recovyrs   #CM added for recov
+      if (!is.null(calcpopCout$acatch)) { # CM added 2026-05-26
+      zoneDP$acatch[year,,iter] <- calcpopCout$acatch
+      }
+
+      if ("flagstate" %in% names(calcpopCout)) { # CM added 2026-05-26
+        zoneDP$flagstate[year,,iter] <- calcpopCout$flagstate #CM added for recov
+        zoneDP$closedyrs[year,,iter] <- calcpopCout$closedyrs #CM added for recov
+        zoneDP$recovyrs[year,,iter] <- calcpopCout$recovyrs   #CM added for recov
+      }
 
       zoneDP$catsau[year,,iter] <- saudyn$saucatch
       zoneDP$harvestR[year,,iter] <- dyn["catch",]/dyn["midyexpB",]
