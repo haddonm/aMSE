@@ -33,8 +33,3 @@ getyr2maxce uses apply and 'which.closest' from codeutils to
   str1(maxce)
 }
 }
-\seealso{
-{
-    \link{which.closest}
-}
-}

@@ -969,7 +969,7 @@ do_comp_outputs <- function(result,projonly=TRUE) {
 #'     which they are read in.
 #'
 #' @seealso {
-#'    \link{plotzonedyn}, \link{RGB}
+#'    \link{plotzonedyn}
 #' }
 #'
 #' @return nothing but it does add polygons or lines to a plot
@@ -1050,7 +1050,7 @@ doquantplot <- function(varq,varname,yrnames,scenes,q90,polys,intens=127,
 #'     be included on each polygon. default = FALSE
 #'
 #' @seealso {
-#'    \link{sauribbon}, \link{RGB}
+#'    \link{sauribbon}
 #' }
 #'
 #' @return nothing but it does add polygons to a plot

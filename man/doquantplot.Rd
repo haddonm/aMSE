@@ -72,6 +72,6 @@ print("wait on datasets")
 }
 \seealso{
 {
-   \link{plotzonedyn}, \link{RGB}
+   \link{plotzonedyn}
 }
 }

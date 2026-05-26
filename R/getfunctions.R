@@ -923,10 +923,6 @@ getvect <- function(zoneC,invar) {
 #'     this one.
 #' @param glb the globals object for the scenario
 #'
-#' @seealso {
-#'     \link{which.closest}
-#' }
-#'
 #' @return a reps x nsau matrix of the year in which the maximum cpue occurs in
 #'     the projections
 #' @export

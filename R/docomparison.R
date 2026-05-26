@@ -44,8 +44,7 @@
 #'     functions is/are written to perform extra analyses, plots, and tables.
 #'
 #' @seealso{
-#'    \link{scenebyvar}, \link{scenebyzone}. \link{RGB},
-#'    \link{getfilestocompare}
+#'    \link{scenebyvar}, \link{scenebyzone}, \link{getfilestocompare}
 #' }
 #'
 #' @return nothing but it does conduct a comparison of at least two scenarios
@@ -75,8 +74,8 @@
 do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
                           intensity=100,zero=FALSE,Q90=TRUE,altscenes=NULL,
                           juris="",ribbonleg="topleft",scencol=NULL,...) {
-  # rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(4,5)
-  #  verbose=TRUE; intensity=100; zero=FALSE; altscenes=NULL
+  # rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(1,2)
+  #  verbose=TRUE; intensity=100; zero=TRUE; altscenes=NULL
   #  juris="";ribbonleg="topleft"; Q90=TRUE; scencol=c(1,2)
   # get files -------------------
   files2 <- files[pickfiles]
@@ -386,8 +385,8 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
   # phaseplots tab --------------------------------------------------
   if (verbose) cat("Now doing the phaseplots tab  \n")
   plotallphaseplots(rundir=rundir,dyn=dyn,prods,glb=glbc[[1]],scenes=scenes,width=9,
-                    height=10,fnt=7,pntcex=1.5,zero=FALSE,
-                    legloc="topright")
+                    height=10,fnt=7,pntcex=1.5,zero=zero,
+                    legloc=ribbonleg)
   makecompareoutput(rundir=rundir,glbc,scenes,scenarionames,postfixdir,
                     filesused=files[pickfiles],openfile=TRUE,verbose=FALSE)
   return(invisible(list(scenes=scenes,quantscen=quantscen,dyn=dyn,

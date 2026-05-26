@@ -387,7 +387,7 @@ do_MSE <- function(rundir,controlfile,hsargs,hcrfun,sampleCE,sampleFIS,
   # OrigComp tab--------------------------------------------
   nsau <- glb$nSAU  #    sampsize <- round(colSums(compdata,na.rm=TRUE),1)
   saunames <- glb$saunames
-  for (sau in 1:nsau) {  # sau=1
+  for (sau in 1:nsau) {  # sau=6
     labely <- paste0("Size-Composition of Catches for ",saunames[sau])
     ans <- plotcompdata(compdata=compdat[,,sau],analysis=saunames[sau],
                         ylabel=labely,console=FALSE,outdir=rundir,

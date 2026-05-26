@@ -68,6 +68,6 @@ print("wait on datasets")
 }
 \seealso{
 {
-   \link{sauribbon}, \link{RGB}
+   \link{sauribbon}
 }
 }
