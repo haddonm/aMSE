@@ -691,7 +691,7 @@ comparefinalscores <- function(rundir,scores,scenes,legloc="bottomright",
   }
   if (nchar(filen) > 0) filen <- filenametopath(rundir,filen)
   plotprep(width=8, height=9,newdev=FALSE,filename=filen,verbose=FALSE,
-           res=resol)
+           resol=resol)
   parset(plots=pickbound(nsau),margin=c(0.25,0.4,0.05,0.1),byrow=FALSE,
          outmargin=c(0,1,0,0))
   for (i in 1:nsau) { # i = 1
