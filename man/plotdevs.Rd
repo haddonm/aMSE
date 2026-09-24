@@ -4,7 +4,7 @@
 \alias{plotdevs}
 \title{plotdevs plots projection deviates for a variable across scenerios}
 \usage{
-plotdevs(invar, scenes, saunames, filen = "")
+plotdevs(invar, scenes, saunames, filen = "", resol = 300)
 }
 \arguments{
 \item{invar}{the sub-object from each scenario as a list, see examples}
@@ -15,6 +15,8 @@ plotdevs(invar, scenes, saunames, filen = "")
 
 \item{filen}{the filename and path if the plot is to be saved, default = "".
 if a filename is given it should be a .png file}
+
+\item{resol}{default = 300, the dpi for the png plots}
 }
 \value{
 a list f the mean deviates per sau and scenario, and a list of their

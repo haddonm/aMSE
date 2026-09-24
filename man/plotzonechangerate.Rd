@@ -4,7 +4,7 @@
 \alias{plotzonechangerate}
 \title{plotzonechangerate plot the output from getzonechangerate function}
 \usage{
-plotzonechangerate(rundir, res, whichvar, glb, console = TRUE)
+plotzonechangerate(rundir, res, whichvar, glb, console = TRUE, resol = 300)
 }
 \arguments{
 \item{rundir}{the directory in which comparisons are being made. It is best
@@ -19,6 +19,8 @@ and the years and their names.}
 
 \item{console}{should each plot go to the console or be saved to rundir.
 default = TRUE ie go to console}
+
+\item{resol}{default = 300, the dpi for the png plots}
 }
 \value{
 invisibly the filename used without the path

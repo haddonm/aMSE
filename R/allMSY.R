@@ -5,7 +5,7 @@
 #'
 #' @description allMSY discovers all values for the LML (nlml) in the
 #'     conditioning data and then estimates the productivity and MSY details
-#'     at the population, SAU, and Zone scales. It gnerates a webpage output
+#'     at the population, SAU, and Zone scales. It generates a webpage output
 #'     using makehtml.
 #'
 #' @param msydir full path to the directory in which the results are to be

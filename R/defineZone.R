@@ -1120,7 +1120,7 @@ resetexB0 <- function(zoneC,zoneD) {
 #' @param selectyr which year's LML should be used to estimate the LML. This
 #'     is set in makeequilzone. If set = 0, the default, then the LML for
 #'     the glb$hyrs, the last year of conditioning data will be used.
-#' @param maxiter default=3; the number of runs through the equilibrium loop.
+#' @param maxiter default=2; the number of runs through the equilibrium loop.
 #'
 #' @seealso{
 #'     \link{doproduction}, \link{testequil}

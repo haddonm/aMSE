@@ -220,83 +220,97 @@ export(writecompdata)
 export(zonecatchvsmsy)
 export(zoneribbon)
 export(zonetosau)
-importFrom(codeutils,"%ni%")
-importFrom(codeutils,confirmdir)
-importFrom(codeutils,countNAs)
-importFrom(codeutils,countgtzero)
-importFrom(codeutils,digitsbyrow)
-importFrom(codeutils,getmatcolfromlist)
-importFrom(codeutils,getmax)
-importFrom(codeutils,getmin)
-importFrom(codeutils,iscol)
-importFrom(codeutils,makelist)
-importFrom(codeutils,outfit)
-importFrom(codeutils,pathtopath)
-importFrom(codeutils,quants)
-importFrom(codeutils,removeEmpty)
-importFrom(codeutils,splitDate)
-importFrom(codeutils,which.closest)
-importFrom(grDevices,dev.off)
-importFrom(grDevices,palette)
-importFrom(grDevices,rgb)
-importFrom(graphics,abline)
-importFrom(graphics,arrows)
-importFrom(graphics,axis)
-importFrom(graphics,boxplot)
-importFrom(graphics,grid)
-importFrom(graphics,hist)
-importFrom(graphics,layout)
-importFrom(graphics,legend)
-importFrom(graphics,lines)
-importFrom(graphics,mtext)
-importFrom(graphics,par)
-importFrom(graphics,plot)
-importFrom(graphics,points)
-importFrom(graphics,polygon)
-importFrom(graphics,text)
-importFrom(graphics,title)
-importFrom(hplot,RGB)
-importFrom(hplot,inthist)
-importFrom(hplot,makepolygon)
-importFrom(hplot,parset)
-importFrom(hplot,pickbound)
-importFrom(hplot,plotcompdata)
-importFrom(hplot,plotnull)
-importFrom(hplot,plotprep)
-importFrom(makehtml,addplot)
-importFrom(makehtml,addtable)
-importFrom(makehtml,addtext)
-importFrom(makehtml,dirExists)
-importFrom(makehtml,filenametopath)
-importFrom(makehtml,getextension)
-importFrom(makehtml,htmltable)
-importFrom(makehtml,logfilename)
-importFrom(makehtml,make_html)
-importFrom(makehtml,pathend)
-importFrom(makehtml,pathtype)
-importFrom(makehtml,setuphtml)
-importFrom(makehtml,write_css)
-importFrom(makehtml,write_head)
-importFrom(stats,ccf)
-importFrom(stats,coef)
-importFrom(stats,dnorm)
-importFrom(stats,filter)
-importFrom(stats,lm)
-importFrom(stats,loess)
-importFrom(stats,median)
-importFrom(stats,optim)
-importFrom(stats,optimize)
-importFrom(stats,pnorm)
-importFrom(stats,quantile)
-importFrom(stats,rlnorm)
-importFrom(stats,rnorm)
-importFrom(stats,sd)
-importFrom(utils,browseURL)
-importFrom(utils,head)
-importFrom(utils,object.size)
-importFrom(utils,packageDescription)
-importFrom(utils,read.csv)
-importFrom(utils,tail)
-importFrom(utils,winDialog)
-importFrom(utils,write.csv)
-importFrom(utils,write.table)
+importFrom(codeutils,
+  "%ni%",
+  confirmdir,
+  countNAs,
+  countgtzero,
+  digitsbyrow,
+  getmatcolfromlist,
+  getmax,
+  getmin,
+  iscol,
+  makelist,
+  outfit,
+  pathtopath,
+  quants,
+  removeEmpty,
+  splitDate,
+  which.closest
+)
+importFrom(grDevices,
+  dev.off,
+  palette,
+  rgb
+)
+importFrom(graphics,
+  abline,
+  arrows,
+  axis,
+  boxplot,
+  grid,
+  hist,
+  layout,
+  legend,
+  lines,
+  mtext,
+  par,
+  plot,
+  points,
+  polygon,
+  text,
+  title
+)
+importFrom(hplot,
+  RGB,
+  inthist,
+  makepolygon,
+  parset,
+  pickbound,
+  plotcompdata,
+  plotnull,
+  plotprep
+)
+importFrom(makehtml,
+  addplot,
+  addtable,
+  addtext,
+  dirExists,
+  filenametopath,
+  getextension,
+  htmltable,
+  logfilename,
+  make_html,
+  pathend,
+  pathtype,
+  setuphtml,
+  write_css,
+  write_head
+)
+importFrom(stats,
+  ccf,
+  coef,
+  dnorm,
+  filter,
+  lm,
+  loess,
+  median,
+  optim,
+  optimize,
+  pnorm,
+  quantile,
+  rlnorm,
+  rnorm,
+  sd
+)
+importFrom(utils,
+  browseURL,
+  head,
+  object.size,
+  packageDescription,
+  read.csv,
+  tail,
+  winDialog,
+  write.csv,
+  write.table
+)

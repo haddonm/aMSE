@@ -22,7 +22,7 @@ constant across all years.}
 is set in makeequilzone. If set = 0, the default, then the LML for
 the glb$hyrs, the last year of conditioning data will be used.}
 
-\item{maxiter}{default=3; the number of runs through the equilibrium loop.}
+\item{maxiter}{default=2; the number of runs through the equilibrium loop.}
 }
 \value{
 a list containing a revised dynamics list, zoneD

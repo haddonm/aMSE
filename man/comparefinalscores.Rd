@@ -10,7 +10,8 @@ comparefinalscores(
   scenes,
   legloc = "bottomright",
   filen = "",
-  category = "Tables"
+  category = "Tables",
+  resol = 300
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ comparefinalscores(
 \item{filen}{the name of the png file if it is to be stored, default=""}
 
 \item{category}{in what tab should the tables be stored. default="Tables"}
+
+\item{resol}{default = 300, the dpi for the png plots}
 }
 \value{
 nothing but it does generate a plot.

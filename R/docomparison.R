@@ -37,9 +37,10 @@
 #'     jurisdiction a suitable function can be written and input, along with
 #'     any extra arguments it might have, in the final ellipsis.
 #' @param ribbonleg location of the legend in the ribon plots, default=topleft
-#' @param scencol what sequence of colours should each scenario have. The default=NULL
-#'     which implies the colour will reflect the sequence in which they are
-#'     read in.
+#' @param scencol what sequence of colours should each scenario have. The
+#'     default=NULL which implies the colour will reflect the sequence in
+#'     which they are read in.
+#' @param resol default = 300, what resolution for the plots.
 #' @param ... the ellipsis is here in case a jurisdiction specific function or
 #'     functions is/are written to perform extra analyses, plots, and tables.
 #'
@@ -73,7 +74,8 @@
 #' }
 do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
                           intensity=100,zero=FALSE,Q90=TRUE,altscenes=NULL,
-                          juris="",ribbonleg="topleft",scencol=NULL,...) {
+                          juris="",ribbonleg="topleft",scencol=NULL,resol=300,
+                          ...) {
   # rundir=rundir;postfixdir=postfixdir;outdir=outdir;files=files;pickfiles=c(1,2)
   #  verbose=TRUE; intensity=100; zero=TRUE; altscenes=NULL
   #  juris="";ribbonleg="topleft"; Q90=TRUE; scencol=c(1,2)
@@ -177,7 +179,7 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
       if (!is.null(scenscore[[1]])) {
         filename <- "compare_final_HSscores.png"
         meds <- comparefinalscores(rundir,scores,scenes,legloc="bottomright",
-                                   filen=filename,category="Scores")
+                                   filen=filename,category="Scores",resol=resol)
         addplot(filen=filename,rundir=rundir,category="Scores",
                 caption="The HS final scores for each sau.")
         tabulatefinalHSscores(rundir,meds,scenes,category="Scores")
@@ -243,20 +245,24 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
   whichyrs <- (glb$hyrs + 1):(glb$hyrs + glb$pyrs)
   for (scen in 1:length(scenes)) x[[scen]] <- dyn[[scen]]$catch[whichyrs,,]
   filename <- pathtopath(rundir,"catchprojection_deviates.png")
-  devout <- plotdevs(x,scenes,saunames,filen=filename)
+  devout <- plotdevs(x,scenes,saunames,filen=filename,resol=resol)
   addplot(filen=filename,rundir=rundir,category="ScenarioPMs",
           caption="The deviates from a loess on catches in each replicate.")
   tabfile <- "projmeandeviates_catch.csv"
+  label <- paste0("Mean deviations from a loess on catch values by sau ",
+                  "and scenario.")
   addtable(devout$meandevs,filen=tabfile,rundir=rundir,category="ScenarioPMs",
-           caption="Mean deviations from a loess on catch values by sau and scenario.")
+           caption=label)
   tabfile <- "proj_sddeviates_catch.csv"
+  label <- paste0("StDev of deviations from a loess on catch values by sau ",
+                  "and scenario.")
   addtable(devout$sddevs,filen=tabfile,rundir=rundir,category="ScenarioPMs",
-           caption="StDev of deviations from a loess on catch values by sau and scenario.")
+           caption=label)
   x <- makelist(scenes)
   whichyrs <- (glb$hyrs + 1):(glb$hyrs + glb$pyrs)
   for (scen in 1:length(scenes)) x[[scen]] <- zone[[scen]]$catch[whichyrs,]
   filename <- pathtopath(rundir,"catch-projdevs-by-zone.png")
-  zdevout <- plotzonedevs(x,scenes,glb,filen=filename)
+  zdevout <- plotzonedevs(x,scenes,glb,filen=filename,resol=resol)
   addplot(filen=filename,rundir=rundir,category="ScenarioPMs",
           caption="The deviates from a loess on catches in each replicate by zone by scenario.")
   pickyrs <- c(glb$hyrs+5,glb$hyrs+10) # 5 and 10 years
@@ -265,7 +271,8 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
                        whichfun=mean,glb=glb)
   for (whichyr in 1:nyrs) {
     filename <- plotdynvarinyear(rundir=rundir,dyn=dyn,whichvar="catch",
-                                 whichyr=pickyrs[whichyr],glb,console=FALSE)
+                                 whichyr=pickyrs[whichyr],glb,console=FALSE,
+                                 resol=resol)
     addplot(filen=filename,rundir=rundir,category="ScenarioPMs",
             caption="Histograms of catch for each scen and sau across replicates")
     realyr <- c(glb$hyrnames,glb$pyrnames)[pickyrs[whichyr]]
@@ -278,50 +285,50 @@ do_comparison <- function(rundir,postfixdir,outdir,files,pickfiles,verbose=TRUE,
   pickvar <- "catch"
   res <- getrateofchange(dyn=dyn,whichvar=pickvar,glb=glb)
   filename <- plotrateofchange(rundir=rundir,res=res,whichvar=pickvar,glb=glb,
-                               console=FALSE)
+                               console=FALSE,resol=resol)
   addplot(filen=filename,rundir=rundir,category="ScenarioPMs",
           caption="The rate of change of the median catches acroiss scenarios.")
   pickvar <- "cpue"
   res <- getrateofchange(dyn=dyn,whichvar=pickvar,glb=glb)
   filename <- plotrateofchange(rundir=rundir,res=res,whichvar=pickvar,glb=glb,
-                               console=FALSE)
+                               console=FALSE,resol=resol)
   addplot(filen=filename,rundir=rundir,category="ScenarioPMs",
           caption="The rate of change of the median cpue acroiss scenarios.")
   pickvar <- "matureB"
   res <- getrateofchange(dyn=dyn,whichvar=pickvar,glb=glb)
   filename <- plotrateofchange(rundir=rundir,res=res,whichvar=pickvar,glb=glb,
-                               console=FALSE)
+                               console=FALSE,resol=resol)
   addplot(filen=filename,rundir=rundir,category="ScenarioPMs",
           caption="The rate of change of the median matureB across scenarios.")
   pickvar <- "harvestR"
   res <- getrateofchange(dyn=dyn,whichvar=pickvar,glb=glb)
   filename <- plotrateofchange(rundir=rundir,res=res,whichvar=pickvar,glb=glb,
-                               console=FALSE)
+                               console=FALSE,resol=resol)
   addplot(filen=filename,rundir=rundir,category="ScenarioPMs",
           caption="The rate of change of the median harvestR across scenarios.")
   # zone scale rates of change
   invar <- "catch"
   res <- getzonechangerate(zone=zone,whichvar=invar,glb=glb)
   filename <- plotzonechangerate(rundir=rundir,res=res,whichvar=invar,glb=glb,
-                                 console=FALSE)
+                                 console=FALSE,resol=resol)
   addplot(filen=filename,rundir=rundir,category="ScenarioPMs",
           caption="Rate of change of the zonal median catch across scenarios.")
   invar <- "cpue"
   res <- getzonechangerate(zone=zone,whichvar=invar,glb=glb)
   filename <- plotzonechangerate(rundir=rundir,res=res,whichvar=invar,glb=glb,
-                                 console=FALSE)
+                                 console=FALSE,resol=resol)
   addplot(filen=filename,rundir=rundir,category="ScenarioPMs",
           caption="Rate of change of the zonal median CPUE across scenarios.")
   invar <- "matureB"
   res <- getzonechangerate(zone=zone,whichvar=invar,glb=glb)
   filename <- plotzonechangerate(rundir=rundir,res=res,whichvar=invar,glb=glb,
-                                 console=FALSE)
+                                 console=FALSE,resol=resol)
   addplot(filen=filename,rundir=rundir,category="ScenarioPMs",
           caption="Rate of change of the zonal median Mature Biomass across scenarios.")
   invar <- "harvestR"
   res <- getzonechangerate(zone=zone,whichvar=invar,glb=glb)
   filename <- plotzonechangerate(rundir=rundir,res=res,whichvar=invar,glb=glb,
-                                 console=FALSE)
+                                 console=FALSE,resol=resol)
   addplot(filen=filename,rundir=rundir,category="ScenarioPMs",
           caption="Rate of change of the zonal median harvestR across scenarios.")
   # zone tab----------------------------------------

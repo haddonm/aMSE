@@ -642,6 +642,7 @@ comparedynamics <- function(rundir,dyn,glbc,scenes) {
 #' @param legloc the location of the legend, default = bottomright
 #' @param filen the name of the png file if it is to be stored, default=""
 #' @param category in what tab should the tables be stored. default="Tables"
+#' @param resol default = 300, the dpi for the png plots
 #'
 #' @return nothing but it does generate a plot.
 #' @export
@@ -649,7 +650,7 @@ comparedynamics <- function(rundir,dyn,glbc,scenes) {
 #' @examples
 #' print("wait on data")
 comparefinalscores <- function(rundir,scores,scenes,legloc="bottomright",
-                               filen="",category="Tables") {
+                               filen="",category="Tables",resol=300) {
   #   scores=scores;scenes=scenes;legloc="bottomleft"; filen="";
   # rundir=rundir;scores=scores;scenes=scenes;legloc="bottomright"
   # filen="";category="Scores"
@@ -689,7 +690,8 @@ comparefinalscores <- function(rundir,scores,scenes,legloc="bottomright",
     legend(legloc,legend=scenes,col=1:nmed,lwd=3,bty="n",cex=1.0)
   }
   if (nchar(filen) > 0) filen <- filenametopath(rundir,filen)
-  plotprep(width=8, height=9,newdev=FALSE,filename=filen,verbose=FALSE)
+  plotprep(width=8, height=9,newdev=FALSE,filename=filen,verbose=FALSE,
+           res=resol)
   parset(plots=pickbound(nsau),margin=c(0.25,0.4,0.05,0.1),byrow=FALSE,
          outmargin=c(0,1,0,0))
   for (i in 1:nsau) { # i = 1
@@ -1444,6 +1446,7 @@ plotallphaseplots <- function(rundir,dyn,prods,glb,scenes,width=9,height=10,
 #' @param saunames a vector of the names of each sau in the projections
 #' @param filen the filename and path if the plot is to be saved, default = "".
 #'     if a filename is given it should be a .png file
+#' @param resol default = 300, the dpi for the png plots
 #'
 #' @return a list f the mean deviates per sau and scenario, and a list of their
 #'     respective standard deviations. It also plots a graph
@@ -1460,7 +1463,7 @@ plotallphaseplots <- function(rundir,dyn,prods,glb,scenes,width=9,height=10,
 #'    for (scen in 1:length(scenes)) x[[scen]] <- dyn[[scen]]$catch[59:88,,]
 #'    devout <- plotdevs(x,scenes,saunames,filen="")
 #' }
-plotdevs <- function(invar,scenes,saunames,filen=""){
+plotdevs <- function(invar,scenes,saunames,filen="",resol=300){
   nsau <- length(saunames)
   nscen <- length(scenes)
   meandevs <- matrix(0,nrow=nscen,ncol=nsau,dimnames=list(scenes,saunames))
@@ -1627,6 +1630,7 @@ plotdynphase <- function(xlist,ylist,scenes,glb,rundir="",xlab="xlabel",
 #'     default = TRUE ie go to console
 #' @param whichfun each plot has by default the mean of the distribution added
 #'     if one wanted the median or geomean then change to that function name
+#' @param resol default = 300, the dpi for the png plots
 #'
 #' @return the filename (no path) used if any, and it plots a graph
 #' @export
@@ -1636,7 +1640,7 @@ plotdynphase <- function(xlist,ylist,scenes,glb,rundir="",xlab="xlabel",
 #' # filen <- plotdynvarinyear(rundir=rundir,dyn=dyn,whichvar="catch",
 #' #                           whichyr=c(63),glb,console=TRUE)
 plotdynvarinyear <- function(rundir,dyn,whichvar,whichyr,glb,bins=15,
-                             console=TRUE,whichfun=mean) {
+                             console=TRUE,whichfun=mean,resol=300) {
 # rundir=rundir; dyn=dyn;whichvar="catch";whichyr=c(63);glb=glb;bins=15;
 # console=TRUE; whichfun=mean
   years <- c(glb$hyrnames,glb$pyrnames)
@@ -1697,6 +1701,7 @@ plotdynvarinyear <- function(rundir,dyn,whichvar,whichyr,glb,bins=15,
 #'     and the years and their names.
 #' @param console should each plot go to the console or be saved to rundir.
 #'     default = TRUE ie go to console
+#' @param resol default = 300, the dpi for the png plots
 #'
 #' @seealso \link{getrateofchange}, \link{do_comparison}
 #'
@@ -1709,7 +1714,7 @@ plotdynvarinyear <- function(rundir,dyn,whichvar,whichyr,glb,bins=15,
 #' # res <- getrateofchange(dyn=dyn,whichvar=pickvar,glb=glb)
 #' # filen <- plotrateofchange(rundir=rundir,res=res,whichvar=pickvar,glb=glb)
 #' # rundir=rundir; res=res;whichvar=pickvar;glb=glb;console=TRUE
-plotrateofchange <- function(rundir,res,whichvar,glb,console=TRUE) {
+plotrateofchange <- function(rundir,res,whichvar,glb,console=TRUE,resol=300) {
   scenes <- names(res)
   nscen <- length(scenes)
   saunames <- glb$saunames
@@ -1930,6 +1935,7 @@ plotsceneproj <- function(rundir,inarr,glb,scene,filen="",label="",
 #'     and the years and their names.
 #' @param console should each plot go to the console or be saved to rundir.
 #'     default = TRUE ie go to console
+#' @param resol default = 300, the dpi for the png plots
 #'
 #' @seealso \link{getzonechangerate}, \link{do_comparison}
 #'
@@ -1941,7 +1947,7 @@ plotsceneproj <- function(rundir,inarr,glb,scene,filen="",label="",
 #' # pickvar <- "acatch"
 #' # res <- getzonechangerate(zone=zone,whichvar=pickvar,glb=glb)
 #' # filen <- plotrateofchange(rundir=rundir,res=res,whichvar=pickvar,glb=glb)
-plotzonechangerate <- function(rundir,res,whichvar,glb,console=TRUE) {
+plotzonechangerate <- function(rundir,res,whichvar,glb,console=TRUE,resol=300) {
   #  rundir=rundir;res=res;whichvar="catch";glb=glb;console=TRUE
   scenes <- colnames(res$pdiffer)
   nscen <- length(scenes)
@@ -1987,6 +1993,7 @@ plotzonechangerate <- function(rundir,res,whichvar,glb,console=TRUE) {
 #'     all scenarios (else the matrices will not line up).
 #' @param filen the filename and path if the plot is to be saved, default = "".
 #'     if a filename is given it should be a .png file
+#' @param resol default = 300, the dpi for the png plots
 #'
 #' @return a list of a matrix of the mean and sd devs per scenario, and a matrix
 #'      of the actual deviates, all returned invisibly. It also plots a graph
@@ -2002,7 +2009,7 @@ plotzonechangerate <- function(rundir,res,whichvar,glb,console=TRUE) {
 #'    for (scen in 1:nscen) x[[scen]] <- zone[[scen]]$catch[whichyrs,]
 #'    devout <- plotzonedevs(x,scenes,glb,filen="")
 #' }
-plotzonedevs <- function(invar,scenes,glb,filen=""){
+plotzonedevs <- function(invar,scenes,glb,filen="",resol=300){
   # invar=x;scenes=scenes;filen=""
   nscen <- length(scenes)
   yrs <- glb$pyrnames

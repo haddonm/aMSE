@@ -4,7 +4,7 @@
 \alias{plotzonedevs}
 \title{plotzonedevs plots projection deviates for a variable across scenerios}
 \usage{
-plotzonedevs(invar, scenes, glb, filen = "")
+plotzonedevs(invar, scenes, glb, filen = "", resol = 300)
 }
 \arguments{
 \item{invar}{the sub-object from each scenario as a list, see examples}
@@ -17,6 +17,8 @@ all scenarios (else the matrices will not line up).}
 
 \item{filen}{the filename and path if the plot is to be saved, default = "".
 if a filename is given it should be a .png file}
+
+\item{resol}{default = 300, the dpi for the png plots}
 }
 \value{
 a list of a matrix of the mean and sd devs per scenario, and a matrix

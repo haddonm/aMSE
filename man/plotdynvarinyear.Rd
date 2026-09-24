@@ -12,7 +12,8 @@ plotdynvarinyear(
   glb,
   bins = 15,
   console = TRUE,
-  whichfun = mean
+  whichfun = mean,
+  resol = 300
 )
 }
 \arguments{
@@ -36,6 +37,8 @@ default = TRUE ie go to console}
 
 \item{whichfun}{each plot has by default the mean of the distribution added
 if one wanted the median or geomean then change to that function name}
+
+\item{resol}{default = 300, the dpi for the png plots}
 }
 \value{
 the filename (no path) used if any, and it plots a graph

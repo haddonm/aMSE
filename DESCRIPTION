@@ -25,7 +25,6 @@ Imports:
     codeutils,
     hplot,
     makehtml
-RoxygenNote: 7.3.3
 Suggests: 
     knitr,
     rmarkdown
@@ -33,3 +32,4 @@ Encoding: UTF-8
 URL: https://github.com/haddonm/aMSE
 Reference: https://haddonm.github.io/aMSEGuide
 BugReports: https://github.com/haddonm/aMSE/issues
+Config/roxygen2/version: 8.1.0

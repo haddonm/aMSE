@@ -66,5 +66,10 @@ Useful links:
 \author{
 \strong{Maintainer}: Malcolm Haddon \email{malcolm.haddon@gmail.com} (\href{https://orcid.org/0000-0001-6971-7585}{ORCID})
 
+Authors:
+\itemize{
+  \item Malcolm Haddon \email{malcolm.haddon@gmail.com} (\href{https://orcid.org/0000-0001-6971-7585}{ORCID})
+}
+
 }
 \keyword{internal}

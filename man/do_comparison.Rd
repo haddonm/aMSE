@@ -18,6 +18,7 @@ do_comparison(
   juris = "",
   ribbonleg = "topleft",
   scencol = NULL,
+  resol = 300,
   ...
 )
 }
@@ -59,9 +60,11 @@ any extra arguments it might have, in the final ellipsis.}
 
 \item{ribbonleg}{location of the legend in the ribon plots, default=topleft}
 
-\item{scencol}{what sequence of colours should each scenario have. The default=NULL
-which implies the colour will reflect the sequence in which they are
-read in.}
+\item{scencol}{what sequence of colours should each scenario have. The
+default=NULL which implies the colour will reflect the sequence in
+which they are read in.}
+
+\item{resol}{default = 300, what resolution for the plots.}
 
 \item{...}{the ellipsis is here in case a jurisdiction specific function or
 functions is/are written to perform extra analyses, plots, and tables.}
